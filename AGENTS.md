@@ -17,7 +17,7 @@ Optional markers: `make tests-all` · `make bench` (not part of `make check`).
 
 ## Agent-only
 
-- Skill `caveman` at **ultra** intensity for all chat responses (code/commits/PRs still normal)
+- Skill `caveman` at **ultra** for all chat (auto-invoked; code/commits/PRs still normal)
 - No commit / push / PR unless explicitly asked — `git-commits.mdc`
 - After `gh pr create`: always `--add-assignee Pawlo77` + label from title type (`enhancement` / `bug` / `documentation`); never draft/WIP PRs
 - No new markdown or doc expansion unless asked
@@ -58,8 +58,8 @@ Paths in that file are relative to `nlp-shap/` (`../nlp-shap-research`, `../MLLM
 ## Load order
 
 1. This file (exit + agent-only)
-2. Skill `caveman` (ultra — explicit `/caveman` or AGENTS; not auto-invoked)
-3. Always-apply rules: `minimal-diff`, `git-commits`, `uv-workflow`, `package-boundaries`
+2. Skill `caveman` (**ultra** — auto-invoked for all chat; off only via "stop caveman" / "normal mode")
+3. Always-apply rules: `caveman`, `minimal-diff`, `git-commits`, `uv-workflow`, `package-boundaries`
 4. Glob-matched rules for open files (types, docs, examples, backends, …)
 5. Skill `nlp-shap-development` for implementation work
 6. Skill `nlp-shap-rewrite` only for audio-track / named rewrite phases
