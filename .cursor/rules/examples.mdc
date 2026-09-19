@@ -1,6 +1,6 @@
 ---
 description: Jupyter notebook examples for new public workflows
-globs: "src/nlp_shap/**"
+globs: examples/**/*.ipynb,src/nlp_shap/**/*.py
 alwaysApply: false
 ---
 
@@ -13,7 +13,7 @@ User-facing workflows live in `examples/` as **Jupyter notebooks** — not in `s
 
 Add or update a minimal notebook when you introduce **entirely new public logic**, such as:
 
-- A new connector under `src/nlp_shap/connectors/`
+- A new backend under `src/nlp_shap/backends/`
 - A new explainer or attribution entry point
 - A new estimand, estimator, or value-function workflow users can run standalone
 - A new multimodal workflow users are expected to run end-to-end
@@ -46,7 +46,7 @@ Cross-link from the relevant guide (`docs/guides/<topic>.rst`) when a notebook d
 ## Pair with tests
 
 - **Correctness** — `tests/` (TDD)
-- **Speed** — `tests/benchmarks/` for connectors (see `connector-benchmarks.mdc`)
+- **Speed** — `tests/benchmarks/` for hot paths (see `benchmarks.mdc`)
 - **Integration story** — matching notebook in `examples/`
 
 Run the notebook locally before hand-off when the change is user-facing.

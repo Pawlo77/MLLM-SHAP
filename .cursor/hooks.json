@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": "bash .cursor/hooks/session-start.sh"
+      }
+    ],
+    "afterFileEdit": [
+      {
+        "command": "bash .cursor/hooks/format.sh"
+      }
+    ],
+    "afterTabFileEdit": [
+      {
+        "command": "bash .cursor/hooks/format.sh"
+      }
+    ],
+    "beforeShellExecution": [
+      {
+        "command": "bash .cursor/hooks/deny-shell.sh",
+        "failClosed": true
+      }
+    ],
+    "afterShellExecution": [
+      {
+        "command": "bash .cursor/hooks/after-push.sh",
+        "matcher": "git\\s+push"
+      }
+    ],
+    "stop": [
+      {
+        "command": "bash .cursor/hooks/stop-check.sh",
+        "loop_limit": 1
+      }
+    ]
+  }
+}

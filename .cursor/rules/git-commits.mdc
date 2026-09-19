@@ -34,13 +34,17 @@ docs: add repository URL to README and project urls
 
 **Types:** `feat`, `fix`, `docs`, `test`, `refactor`, `chore`, `ci`, `build`, `perf`
 
-- Subject: imperative, lowercase type, no period, ~72 chars
+- Subject: imperative, lowercase type, no period, ≤72 chars
 - Body: what changed and why — not a file list unless useful
 - One concern per commit; do not mix unrelated types
 
+**Enforced by:** prek `commit-msg` hook (`.cursor/hooks/commit_msg.py`) and Cursor
+`beforeShellExecution` (deny bad `-m` / `--no-verify` / push to main — no approval
+prompt; user permission still required by this rule / `AGENTS.md`).
+
 ### Before committing
 
-1. Run `make check`, `make docs`, and `make notebooks` (when `examples/*.ipynb` changed)
+1. Run `make agent-check`, `make docs`, and `make notebooks` (when `examples/*.ipynb` changed)
 2. Run `git status`, `git diff`, `git log -5` (parallel)
 3. Draft message(s) matching the split plan
 4. Stage only files for that commit; commit; verify with `git status`
@@ -51,17 +55,22 @@ Do not `--no-verify`, amend, or force-push unless user rules explicitly allow.
 
 - Confirm `make check` is green on the commits being pushed
 - Example notebooks must include **executed outputs** (run `make notebooks` first)
+- Push a **feature branch** — never `main`/`master` (Cursor hook denies; GitHub protection)
 
 ### After pushing
 
-- Watch remote workflows until all succeed: `gh run watch --exit-status`
+- Watch remote workflows until all succeed: `gh run list` then `gh run watch <run-id> --exit-status`
 - If **Prek Checks** or other required workflows fail, fix on a follow-up commit — do not leave `main` red
+- Cursor `afterShellExecution` reminds about CI watch after `git push`
 
 ## Pull requests
 
 Same permission gate — **propose title and body; create only when asked.**
 
-**Title:** same style as commit subject — `feat: add connector benchmark harness`
+**Never mark PRs as WIP:** no draft PRs (`gh pr create --draft` / Convert to draft), no `WIP`/`[WIP]` in the title, no WIP label. Open ready-for-review PRs only.
+
+**Title:** same style as commit subject — `feat: add backend benchmark harness`
+
 
 **Body:**
 
@@ -70,10 +79,27 @@ Same permission gate — **propose title and body; create only when asked.**
 - Bullet: user-facing or architectural outcome
 
 ## Test plan
-- [ ] make check
+- [ ] make agent-check
 - [ ] make docs (if API/docs changed)
 - [ ] make notebooks (if example notebooks changed)
 - [ ] gh run watch — remote Prek Checks / Pytest / Deploy Docs green
 ```
 
 Keep PRs focused. Large work → suggest stacked commits or multiple PRs. Use `gh pr create` with HEREDOC body when user approves.
+
+### Always after `gh pr create`
+
+Assign the author and set **one** label from the title type:
+
+```bash
+gh pr edit <n> --add-assignee Pawlo77 --add-label <label>
+```
+
+| Title prefix | Label |
+|--------------|-------|
+| `feat:` / `perf:` | `enhancement` |
+| `fix:` | `bug` |
+| `docs:` | `documentation` |
+| `chore:` / `ci:` / `build:` / `refactor:` / `test:` | `enhancement` |
+
+Never leave a PR with empty assignees or labels.

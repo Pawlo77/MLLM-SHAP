@@ -20,6 +20,8 @@ make prek-all    # preferred — must pass before push (matches remote Prek Chec
 uv run prek run --all-files
 ```
 
+Agent validate: `make agent-check` (filtered pytest + prek-all). Optional markers: `make tests-all` · `make bench`.
+
 Before push: `make check` · `make docs` (when API/docs change) · `make notebooks` (when `examples/*.ipynb` change).
 
 After push: `gh run list` then `gh run watch <run-id> --exit-status` for each workflow on that commit.

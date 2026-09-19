@@ -87,8 +87,6 @@ dmypy.json
 # PyPI configuration
 .pypirc
 
-# Cursor
-.cursorignore
-.cursorindexingignore
+# Local run artifacts
 runs/
 examples/runs/

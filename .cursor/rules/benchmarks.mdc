@@ -1,19 +1,20 @@
 ---
-description: Benchmark requirements when adding connectors
-globs: "**/connectors/**"
+description: Benchmark requirements for backends and hot runtime paths
+globs: src/nlp_shap/backends/**,tests/benchmarks/**,src/nlp_shap/runtime/**
 alwaysApply: false
 ---
 
-# Connector benchmarks
+# Benchmarks
 
-New code under `src/nlp_shap/connectors/` needs two layers:
+New backends under `src/nlp_shap/backends/` and hot-path changes under
+`src/nlp_shap/runtime/` / `estimation/` / `masking/` need two layers:
 
 1. **Correctness** — unit/integration tests in `tests/` (TDD)
-2. **Speed** — `@pytest.mark.bench` tests in `tests/benchmarks/`, mirroring the connector path
+2. **Speed** — `@pytest.mark.bench` tests in `tests/benchmarks/`, mirroring the path
 
 Benchmarks must cover representative operations (typical init, inference/explain call, hot paths). Tests validate correctness; benchmarks measure latency and catch regressions.
 
-New connectors also need a matching minimal notebook in `examples/` (see `examples.mdc`).
+New backends also need a matching minimal notebook in `examples/` (see `examples.mdc`).
 
 - Use the benchmark harness in `tests/conftest.py`
 - Run locally: `make bench` (`pytest -m bench --benchmark`)

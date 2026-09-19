@@ -3,6 +3,7 @@ default_language_version:
 
 default_install_hook_types:
   - pre-commit
+  - commit-msg
 
 exclude: |
   (?x)^(
@@ -61,6 +62,13 @@ repos:
         files: ^(pyproject\.toml|uv\.lock)$
         pass_filenames: false
         always_run: false
+
+      - id: conventional-commit-msg
+        name: conventional commit message
+        entry: python .cursor/hooks/commit_msg.py
+        language: system
+        stages: [commit-msg]
+        always_run: true
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.15.21

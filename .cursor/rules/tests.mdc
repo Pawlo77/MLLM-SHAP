@@ -1,0 +1,15 @@
+---
+description: Test layout, naming, and pytest markers
+globs: tests/**/*.py
+alwaysApply: false
+---
+
+# Tests
+
+- Files: `test_*.py` under `tests/`, mirror `src/nlp_shap/` layout
+- Absolute imports: `from nlp_shap...`
+- Behavior tests over trivia / mock theater
+- Markers: `bench` (local `make bench`), `lms`, `gpu` — skip when deps/host missing
+- Agent default / `make check`: `pytest -m "not lms and not gpu and not bench"` (`make agent-check`)
+- Full markers: `make tests-all`
+- Hook helper tests (e.g. `tests/hooks/`) OK for tooling outside the package

@@ -1,60 +1,51 @@
 ---
 name: nlp-shap-rewrite
 description: >-
-  Greenfield reimplementation of legacy MLLM-Shap into nlp_shap. Use when
-  adding domain, runtime, estimation, backend, alignment, or pipeline modules.
+  Audio-track and legacy-port phases for nlp_shap after text MVP (v0.1.x).
+  Use when implementing multimodal/audio modules (phases 15–21), SGPA alignment,
+  liquid-audio, or when the user names a rewrite phase / audio track.
+disable-model-invocation: true
 ---
 
-# nlp-shap rewrite
+# nlp-shap rewrite (audio track)
 
-Canonical plan: **[[nlp-shap Package Rewrite]]** in `nlp-shap-research/docs/plans/infrastructure/`.
+Text track (phases 0–14, through `v0.1.15`) is **done**. Current package is past
+that baseline — check `pyproject.toml` version. This skill covers **audio /
+multimodal** work only.
+
+## External references (siblings — not in this repo)
+
+Required layout — see root `AGENTS.md` / `nlp-shap.code-workspace`:
+
+```text
+<parent>/nlp-shap/              # this package
+<parent>/nlp-shap-research/     # git clone https://github.com/Pawlo77/nlp-shap-research.git
+<parent>/MLLM-Shap/             # git clone https://github.com/Pawlo77/MLLM-Shap.git
+```
+
+| What | Path from `nlp-shap/` |
+|------|----------------------|
+| Canonical plan | `../nlp-shap-research/docs/plans/infrastructure/` (Obsidian: nlp-shap Package Rewrite) |
+| Legacy reference | `../MLLM-Shap/mllm_shap/` — gather logic, rewrite; never bulk-copy |
+
+Open the multi-root workspace file before audio-track / port work.
 
 ## Principles
 
-1. **Gather logic, rewrite modules** — use `papers/MLLM-Shap/mllm_shap/` as reference; never bulk-copy files or god-classes
+1. **Gather logic, rewrite modules** — reference legacy; never bulk-copy files or god-classes
 2. **One phase = one tag = one PyPI publish** — do not batch phases
 3. **Dropped:** `shap/hierarchical/*` — do not implement or reference
-4. **Text track first** (Phases 0–14, `v0.1.1`–`v0.1.15`); **audio track** (Phases 15–21, `v0.2.0`–`v0.2.6`) only after text sign-off
+4. **Audio track** (Phases 15–21, `v0.2.0`–`v0.2.6`) only after text sign-off (already done)
 5. **Deps:** torch / transformers / liquid-audio in extras only
 6. **Imports:** relative inside `src/nlp_shap/`; absolute `from nlp_shap...` in tests and examples
-7. **No `from __future__ import annotations`** unless required — use `Self` or quoted forward refs (`python-quality.mdc`)
+7. **No `from __future__ import annotations`** unless required — see `python-types.mdc`
 
 ## Current phase gate
 
-Check the plan's first unchecked phase. Implement **only that phase**, then:
+Check the plan's first unchecked **audio** phase. Implement **only that phase**, then
+follow skill `nlp-shap-development` validate + hand-off (docs, notebooks, tag, publish).
 
-```bash
-make notebooks   # when examples/*.ipynb changed — commit only with outputs
-make docs        # includes release_notes.rst
-make check
-# bump version in pyproject.toml
-# add docs/release_notes.rst section; clear Unreleased
-git tag vX.Y.Z
-# publish via CI workflow
-gh run watch <run-id> --exit-status   # after push
-```
-
-## Text track order (v0.1.x)
-
-| Phase | Tag | Module focus |
-|-------|-----|--------------|
-| 0 | v0.1.1 | Estimands Shapley/Banzhaf |
-| 1 | v0.1.2 | domain, protocols, ExplainConfig |
-| 2 | v0.1.3 | masking codec, views, policies |
-| 3 | v0.1.4 | archive, dedup, scheduler |
-| 4 | v0.1.5 | exact estimator |
-| 5 | v0.1.6 | mc, complementary, neyman |
-| 6 | v0.1.7 | value fns, normalizers |
-| 7 | v0.1.8 | mock E2E, orchestrator, runner |
-| 8 | v0.1.9 | reanalyze, telemetry, compact prelude |
-| 9 | v0.1.10 | lmstudio |
-| 10 | v0.1.11 | transformers text + kv cache |
-| 11 | v0.1.12 | api backend |
-| 12 | v0.1.13 | viz renderers + text_explain_e2e notebook |
-| 13 | v0.1.14 | entry points, docs, nlp_shapx, flag removal |
-| 14 | v0.1.15 | perf benchmarks |
-
-## Audio track order (v0.2.x) — after Phase 13 sign-off
+## Audio track order (v0.2.x)
 
 | Phase | Tag | Module focus |
 |-------|-----|--------------|
@@ -70,19 +61,7 @@ gh run watch <run-id> --exit-status   # after push
 
 Use `nlp-shap-development`: red → green → document → refactor → validate → hand off.
 
-## Post-task validation
-
-Before closing a phase or proposing commit: re-read the diff, run `make check` (and `make docs` / `make notebooks` when applicable), analyze performance of hot paths, and fix style, test, docs, consistency, and scalability issues you find. Do not hand off with known defects.
-
-LM Studio: `pytest -m lms` locally. CI: mock only. GPU: `pytest -m gpu` optional.
-
-## Documentation gate
-
-Each phase must ship Sphinx theory/guides, API entries, and (when applicable) an
-executed `examples/` notebook (`make notebooks`) before the phase tag. User-facing
-`docs/` describe the shipped API only — no phase numbers or rewrite progress.
+User-facing `docs/` describe the shipped API only — no phase numbers or rewrite progress.
 See `docs.mdc`.
 
-## 0.x logic checklist
-
-Before closing a text phase, confirm the plan's **0.x logic inventory** row for that module is covered. Hierarchical rows are intentionally skipped.
+LM Studio: `pytest -m lms` locally. CI: mock only. GPU: `pytest -m gpu` optional.

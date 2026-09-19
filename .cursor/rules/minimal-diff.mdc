@@ -14,4 +14,6 @@ alwaysApply: true
 - No new markdown files unless requested
 - If two approaches exist, pick the simpler one that matches the repo
 
-When copying from MLLM-Shap, port the minimum slice needed — do not bulk-copy experiments or multimodal code unless the task requires it.
+When copying from MLLM-Shap, port the minimum slice needed — use sibling
+`../MLLM-Shap/mllm_shap/`; do not bulk-copy experiments or multimodal code unless
+the task requires it.

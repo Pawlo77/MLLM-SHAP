@@ -1,0 +1,24 @@
+---
+description: GitHub Actions workflow conventions for nlp-shap
+globs: .github/workflows/**
+alwaysApply: false
+---
+
+# CI
+
+- Pytest: `uv run pytest -m "not lms and not gpu and not bench" tests/` (see `make tests`)
+- Prek Checks must stay green on `main`
+- Path filters: keep workflow `paths:` in sync when adding critical dirs
+- Do not add secrets to workflows; use repo secrets for publish only
+- After push: `gh run list` then `gh run watch <run-id> --exit-status`
+
+## Branch protection (GitHub settings — not in this repo)
+
+Configure on `main` (Settings → Branches → Branch protection):
+
+1. **Require a pull request** before merging (no direct push to `main`)
+2. **Require status checks**: Prek Checks, Pytest (add Deploy Docs if docs are required)
+3. **Do not allow force pushes**
+4. Optional: require linear history
+
+Agents: never `git push` to `main`/`master`; Cursor hooks deny it. Humans: branch protection is the real gate — Cursor hooks do not run outside the agent.

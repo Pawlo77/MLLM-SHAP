@@ -1,6 +1,6 @@
 ---
 description: Sphinx documentation requirements for public API and algorithms
-globs: "src/nlp_shap/**"
+globs: docs/**/*.rst,src/nlp_shap/**/*.py
 alwaysApply: false
 ---
 

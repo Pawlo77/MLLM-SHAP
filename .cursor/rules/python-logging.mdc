@@ -1,0 +1,35 @@
+---
+description: Stdlib logging conventions for nlp_shap library modules
+globs: src/nlp_shap/**/*.py,pyproject.toml
+alwaysApply: false
+---
+
+# Logging
+
+Use the stdlib [`logging`](https://docs.python.org/3/library/logging.html) package only — no `print` for diagnostics, no third-party loggers unless explicitly added to the project.
+
+**Setup**
+
+- One module logger per file: `logger = logging.getLogger(__name__)`
+- Never add handlers in library modules — configuration lives in TOML
+- Define logging under `[tool.logging]` in `pyproject.toml`; loaded via [logging518](https://pypi.org/project/logging518/) on import (`logging.config.dictConfig`)
+- Override the config file with `NLP_SHAP_LOGGING_CONFIG=/path/to/config.toml`
+- When no TOML config is found, import installs a null handler so library use stays quiet
+- Host applications may also configure logging themselves; avoid duplicate handlers
+
+**Levels**
+
+| Level | Use for |
+|-------|---------|
+| `DEBUG` | Detailed diagnostics (cache keys, sampling draws, backend I/O) |
+| `INFO` | High-level progress (stage start/finish, backend chosen, run summary) |
+| `WARNING` | Recoverable issues (fallback path, deprecated API, partial result) |
+| `ERROR` | Failed operation the caller should know about |
+| `CRITICAL` | Unrecoverable state; abort or unusable configuration |
+
+**Performance and redundancy**
+
+- No duplicate messages across layers — log the event once at the layer that owns the decision
+- No `INFO`/`WARNING`/`ERROR` inside tight loops; use `DEBUG` and guard expensive work with `logger.isEnabledFor(logging.DEBUG)`
+- Prefer `logger.info("done %s", item_id)` over f-strings so formatting stays lazy when the level is disabled
+- Do not log and re-raise the same exception; log at the boundary that handles or surfaces it

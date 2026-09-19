@@ -1,0 +1,49 @@
+{
+  // Multi-root workspace for nlp-shap + sibling repos.
+  //
+  // Required on-disk layout (siblings under one parent directory):
+  //
+  //   <parent>/
+  //     nlp-shap/              ← this repository (contains this file)
+  //     nlp-shap-research/     ← rewrite plan / research vault
+  //     MLLM-Shap/             ← legacy reference implementation
+  //
+  // Clone (from an empty parent, e.g. ~/code/papers):
+  //
+  //   mkdir -p <parent> && cd <parent>
+  //   git clone https://github.com/Pawlo77/nlp-shap.git
+  //   git clone https://github.com/Pawlo77/nlp-shap-research.git
+  //   git clone https://github.com/Pawlo77/MLLM-Shap.git
+  //
+  // Open in Cursor/VS Code:
+  //   File → Open Workspace from File…
+  //   → <parent>/nlp-shap/nlp-shap.code-workspace
+  //
+  // Paths below are relative to this file's directory (nlp-shap/),
+  // so ../nlp-shap-research means <parent>/nlp-shap-research.
+  // Do not move this .code-workspace file without updating paths.
+  //
+  // If a sibling is missing, Cursor still opens nlp-shap; port/rewrite
+  // skills that need the sibling will fail until you clone it.
+
+  "folders": [
+    {
+      "name": "nlp-shap",
+      "path": "."
+    },
+    {
+      "name": "nlp-shap-research",
+      "path": "../nlp-shap-research"
+    },
+    {
+      "name": "MLLM-Shap",
+      "path": "../MLLM-Shap"
+    }
+  ],
+  "settings": {
+    "python.defaultInterpreterPath": "${workspaceFolder:nlp-shap}/.venv/bin/python",
+    "files.exclude": {
+      "**/__pycache__": true
+    }
+  }
+}

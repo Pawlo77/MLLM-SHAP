@@ -1,6 +1,7 @@
 ---
 description: Performance and resource-use expectations for nlp-shap
-alwaysApply: true
+globs: src/nlp_shap/estimation/**,src/nlp_shap/runtime/**,src/nlp_shap/masking/**,src/nlp_shap/pipeline/**,tests/benchmarks/**
+alwaysApply: false
 ---
 
 # Performance
@@ -23,7 +24,7 @@ After implementation and before hand-off:
 1. Identify hot paths touched (enumeration, scheduling, dedup keys, aggregation)
 2. Estimate memory scaling — flag any O(2^n) materialization
 3. Confirm streaming/batching APIs exist where inputs can be huge
-4. Run `make check`; add or update `tests/benchmarks/` markers when changing hot paths
+4. Run `make agent-check`; add or update `tests/benchmarks/` markers when changing hot paths
 5. Fix regressions found during review — do not hand off known scalability defects
 
-See `connector-benchmarks.mdc` for connector bench conventions and `make bench`.
+See `benchmarks.mdc` for bench conventions and `make bench`.

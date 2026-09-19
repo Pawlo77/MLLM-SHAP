@@ -1,0 +1,12 @@
+# Index skip only — files stay @-readable
+uv.lock
+docs/_build/
+docs/_static/guide_outputs/
+examples/runs/
+runs/
+.pytest_benchmark/
+htmlcov/
+dist/
+build/
+*.egg-info/
+.cursor/hooks/__pycache__/

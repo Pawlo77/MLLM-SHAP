@@ -1,0 +1,75 @@
+---
+description: Google-style docstrings for nlp_shap public surfaces
+globs: src/nlp_shap/**/*.py
+alwaysApply: false
+---
+
+# Python docstrings (Google style)
+
+Use [Google-style](https://google.github.io/styleguide/pyguide.html#383-functions-and-methods) docstrings in `src/nlp_shap`. Types live in annotations — **do not repeat them** in `Args`/`Returns`.
+
+Every Python file in `src/nlp_shap` starts with a module docstring — including `__init__.py`. Every module-level constant gets a docstring on the line immediately below its definition.
+
+| Surface | Rule |
+|---------|------|
+| Module | **Required** on every file (including `__init__.py`): one line stating what the module owns |
+| Module-level constant | **Required**: one-line docstring directly under the assignment |
+| Public class | One-line summary; add body sections only when behavior is not obvious from the name |
+| Public class fields | **Required**: one-line docstring directly under every field (dataclass, Pydantic, TypedDict key) |
+| Enum / StrEnum members | **Required**: one-line docstring directly under every member |
+| Public function/method | One line when name + signature + return type are sufficient; otherwise add only the sections that add information (`Args`, `Returns`, `Raises`, `Note`) |
+| `_private` fields | Omit unless logic is genuinely non-obvious |
+| `tests/` | Docstring optional; prefer clear test names |
+
+**Redundant (forbidden):** restating parameter types, echoing the function name, empty `Args`/`Returns`, module essays.
+
+**Expand when:** side effects, valid input ranges, invariants, error conditions, or algorithm intent are not readable from code.
+
+**Examples:** only on public entry points (`__init__.py` exports, primary user-facing APIs) where usage is non-obvious. Keep minimal and runnable.
+
+```python
+"""Public exports for the estimation package."""
+
+DEFAULT_BUDGET: int = 100
+"""Default evaluation budget when the caller does not override it."""
+
+@dataclass(frozen=True, slots=True)
+class ExplainResult:
+    """Attribution output for a single explain run."""
+
+    estimand: Estimand
+    """Estimand used to aggregate coalition samples."""
+
+    values: tuple[float, ...]
+    """Per-player attribution values."""
+
+class Estimand(StrEnum):
+    """Supported cooperative-game value formulations."""
+
+    SHAPLEY = "shapley"
+    """Shapley value with coalition weights k!(n-k-1)!/n!."""
+
+    BANZHAF = "banzhaf"
+    """Banzhaf index with uniform coalition weights 1/2^(n-1)."""
+
+# Sufficient — contract is obvious
+def version() -> str:
+    """Return the package version."""
+
+# Needed — constraints not visible in types
+def explain(chat: Chat, budget: int) -> Result:
+    """Attribute ``chat`` under a fixed evaluation budget.
+
+    Args:
+        chat: Conversation to explain; must include at least one user turn.
+        budget: Maximum number of model evaluations.
+
+    Returns:
+        Token attributions and run metadata.
+
+    Raises:
+        ValueError: If ``chat`` has no explainable tokens.
+    """
+```
+
+Comments: non-obvious logic only — never narrate what the code already says.

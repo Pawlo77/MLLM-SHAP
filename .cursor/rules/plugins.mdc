@@ -1,0 +1,16 @@
+---
+description: Plugin entry-point registration for nlp_shap
+globs: pyproject.toml,src/nlp_shap/plugins/**,src/nlp_shap/backends/**,src/nlp_shap/estimation/**,src/nlp_shap/value/**,src/nlp_shap/viz/**,src/nlp_shap/masking/**
+alwaysApply: false
+---
+
+# Plugins
+
+New estimator / estimand / backend / value_fn / normalizer / partition / absence_policy / renderer:
+
+1. Implement the class
+2. Register `[project.entry-points."nlp_shap.<group>"]` in `pyproject.toml`
+3. Test via `PluginRegistry` resolution + real behavior
+4. Follow skill `nlp-shap-plugin`
+
+Do not add empty plugin packages or unregistered public kinds.

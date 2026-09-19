@@ -1,0 +1,10 @@
+# Secrets and credentials — hard-block Agent / Tab / @-mention
+.env
+.env.*
+.pypirc
+*.pem
+*.key
+**/credentials.json
+**/secrets.json
+**/id_rsa
+**/id_rsa.pub
