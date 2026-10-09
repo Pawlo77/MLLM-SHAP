@@ -2,8 +2,9 @@
 
 - `test_*.py`; mirror `src/nlp_shap/`
 - Absolute `from nlp_shap...`
-- Default agent run: `make agent-check` / `make tests`
+- Exit criterion: `make check`; `make tests` for a quick pytest run
 - Full markers: `make tests-all`
 - `lms` / `gpu` / `bench` are local/optional
+- `practical`: real models on a GPU; `make practical [TIER=quick|deep|all] FEATURE=<glob>`, skill `practical`
 
 See `.cursor/rules/tests.mdc` and `tdd.mdc`.

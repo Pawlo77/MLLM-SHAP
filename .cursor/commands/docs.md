@@ -1,9 +1,3 @@
 # Docs
 
-Ship Sphinx docs for public API / algorithm changes (rule `docs.mdc`):
-
-1. Update theory / guides / `docs/api.rst` / release notes as needed
-2. No phase numbers or rewrite roadmap in user-facing docs
-3. `make docs`
-4. If notebooks changed too → `make notebooks`
-5. Do not commit unless asked
+Follow rule `.cursor/rules/docs.mdc` for: $ARGUMENTS. Finish with `make docs` (and `make notebooks` when the exit criteria require it); do not commit unless asked.

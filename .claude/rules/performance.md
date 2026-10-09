@@ -1,0 +1,35 @@
+---
+paths:
+  - "src/nlp_shap/estimation/**"
+  - "src/nlp_shap/runtime/**"
+  - "src/nlp_shap/masking/**"
+  - "src/nlp_shap/pipeline/**"
+  - "tests/benchmarks/**"
+---
+
+<!-- Generated from .cursor/rules/performance.mdc by scripts/sync_rules.py; do not edit. -->
+
+# Performance
+
+Prefer the **fastest correct implementation** with the **lowest practical memory footprint**.
+
+## Design defaults
+
+- Stream large coalition sets — generators or batched iteration; never materialize `2^n` masks or jobs when avoidable
+- Bound concurrency memory — scheduler work must not create one coroutine per coalition upfront
+- Reuse precomputed tables — factorial/Shapley weights, packed masks, coalition keys
+- Prefer integer bitmasks over repeated `tuple[bool]` allocation in hot loops
+- Use vectorized numpy paths for exact Shapley when the full characteristic table is available
+- Keep hot caches sized to real reuse patterns; disable or bypass LRU when hit rate is near zero
+
+## End-of-task performance review
+
+After implementation and before hand-off:
+
+1. Identify hot paths touched (enumeration, scheduling, dedup keys, aggregation)
+2. Estimate memory scaling — flag any O(2^n) materialization
+3. Confirm streaming/batching APIs exist where inputs can be huge
+4. Run `make agent-check`; add or update `tests/benchmarks/` markers when changing hot paths
+5. Fix regressions found during review — do not hand off known scalability defects
+
+See `benchmarks.mdc` for bench conventions and `make bench`.

@@ -1,18 +1,22 @@
-"""Tests for conventional commit message validation."""
+"""Tests for conventional commit message validation.
+
+@see [[scripts/hooks/commit_msg.py]]
+"""
 
 import importlib.util
 from pathlib import Path
 
 import pytest
 
-_HOOK = Path(__file__).resolve().parents[2] / ".cursor" / "hooks" / "commit_msg.py"
+_HOOK = Path(__file__).resolve().parents[2] / "scripts" / "hooks" / "commit_msg.py"
 
 
 @pytest.fixture(scope="module")
 def commit_msg():
     """Load commit_msg.py without installing it as a package."""
     spec = importlib.util.spec_from_file_location("commit_msg", _HOOK)
-    assert spec is not None and spec.loader is not None
+    assert spec is not None
+    assert spec.loader is not None
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
