@@ -13,7 +13,7 @@ paths:
 |------|---------|---------|
 | `prek.yaml` | push/PR to `main` | job `prek`: `prek run --all-files`, then `check_vault.py --strict --strict-tags` (full history) |
 | `test.yaml` | push/PR to `main` | matrix `test` (3.12-3.14, coverage 85%, Codecov; `slow` on 3.12), `notebooks`, summary `tests-passed` |
-| `codeql.yaml` | push/PR, weekly | job `CodeQL` |
+| `codeql.yaml` | push/PR, weekly | job `CodeQL`; skipped while the repository is private |
 | `deploy-docs.yaml` | push to `main` (docs, examples, knowledge, src), manual | `make -C docs html`, GitHub Pages artifact |
 | `benchmarks.yaml` | weekly, manual | `make bench`, JSON report as an artifact (informational) |
 | `pr-title.yaml` | PR events | job `title` (required): `type: summary`; drafts and WIP fail |
