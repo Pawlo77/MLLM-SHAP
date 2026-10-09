@@ -1,11 +1,16 @@
-"""Tests for transformers chat helpers."""
+"""Tests for transformers chat helpers.
 
-from nlp_shap.backends.transformers.chat import (
-    render_prompt,
-    snapshot_has_audio,
-    snapshot_to_chat_messages,
+@see [[src/nlp_shap/backends/transformers/chat.py]]
+"""
+
+from nlp_shap.backends._chat import snapshot_has_audio, snapshot_to_chat_messages
+from nlp_shap.backends.transformers.chat import render_prompt
+from nlp_shap.domain.conversation import (
+    AudioPart,
+    ConversationSnapshot,
+    Message,
+    Turn,
 )
-from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
 from nlp_shap.domain.enums import Role
 
 
@@ -55,10 +60,12 @@ def test_render_prompt_uses_chat_template_when_available() -> None:
     assert rendered == "user:hello"
 
 
-def test_snapshot_has_audio_detects_audio_marker() -> None:
+def test_snapshot_has_audio_detects_audio_part() -> None:
     """Audio snapshots are rejected by the text-only backend."""
     snapshot = ConversationSnapshot.from_turns((
-        Turn(messages=(Message(role=Role.USER, text="audio:payload"),)),
+        Turn(
+            messages=(Message(role=Role.USER, content=(AudioPart(b"\x00", 16_000),)),)
+        ),
     ))
     assert snapshot_has_audio(snapshot) is True
 

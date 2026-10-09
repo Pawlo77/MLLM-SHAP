@@ -1,6 +1,12 @@
-"""Embedding helpers for the transformers text backend."""
+"""Embedding helpers for the transformers text backend.
+
+@domain backends
+@see [[knowledge/architecture/backends]]
+"""
 
 from typing import Any
+
+from ._torch import import_torch
 
 
 def static_embedding(
@@ -8,7 +14,7 @@ def static_embedding(
     token_ids: list[int],
 ) -> tuple[float, ...]:
     """Mean-pool input embeddings for generated token ids."""
-    torch = _import_torch()
+    torch = import_torch()
     if not token_ids:
         return ()
     embedding_layer = model.get_input_embeddings()
@@ -23,7 +29,7 @@ def contextual_embedding(
     token_ids: list[int],
 ) -> tuple[float, ...]:
     """Mean-pool the final hidden state for generated token ids."""
-    torch = _import_torch()
+    torch = import_torch()
     if not token_ids:
         return ()
     ids = torch.tensor([token_ids], dtype=torch.long, device=_model_device(model))
@@ -40,14 +46,5 @@ def _model_device(model: Any) -> Any:
     try:
         return next(model.parameters()).device
     except StopIteration:
-        torch = _import_torch()
+        torch = import_torch()
         return torch.device("cpu")
-
-
-def _import_torch() -> Any:
-    try:
-        import torch
-    except ImportError as exc:
-        msg = "torch is required for the transformers backend extra"
-        raise ImportError(msg) from exc
-    return torch
