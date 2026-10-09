@@ -1,4 +1,7 @@
-"""Contract tests for the OpenAI-compatible API backend."""
+"""Contract tests for the OpenAI-compatible API backend.
+
+@see [[src/nlp_shap/backends/api/__init__.py]]
+"""
 
 import asyncio
 import json
@@ -8,10 +11,19 @@ import pytest
 
 from nlp_shap.backends.api import ApiBackend
 from nlp_shap.backends.api import payload as api_payload
-from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
+from nlp_shap.domain.config import GenerationConfig
+from nlp_shap.domain.conversation import (
+    AudioPart,
+    ConversationSnapshot,
+    Message,
+    Turn,
+)
 from nlp_shap.domain.enums import Role
+from nlp_shap.domain.generation import GenerationRecord
 from nlp_shap.errors import BackendUnavailableError
 from nlp_shap.pipeline.config import BackendConfig
+from nlp_shap.protocols import SupportsLogprobs
+from tests.backends._context import backend_context
 
 
 def _snapshot(text: str) -> ConversationSnapshot:
@@ -24,6 +36,20 @@ def _success_response(text: str) -> httpx.Response:
         "choices": [{"message": {"role": "assistant", "content": text}}],
     }
     return httpx.Response(200, json=body)
+
+
+def _api_backend(handler, max_retries: int = 3) -> ApiBackend:
+    return ApiBackend(
+        backend_context(
+            BackendConfig(
+                kind="api",
+                model_id="remote-model",
+                api_host="http://mock",
+                max_retries=max_retries,
+            )
+        ),
+        transport=httpx.MockTransport(handler),
+    )
 
 
 def test_api_backend_generate_returns_assistant_text() -> None:
@@ -39,14 +65,14 @@ def test_api_backend_generate_returns_assistant_text() -> None:
         assert payload["temperature"] == 0.0
         return _success_response("world")
 
-    backend = ApiBackend(
-        BackendConfig(kind="api", model_id="remote-model", api_host="http://mock"),
-        transport=httpx.MockTransport(handler),
-    )
+    backend = _api_backend(handler)
 
     async def run() -> str:
         try:
-            record = await backend.generate(_snapshot("hello"), 8, 0.0, 1)
+            record = await backend.generate(
+                _snapshot("hello"),
+                GenerationConfig(max_new_tokens=8, temperature=0.0, top_k=1),
+            )
             return record.text
         finally:
             await backend.aclose()
@@ -65,16 +91,17 @@ def test_api_backend_dedups_identical_requests_at_zero_temperature() -> None:
         del request
         return _success_response("cached")
 
-    backend = ApiBackend(
-        BackendConfig(kind="api", model_id="remote-model", api_host="http://mock"),
-        transport=httpx.MockTransport(handler),
-    )
+    backend = _api_backend(handler)
     snapshot = _snapshot("repeat me")
 
     async def run() -> tuple[str, str]:
         try:
-            first = await backend.generate(snapshot, 4, 0.0, 1)
-            second = await backend.generate(snapshot, 4, 0.0, 1)
+            first = await backend.generate(
+                snapshot, GenerationConfig(max_new_tokens=4, temperature=0.0, top_k=1)
+            )
+            second = await backend.generate(
+                snapshot, GenerationConfig(max_new_tokens=4, temperature=0.0, top_k=1)
+            )
             return first.text, second.text
         finally:
             await backend.aclose()
@@ -95,16 +122,17 @@ def test_api_backend_skips_dedup_when_temperature_is_positive() -> None:
         assert payload["temperature"] == 0.7
         return _success_response(f"sample-{calls}")
 
-    backend = ApiBackend(
-        BackendConfig(kind="api", model_id="remote-model", api_host="http://mock"),
-        transport=httpx.MockTransport(handler),
-    )
+    backend = _api_backend(handler)
     snapshot = _snapshot("sample me")
 
     async def run() -> tuple[str, str]:
         try:
-            first = await backend.generate(snapshot, 4, 0.7, 5)
-            second = await backend.generate(snapshot, 4, 0.7, 5)
+            first = await backend.generate(
+                snapshot, GenerationConfig(max_new_tokens=4, temperature=0.7, top_k=5)
+            )
+            second = await backend.generate(
+                snapshot, GenerationConfig(max_new_tokens=4, temperature=0.7, top_k=5)
+            )
             return first.text, second.text
         finally:
             await backend.aclose()
@@ -122,14 +150,14 @@ def test_api_backend_raises_on_invalid_response_payload() -> None:
         del request
         return httpx.Response(200, json={"choices": []})
 
-    backend = ApiBackend(
-        BackendConfig(kind="api", model_id="remote-model", api_host="http://mock"),
-        transport=httpx.MockTransport(handler),
-    )
+    backend = _api_backend(handler)
 
     async def run() -> None:
         try:
-            await backend.generate(_snapshot("hello"), 4, 0.0, 1)
+            await backend.generate(
+                _snapshot("hello"),
+                GenerationConfig(max_new_tokens=4, temperature=0.0, top_k=1),
+            )
         finally:
             await backend.aclose()
 
@@ -144,14 +172,14 @@ def test_api_backend_raises_on_http_error() -> None:
         del request
         return httpx.Response(503, json={"error": "unavailable"})
 
-    backend = ApiBackend(
-        BackendConfig(kind="api", model_id="remote-model", api_host="http://mock"),
-        transport=httpx.MockTransport(handler),
-    )
+    backend = _api_backend(handler)
 
     async def run() -> None:
         try:
-            await backend.generate(_snapshot("hello"), 4, 0.0, 1)
+            await backend.generate(
+                _snapshot("hello"),
+                GenerationConfig(max_new_tokens=4, temperature=0.0, top_k=1),
+            )
         finally:
             await backend.aclose()
 
@@ -163,15 +191,18 @@ def test_api_backend_raises_on_http_error() -> None:
 
 def test_api_backend_rejects_audio_snapshots() -> None:
     """Audio-marked snapshots are rejected before any HTTP call."""
-    backend = ApiBackend(
-        BackendConfig(kind="api", model_id="remote-model", api_host="http://mock"),
-        transport=httpx.MockTransport(lambda request: _success_response("noop")),
-    )
-    snapshot = _snapshot("audio:clip.wav")
+    backend = _api_backend(lambda request: _success_response("noop"))
+    snapshot = ConversationSnapshot.from_turns((
+        Turn(
+            messages=(Message(role=Role.USER, content=(AudioPart(b"\x00", 16_000),)),)
+        ),
+    ))
 
     async def run() -> None:
         try:
-            await backend.generate(snapshot, 4, 0.0, 1)
+            await backend.generate(
+                snapshot, GenerationConfig(max_new_tokens=4, temperature=0.0, top_k=1)
+            )
         finally:
             await backend.aclose()
 
@@ -205,14 +236,217 @@ def test_api_backend_raises_when_httpx_extra_missing(
 
     monkeypatch.setattr("nlp_shap.backends.api.backend._import_httpx", fail_import)
     backend = ApiBackend(
-        BackendConfig(kind="api", model_id="remote-model", api_host="http://mock"),
+        backend_context(
+            BackendConfig(kind="api", model_id="remote-model", api_host="http://mock")
+        ),
     )
 
     async def run() -> None:
         try:
-            await backend.generate(_snapshot("hello"), 4, 0.0, 1)
+            await backend.generate(
+                _snapshot("hello"),
+                GenerationConfig(max_new_tokens=4, temperature=0.0, top_k=1),
+            )
         finally:
             await backend.aclose()
 
     with pytest.raises(BackendUnavailableError, match="httpx package is required"):
         asyncio.run(run())
+
+
+@pytest.fixture
+def sleeps(monkeypatch: pytest.MonkeyPatch) -> list[float]:
+    """Record retry delays instead of sleeping."""
+    delays: list[float] = []
+
+    async def fake_sleep(delay: float) -> None:
+        delays.append(delay)
+
+    monkeypatch.setattr("nlp_shap.backends.api.backend.asyncio.sleep", fake_sleep)
+    return delays
+
+
+def _generate(backend: ApiBackend, text: str = "hello") -> str:
+    async def run() -> str:
+        try:
+            record = await backend.generate(_snapshot(text), GenerationConfig())
+            return record.text
+        finally:
+            await backend.aclose()
+
+    return asyncio.run(run())
+
+
+def test_api_backend_retries_rate_limit_then_succeeds(sleeps: list[float]) -> None:
+    calls = 0
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            return httpx.Response(429, headers={"Retry-After": "2"})
+        return _success_response("ok")
+
+    assert _generate(_api_backend(handler)) == "ok"
+    assert calls == 2
+    assert sleeps == [2.0]
+
+
+def test_api_backend_caps_retry_after_at_timeout(sleeps: list[float]) -> None:
+    calls = 0
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            return httpx.Response(429, headers={"Retry-After": "3600"})
+        return _success_response("ok")
+
+    backend = ApiBackend(
+        backend_context(
+            BackendConfig(
+                kind="api", model_id="remote-model", api_host="http://mock", timeout_s=5
+            )
+        ),
+        transport=httpx.MockTransport(handler),
+    )
+    assert _generate(backend) == "ok"
+    assert sleeps == [5.0]
+
+
+def test_api_backend_gives_up_after_max_retries(sleeps: list[float]) -> None:
+    calls = 0
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal calls
+        calls += 1
+        return httpx.Response(503)
+
+    with pytest.raises(BackendUnavailableError, match="request failed"):
+        _generate(_api_backend(handler, max_retries=2))
+    assert calls == 3
+    assert sleeps == [0.5, 1.0]
+
+
+def test_api_backend_does_not_retry_client_errors(sleeps: list[float]) -> None:
+    calls = 0
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal calls
+        calls += 1
+        return httpx.Response(400)
+
+    with pytest.raises(BackendUnavailableError):
+        _generate(_api_backend(handler))
+    assert calls == 1
+    assert sleeps == []
+
+
+def test_api_backend_rejects_non_json_body() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, content=b"<html>gateway</html>")
+
+    with pytest.raises(BackendUnavailableError, match="not valid JSON"):
+        _generate(_api_backend(handler))
+
+
+def test_api_backend_response_cache_is_bounded(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr("nlp_shap.backends.api.backend.RESPONSE_CACHE_SIZE", 2)
+    backend = _api_backend(lambda request: _success_response("x"))
+
+    async def run() -> None:
+        try:
+            for text in ("a", "b", "c"):
+                await backend.generate(_snapshot(text), GenerationConfig())
+        finally:
+            await backend.aclose()
+
+    asyncio.run(run())
+    assert len(backend._response_cache) == 2
+
+
+@pytest.mark.parametrize(
+    ("api_host", "env", "expected"),
+    [
+        ("http://localhost:1234/v1", {"OPENAI_API_KEY": "sk-openai"}, None),
+        ("https://api.openai.com/v1", {"OPENAI_API_KEY": "sk-openai"}, "sk-openai"),
+        (
+            "https://api.openai.com/v1",
+            {"OPENAI_API_KEY": "sk-openai", "NLP_SHAP_API_KEY": "own"},
+            "own",
+        ),
+        (
+            "https://example.test/v1",
+            {"OPENAI_API_KEY": "sk-openai", "NLP_SHAP_API_KEY": "own"},
+            "own",
+        ),
+        ("https://api.openai.com.evil.test/v1", {"OPENAI_API_KEY": "sk"}, None),
+    ],
+)
+def test_api_backend_sends_openai_key_only_to_openai(
+    monkeypatch: pytest.MonkeyPatch,
+    api_host: str,
+    env: dict[str, str],
+    expected: str | None,
+) -> None:
+    """``NLP_SHAP_API_KEY`` wins; ``OPENAI_API_KEY`` goes to api.openai.com only."""
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.delenv("NLP_SHAP_API_KEY", raising=False)
+    for name, value in env.items():
+        monkeypatch.setenv(name, value)
+    seen: list[str | None] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request.headers.get("Authorization"))
+        return _success_response("ok")
+
+    backend = ApiBackend(
+        backend_context(BackendConfig(kind="api", model_id="m", api_host=api_host)),
+        transport=httpx.MockTransport(handler),
+    )
+
+    assert _generate(backend) == "ok"
+    assert seen == [None if expected is None else f"Bearer {expected}"]
+
+
+def _generate_twice(handler) -> list[GenerationRecord]:
+    backend = _api_backend(handler)
+
+    async def run() -> list[GenerationRecord]:
+        try:
+            generation = GenerationConfig(max_new_tokens=8)
+            return [
+                await backend.generate(_snapshot("hello"), generation) for _ in range(2)
+            ]
+        finally:
+            await backend.aclose()
+
+    return asyncio.run(run())
+
+
+def test_api_backend_requests_and_parses_logprobs() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert json.loads(request.content.decode("utf-8"))["logprobs"] is True
+        choice = {
+            "message": {"role": "assistant", "content": "blue sky"},
+            "logprobs": {
+                "content": [
+                    {"token": "blue", "logprob": -0.25},
+                    {"token": " sky", "logprob": -1.5},
+                ]
+            },
+        }
+        return httpx.Response(200, json={"choices": [choice]})
+
+    first, cached = _generate_twice(handler)
+    assert first.logprobs == (-0.25, -1.5)
+    assert cached.logprobs == (-0.25, -1.5)
+    assert isinstance(_api_backend(handler), SupportsLogprobs)
+
+
+def test_api_backend_returns_none_when_the_server_omits_logprobs() -> None:
+    first, _ = _generate_twice(lambda request: _success_response("world"))
+    assert first.text == "world"
+    assert first.logprobs is None
