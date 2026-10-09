@@ -1,81 +1,124 @@
-"""Whitespace token layout shared by partition and absence policies."""
+"""Whitespace token spans and span-based snapshot rendering.
 
-from dataclasses import dataclass
+@domain masking
+@see [[knowledge/architecture/masking]]
+@tested-by [[tests/masking/test_tokens.py]]
+"""
+
+import re
+from collections.abc import Sequence
 
 from ..domain.conversation import ConversationSnapshot, Message, Turn
+from ..domain.players import PlayerSpan
+
+_TOKEN_RE = re.compile(r"\S+")
 
 
-@dataclass(frozen=True, slots=True)
-class TokenSpan:
-    """One explainable token and its location inside a snapshot."""
+def token_spans(snapshot: ConversationSnapshot) -> tuple[tuple[str, PlayerSpan], ...]:
+    """Return ``(player_id, span)`` for every whitespace token of ``snapshot``.
 
-    turn_index: int
-    """Zero-based turn index containing the token."""
-
-    message_index: int
-    """Zero-based message index inside the turn."""
-
-    token_index: int
-    """Zero-based token index inside the message text."""
-
-    text: str
-    """Whitespace-delimited token text."""
-
-
-def tokenize_snapshot(snapshot: ConversationSnapshot) -> tuple[TokenSpan, ...]:
-    """Split snapshot messages into ordered whitespace tokens."""
-    spans: list[TokenSpan] = []
+    Player ids have the form ``{snapshot_id}:{turn}:{message}:{token}``.
+    """
+    result: list[tuple[str, PlayerSpan]] = []
+    message_index = 0
     for turn_index, turn in enumerate(snapshot.turns):
-        for message_index, message in enumerate(turn.messages):
-            for token_index, token in enumerate(_split_tokens(message.text)):
-                spans.append(
-                    TokenSpan(
-                        turn_index=turn_index,
-                        message_index=message_index,
-                        token_index=token_index,
-                        text=token,
-                    )
+        for local_index, message in enumerate(turn.messages):
+            text = message.text
+            for token_index, match in enumerate(_TOKEN_RE.finditer(text)):
+                player_id = (
+                    f"{snapshot.snapshot_id}:{turn_index}:{local_index}:{token_index}"
                 )
-    return tuple(spans)
+                span = PlayerSpan(
+                    message_index=message_index,
+                    start=match.start(),
+                    end=match.end(),
+                    text=match.group(),
+                    speaker=message.speaker,
+                )
+                result.append((player_id, span))
+            message_index += 1
+    return tuple(result)
 
 
-def player_id_for_span(snapshot_id: str, span: TokenSpan) -> str:
-    """Build a stable player identifier for one token span."""
-    return f"{snapshot_id}:{span.turn_index}:{span.message_index}:{span.token_index}"
-
-
-def rebuild_snapshot(
-    base: ConversationSnapshot,
-    spans: tuple[TokenSpan, ...],
-    rendered_tokens: tuple[str, ...],
+def render_spans(
+    snapshot: ConversationSnapshot,
+    spans: Sequence[PlayerSpan],
+    replacements: Sequence[str | None],
 ) -> ConversationSnapshot:
-    """Rebuild a snapshot from rendered token strings."""
-    if len(spans) != len(rendered_tokens):
-        msg = "rendered token count must match span count"
+    """Rebuild ``snapshot`` with each span replaced by its replacement text.
+
+    ``None`` deletes a span together with the whitespace that separated it from
+    its neighbours, so deleting ``b`` from ``"a b c"`` gives ``"a c"``. Text no
+    span covers is kept as is.
+
+    Raises:
+        ValueError: If ``spans`` and ``replacements`` differ in length, or a span
+            does not match the snapshot text.
+    """
+    if len(spans) != len(replacements):
+        msg = "replacement count must match span count"
         raise ValueError(msg)
+    by_message: dict[int, list[tuple[PlayerSpan, str | None]]] = {}
+    for span, replacement in zip(spans, replacements, strict=True):
+        by_message.setdefault(span.message_index, []).append((span, replacement))
 
-    token_cursor = 0
     rebuilt_turns: list[Turn] = []
-    for turn_index, turn in enumerate(base.turns):
-        rebuilt_messages: list[Message] = []
-        for message_index, message in enumerate(turn.messages):
-            message_tokens: list[str] = []
-            while token_cursor < len(spans):
-                span = spans[token_cursor]
-                if span.turn_index != turn_index or span.message_index != message_index:
-                    break
-                message_tokens.append(rendered_tokens[token_cursor])
-                token_cursor += 1
-            rebuilt_messages.append(
-                Message(role=message.role, text=" ".join(message_tokens))
-            )
-        rebuilt_turns.append(Turn(messages=tuple(rebuilt_messages)))
-
+    message_index = 0
+    for turn in snapshot.turns:
+        rebuilt: list[Message] = []
+        for message in turn.messages:
+            edits = by_message.get(message_index)
+            if edits is None:
+                rebuilt.append(message)
+            else:
+                rebuilt.append(message.with_text(_render_text(message.text, edits)))
+            message_index += 1
+        rebuilt_turns.append(Turn(messages=tuple(rebuilt)))
     return ConversationSnapshot.from_turns(tuple(rebuilt_turns))
 
 
-def _split_tokens(text: str) -> tuple[str, ...]:
-    stripped = text.strip()
-    if not stripped:
-        return ()
-    return tuple(stripped.split())
+def _render_text(text: str, edits: list[tuple[PlayerSpan, str | None]]) -> str:
+    ordered = sorted(edits, key=lambda edit: edit[0].start)
+    gaps: list[str] = []
+    cursor = 0
+    for span, _ in ordered:
+        if span.start < cursor or text[span.start : span.end] != span.text:
+            msg = "player spans do not match the snapshot text"
+            raise ValueError(msg)
+        gaps.append(text[cursor : span.start])
+        cursor = span.end
+    gaps.append(text[cursor:])
+
+    # Output alternates kept_gaps[0], items[0], kept_gaps[1], ..., kept_gaps[-1].
+    kept_gaps = [gaps[0]]
+    items: list[str] = []
+    last = len(ordered) - 1
+    for index, (_, replacement) in enumerate(ordered):
+        following = gaps[index + 1]
+        if replacement is not None:
+            items.append(replacement)
+            kept_gaps.append(following)
+            continue
+        kept_gaps.append(
+            _merge_gaps(
+                kept_gaps.pop(),
+                following,
+                at_start=not items,
+                at_end=index == last,
+            )
+        )
+    pieces = [kept_gaps[0]]
+    for item, gap in zip(items, kept_gaps[1:], strict=True):
+        pieces.extend((item, gap))
+    return "".join(pieces)
+
+
+def _merge_gaps(before: str, after: str, at_start: bool, at_end: bool) -> str:
+    """Join the gaps around a deleted span without doubling whitespace."""
+    if before.strip() or after.strip():
+        return before + after
+    if at_start:
+        return before
+    if at_end:
+        return after
+    return before

@@ -1,4 +1,9 @@
-"""Plugin group identifiers for entry-point loading."""
+"""Plugin group identifiers for entry-point loading.
+
+@domain plugins
+@see [[knowledge/architecture/plugins]]
+@tested-by [[tests/plugins/test_groups.py]]
+"""
 
 from enum import StrEnum
 

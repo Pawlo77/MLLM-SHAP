@@ -1,4 +1,9 @@
-"""Estimand labels for attribution outputs and archive manifests."""
+"""Estimand labels for attribution outputs and archive manifests.
+
+@domain domain
+@see [[knowledge/architecture/domain]]
+@tested-by [[tests/domain/test_estimands.py]]
+"""
 
 from enum import StrEnum
 from typing import Literal
@@ -25,4 +30,5 @@ def estimand_to_wire(estimand: Estimand) -> EstimandWire:
         case Estimand.BANZHAF:
             return "banzhaf"
         case _ as unreachable:
-            raise AssertionError(f"unsupported estimand: {unreachable!r}")
+            msg = f"unsupported estimand: {unreachable!r}"
+            raise AssertionError(msg)

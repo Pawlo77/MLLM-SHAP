@@ -1,4 +1,8 @@
-"""Masking and absence policy protocols."""
+"""Masking and absence policy protocols.
+
+@domain protocols
+@see [[knowledge/architecture/protocols]]
+"""
 
 from typing import Protocol
 

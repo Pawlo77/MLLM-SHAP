@@ -1,10 +1,13 @@
-"""Coalition masking codecs, views, and absence policies."""
+"""Coalition masking codecs, views, and absence policies.
+
+@domain masking
+@see [[knowledge/architecture/masking]]
+"""
 
 from .builder import MaskBuilder, MaskedSnapshot
 from .codec import MaskCodec, PackedMask
-from .partitions import TokenPartitioner
+from .partitions import MessagePartitioner, MessagesOptions, TokenPartitioner
 from .policies import DeletePolicy, NeutralPolicy, PadPolicy
-from .prefix_tree import PrefixTreeStub
 from .space import MaskSpace
 
 __all__ = [
@@ -13,9 +16,10 @@ __all__ = [
     "MaskCodec",
     "MaskSpace",
     "MaskedSnapshot",
+    "MessagePartitioner",
+    "MessagesOptions",
     "NeutralPolicy",
     "PackedMask",
     "PadPolicy",
-    "PrefixTreeStub",
     "TokenPartitioner",
 ]

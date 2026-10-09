@@ -1,5 +1,11 @@
-"""Packed bitset encoding and stable hashing for coalition masks."""
+"""Packed bitset encoding and stable hashing for coalition masks.
 
+@domain masking
+@see [[knowledge/architecture/masking]]
+@tested-by [[tests/masking/test_codec.py]]
+"""
+
+import hashlib
 from collections.abc import Sequence
 from dataclasses import dataclass
 
@@ -52,6 +58,9 @@ class MaskCodec:
 
     @staticmethod
     def hash_mask(mask: Sequence[bool] | NDArray[np.bool_]) -> int:
-        """Return a stable hash over packed mask bytes."""
+        """Return a process-independent 64-bit hash over packed mask bytes."""
         packed = MaskCodec.pack(mask)
-        return hash((packed.words, packed.n_bits))
+        digest = hashlib.blake2b(
+            packed.words + packed.n_bits.to_bytes(4, "little"), digest_size=8
+        ).digest()
+        return int.from_bytes(digest, "little", signed=False)
