@@ -1,0 +1,23 @@
+---
+title: "Masking decisions"
+type: decision-log
+domain: masking
+created: 2026-10-08
+updated: 2026-10-08
+tags: [decisions, masking]
+related-code:
+  - "[[src/nlp_shap/masking/partitions.py]]"
+  - "[[src/nlp_shap/masking/policies.py]]"
+---
+
+# Masking decisions
+
+Part of [[nlp-shap]]; architecture: [[masking]]. Related: [[Player span]].
+
+## 2026-10-08 — Message players keep their slot when deleted
+
+Decision: The `messages` partition makes each non-empty message one player whose span is its whole text. Under `delete` an absent message keeps its place with empty text; `pad` and `neutral` replace the text. Which roles become players is the plugin option `roles`, not a top-level `players_roles` key.
+
+Why: Message-level attribution reuses every absence policy and label through `PlayerSet.spans`. Removing absent messages leaves the empty coalition with no message, which `ConversationSnapshot` rejects and neither the `api` backend nor the plain-text prompt fallback can send.
+
+Consequences: The model sees an empty turn of that role, as it does for a message whose tokens are all deleted. A new top-level key would enter the configuration digest and change every run id; a plugin option does not.
