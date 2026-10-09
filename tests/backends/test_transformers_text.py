@@ -63,6 +63,7 @@ class _CacheStub:
 
 class _ModelStub:
     def __init__(self) -> None:
+        self.dtype: Any = "float32"
         self.generate_calls: list[dict[str, Any]] = []
         self.forward_calls: list[dict[str, Any]] = []
         self.generate_past_tokens: list[list[int] | None] = []
@@ -243,6 +244,29 @@ def test_transformers_backend_reports_kv_cache_hits() -> None:
 
     hits = asyncio.run(run())
     assert hits > 0
+
+
+@pytest.mark.parametrize(
+    ("dtype", "warnings"), [("float16", 1), ("bfloat16", 1), ("float32", 0)]
+)
+def test_transformers_backend_warns_once_on_half_precision_prefix_cache(
+    caplog: pytest.LogCaptureFixture, dtype: str, warnings: int
+) -> None:
+    """D04: a half-precision prefix cache rounds differently, so it warns once."""
+    torch = pytest.importorskip("torch")
+    backend = _backend_with_stub()
+    backend._model.dtype = getattr(torch, dtype)
+    generation = GenerationConfig(max_new_tokens=4)
+
+    async def run() -> None:
+        for word in ("alpha", "beta"):
+            await backend.generate(_snapshot(f"shared {word}"), generation)
+
+    with caplog.at_level("WARNING", logger=transformers_text.__name__):
+        asyncio.run(run())
+    messages = [r.getMessage() for r in caplog.records if r.levelname == "WARNING"]
+    assert len(messages) == warnings
+    assert all("float32" in message for message in messages)
 
 
 def test_transformers_backend_raises_when_optional_extra_missing(

@@ -31,7 +31,7 @@ tags: [generated]
 | [[src/nlp_shap/backends/transformers/chat.py]] | Conversation snapshot helpers for Hugging Face chat templates. | backends | [[knowledge/architecture/backends]] | 26 | [[backends]] |
 | [[src/nlp_shap/backends/transformers/embeddings.py]] | Embedding helpers for the transformers text backend. | backends | [[knowledge/architecture/backends]] | 50 | [[backends]] |
 | [[src/nlp_shap/backends/transformers/options.py]] | Settings of the transformers backend read from ``BackendConfig.options``. | backends | [[knowledge/architecture/backends]] | 42 | [[backends]] |
-| [[src/nlp_shap/backends/transformers/text.py]] | Hugging Face causal language model backend (text-only). | backends | [[knowledge/architecture/backends]] | 300 | [[backends]] |
+| [[src/nlp_shap/backends/transformers/text.py]] | Hugging Face causal language model backend (text-only). | backends | [[knowledge/architecture/backends]] | 326 | [[backends]] |
 | [[src/nlp_shap/cli.py]] | Command-line interface: ``nlp-shap explain\|reanalyze\|plugins\|config``. | core | [[knowledge/architecture/core]] | 255 | [[core]] |
 | [[src/nlp_shap/domain/__init__.py]] | Domain types for cooperative-game explainability. | domain | [[knowledge/architecture/domain]] | 43 | [[domain]] |
 | [[src/nlp_shap/domain/coalition.py]] | Coalition masks over explainability players. | domain | [[knowledge/architecture/domain]] | 45 | [[domain]] |

@@ -14,6 +14,5 @@ Open issues first, by severity; deferred issues last.
 
 | Issue | Severity | Status | Found |
 |---|---|---|---|
-| [[D04 - KV prefix cache changes float16 greedy outputs]] | minor | open | 2026-10-08 |
 | [[D02 - Audio backend]] | major | deferred | 2026-10-07 |
 | [[D03 - PR 4 rebase]] | minor | deferred | 2026-10-07 |

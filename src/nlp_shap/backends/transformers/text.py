@@ -8,6 +8,7 @@
 import asyncio
 import copy
 import dataclasses
+import logging
 import threading
 from typing import TYPE_CHECKING, Any, ClassVar
 
@@ -26,6 +27,8 @@ from .options import TorchDtype, parse_transformers_options
 
 if TYPE_CHECKING:
     from ...plugins.context import PluginContext
+
+logger = logging.getLogger(__name__)
 
 
 class TransformersTextBackend:
@@ -49,6 +52,7 @@ class TransformersTextBackend:
         self._prefix_cache: PrefixCacheManager | None = None
         self._kv_cache_hits = 0
         self._kv_cache_reused_tokens = 0
+        self._warned_half_precision_cache = False
         self._init_lock = asyncio.Lock()
         # Generation runs in worker threads; one model must not run concurrently.
         self._model_lock = threading.Lock()
@@ -203,6 +207,7 @@ class TransformersTextBackend:
         prefix_len = len(token_ids) - 1
         if cache is None or prefix_len < 1:
             return
+        self._warn_half_precision_cache(model)
         cached, matched = cache.longest_prefix(token_ids)
         past = None
         if matched:
@@ -220,6 +225,27 @@ class TransformersTextBackend:
             past = out.past_key_values
             cache.store(token_ids[:prefix_len], copy.deepcopy(past))
         generate_kwargs["past_key_values"] = past
+
+    def _warn_half_precision_cache(self, model: Any) -> None:
+        """Warn once that a half-precision prefix cache is not bit-identical (D04).
+
+        The cached path runs the prompt in several forward passes and the uncached
+        path in one; float16 and bfloat16 round those differently, which can flip a
+        near-tied greedy token. float32 keeps both paths identical.
+        """
+        dtype = str(getattr(model, "dtype", ""))
+        if self._warned_half_precision_cache or not dtype.endswith((
+            "float16",
+            "bfloat16",
+        )):
+            return
+        self._warned_half_precision_cache = True
+        logger.warning(
+            "kv_cache with %s weights: cached prefixes round differently from one "
+            "forward pass, so greedy outputs and values can differ slightly from "
+            "kv_cache off; set backend.options.dtype: float32 for identical results",
+            dtype.removeprefix("torch."),
+        )
 
 
 def _generate_kwargs(
