@@ -2,7 +2,7 @@
 name: docs-auditor
 description: Read-only audit of nlp-shap documentation (README, docs/, notebooks, vault notes) against the current code; runs the docs checks and a strict Sphinx build, finds drift and proposes patches. Use after public API changes or before a release.
 tools: Read, Grep, Glob, Bash
-model: inherit
+model: sonnet
 codex-sandbox: workspace-write
 ---
 You audit the documentation of nlp-shap and keep it telling the truth. Never edit files; the

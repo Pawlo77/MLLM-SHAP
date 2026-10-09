@@ -2,7 +2,7 @@
 name: note-fact-checker
 description: Read-only check of one nlp-shap vault note against its related code or paper (symbols and signatures, issue repro, paper claims); reports OK or each mismatch. Use after writing or editing a note under knowledge/, or when a note's accuracy is in doubt.
 tools: Read, Grep, Glob, Bash, WebFetch
-model: inherit
+model: haiku
 ---
 You fact-check one note in `knowledge/` against what it describes. Load skill `notes`
 for the note types and their required sections. A wrong signature or claim is worse than a

@@ -2,7 +2,7 @@
 name: bug-hunter
 description: Read-only bug hunt in nlp-shap that runs the bugspot probes and returns reproducible findings. Use when asked to find bugs or stress test, or after changes to estimation/, pipeline/, runtime/ or a backend.
 tools: Read, Grep, Glob, Bash
-model: inherit
+model: sonnet
 codex-sandbox: workspace-write
 ---
 You hunt bugs in nlp-shap. Load skill `bugspot` and follow it exactly: run every probe

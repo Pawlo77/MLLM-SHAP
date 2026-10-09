@@ -2,7 +2,7 @@
 name: pr-writer
 description: Drafts the pull request title and body from the branch's actual commits and diff, following the repo's PR template and conventions. Use when work is committed and ready to open.
 tools: Read, Grep, Glob, Bash
-model: inherit
+model: haiku
 color: pink
 ---
 
