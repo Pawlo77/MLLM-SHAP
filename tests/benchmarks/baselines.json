@@ -1,8 +1,0 @@
-{
-  "medians_s": {
-    "dedup_keys_10k": 0.0335,
-    "mask_pack_unpack_10k": 0.0234,
-    "archive_round_trip_10k": 1.1853,
-    "prefix_cache_hits_10k": 0.0074
-  }
-}

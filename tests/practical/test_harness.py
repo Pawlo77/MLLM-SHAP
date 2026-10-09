@@ -1,0 +1,79 @@
+"""Scenario catalogue, feature selection and model pins, without a model.
+
+@see [[src/nlp_shap/pipeline/config.py]]
+"""
+
+import re
+
+import pytest
+
+from nlp_shap import ExplainConfig
+from tests.practical._harness import MODELS, SCENARIOS, feature_selected, tier_selected
+
+
+@pytest.mark.parametrize(
+    ("spec", "feature", "selected"),
+    [
+        ("all", "backend.api", True),
+        ("estimator.*", "estimator.neyman_cc", True),
+        ("estimator.*", "estimand.banzhaf", False),
+        ("conversation.multi_turn", "conversation.multi_turn", True),
+        ("value.logprob,cli.*", "cli.reanalyze", True),
+        ("value.logprob, cli.*", "value.logprob", True),
+        ("", "value.logprob", False),
+    ],
+)
+def test_feature_selection(spec: str, feature: str, selected: bool) -> None:
+    """``--feature`` takes ``all`` or comma-separated fnmatch globs."""
+    assert feature_selected(spec, feature) is selected
+
+
+@pytest.mark.parametrize("scenario_id", sorted(SCENARIOS))
+def test_scenario_configs_validate(scenario_id: str) -> None:
+    """Every scenario and variant builds a valid config and a snapshot."""
+    scenario = SCENARIOS[scenario_id]
+    model = MODELS[scenario.tier]
+    configs = [scenario.config(model)] + [
+        scenario.config(model, variant) for variant in scenario.variants
+    ]
+    assert all(isinstance(config, ExplainConfig) for config in configs)
+    assert configs[0].backend.options["revision"] == model.revision
+    assert scenario.snapshot.messages()
+
+
+@pytest.mark.parametrize(
+    ("spec", "feature", "selected"),
+    [
+        ("quick", "estimator.exact", True),
+        ("quick", "deep.estimator.reference", False),
+        ("deep", "deep.estimator.reference", True),
+        ("deep", "estimator.exact", False),
+        ("all", "deep.cli.parity", True),
+        ("all", "backend.api", True),
+    ],
+)
+def test_tier_selection(spec: str, feature: str, selected: bool) -> None:
+    """``--tier`` takes quick, deep or all; ``deep.*`` ids form the deep tier."""
+    assert tier_selected(spec, feature) is selected
+
+
+def test_models_are_pinned_small_and_half_precision() -> None:
+    """Each tier pins a commit sha and loads in float16; quick < 4 GB, deep < 8 GB."""
+    assert set(MODELS) == {"default", "fast", "deep"}
+    for name, spec in MODELS.items():
+        assert re.fullmatch(r"[0-9a-f]{40}", spec.revision)
+        assert spec.dtype == "float16"
+        assert spec.size_gb < (8.0 if name == "deep" else 4.0)
+
+
+def test_deep_scenarios_use_the_deep_model() -> None:
+    """Every ``deep.*`` scenario runs on the deep tier's model and no other does."""
+    for sid, scenario in SCENARIOS.items():
+        assert (scenario.tier == "deep") is sid.startswith("deep.")
+
+
+def test_null_in_a_variant_deletes_the_key() -> None:
+    """The long thread's token variant drops the messages partition's options."""
+    scenario = SCENARIOS["deep.conversation.long"]
+    config = scenario.config(MODELS["deep"], scenario.variants[0])
+    assert config.explanation.plugin_options == {"focus_tokens": {"message_index": 5}}
