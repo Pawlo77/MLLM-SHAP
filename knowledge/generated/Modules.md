@@ -22,7 +22,7 @@ tags: [generated]
 | [[src/nlp_shap/backends/lmstudio/__init__.py]] | LM Studio backend plugin. | backends | [[knowledge/architecture/backends]] | 10 | [[backends]] |
 | [[src/nlp_shap/backends/lmstudio/backend.py]] | LM Studio generative backend. | backends | [[knowledge/architecture/backends]] | 185 | [[backends]] |
 | [[src/nlp_shap/backends/lmstudio/chat.py]] | Convert conversation snapshots to LM Studio chat contexts. | backends | [[knowledge/architecture/backends]] | 42 | [[backends]] |
-| [[src/nlp_shap/backends/lmstudio/models.py]] | Resolve and download LM Studio models through the ``lmstudio`` SDK. | backends | [[knowledge/architecture/backends]] | 184 | [[backends]] |
+| [[src/nlp_shap/backends/lmstudio/models.py]] | Resolve and download LM Studio models through the ``lmstudio`` SDK. | backends | [[knowledge/architecture/backends]] | 185 | [[backends]] |
 | [[src/nlp_shap/backends/lmstudio/options.py]] | Settings of the LM Studio backend read from ``BackendConfig.options``. | backends | [[knowledge/architecture/backends]] | 43 | [[backends]] |
 | [[src/nlp_shap/backends/mock/__init__.py]] | Mock backend exports. | backends | [[knowledge/architecture/backends]] | 10 | [[backends]] |
 | [[src/nlp_shap/backends/mock/backend.py]] | Deterministic mock backend for CI-safe E2E tests. | backends | [[knowledge/architecture/backends]] | 73 | [[backends]] |
