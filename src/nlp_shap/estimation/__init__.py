@@ -1,4 +1,8 @@
-"""Estimation algorithms for cooperative-game attribution."""
+"""Estimation algorithms for cooperative-game attribution.
+
+@domain estimation
+@see [[knowledge/architecture/estimation]]
+"""
 
 from .complementary import ComplementaryEstimator
 from .estimands import BanzhafAggregator, ShapleyAggregator
