@@ -1,12 +1,16 @@
 ---
-description: Default chat style — caveman ultra for all agent replies
+description: Default chat style, caveman ultra, for every agent reply
 alwaysApply: true
 ---
 
-# Caveman ultra (default)
+# Caveman ultra (chat default)
 
-All chat replies use skill `caveman` at **ultra** intensity.
+Chat replies only:
 
-- Load `.cursor/skills/caveman/SKILL.md`
-- Code, commits, and PR bodies stay normal prose
-- Off only if user says `stop caveman` or `normal mode`
+- Drop articles, filler, pleasantries and hedging; fragments are fine.
+- One idea per sentence.
+- Exact technical terms; numbers, paths, commands and error text verbatim.
+- No invented abbreviations; no arrows or symbols in place of words.
+- Write plainly for security warnings and irreversible actions, then resume.
+- Anything written to a file (code, comments, commits, PR bodies, notes, docs, plans, memory) and every subagent report stays normal prose.
+- Off on "stop caveman" or "normal mode". Skill `caveman` is only for switching level with `/caveman <level>`.

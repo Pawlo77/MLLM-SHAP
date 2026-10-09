@@ -1,0 +1,60 @@
+---
+paths:
+  - "docs/**"
+  - "src/nlp_shap/__init__.py"
+---
+
+<!-- Generated from .cursor/rules/docs.mdc by scripts/sync_rules.py; do not edit. -->
+
+# Sphinx documentation (`docs/`)
+
+User-facing reference only: document **what the shipped package does today**.
+Rewrite plans, phase numbers, and internal roadmaps belong outside this repository
+— never in `docs/` or `examples/`.
+
+Ship documentation with every release that adds **public API**, **algorithms**, or
+**user-facing workflows**.
+
+## When required
+
+Update `docs/` (and run `make docs`) when you add or materially change:
+
+- Public exports in `nlp_shap.__init__` or subpackage `__all__`
+- Estimators, estimands, value functions, backends, or pipeline entry points
+- Theory-heavy algorithms (Shapley variants, sampling, masking, alignment)
+
+Skip for: private refactors, typing-only edits, test-only changes.
+
+## What to add
+
+| Deliverable | Location |
+|-------------|----------|
+| Theory + formulas + paper links | `docs/theory/<topic>.rst` |
+| Runnable usage / worked examples | `docs/guides/<topic>.rst` |
+| Module reference | `docs/api.rst` (`automodule` per public module) |
+| End-to-end notebook (when workflow exists) | `examples/<name>.ipynb` (executed via `make notebooks`) + catalog in `examples/README.md`, `docs/examples.rst`, and `README.md` — must cover full public usability scope; see `examples.mdc` |
+| Navigation | `docs/index.rst` toctree |
+| Release notes | `docs/release_notes.rst` — new section per published version |
+
+## Content standards
+
+- State the **estimand** or algorithm precisely; do not conflate Shapley and Banzhaf.
+- Include **original references** (DOI or stable URL) for cooperative-game foundations and ML explainability papers where relevant.
+- Cross-link theory ↔ guides ↔ API (`:doc:` / `:ref:`).
+- Code samples in guides must match the current public API and be copy-pasteable.
+- Runnable guide snippets must show captured output via ``.. guide-result::``;
+  regenerate artifacts with ``make docs`` (runs ``docs/scripts/render_guide_outputs.py``).
+- Describe the **current** public surface only — no phase numbers, rewrite plans,
+  “coming soon”, or internal implementation progress in `docs/` or `examples/`.
+- On every version bump: add a dated section to `docs/release_notes.rst` (move
+  any `Unreleased` bullets into the new version); keep user-facing change lists only.
+
+## Verify
+
+```bash
+make notebooks   # examples changed, a public workflow in src/ changed, or a release PR
+make docs
+make check
+```
+
+Docs build warnings should be resolved before hand-off.

@@ -1,0 +1,13 @@
+# Codex CLI project configuration (https://developers.openai.com/codex/config-reference).
+# Codex reads AGENTS.md and .agents/skills/ natively. Project hooks live in .codex/hooks.json
+# (the shared scripts/hooks/*.sh; trust them once in Codex's hook review) and subagents in
+# .codex/agents/*.toml, generated from .claude/agents/*.md by scripts/sync_agents.py.
+
+# Edits stay inside the workspace; network and paths outside it need approval.
+sandbox_mode = "workspace-write"
+
+# The agent asks before anything outside the sandbox. These commands must always be asked
+# for explicitly, whatever the approval mode (AGENTS.md, .cursor/rules/git-commits.mdc):
+#   git commit, git push, git tag, gh pr create, gh pr merge, gh release create,
+#   uv publish, any force push, any push to main.
+approval_policy = "on-request"

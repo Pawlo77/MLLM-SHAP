@@ -3,35 +3,30 @@
   "hooks": {
     "sessionStart": [
       {
-        "command": "bash .cursor/hooks/session-start.sh"
-      }
-    ],
-    "afterFileEdit": [
-      {
-        "command": "bash .cursor/hooks/format.sh"
-      }
-    ],
-    "afterTabFileEdit": [
-      {
-        "command": "bash .cursor/hooks/format.sh"
+        "command": "bash scripts/hooks/session_start.sh"
       }
     ],
     "beforeShellExecution": [
       {
-        "command": "bash .cursor/hooks/deny-shell.sh",
+        "command": "bash scripts/hooks/merge_gate.sh",
         "failClosed": true
       }
     ],
-    "afterShellExecution": [
+    "afterFileEdit": [
       {
-        "command": "bash .cursor/hooks/after-push.sh",
-        "matcher": "git\\s+push"
+        "command": "bash scripts/hooks/format_after_edit.sh"
+      }
+    ],
+    "afterTabFileEdit": [
+      {
+        "command": "bash scripts/hooks/format_after_edit.sh"
       }
     ],
     "stop": [
       {
-        "command": "bash .cursor/hooks/stop-check.sh",
-        "loop_limit": 1
+        "command": "bash scripts/hooks/stop_test_gate.sh",
+        "loop_limit": 2,
+        "timeout": 200
       }
     ]
   }

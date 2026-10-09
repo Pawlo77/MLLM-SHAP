@@ -9,4 +9,16 @@ htmlcov/
 dist/
 build/
 *.egg-info/
-.cursor/hooks/__pycache__/
+scripts/hooks/__pycache__/
+.obsidian/
+knowledge/sources/
+.remember/logs/
+.remember/tmp/
+.cursor/context/
+.claude/context/
+# Generated copies; their sources are indexed
+knowledge/generated/
+.claude/jit-context/
+.claude/rules/
+.codex/agents/
+mutants/

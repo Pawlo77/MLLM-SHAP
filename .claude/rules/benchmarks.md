@@ -1,0 +1,29 @@
+---
+paths:
+  - "src/nlp_shap/backends/**"
+  - "tests/benchmarks/**"
+  - "src/nlp_shap/runtime/**"
+---
+
+<!-- Generated from .cursor/rules/benchmarks.mdc by scripts/sync_rules.py; do not edit. -->
+
+# Benchmarks
+
+New backends under `src/nlp_shap/backends/` and hot-path changes under
+`src/nlp_shap/runtime/` / `estimation/` / `masking/` need two layers:
+
+1. **Correctness** — unit/integration tests in `tests/` (TDD)
+2. **Speed** — `@pytest.mark.bench` tests in `tests/benchmarks/`, mirroring the path
+
+Benchmarks must cover representative operations (typical init, inference/explain call, hot paths). Tests validate correctness; benchmarks measure latency and catch regressions.
+
+New backends also need a matching minimal notebook in `examples/` (see `examples.mdc`).
+
+- Use the `benchmark` fixture of `pytest-benchmark` (`benchmark(fn, *args)`); keep
+  correctness asserts on the returned value
+- Run locally: `make bench` (writes `.pytest_benchmark/benchmark.json`)
+- CI: the weekly `Benchmarks` workflow runs `make bench` and uploads the JSON report as an
+  informational artifact; it does not gate PRs
+- Regression gate stays local: `make bench-regression` fails when a median is more than 25%
+  (at least 5 rounds, warm-up on) slower than `tests/benchmarks/baseline.json` (recorded on the maintainer's machine, named
+  in `tests/benchmarks/AGENTS.md`); re-record with `make bench-baseline`

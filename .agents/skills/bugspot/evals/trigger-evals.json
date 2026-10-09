@@ -1,0 +1,14 @@
+[
+  {
+    "query": "find bugs in the scheduler: the coalition run hangs sometimes when the backend raises on the third job with max_inflight=2, can you stress test runtime/ and tell me what breaks",
+    "should_trigger": true
+  },
+  {
+    "query": "review this diff before I commit it: I changed the complementary-pair weights in src/nlp_shap/estimation/estimands/_weights.py and touched the orchestrator dedup, git diff main...HEAD has everything",
+    "should_trigger": false
+  },
+  {
+    "query": "write a release note for 0.1.20 in docs/release_notes.rst covering the new CLI and the JSON snapshot format",
+    "should_trigger": false
+  }
+]
