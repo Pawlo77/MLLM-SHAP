@@ -1,4 +1,8 @@
-"""Seaborn-backed styling for attribution figures."""
+"""Seaborn-backed styling for attribution figures.
+
+@domain viz
+@see [[knowledge/architecture/viz]]
+"""
 
 from typing import TYPE_CHECKING, Any, cast
 

@@ -1,19 +1,34 @@
-"""Frozen-corpus TF-IDF cosine value function."""
+"""Frozen-corpus TF-IDF cosine value function.
+
+@domain value
+@see [[knowledge/architecture/value]]
+@tested-by [[tests/value/test_tfidf.py]]
+"""
 
 import math
 from collections import Counter
 from collections.abc import Sequence
+from typing import TYPE_CHECKING, ClassVar
 
 from ..domain.generation import GenerationRecord
 from ..protocols.backend import GenerationResult
+from ..protocols.plugin import PluginOptions
 from ._metrics import cosine_similarity
 from ._token_hash import TokenHasher
+
+if TYPE_CHECKING:
+    from ..plugins.context import PluginContext
 
 
 class TfIdfCosineValue:
     """Score generations with cosine similarity of frozen TF-IDF vectors."""
 
-    def __init__(self) -> None:
+    options_model: ClassVar[type[PluginOptions]] = PluginOptions
+    """Accepts no ``explanation.plugin_options``."""
+
+    def __init__(self, context: "PluginContext | None" = None) -> None:
+        """Accept the plugin context; this plugin reads no settings from it."""
+        _ = context
         self._hasher = TokenHasher()
         self._idf: dict[int, float] | None = None
         self._fitted = False

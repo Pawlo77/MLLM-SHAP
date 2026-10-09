@@ -1,4 +1,7 @@
-"""Tests for numpy similarity metrics."""
+"""Tests for numpy similarity metrics.
+
+@see [[src/nlp_shap/value/_metrics.py]]
+"""
 
 import numpy as np
 

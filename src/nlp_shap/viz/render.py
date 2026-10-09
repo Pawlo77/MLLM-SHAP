@@ -1,10 +1,17 @@
-"""Public helpers for attribution visualization."""
+"""Public helpers for attribution visualization.
+
+@domain viz
+@see [[knowledge/architecture/viz]]
+@tested-by [[tests/viz/test_render.py]]
+"""
 
 from typing import TYPE_CHECKING, Any, cast
 
 from ..domain.conversation import ConversationSnapshot
 from ..domain.players import PlayerSet
 from ..pipeline.result import ExplainRunOutput
+from ..plugins.builtin import default_registry
+from ..plugins.context import PluginContext
 from ..plugins.groups import PluginGroup
 from ..plugins.registry import PluginRegistry
 from ..protocols.renderer import AttributionRenderer
@@ -23,11 +30,24 @@ def render_attribution(
     title: str | None = None,
     registry: PluginRegistry | None = None,
 ) -> "Figure":
-    """Render ``output`` attributions with a registered renderer plugin."""
-    plugin_registry = registry or _default_registry()
+    """Render ``output`` attributions with a registered renderer plugin.
+
+    Pass ``registry=runner.registry`` to reuse the registry of the
+    :class:`~nlp_shap.pipeline.runner.ExplainRunner` that produced ``output``
+    (needed for custom renderers); otherwise the default registry is built.
+    """
+    plugin_registry = registry or default_registry()
+    config = output.manifest.config
+    if config is None:
+        msg = "render_attribution needs an output whose manifest records its config"
+        raise ValueError(msg)
     attribution_renderer = cast(
         AttributionRenderer,
-        plugin_registry.resolve(PluginGroup.RENDERERS, renderer),
+        plugin_registry.resolve(
+            PluginGroup.RENDERERS,
+            renderer,
+            PluginContext(config=config, registry=plugin_registry),
+        ),
     )
     labels = token_labels(snapshot, player_set)
     values = output.result.values
@@ -73,12 +93,6 @@ def display_attribution_html(
     html = render_attribution_html(output, snapshot, player_set, title=title)
     display_cls = _import_ipython_display()
     return display_cls(html)
-
-
-def _default_registry() -> PluginRegistry:
-    registry = PluginRegistry()
-    registry.load_entry_points(PluginGroup.RENDERERS)
-    return registry
 
 
 def _import_ipython_display() -> Any:
