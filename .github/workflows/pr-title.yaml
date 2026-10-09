@@ -17,6 +17,8 @@ jobs:
   title:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    permissions:
+      contents: read  # private repository checkout
     steps:
       - name: Checkout code
         uses: actions/checkout@v7.0.1
