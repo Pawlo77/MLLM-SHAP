@@ -36,6 +36,20 @@ def test_doc_link_check_flags_missing_targets(tmp_path: Path) -> None:
     ]
 
 
+def test_doc_link_check_resolves_copied_notebooks(tmp_path: Path) -> None:
+    """``notebooks/<name>`` resolves to ``examples/<name>.ipynb`` before the copy."""
+    docs, examples = tmp_path / "docs", tmp_path / "examples"
+    docs.mkdir()
+    examples.mkdir()
+    (examples / "demo.ipynb").write_text("{}", encoding="utf-8")
+    page = docs / "page.rst"
+    page.write_text(":doc:`notebooks/demo` :doc:`notebooks/gone`\n", encoding="utf-8")
+    findings = check_docs.check_doc_links([page], docs, examples)
+    assert [finding.message for finding in findings] == [
+        ":doc: target 'notebooks/gone' missing"
+    ]
+
+
 def test_toctree_entries_are_parsed(tmp_path: Path) -> None:
     """Toctree entries are read and options are skipped."""
     index = tmp_path / "index.rst"
