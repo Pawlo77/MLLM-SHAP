@@ -32,6 +32,12 @@ def test_words_skip_frontmatter_code_and_comments(brevity: ModuleType) -> None:
     assert brevity.words(brevity.prose(rst, ".rst")) == 3
 
 
+def test_rst_section_underlines_are_not_fences(brevity: ModuleType) -> None:
+    """RST ``~~~`` underlines keep the next section measured."""
+    rst = "Fixed\n~~~~~\n\n- one two\n\nAdded\n~~~~~\n\n- three four\n"
+    assert brevity.words(brevity.prose(rst, ".rst")) == 6
+
+
 def test_long_sentences_counted_per_unit(brevity: ModuleType) -> None:
     long = " ".join(["word"] * 36) + "."
     text = f"{long} Short one.\n\n- {long}\n- item\n| a | {long} |\n"
