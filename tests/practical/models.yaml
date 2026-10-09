@@ -1,0 +1,17 @@
+# Practical-test models. Revisions are the main-branch commit shas of 2026-10-08
+# (HF API); bump them deliberately, since a new pin invalidates the generation cache.
+default:
+  model_id: Qwen/Qwen2.5-1.5B-Instruct
+  revision: 989aa7980e4cf806f80c7fef2b1adb7bc71aa306
+  dtype: float16
+  size_gb: 3.1
+fast:
+  model_id: HuggingFaceTB/SmolLM2-360M-Instruct
+  revision: a10cc1512eabd3dde888204e902eca88bddb4951
+  dtype: float16
+  size_gb: 0.7
+deep:  # deep tier: generator and judge in one model; the 8 GB VRAM cap allows no second
+  model_id: Qwen/Qwen2.5-3B-Instruct
+  revision: aa8e72537993ba99e69dfaafa59ed015b17504d1
+  dtype: float16
+  size_gb: 6.2

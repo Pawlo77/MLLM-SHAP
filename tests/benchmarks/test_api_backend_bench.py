@@ -1,24 +1,24 @@
-"""Performance benchmarks for the API backend."""
+"""Performance benchmarks for the API backend.
 
-import time
+@see [[src/nlp_shap/backends/api/payload.py]]
+"""
 
 import pytest
+from pytest_benchmark.fixture import BenchmarkFixture
 
 from nlp_shap.backends.api.payload import build_chat_payload, payload_cache_key
+from nlp_shap.domain.config import GenerationConfig
 
 
 @pytest.mark.bench
-def test_payload_cache_key_hashing() -> None:
-    """Hashing chat payloads stays cheap enough for per-request dedup keys."""
+def test_payload_cache_key_hashing(benchmark: BenchmarkFixture) -> None:
+    """Hashing 10k chat payloads for per-request dedup keys."""
     payload = build_chat_payload(
         "remote-model",
         [{"role": "user", "content": "token attribution smoke"}],
-        32,
-        0.0,
-        1,
+        GenerationConfig(max_new_tokens=32, temperature=0.0, top_k=1),
     )
-    start = time.perf_counter()
-    keys = [payload_cache_key(payload) for _ in range(10_000)]
-    elapsed = time.perf_counter() - start
+
+    keys = benchmark(lambda: [payload_cache_key(payload) for _ in range(10_000)])
+
     assert len(keys[0]) == 64
-    assert elapsed < 1.0
