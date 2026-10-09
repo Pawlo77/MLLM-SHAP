@@ -15,6 +15,8 @@ Fixed
   ``float16`` or ``bfloat16`` weights: cached prefixes round differently from one
   forward pass, so greedy outputs can differ from the cache off. The backends guide
   no longer promises equality; ``backend.options.dtype: float32`` is identical.
+- The LM Studio backend accepts a model key that LM Studio lists once per
+  downloaded quantisation; earlier versions refused it as ambiguous.
 
 .. _release-0-1-18:
 
