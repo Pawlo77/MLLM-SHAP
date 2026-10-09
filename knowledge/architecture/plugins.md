@@ -4,7 +4,7 @@ type: module
 domain: plugins
 tags: [architecture, plugins]
 created: 2026-10-07
-updated: 2026-10-08
+updated: 2026-10-09
 related-code:
   - "[[src/nlp_shap/plugins/__init__.py]]"
   - "[[src/nlp_shap/plugins/backends.py]]"

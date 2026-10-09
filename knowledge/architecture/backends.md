@@ -4,7 +4,7 @@ type: module
 domain: backends
 tags: [architecture, backends]
 created: 2026-10-07
-updated: 2026-10-08
+updated: 2026-10-09
 related-code:
   - "[[src/nlp_shap/backends/__init__.py]]"
   - "[[src/nlp_shap/backends/_chat.py]]"
