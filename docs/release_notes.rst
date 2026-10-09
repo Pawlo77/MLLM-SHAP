@@ -8,6 +8,14 @@ Changes in each published ``nlp-shap`` version. Newest first.
 Unreleased
 ----------
 
+Fixed
+~~~~~
+
+- The transformers backend warns once when ``explanation.kv_cache`` runs with
+  ``float16`` or ``bfloat16`` weights: cached prefixes round differently from one
+  forward pass, so greedy outputs can differ from the cache off. The backends guide
+  no longer promises equality; ``backend.options.dtype: float32`` is identical.
+
 .. _release-0-1-18:
 
 0.1.18 (2026-10-09)

@@ -161,8 +161,11 @@ last) and reuses the longest match for each coalition prompt. The reuse is count
 in ``metrics.kv_cache_hits`` and ``metrics.kv_cache_reused_tokens``. A hit copies
 the cached state, crops it to the shared prefix (Hugging Face
 ``DynamicCache.crop``), computes the missing prefix tokens and caches the completed
-prefix, so coalitions reuse a shared prefix in any order. Greedy outputs are the
-same with the cache on and off. Static and
+prefix, so coalitions reuse a shared prefix in any order. In ``float32`` greedy outputs
+are the same with the cache on and off. In ``float16`` and ``bfloat16`` the cached
+prefix runs in separate forward passes that round differently, so a near-tied
+greedy token can flip and values can move slightly; the backend logs one warning,
+and ``dtype: float32`` gives identical results. Static and
 contextual embeddings of the output are computed only for value functions that
 need them (``embedding_cosine``, ``embedding_euclidean``). The tiny random model below loads in seconds and is what the
 ``gpu``-marked tests use:
