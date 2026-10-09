@@ -1,11 +1,48 @@
-"""Shared sampling utilities for approximate estimators."""
+"""Shared estimator base class and sampling utilities.
+
+@domain estimation
+@see [[knowledge/architecture/estimation]]
+@tested-by [[tests/estimation/test_shared.py]]
+"""
 
 import math
 from collections.abc import Iterator, Sequence
+from typing import TYPE_CHECKING, ClassVar
 
 import numpy as np
 
 from ..domain.coalition import CoalitionMask
+from ..domain.conversation import ConversationSnapshot
+from ..protocols.estimand import EstimandAggregator
+from ..protocols.plugin import PluginOptions
+
+if TYPE_CHECKING:
+    from ..plugins.context import PluginContext
+
+
+class _SnapshotEstimator:
+    """Plugin boilerplate shared by the built-in estimators."""
+
+    options_model: ClassVar[type[PluginOptions]] = PluginOptions
+    """Accepts no ``explanation.plugin_options``."""
+
+    def __init__(self, context: "PluginContext | None" = None) -> None:
+        """Accept the plugin context; this plugin reads no settings from it."""
+        _ = context
+        self._snapshot: ConversationSnapshot | None = None
+
+    def bind_snapshot(self, snapshot: ConversationSnapshot) -> None:
+        """Attach the conversation snapshot under explanation."""
+        self._snapshot = snapshot
+
+    def estimate_attributions(
+        self,
+        masks: Sequence[CoalitionMask],
+        payoffs: Sequence[float],
+        aggregator: EstimandAggregator,
+    ) -> list[float]:
+        """Aggregate coalition payoffs with the selected estimand plugin."""
+        return aggregator.aggregate([mask.present for mask in masks], payoffs)
 
 
 def present_to_mask_int(present: Sequence[bool]) -> int:
@@ -23,19 +60,39 @@ def mask_int_to_present(mask_int: int, num_players: int) -> tuple[bool, ...]:
 
 
 def mc_coalition_budget(num_players: int) -> int:
-    """Return the Monte Carlo coalition budget excluding the grand coalition."""
+    """Return the Monte Carlo coalition budget including empty and grand."""
     if num_players < 1:
         msg = "num_players must be at least 1"
         raise ValueError(msg)
-    return (1 << num_players) - 1
+    return 1 << num_players
 
 
 def complementary_coalition_budget(num_players: int) -> int:
-    """Return the complementary sampling budget excluding empty and grand masks."""
+    """Return the complementary sampling budget over the full coalition table.
+
+    The ``(N, empty)`` pair is always sampled first and counts toward the budget.
+    """
     if num_players < 1:
         msg = "num_players must be at least 1"
         raise ValueError(msg)
-    return (1 << num_players) - 2
+    return 1 << num_players
+
+
+def budget_fraction(
+    num_players: int, fraction: float | None, evaluations: int | None
+) -> float:
+    """Return the ``budget_fraction`` the samplers receive for a run's budget.
+
+    An absolute budget of ``evaluations`` coalitions becomes
+    ``evaluations / 2^n``, capped at 1. Dividing by a power of two is exact in
+    floating point, so ``int(2^n * fraction)`` in the count helpers gives back
+    exactly ``evaluations`` before each sampler applies its floor and ceiling.
+    Without ``evaluations`` the budget is ``fraction``, the full table when that
+    is unset too.
+    """
+    if evaluations is None:
+        return 1.0 if fraction is None else fraction
+    return min(1.0, evaluations / (1 << num_players))
 
 
 def compute_mc_num_samples(
@@ -43,12 +100,15 @@ def compute_mc_num_samples(
     budget_fraction: float,
     include_minimal_masks: bool,
 ) -> int:
-    """Return the Monte Carlo sample count capped by the coalition budget."""
+    """Return the Monte Carlo sample count capped by the coalition budget.
+
+    The grand and empty coalitions are always sampled and count toward the
+    budget, so the count is at least 2 (``n + 2`` with minimal masks).
+    """
     maximum = mc_coalition_budget(num_players)
-    minimum = num_players + 1 if include_minimal_masks else 1
+    minimum = num_players + 2 if include_minimal_masks else 2
     target = int(maximum * budget_fraction)
-    target = max(minimum, min(target, maximum))
-    return target
+    return min(max(minimum, target), maximum)
 
 
 def compute_complementary_num_splits(
@@ -56,25 +116,29 @@ def compute_complementary_num_splits(
     budget_fraction: float,
     include_minimal_masks: bool,
 ) -> int:
-    """Return an even complementary mask budget derived from ``budget_fraction``."""
+    """Return an even complementary mask budget derived from ``budget_fraction``.
+
+    The floor is ``2n + 2`` masks (capped by the table size) so the ``(N, empty)``
+    pair and all ``n`` singleton pairs ``({i}, N - {i})`` always fit; with fewer,
+    a player's size-1 stratum stays empty and symmetry and efficiency break.
+    """
+    del include_minimal_masks
     maximum = complementary_coalition_budget(num_players)
-    minimum = 2 * num_players
+    minimum = min(2 * num_players + 2, maximum)
     target = int(maximum * budget_fraction)
-    if target < minimum:
-        target = minimum
-    if target > maximum:
-        return maximum
-    if target % 2 == 1:
-        target -= 1
-    if target < minimum:
-        return minimum if minimum % 2 == 0 else minimum - 1
-    _ = include_minimal_masks
-    return target
+    # An odd target rounds down to whole pairs; the floor and the ceiling are
+    # even for every n >= 1, so the clamped count stays even.
+    return min(max(minimum, target - target % 2), maximum)
 
 
 def iter_minimal_masks(num_players: int) -> Iterator[tuple[bool, ...]]:
     """Yield the empty coalition followed by each singleton coalition."""
     yield (False,) * num_players
+    yield from iter_singletons(num_players)
+
+
+def iter_singletons(num_players: int) -> Iterator[tuple[bool, ...]]:
+    """Yield the singleton coalitions ``{0}``, ``{1}``, ... in player order."""
     for index in range(num_players):
         present = [False] * num_players
         present[index] = True
@@ -155,52 +219,29 @@ def accumulate_complementary_contribution(
     s_present: Sequence[bool],
     ns_present: Sequence[bool],
     contribution: float,
+    power: int = 1,
 ) -> None:
-    """Accumulate one complementary pair contribution into matrix C."""
-    s_size = sum(s_present)
-    ns_size = sum(ns_present)
-    if s_size == 0:
-        c_matrix[:, 0] += contribution
-    else:
-        for index, is_present in enumerate(s_present):
-            if is_present:
-                c_matrix[index, s_size] += contribution
-    if ns_size == 0:
-        c_matrix[:, 0] -= contribution
-    else:
-        for index, is_present in enumerate(ns_present):
-            if is_present:
-                c_matrix[index, ns_size] -= contribution
+    """Accumulate one complementary pair contribution into matrix C.
 
-
-def accumulate_complementary_contribution_squared(
-    c_squared: np.ndarray,
-    s_present: Sequence[bool],
-    ns_present: Sequence[bool],
-    contribution: float,
-) -> None:
-    """Accumulate squared complementary contributions for Neyman variance estimates."""
-    contribution_squared = contribution * contribution
-    s_size = sum(s_present)
-    ns_size = sum(ns_present)
-    if s_size == 0:
-        c_squared[:, 0] += contribution_squared
-    else:
-        for index, is_present in enumerate(s_present):
+    With ``power=1`` the coalition side adds ``contribution`` and the complement
+    side subtracts it (matrix C). With ``power=2`` both sides add
+    ``contribution**2``, the squared sums used by Neyman variance estimates.
+    """
+    value = contribution**power
+    complement_value = -value if power == 1 else value
+    for present, signed in ((s_present, value), (ns_present, complement_value)):
+        size = sum(present)
+        if size == 0:
+            c_matrix[:, 0] += signed
+            continue
+        for index, is_present in enumerate(present):
             if is_present:
-                c_squared[index, s_size] += contribution_squared
-    if ns_size == 0:
-        c_squared[:, 0] += contribution_squared
-    else:
-        for index, is_present in enumerate(ns_present):
-            if is_present:
-                c_squared[index, ns_size] += contribution_squared
+                c_matrix[index, size] += signed
 
 
 def aggregate_complementary_shapley(
     m_counts: np.ndarray,
     c_matrix: np.ndarray,
-    allocation_complete: bool = False,
 ) -> list[float]:
     """Aggregate complementary M/C matrices into Shapley-style attributions."""
     m_work = m_counts[:, 1:]
@@ -210,19 +251,6 @@ def aggregate_complementary_shapley(
     for player_index in range(num_players):
         counts = m_work[player_index]
         contributions = c_work[player_index]
-        if allocation_complete:
-            positive = counts > 0
-            values[player_index] = (
-                np.sum(
-                    np.divide(
-                        contributions[positive],
-                        counts[positive],
-                        dtype=np.float64,
-                    )
-                )
-                / num_players
-            )
-            continue
         ratio = np.zeros_like(counts, dtype=np.float64)
         positive = counts > 0
         ratio[positive] = contributions[positive] / counts[positive]
@@ -230,31 +258,58 @@ def aggregate_complementary_shapley(
     return values.tolist()
 
 
+def build_m_counts_from_masks(
+    masks: Sequence[CoalitionMask],
+    num_players: int,
+) -> np.ndarray:
+    """Rebuild the complementary M-matrix from an arbitrary mask list."""
+    m_counts = np.zeros((num_players, num_players + 1), dtype=np.int64)
+    for mask in masks:
+        increment_m_counts(m_counts, mask.present)
+    return m_counts
+
+
+def pair_masks_by_complement(
+    masks: Sequence[CoalitionMask],
+    payoffs: Sequence[float],
+) -> list[tuple[tuple[bool, ...], tuple[bool, ...], float, float]]:
+    """Group masks into ``(S, N - S, v(S), v(N - S))`` tuples regardless of order.
+
+    Raises:
+        ValueError: If a mask has no complement in ``masks``.
+    """
+    lookup = {mask.present: payoff for mask, payoff in zip(masks, payoffs, strict=True)}
+    pairs: list[tuple[tuple[bool, ...], tuple[bool, ...], float, float]] = []
+    consumed: set[tuple[bool, ...]] = set()
+    for present, payoff in lookup.items():
+        if present in consumed:
+            continue
+        complement = tuple(not value for value in present)
+        if complement not in lookup:
+            msg = f"mask {present!r} has no complementary pair"
+            raise ValueError(msg)
+        consumed.add(present)
+        consumed.add(complement)
+        pairs.append((present, complement, payoff, lookup[complement]))
+    return pairs
+
+
 def build_c_matrix_from_pairs(
     m_counts: np.ndarray,
     masks: Sequence[CoalitionMask],
     payoffs: Sequence[float],
 ) -> np.ndarray:
-    """Build matrix C from complementary mask pairs and coalition payoffs."""
-    if len(masks) % 2 != 0:
-        msg = "Masks should be in complementary pairs."
-        raise ValueError(msg)
+    """Build matrix C from complementary mask pairs and coalition payoffs.
+
+    Masks are paired by complement, so their order does not matter.
+    """
     c_matrix = np.zeros_like(m_counts, dtype=np.float64)
-    pair_count = len(masks) // 2
-    for pair_index in range(pair_count):
-        s_mask = masks[2 * pair_index]
-        ns_mask = masks[2 * pair_index + 1]
-        s_present = s_mask.present
-        ns_present = ns_mask.present
-        if tuple(not value for value in s_present) != ns_present:
-            msg = "Masks are not complementary pairs."
-            raise ValueError(msg)
-        contribution = payoffs[2 * pair_index] - payoffs[2 * pair_index + 1]
+    for s_present, ns_present, v_s, v_ns in pair_masks_by_complement(masks, payoffs):
         accumulate_complementary_contribution(
             c_matrix,
             s_present,
             ns_present,
-            contribution,
+            v_s - v_ns,
         )
     return c_matrix
 
@@ -265,24 +320,13 @@ def build_c_squared_from_pairs(
     payoffs: Sequence[float],
 ) -> np.ndarray:
     """Build the squared complementary matrix used by Neyman allocation."""
-    if len(masks) % 2 != 0:
-        msg = "Masks should be in complementary pairs."
-        raise ValueError(msg)
     c_squared = np.zeros_like(m_counts, dtype=np.float64)
-    pair_count = len(masks) // 2
-    for pair_index in range(pair_count):
-        s_mask = masks[2 * pair_index]
-        ns_mask = masks[2 * pair_index + 1]
-        s_present = s_mask.present
-        ns_present = ns_mask.present
-        if tuple(not value for value in s_present) != ns_present:
-            msg = "Masks are not complementary pairs."
-            raise ValueError(msg)
-        contribution = payoffs[2 * pair_index] - payoffs[2 * pair_index + 1]
-        accumulate_complementary_contribution_squared(
+    for s_present, ns_present, v_s, v_ns in pair_masks_by_complement(masks, payoffs):
+        accumulate_complementary_contribution(
             c_squared,
             s_present,
             ns_present,
-            contribution,
+            v_s - v_ns,
+            power=2,
         )
     return c_squared

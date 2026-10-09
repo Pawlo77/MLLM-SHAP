@@ -1,0 +1,16 @@
+---
+paths:
+  - "src/nlp_shap/backends/**"
+  - "tests/backends/**"
+  - "config/**"
+---
+
+<!-- Generated from .cursor/rules/backends.mdc by scripts/sync_rules.py; do not edit. -->
+
+# Backends
+
+- Heavy stacks (`torch`, `transformers`, `lmstudio`, `httpx`) → optional extras only
+- CI Pytest = mock-capable paths; no live LM Studio / GPU required
+- Local: `pytest -m lms` (LM Studio) · `pytest -m gpu` (transformers)
+- New backend → entry point in `pyproject.toml`, tests under `tests/backends/`, bench if hot, notebook if user-facing
+- Prefer smallest CPU model/config in `config/dev_*.yaml` for smoke paths

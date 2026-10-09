@@ -1,0 +1,19 @@
+{
+  "userIgnoreFilters": [
+    ".venv/",
+    "docs/_build/",
+    ".pytest_cache/",
+    ".ruff_cache/",
+    ".mypy_cache/",
+    "dist/",
+    "src/nlp_shap.egg-info/",
+    ".remember/logs/",
+    ".remember/tmp/",
+    "knowledge/_templates/",
+    "docs/",
+    "tests/hooks/data/",
+    "/^(README|CONTRIBUTING|AGENTS|CLAUDE)\\.md$/",
+    "examples/README.md",
+    "/(^|/)(AGENTS|CLAUDE)\\.md$/"
+  ]
+}

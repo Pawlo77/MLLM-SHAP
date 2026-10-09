@@ -1,7 +1,16 @@
-"""Built-in plugin registration hooks."""
+"""Built-in plugin registration and the default registry.
 
+@domain plugins
+@see [[knowledge/architecture/plugins]]
+@tested-by [[tests/plugins/test_builtin.py]]
+"""
+
+from ..backends.api import ApiBackend
+from ..backends.lmstudio import LmStudioBackend
 from ..backends.mock import MockBackend
+from ..backends.transformers import TransformersTextBackend
 from ..estimation.complementary import ComplementaryEstimator
+from ..estimation.estimands import BanzhafAggregator, ShapleyAggregator
 from ..estimation.exact import ExactEstimator
 from ..estimation.monte_carlo import MonteCarloEstimator
 from ..estimation.neyman import NeymanEstimator
@@ -11,35 +20,79 @@ from ..estimation.normalizers import (
     MinMaxNormalizer,
     PowerShiftNormalizer,
 )
-from ..masking.partitions import TokenPartitioner
+from ..masking.partitions import MessagePartitioner, TokenPartitioner
 from ..masking.policies import DeletePolicy, NeutralPolicy, PadPolicy
 from ..value.embedding import CosineEmbeddingValue, EuclideanEmbeddingValue
 from ..value.logprob import LogprobValue
 from ..value.tfidf import TfIdfCosineValue
+from ..viz.token_bar import TokenBarRenderer
+from ..viz.token_text import TokenTextRenderer
 from .groups import PluginGroup
-from .registry import PluginRegistry
+from .registry import PluginFactory, PluginRegistry
+
+BUILTIN_PLUGINS: dict[PluginGroup, dict[str, PluginFactory]] = {
+    PluginGroup.ESTIMATORS: {
+        "exact": ExactEstimator,
+        "mc": MonteCarloEstimator,
+        "complementary": ComplementaryEstimator,
+        "neyman_cc": NeymanEstimator,
+    },
+    PluginGroup.ESTIMANDS: {
+        "shapley": ShapleyAggregator,
+        "banzhaf": BanzhafAggregator,
+    },
+    PluginGroup.VALUE_FNS: {
+        "tfidf_cosine": TfIdfCosineValue,
+        "embedding_cosine": CosineEmbeddingValue,
+        "embedding_euclidean": EuclideanEmbeddingValue,
+        "logprob": LogprobValue,
+    },
+    PluginGroup.NORMALIZERS: {
+        "identity": IdentityNormalizer,
+        "abs_sum": AbsSumNormalizer,
+        "power_shift": PowerShiftNormalizer,
+        "min_max": MinMaxNormalizer,
+    },
+    PluginGroup.BACKENDS: {
+        "mock": MockBackend,
+        "lmstudio": LmStudioBackend,
+        "transformers": TransformersTextBackend,
+        "api": ApiBackend,
+    },
+    PluginGroup.PARTITIONS: {
+        "tokens": TokenPartitioner,
+        "messages": MessagePartitioner,
+    },
+    PluginGroup.ABSENCE_POLICIES: {
+        "delete": DeletePolicy,
+        "pad": PadPolicy,
+        "neutral": NeutralPolicy,
+    },
+    PluginGroup.RENDERERS: {
+        "token_text": TokenTextRenderer,
+        "token_bar": TokenBarRenderer,
+    },
+}
+"""Built-in plugin factories per group; mirrors the ``pyproject.toml`` entry points."""
 
 
 def register_builtin_plugins(registry: PluginRegistry) -> None:
-    """Register built-in partition, policy, estimator, value, and normalizer plugins."""
-    registry.register(PluginGroup.ESTIMATORS, "exact", ExactEstimator)
-    registry.register(PluginGroup.ESTIMATORS, "mc", MonteCarloEstimator)
-    registry.register(PluginGroup.ESTIMATORS, "complementary", ComplementaryEstimator)
-    registry.register(PluginGroup.ESTIMATORS, "neyman_cc", NeymanEstimator)
-    registry.register(PluginGroup.BACKENDS, "mock", MockBackend)
-    registry.register(PluginGroup.VALUE_FNS, "tfidf_cosine", TfIdfCosineValue)
-    registry.register(PluginGroup.VALUE_FNS, "embedding_cosine", CosineEmbeddingValue)
-    registry.register(
-        PluginGroup.VALUE_FNS,
-        "embedding_euclidean",
-        EuclideanEmbeddingValue,
-    )
-    registry.register(PluginGroup.VALUE_FNS, "logprob", LogprobValue)
-    registry.register(PluginGroup.NORMALIZERS, "identity", IdentityNormalizer)
-    registry.register(PluginGroup.NORMALIZERS, "abs_sum", AbsSumNormalizer)
-    registry.register(PluginGroup.NORMALIZERS, "power_shift", PowerShiftNormalizer)
-    registry.register(PluginGroup.NORMALIZERS, "min_max", MinMaxNormalizer)
-    registry.register(PluginGroup.PARTITIONS, "tokens", TokenPartitioner)
-    registry.register(PluginGroup.ABSENCE_POLICIES, "delete", DeletePolicy)
-    registry.register(PluginGroup.ABSENCE_POLICIES, "pad", PadPolicy)
-    registry.register(PluginGroup.ABSENCE_POLICIES, "neutral", NeutralPolicy)
+    """Register every built-in plugin of all eight groups in ``registry``."""
+    for group, factories in BUILTIN_PLUGINS.items():
+        for name, factory in factories.items():
+            registry.register(group, name, factory)
+
+
+def default_registry() -> PluginRegistry:
+    """Return a registry with the built-in plugins and third-party entry points.
+
+    Entry points that reuse a built-in name are skipped.
+
+    Raises:
+        PluginLoadError: If a third-party entry point cannot be imported.
+    """
+    registry = PluginRegistry()
+    register_builtin_plugins(registry)
+    for group in PluginGroup:
+        registry.load_entry_points(group)
+    return registry

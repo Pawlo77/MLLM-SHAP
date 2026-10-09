@@ -1,4 +1,8 @@
-"""Explain pipeline types and orchestration."""
+"""Explain pipeline types and orchestration.
+
+@domain pipeline
+@see [[knowledge/architecture/pipeline]]
+"""
 
 from .config import (
     ExplainConfig,

@@ -1,4 +1,9 @@
-"""Conversation and explanation enumerations for the text MVP."""
+"""Conversation and explanation enumerations for the text MVP.
+
+@domain domain
+@see [[knowledge/architecture/domain]]
+@tested-by [[tests/domain/test_enums.py]]
+"""
 
 from enum import StrEnum
 
@@ -14,19 +19,6 @@ class Role(StrEnum):
 
     SYSTEM = "system"
     """System-level instruction or steering text."""
-
-
-class SystemRolesSetup(StrEnum):
-    """How system-role tokens participate in explainability."""
-
-    NONE = "none"
-    """All tokens, including system tokens, are explainable."""
-
-    SYSTEM = "system"
-    """System tokens are excluded from explainability."""
-
-    SYSTEM_ASSISTANT = "system_assistant"
-    """System and assistant tokens are excluded from explainability."""
 
 
 class EmbeddingMode(StrEnum):

@@ -1,4 +1,7 @@
-"""Tests for embedding-based value functions."""
+"""Tests for embedding-based value functions.
+
+@see [[src/nlp_shap/value/embedding.py]]
+"""
 
 import pytest
 

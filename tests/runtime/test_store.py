@@ -1,4 +1,7 @@
-"""Tests for hot LRU result store."""
+"""Tests for hot LRU result store.
+
+@see [[src/nlp_shap/runtime/store.py]]
+"""
 
 from nlp_shap.runtime.store import HotResultStore
 

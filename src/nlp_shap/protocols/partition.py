@@ -1,4 +1,8 @@
-"""Player partition protocol."""
+"""Player partition protocol.
+
+@domain protocols
+@see [[knowledge/architecture/protocols]]
+"""
 
 from typing import Protocol
 
@@ -14,4 +18,9 @@ class PlayerPartitioner(Protocol):
         """Return the registered partition identifier."""
 
     def partition(self, snapshot: ConversationSnapshot) -> PlayerSet:
-        """Derive ordered players from the snapshot."""
+        """Derive ordered players and their spans from the snapshot.
+
+        The returned :class:`~nlp_shap.domain.players.PlayerSet` must carry one
+        :class:`~nlp_shap.domain.players.PlayerSpan` per player; absence policies
+        and labels read the spans instead of re-tokenising.
+        """

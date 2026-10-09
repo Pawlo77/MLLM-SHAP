@@ -1,4 +1,7 @@
-"""Tests for attribution label helpers."""
+"""Tests for attribution label helpers.
+
+@see [[src/nlp_shap/viz/labels.py]]
+"""
 
 import pytest
 
@@ -27,3 +30,11 @@ def test_token_labels_reject_mismatched_player_set() -> None:
     player_set = TokenPartitioner().partition(_snapshot("other text"))
     with pytest.raises(ValueError, match="does not align"):
         token_labels(snapshot, player_set)
+
+
+def test_token_labels_prefix_the_speaker() -> None:
+    snapshot = ConversationSnapshot.from_turns((
+        Turn(messages=(Message(role=Role.USER, text="hi there", speaker="bob"),)),
+    ))
+    player_set = TokenPartitioner().partition(snapshot)
+    assert token_labels(snapshot, player_set) == ("bob: hi", "bob: there")

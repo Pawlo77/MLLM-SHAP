@@ -1,29 +1,42 @@
 name: Benchmarks
 
+# Informational: runs the benchmarks weekly and uploads the JSON report. The regression
+# gate (`make bench-regression`) stays local, against the maintainer's baseline machine.
 on:
   workflow_dispatch:
   schedule:
     - cron: "0 6 * * 1"
 
+permissions:
+  contents: read
+
 jobs:
   bench-regression:
     runs-on: ubuntu-latest
-    continue-on-error: true
+    timeout-minutes: 30
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v8.3.2
+        uses: astral-sh/setup-uv@v10.2.0
         with:
           enable-cache: true
-          version: "0.11.28"
+          version: "0.12.23"
 
       - name: Set up Python
         run: uv python install 3.12
 
       - name: Sync dependencies
-        run: uv sync --locked --all-groups
+        run: uv sync --locked --all-groups --extra api --extra viz
 
-      - name: Run benchmark regression gate
-        run: make bench-regression
+      - name: Run benchmarks
+        run: make bench
+
+      - name: Upload benchmark report
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: benchmark-json
+          path: .pytest_benchmark/benchmark.json

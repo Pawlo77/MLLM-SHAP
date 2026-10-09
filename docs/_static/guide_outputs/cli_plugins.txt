@@ -1,0 +1,8 @@
+nlp_shap.estimators: complementary, exact, mc, neyman_cc
+nlp_shap.estimands: banzhaf, shapley
+nlp_shap.value_fns: embedding_cosine, embedding_euclidean, logprob, tfidf_cosine
+nlp_shap.normalizers: abs_sum, identity, min_max, power_shift
+nlp_shap.backends: api, lmstudio, mock, transformers
+nlp_shap.partitions: messages, tokens
+nlp_shap.absence_policies: delete, neutral, pad
+nlp_shap.renderers: token_bar, token_text

@@ -1,4 +1,8 @@
-"""SHAP-inspired diverging colors for signed attributions."""
+"""SHAP-inspired diverging colors for signed attributions.
+
+@domain viz
+@see [[knowledge/architecture/viz]]
+"""
 
 from typing import cast
 

@@ -26,7 +26,7 @@ the fully observed input.
 
 In NLP explainability:
 
-- **Players** may be tokens, spans, retrieved chunks, or multimodal segments.
+- **Players** may be tokens, spans, retrieved chunks, or messages.
 - **Coalitions** specify which players are *present*; absent players are removed
   or replaced according to an absence policy (implemented in later pipeline
   stages).

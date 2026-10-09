@@ -1,9 +1,13 @@
 <div align="center">
-  <h1>📦 nlp-shap</h1>
-  <p><strong>Multimodal explainability for NLP and multimodal models based on Shapley-style cooperative game theory.</strong></p>
+  <h1>nlp-shap</h1>
+  <p><strong>Shapley-value attributions for conversational language models.</strong></p>
+  <p>Explicit estimands (Shapley vs Banzhaf), reproducible run archives, pluggable backends (Hugging Face, LM Studio, OpenAI-compatible APIs).</p>
   <p>
     <a href="https://pypi.org/project/nlp-shap/"><img src="https://img.shields.io/pypi/v/nlp-shap.svg" alt="PyPI"></a>
-    <a href="https://pypi.org/project/nlp-shap/"><img src="https://img.shields.io/pypi/pyversions/nlp-shap.svg" alt="Python"></a>
+    <a href="https://github.com/Pawlo77/nlp-shap/actions/workflows/test.yaml"><img src="https://github.com/Pawlo77/nlp-shap/actions/workflows/test.yaml/badge.svg" alt="Pytest"></a>
+    <a href="https://github.com/Pawlo77/nlp-shap/actions/workflows/prek.yaml"><img src="https://github.com/Pawlo77/nlp-shap/actions/workflows/prek.yaml/badge.svg" alt="Prek Checks"></a>
+    <a href="https://codecov.io/gh/Pawlo77/nlp-shap"><img src="https://codecov.io/gh/Pawlo77/nlp-shap/graph/badge.svg" alt="Codecov"></a>
+    <a href="https://pypi.org/project/nlp-shap/"><img src="https://img.shields.io/badge/python-3.12%20%7C%203.13%20%7C%203.14-blue.svg" alt="Python 3.12-3.14"></a>
     <a href="https://pawlo77.github.io/nlp-shap/"><img src="https://img.shields.io/badge/docs-GitHub%20Pages-blue" alt="Documentation"></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg" alt="License"></a>
   </p>
@@ -24,14 +28,27 @@ pip install "nlp-shap[api]"            # OpenAI-compatible HTTP API
 pip install "nlp-shap[viz]"            # matplotlib token charts
 ```
 
-The core package does not install PyTorch. See the [extending guide](https://pawlo77.github.io/nlp-shap/guides/extending.html) for plugin entry points.
+The core package does not install PyTorch. Python 3.12 or newer; [uv](https://docs.astral.sh/uv/) for development.
+
+## Why nlp-shap
+
+- **Honest estimands.** Shapley and Banzhaf are separate, labelled aggregators; every result and archive records which one produced it, and results report `base_value` and `grand_value` so efficiency (`sum(values) == v(N) - v(empty)`) can be verified; axiom tests enforce it.
+- **Reproducible runs.** One validated configuration, a run id derived from it, and an archive of every model generation, so attributions can be recomputed with another value function without calling the model again.
+- **Pluggable everything.** Partitions, absence policies, estimators, value functions, backends and renderers are entry-point plugins; exact, Monte Carlo, complementary and Neyman estimators ship built in.
 
 ## Quickstart
 
 ```python
-from nlp_shap import ExplainConfig, ExplainRunner
-from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
-from nlp_shap.domain.enums import Role
+import math
+
+from nlp_shap import (
+    ConversationSnapshot,
+    ExplainConfig,
+    ExplainRunner,
+    Message,
+    Role,
+    Turn,
+)
 
 snapshot = ConversationSnapshot.from_turns((
     Turn(messages=(Message(role=Role.USER, text="refund my order"),)),
@@ -40,58 +57,64 @@ config = ExplainConfig.model_validate({
     "backend": {"kind": "mock", "model_id": "stub"},
     "explanation": {"estimator": "exact", "value_fn": "tfidf_cosine"},
 })
-output = ExplainRunner(config).explain_sync(snapshot)
-print(output.result.values)
+result = ExplainRunner(config).explain_sync(snapshot).result
+
+print(result.values)  # one attribution per token
+print(result.base_value)  # v(empty): payoff of the fully masked prompt
+print(result.grand_value)  # v(N): payoff of the full prompt
+# Efficiency: Shapley values sum to v(N) - v(empty).
+assert math.isclose(sum(result.values), result.grand_value - result.base_value)
 ```
 
-From source:
+The `mock` backend needs no model; swap `backend.kind` for `transformers`, `lmstudio` or `api` to explain a real model. Runs are archived under `./runs/{run_id}`; running the same configuration twice raises `ArchiveExistsError` unless `explanation.archive.on_exists` is `overwrite` (or `archive.path` is `""`).
+
+### Command line
+
+The same run without Python: write a snapshot as JSON, start from the commented config skeleton, and get the result as JSON (`--render token_bar --png out.png` also saves a chart).
 
 ```bash
-git clone https://github.com/Pawlo77/nlp-shap
-cd nlp-shap
-make install
+echo '{"turns": [{"messages": [{"role": "user", "text": "refund my order"}]}]}' > snapshot.json
+nlp-shap config --example > config.yaml
+nlp-shap explain --config config.yaml --snapshot snapshot.json --out result.json
+nlp-shap reanalyze --config config.yaml --archive runs/<run_id>   # rescore, no model calls
+nlp-shap plugins
 ```
 
-Requires Python 3.12 and [uv](https://docs.astral.sh/uv/).
+See the [command-line guide](https://pawlo77.github.io/nlp-shap/guides/cli.html).
 
 ## Documentation
 
 Full documentation: **[pawlo77.github.io/nlp-shap](https://pawlo77.github.io/nlp-shap/)**
 
 - [Getting started](https://pawlo77.github.io/nlp-shap/guides/getting_started.html)
-- [User guide — estimands](https://pawlo77.github.io/nlp-shap/guides/estimands.html)
-- [User guide — masking](https://pawlo77.github.io/nlp-shap/guides/masking.html)
-- [User guide — runtime](https://pawlo77.github.io/nlp-shap/guides/runtime.html)
-- [User guide — exact estimation](https://pawlo77.github.io/nlp-shap/guides/exact.html)
-- [User guide — approximate estimation](https://pawlo77.github.io/nlp-shap/guides/approximation.html)
-- [User guide — visualization](https://pawlo77.github.io/nlp-shap/guides/visualization.html)
-- [Examples (notebooks)](https://pawlo77.github.io/nlp-shap/examples.html)
+- [How a run works](https://pawlo77.github.io/nlp-shap/guides/pipeline.html)
+- [Configuration](https://pawlo77.github.io/nlp-shap/guides/config.html)
+- [Choosing an estimator](https://pawlo77.github.io/nlp-shap/guides/choosing_an_estimator.html)
+- [Backends](https://pawlo77.github.io/nlp-shap/guides/backends.html)
+- [Extending](https://pawlo77.github.io/nlp-shap/guides/extending.html)
+- [Theory](https://pawlo77.github.io/nlp-shap/theory/shapley_values.html)
 - [API reference](https://pawlo77.github.io/nlp-shap/api.html)
 
-## Examples
+## Examples, vault and development
 
-Runnable **Jupyter notebooks** in [`examples/`](examples/):
+- Runnable notebooks: [`examples/`](examples/README.md), also embedded in the [docs](https://pawlo77.github.io/nlp-shap/examples.html).
+- Architecture notes, decisions, known issues and papers: the Obsidian vault in [`knowledge/`](knowledge/nlp-shap.md).
+- Development setup, checks and pull requests: [`CONTRIBUTING.md`](CONTRIBUTING.md); coding-agent rules: [`AGENTS.md`](AGENTS.md).
 
-| Notebook | What it demonstrates |
-|----------|----------------------|
-| [`estimands_toy_game.ipynb`](examples/estimands_toy_game.ipynb) | Shapley vs Banzhaf aggregators, coalition weights, labelled results, manifests, plugin entry points |
-| [`masking_views.ipynb`](examples/masking_views.ipynb) | Token partitioning, absence policies, masked views, mask codec, mask space, plugin registry |
-| [`runtime_core.ipynb`](examples/runtime_core.ipynb) | Run archive, coalition dedup, hot LRU cache, async scheduler with bounded concurrency |
-| [`exact_estimation.ipynb`](examples/exact_estimation.ipynb) | Exact coalition enumeration, estimand delegation, budget guard, plugin resolution |
-| [`estimator_comparison.ipynb`](examples/estimator_comparison.ipynb) | Eight-player cap≤20 benchmark + five-player fraction sweep 0.1–0.5, MC bias analysis |
-| [`attribution_viz.ipynb`](examples/attribution_viz.ipynb) | Per-token Shapley visualization with `token_text` and `token_bar` renderers |
-| [`text_explain_e2e.ipynb`](examples/text_explain_e2e.ipynb) | Full explain pipeline on a refund FAQ prompt — LM Studio + transformers + charts |
+## Citing
 
-Setup and details: [`examples/README.md`](examples/README.md). Embedded walkthroughs: [docs/examples](https://pawlo77.github.io/nlp-shap/examples.html).
+If you use nlp-shap in research, please cite it ([`CITATION.cff`](CITATION.cff); GitHub's "Cite this repository" button renders it as APA or BibTeX):
 
-## Development
-
-```bash
-make install
-make check
+```yaml
+cff-version: 1.2.0
+title: "nlp-shap: Shapley-value explainability for conversational language models"
+type: software
+authors:
+  - family-names: Pozorski
+    given-names: Paweł
+repository-code: "https://github.com/Pawlo77/nlp-shap"
+license: Apache-2.0
 ```
-
-Run `make help` for other targets.
 
 ## License
 

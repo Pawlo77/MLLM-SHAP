@@ -1,0 +1,45 @@
+name: CodeQL
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: "0 5 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    # Job name is a required status check on main.
+    name: CodeQL
+    # Code scanning on a private repository needs paid GitHub Code Security; a skipped
+    # job still reports, so the required check passes until the repository is public.
+    if: ${{ !github.event.repository.private }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      actions: read  # private repositories: the action reads its workflow run
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4.38.2
+        with:
+          languages: python
+
+      - name: Analyze
+        uses: github/codeql-action/analyze@v4.38.2

@@ -1,4 +1,7 @@
-"""Tests for attribution normalizers."""
+"""Tests for attribution normalizers.
+
+@see [[src/nlp_shap/estimation/normalizers.py]]
+"""
 
 import numpy as np
 import pytest
@@ -50,7 +53,7 @@ def test_power_shift_normalizer_sums_to_one(sample_values: tuple[float, ...]) ->
 
 def test_power_shift_normalizer_rejects_non_positive_power() -> None:
     """Invalid power values raise ValueError."""
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="positive"):
         PowerShiftNormalizer(power=0.0)
 
 

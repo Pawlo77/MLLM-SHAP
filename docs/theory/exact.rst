@@ -2,20 +2,26 @@ Exact estimation
 ================
 
 The :class:`~nlp_shap.estimation.exact.ExactEstimator` lazily enumerates every
-coalition except the grand coalition and delegates attribution to an estimand
-plugin. Use it as ground truth on tiny player sets before trusting approximate
-samplers.
+coalition, from the empty coalition to the grand coalition, and delegates
+attribution to an estimand plugin. Use it as ground truth on tiny player sets
+before trusting approximate samplers.
 
 Enumeration scope
 -----------------
 
-For :math:`n` players the estimator evaluates :math:`2^n - 1` coalitions — all
-masks except the all-present coalition, which backends often precompute via
-``precompute_base``.
+For :math:`n` players the estimator evaluates every coalition:
 
 .. math::
 
-   |\mathcal{S}_{\mathrm{exact}}| = 2^n - 1
+   |\mathcal{S}_{\mathrm{exact}}| = 2^n
+
+Inside :class:`~nlp_shap.ExplainRunner` the grand coalition :math:`v(N)` is scored
+from the base generation (the output for the unmasked prompt), so it is served
+from the result store instead of a second backend call. With :math:`v(\emptyset)` and
+:math:`v(N)` both present, Shapley values satisfy efficiency:
+:math:`\sum_i \phi_i = v(N) - v(\emptyset)`. The run output exposes both
+payoffs as :attr:`~nlp_shap.pipeline.result.ExplainResult.base_value` and
+:attr:`~nlp_shap.pipeline.result.ExplainResult.grand_value`.
 
 Complexity grows exponentially in :math:`n`; reserve exact estimation for toy
 models, sanity checks, and estimator validation.
@@ -38,9 +44,10 @@ estimation establishes the reference path for validating approximate samplers.
 Legacy parity
 -------------
 
-The implementation matches legacy ``PreciseShapExplainer`` Shapley values on
-additive characteristic functions when all :math:`2^n` coalitions (including the
-grand coalition) are supplied for aggregation.
+The implementation matches the Shapley values of ``PreciseShapExplainer`` from
+`MLLM-Shap <https://github.com/Pawlo77/MLLM-Shap>`_ on additive characteristic
+functions; both aggregate the full :math:`2^n` table. See
+:doc:`../guides/migrating_from_mllm_shap` for the other differences.
 
 Further reading
 ---------------

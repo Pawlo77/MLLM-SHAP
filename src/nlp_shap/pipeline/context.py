@@ -1,10 +1,15 @@
-"""Shared state for one explain pipeline run."""
+"""Shared state for one explain pipeline run.
+
+@domain pipeline
+@see [[knowledge/architecture/pipeline]]
+"""
 
 from dataclasses import dataclass
 from pathlib import Path
 
 from ..domain.conversation import ConversationSnapshot
 from ..domain.players import PlayerSet
+from ..plugins.context import PluginContext
 from ..plugins.registry import PluginRegistry
 from ..runtime.progress import CoalitionProgress, NullCoalitionProgress
 from ..runtime.telemetry import NullObservabilitySink, ObservabilitySink
@@ -38,6 +43,10 @@ class ExplainContext:
 
     progress: CoalitionProgress | None = None
     """Optional sync sink for coalition scheduling progress."""
+
+    def plugin_context(self) -> PluginContext:
+        """Return the context passed to plugin factories for this run."""
+        return PluginContext(config=self.config, registry=self.registry)
 
     def resolved_telemetry(self) -> ObservabilitySink:
         """Return the configured telemetry sink or a no-op implementation."""

@@ -1,9 +1,18 @@
-"""Smoke test that the base wheel does not pull heavy ML dependencies."""
+"""Smoke test that the base wheel does not pull heavy ML dependencies.
+
+Builds a wheel and resolves it in an isolated environment (network), so it is
+marked ``slow`` and runs in ``make tests-all`` only.
+
+@see [[pyproject.toml]]
+"""
 
 import subprocess
 from pathlib import Path
 
+import pytest
 
+
+@pytest.mark.slow
 def test_base_wheel_import_has_no_torch() -> None:
     """Isolated wheel install does not include torch."""
     root = Path(__file__).resolve().parents[1]

@@ -1,3 +1,7 @@
+# Development config for the OpenAI-compatible HTTP backend (extra: nlp-shap[api]).
+# Needs OPENAI_API_KEY (or NLP_SHAP_API_KEY); see docs/guides/backends.rst.
+# Point api_host at a local server (vLLM, LM Studio server mode) for offline runs.
+# Run: nlp-shap explain --config config/dev_api.yaml --snapshot snapshot.json
 backend:
   kind: api
   model_id: gpt-4o-mini
@@ -7,7 +11,6 @@ generation:
   max_new_tokens: 32
   temperature: 0.0
   top_k: 1
-  precompute_base: true
 
 explanation:
   estimand: shapley
@@ -23,6 +26,7 @@ explanation:
   archive:
     path: ""
     flush_every: 50
+    on_exists: overwrite
   dedup:
     enabled: auto
   kv_cache:

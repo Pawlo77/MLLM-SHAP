@@ -1,12 +1,31 @@
-"""Post-aggregation attribution normalizers."""
+"""Post-aggregation attribution normalizers.
+
+@domain estimation
+@see [[knowledge/architecture/estimation]]
+@tested-by [[tests/estimation/test_normalizers.py]]
+"""
 
 from collections.abc import Sequence
+from typing import TYPE_CHECKING, ClassVar
 
 import numpy as np
+from pydantic import Field
+
+from ..protocols.plugin import PluginOptions
+
+if TYPE_CHECKING:
+    from ..plugins.context import PluginContext
 
 
 class IdentityNormalizer:
     """Return attributions unchanged."""
+
+    options_model: ClassVar[type[PluginOptions]] = PluginOptions
+    """Accepts no ``explanation.plugin_options``."""
+
+    def __init__(self, context: "PluginContext | None" = None) -> None:
+        """Accept the plugin context; this plugin reads no settings from it."""
+        _ = context
 
     @property
     def name(self) -> str:
@@ -20,6 +39,13 @@ class IdentityNormalizer:
 
 class AbsSumNormalizer:
     """Scale attributions by the sum of absolute values."""
+
+    options_model: ClassVar[type[PluginOptions]] = PluginOptions
+    """Accepts no ``explanation.plugin_options``."""
+
+    def __init__(self, context: "PluginContext | None" = None) -> None:
+        """Accept the plugin context; this plugin reads no settings from it."""
+        _ = context
 
     @property
     def name(self) -> str:
@@ -36,10 +62,27 @@ class AbsSumNormalizer:
         return [float(value) for value in normalized]
 
 
+class PowerShiftOptions(PluginOptions):
+    """Options of the ``power_shift`` normalizer."""
+
+    power: float = Field(default=1.0, gt=0.0)
+    """Exponent applied to the shifted attributions."""
+
+
 class PowerShiftNormalizer:
     """Shift to non-negative values, apply a power, then scale to sum one."""
 
-    def __init__(self, power: float = 1.0) -> None:
+    options_model: ClassVar[type[PluginOptions]] = PowerShiftOptions
+    """Options accepted from ``explanation.plugin_options``."""
+
+    def __init__(
+        self,
+        context: "PluginContext | None" = None,
+        power: float = 1.0,
+    ) -> None:
+        """Set the exponent; a ``context`` may override it with option ``power``."""
+        if context is not None:
+            power = context.option("power", power)
         if power <= 0.0:
             msg = "power must be a positive float"
             raise ValueError(msg)
@@ -64,6 +107,13 @@ class PowerShiftNormalizer:
 
 class MinMaxNormalizer:
     """Min-max scale to ``[0, 1]`` then normalize to sum one."""
+
+    options_model: ClassVar[type[PluginOptions]] = PluginOptions
+    """Accepts no ``explanation.plugin_options``."""
+
+    def __init__(self, context: "PluginContext | None" = None) -> None:
+        """Accept the plugin context; this plugin reads no settings from it."""
+        _ = context
 
     @property
     def name(self) -> str:

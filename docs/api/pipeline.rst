@@ -1,22 +1,19 @@
-Pipeline configuration
-======================
+Pipeline
+========
+
+.. automodule:: nlp_shap.pipeline
+   :no-members:
 
 .. automodule:: nlp_shap.pipeline.config
-   :members:
-   :undoc-members:
-
-.. automodule:: nlp_shap.pipeline.result
-   :members:
-   :undoc-members:
-
-.. automodule:: nlp_shap.pipeline.manifest
-   :members:
-   :undoc-members:
 
 .. automodule:: nlp_shap.pipeline.runner
-   :members:
-   :undoc-members:
+
+.. automodule:: nlp_shap.pipeline.result
+
+.. automodule:: nlp_shap.pipeline.manifest
+
+.. automodule:: nlp_shap.pipeline.reanalyze
 
 .. automodule:: nlp_shap.pipeline.orchestrator
-   :members:
-   :undoc-members:
+
+.. automodule:: nlp_shap.pipeline.context

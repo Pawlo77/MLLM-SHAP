@@ -1,4 +1,9 @@
-"""Coalition masks over explainability players."""
+"""Coalition masks over explainability players.
+
+@domain domain
+@see [[knowledge/architecture/domain]]
+@tested-by [[tests/domain/test_coalition.py]]
+"""
 
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -15,6 +20,7 @@ class CoalitionMask:
     """Presence flags aligned with :class:`~nlp_shap.domain.players.PlayerSet` order."""
 
     def __post_init__(self) -> None:
+        """Reject empty masks."""
         if not self.present:
             msg = "coalition mask must include at least one player"
             raise ValueError(msg)

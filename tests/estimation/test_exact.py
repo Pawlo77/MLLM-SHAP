@@ -1,4 +1,7 @@
-"""Tests for exact coalition enumeration and estimand wiring."""
+"""Tests for exact coalition enumeration and estimand wiring.
+
+@see [[src/nlp_shap/estimation/exact.py]]
+"""
 
 from itertools import product
 
@@ -62,20 +65,19 @@ def _additive_payoffs(
     ]
 
 
-def test_iter_mask_ints_skips_grand_coalition() -> None:
-    """Bitmask enumeration skips the all-present coalition."""
-    values = list(ExactEstimator.iter_mask_ints(3))
-    assert values == [0, 1, 2, 3, 4, 5, 6]
+def test_iter_mask_ints_covers_full_table() -> None:
+    """Bitmask enumeration yields every coalition from empty to grand."""
+    assert set(ExactEstimator.iter_mask_ints(3)) == set(range(8))
 
 
-def test_num_coalitions_matches_legacy_formula() -> None:
-    """Exact enumeration evaluates 2**n - 1 coalitions (grand coalition excluded)."""
-    assert ExactEstimator.num_coalitions(1) == 1
-    assert ExactEstimator.num_coalitions(3) == 7
+def test_num_coalitions_is_full_table() -> None:
+    """Exact enumeration evaluates every coalition including empty and grand."""
+    assert ExactEstimator.num_coalitions(1) == 2
+    assert ExactEstimator.num_coalitions(3) == 8
 
 
-def test_sample_masks_excludes_grand_coalition() -> None:
-    """sample_masks omits the all-present coalition for backend evaluation."""
+def test_sample_masks_includes_grand_coalition() -> None:
+    """sample_masks yields the all-present coalition for backend evaluation."""
     player_set = PlayerSet(player_ids=("p0", "p1", "p2"))
     masks = list(
         ExactEstimator().sample_masks(
@@ -85,8 +87,8 @@ def test_sample_masks_excludes_grand_coalition() -> None:
             seed=0,
         )
     )
-    assert len(masks) == 7
-    assert all(not all(mask.present) for mask in masks)
+    assert len(masks) == 8
+    assert any(all(mask.present) for mask in masks)
 
 
 def test_iter_masks_is_lazy() -> None:
@@ -98,8 +100,8 @@ def test_iter_masks_is_lazy() -> None:
     assert first.present == (False,) * player_set.num_players
 
 
-def test_sample_masks_covers_all_other_coalitions() -> None:
-    """Enumerated masks match every coalition except the grand coalition."""
+def test_sample_masks_covers_all_coalitions() -> None:
+    """Enumerated masks match every coalition including the grand coalition."""
     player_set = PlayerSet(player_ids=("a", "b"))
     masks = list(
         ExactEstimator().sample_masks(
@@ -109,7 +111,7 @@ def test_sample_masks_covers_all_other_coalitions() -> None:
             seed=99,
         )
     )
-    expected = {mask for mask in product([False, True], repeat=2) if not all(mask)}
+    expected = set(product([False, True], repeat=2))
     assert {mask.present for mask in masks} == expected
 
 

@@ -6,61 +6,71 @@
 make check
 ```
 
-Same as `make agent-check`: filtered pytest + `prek-all`.
+`make check` runs `agent-check` (filtered pytest and `prek-all`), then `vault-check` (vault
+notes, links, traceability tags, generated notes, brevity budgets). Also run:
 
-```bash
-uv run pytest -m "not lms and not gpu and not bench" tests/
-make prek-all
-```
+- `make docs` (strict Sphinx) when `docs/` or the public API change.
+- `make notebooks` when `examples/*.ipynb` change, after a `src/` change to a public workflow
+  and before every release PR.
+- `make knowledge` after docstring or vault edits (prek runs it too).
 
-Optional markers: `make tests-all` · `make bench` (not part of `make check`).
+Optional, not part of `make check`: `make tests-all`, `make bench`, `make practical` (skill `practical`).
 
 ## Agent-only
 
-- Skill `caveman` at **ultra** for all chat (auto-invoked; code/commits/PRs still normal)
-- No commit / push / PR unless explicitly asked — `git-commits.mdc`
-- After `gh pr create`: always `--add-assignee Pawlo77` + label from title type (`enhancement` / `bug` / `documentation`); never draft/WIP PRs
-- No new markdown or doc expansion unless asked
-- No runtime deps without justification in `pyproject.toml`
-- No force push; no `git commit --amend` unless user rules allow
-- `pre-commit` CLI → use **prek**; `pip install` → `pyproject.toml` + `uv lock`
-- Commit subjects: `type: summary` (feat|fix|docs|test|refactor|chore|ci|build|perf); prek `commit-msg` + Cursor hooks enforce
-- No direct push to `main` (Cursor deny + GitHub branch protection — see `ci.mdc`)
+- Chat in caveman ultra (rule `.cursor/rules/caveman.mdc`; Codex reads that file once per
+  session). Files, code, commits, PR bodies and subagent reports stay normal prose.
+- Delivery goes through skill `ship` after `make check`: it commits, pushes, opens the PR,
+  gets Copilot's review and addresses it; routine changes (`scripts/pr_policy.py`) merge
+  by themselves, everything else stops before the merge with the PR link. Outside `ship` and `release`,
+  no commit, push, tag or PR; never draft or WIP PRs, force pushes, amends or pushes to
+  `main` (rule `git-commits`; enforced by each tool's permission settings and prek).
+- Upgrades and releases go through skills `upgrade`, `release` and `ship`.
+- Claude reviews its own work before a PR (skill `review`, agent `reviewer`) and answers
+  Copilot's threads on its own PR; it never reviews other PRs on GitHub.
+- Subagents default to Sonnet, Haiku for mechanical work; pass `model: opus` or `fable`
+  when depth pays: estimator math, hard bugs, security or design review, a failed Sonnet run.
+- No new markdown or doc expansion unless it is requested or crucial new information.
+- No runtime dependency without a justification in `pyproject.toml`.
+- Use `prek`, never the `pre-commit` CLI; change dependencies in `pyproject.toml` plus
+  `uv lock`, never `pip install`.
+- Write the fewest lines that keep the meaning: one home per fact, link instead of
+  restating, budgets in rule `brevity` (checked by `scripts/check_brevity.py`).
+- Never edit generated files: `.claude/rules/` (edit `.cursor/rules/*.mdc`, then
+  `uv run python scripts/sync_rules.py`), `.codex/agents/` (`scripts/sync_agents.py`),
+  `knowledge/generated/` and `.claude/jit-context/*/10-auto/` (`make knowledge`).
 
-Keep this file **general**. Detail lives in skills and `.cursor/rules/*.mdc`.
+Keep this file general; detail lives in skills (`.agents/skills/`) and rules
+(`.cursor/rules/*.mdc`). Tool matrix, plugins, sibling clones and Codex setup:
+`CONTRIBUTING.md`, section "Agent setup".
 
-## Sibling repos (multi-root workspace)
+## Siblings
 
-Not vendored here. Clone as **siblings** of `nlp-shap/` under one parent:
+| Sibling path (clone next to `nlp-shap/`) | Use |
+|------|-----|
+| `../MLLM-Shap/mllm_shap/src/mllm_shap/` | legacy code to port (skill `port-legacy`) |
 
-```text
-<parent>/
-  nlp-shap/                 # https://github.com/Pawlo77/nlp-shap.git
-  nlp-shap-research/        # https://github.com/Pawlo77/nlp-shap-research.git
-  MLLM-Shap/                # https://github.com/Pawlo77/MLLM-Shap.git
-```
+## Memory and context
 
-```bash
-mkdir -p <parent> && cd <parent>
-git clone https://github.com/Pawlo77/nlp-shap.git
-git clone https://github.com/Pawlo77/nlp-shap-research.git
-git clone https://github.com/Pawlo77/MLLM-Shap.git
-```
+- `.remember/remember.md` is the handoff: read it first; write it with `/remember` before
+  ending a session. `.remember/identity.md` says how to work here.
+- Before a `src/` change read the package's `knowledge/architecture/<pkg>.md` (Claude Code
+  injects its excerpt through `.claude/jit-context/`).
 
-Open **`<parent>/nlp-shap/nlp-shap.code-workspace`** (File → Open Workspace from File).
-Paths in that file are relative to `nlp-shap/` (`../nlp-shap-research`, `../MLLM-Shap`).
+## Vault
 
-| Need | Path after clone |
-|------|------------------|
-| Legacy port | `../MLLM-Shap/mllm_shap/` |
-| Rewrite plan | `../nlp-shap-research/docs/plans/infrastructure/` |
+- The repository root is an Obsidian vault; notes live in `knowledge/` only (entry:
+  `knowledge/nlp-shap.md`).
+- A change under `src/nlp_shap/<pkg>/` updates `knowledge/architecture/<pkg>.md` in the same
+  change.
+- A design choice appends a section to `knowledge/decisions/<Domain> decisions.md`; a bug
+  found or fixed updates `knowledge/issues/`.
+- Write notes only through skill `notes`.
+- `make vault-check` (part of `make check`) fails on broken links, missing frontmatter and
+  stale generated notes.
 
 ## Load order
 
-1. This file (exit + agent-only)
-2. Skill `caveman` (**ultra** — auto-invoked for all chat; off only via "stop caveman" / "normal mode")
-3. Always-apply rules: `caveman`, `minimal-diff`, `git-commits`, `uv-workflow`, `package-boundaries`
-4. Glob-matched rules for open files (types, docs, examples, backends, …)
-5. Skill `nlp-shap-development` for implementation work
-6. Skill `nlp-shap-rewrite` only for audio-track / named rewrite phases
-7. Skill `nlp-shap-port-legacy` when porting from MLLM-Shap
+1. This file and the nested `AGENTS.md` of the directory you work in; the exit criteria above.
+2. Caveman ultra for chat (always-apply rules; Claude Code: `.claude/rules/always.md`).
+3. Skills are chosen by their descriptions; scoped rules load by file path.

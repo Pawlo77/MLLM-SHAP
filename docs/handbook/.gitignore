@@ -1,0 +1,5 @@
+# Generated from knowledge/ by scripts/export_knowledge.py at docs build time.
+handbook/
+architecture/
+concepts/
+decisions/

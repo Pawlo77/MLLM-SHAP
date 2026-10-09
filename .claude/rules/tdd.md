@@ -1,0 +1,23 @@
+---
+paths:
+  - "src/nlp_shap/**/*.py"
+  - "tests/**/*.py"
+---
+
+<!-- Generated from .cursor/rules/tdd.mdc by scripts/sync_rules.py; do not edit. -->
+
+# TDD
+
+New behavior or bug fixes: **test first**, then implement.
+
+1. **Red** — write failing test in `tests/` (`test_*.py`, mirror `src/` layout)
+2. **Green** — minimal implementation in `src/nlp_shap/`
+3. **Refactor** — run `make agent-check`; keep green
+4. **Validate** — re-read the diff; run full checks; fix style, coverage, docs, and consistency issues before hand-off
+5. **Performance** — analyze hot paths for time/memory scaling; implement the fastest low-resource correct version (see `performance.mdc`)
+
+- No `from __future__ import annotations` unless required — use `Self` or quoted forward refs (see `python-types.mdc`)
+- Bug fix → regression test reproducing failure before the fix
+- Test real behavior, not trivial constants or mock theater
+- `@pytest.mark.bench` for local perf tests only — see `benchmarks.mdc`
+- Scaffold/config-only work: skip TDD only when user explicitly asks

@@ -5,15 +5,10 @@ alwaysApply: true
 
 # Minimal diff
 
-- Read surrounding code first; match naming, types, and patterns already in the file
-- Solve the requested task only; no drive-by refactors
-- Reuse existing functions and patterns before adding abstractions
-- No one-line helpers that should stay inline
-- No extra error handling for impossible edge cases
-- New behavior needs tests first (see `tdd.mdc`); no tests that only assert the obvious
-- No new markdown files unless requested
-- If two approaches exist, pick the simpler one that matches the repo
-
-When copying from MLLM-Shap, port the minimum slice needed — use sibling
-`../MLLM-Shap/mllm_shap/`; do not bulk-copy experiments or multimodal code unless
-the task requires it.
+- Read the surrounding code first; match its naming, types and patterns.
+- Solve the requested task only; no drive-by refactors.
+- Reuse existing functions before adding abstractions; no one-line helpers; no handling for impossible cases.
+- New behaviour needs tests first (`tdd.mdc`); no tests of the obvious.
+- No new markdown files unless requested.
+- If two approaches work, pick the simpler one that matches the repository.
+- From MLLM-Shap (`../MLLM-Shap/mllm_shap/src/mllm_shap/`), port only the slice the task needs.

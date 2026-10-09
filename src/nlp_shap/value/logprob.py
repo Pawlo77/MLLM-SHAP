@@ -1,30 +1,61 @@
-"""Logprob-based value function."""
+"""Logprob-based value function.
 
-import hashlib
+@domain value
+@see [[knowledge/architecture/value]]
+@tested-by [[tests/value/test_logprob.py]]
+"""
+
+from typing import TYPE_CHECKING, ClassVar
 
 from ..domain.generation import GenerationRecord
+from ..errors import LogprobsUnavailableError
 from ..protocols.backend import GenerationResult
+from ..protocols.plugin import PluginOptions
+
+if TYPE_CHECKING:
+    from ..plugins.context import PluginContext
 
 
 class LogprobValue:
-    """Score generations from summed token log probabilities."""
+    """Score a coalition by the model's confidence in its own generation.
+
+    ``v(S)`` is the mean natural-log probability of the tokens the backend
+    generated for coalition ``S`` (its ``GenerationRecord.logprobs``), so it
+    lies in ``(-inf, 0]``; an empty generation scores 0. The base generation is
+    not read: ``v(N)`` is the base generation's own mean logprob.
+    """
+
+    options_model: ClassVar[type[PluginOptions]] = PluginOptions
+    """Accepts no ``explanation.plugin_options``."""
+
+    def __init__(self, context: "PluginContext | None" = None) -> None:
+        """Accept the plugin context; this plugin reads no settings from it."""
+        _ = context
 
     @property
     def name(self) -> str:
         """Return the registered value-function identifier."""
         return "logprob"
 
+    @property
+    def needs_logprobs(self) -> bool:
+        """Always true; scoring reads ``GenerationRecord.logprobs``."""
+        return True
+
     def score(self, base: GenerationResult, candidate: GenerationResult) -> float:
-        """Return utility from candidate logprobs relative to ``base``."""
+        """Return the mean token logprob of ``candidate``.
+
+        Raises:
+            LogprobsUnavailableError: If ``candidate`` carries no logprobs.
+        """
         _ = base
-        if isinstance(candidate, GenerationRecord) and candidate.logprobs:
-            return float(sum(candidate.logprobs))
-        return _stub_logprob(candidate)
-
-
-def _stub_logprob(generation: GenerationResult) -> float:
-    """Return a deterministic pseudo-logprob when the backend omits logprobs."""
-    digest = hashlib.sha256(generation.text.encode()).digest()
-    magnitude = int.from_bytes(digest[:8], byteorder="big", signed=False)
-    normalized = (magnitude % 10_000) / 10_000.0
-    return -1.0 - normalized
+        logprobs = (
+            candidate.logprobs if isinstance(candidate, GenerationRecord) else None
+        )
+        if logprobs is None:
+            msg = (
+                "value_fn 'logprob' needs token logprobs, but the generation "
+                f"{candidate.text[:40]!r} has none"
+            )
+            raise LogprobsUnavailableError(msg)
+        return sum(logprobs) / len(logprobs) if logprobs else 0.0

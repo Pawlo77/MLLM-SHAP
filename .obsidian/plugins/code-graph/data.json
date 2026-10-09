@@ -1,0 +1,210 @@
+{
+  "settingsVersion": 9,
+  "maxNodes": 800,
+  "edgeSmoothThreshold": 500,
+  "codeExtensions": [
+    "ts",
+    "tsx",
+    "js",
+    "jsx",
+    "py",
+    "css",
+    "c",
+    "h",
+    "cpp",
+    "cc",
+    "go",
+    "rs",
+    "java",
+    "lua",
+    "php"
+  ],
+  "edgeTypesEnabled": {
+    "imports": true,
+    "calls": true,
+    "inherits": true,
+    "implements": true,
+    "contains": true,
+    "uses-type": true,
+    "tested-by": true,
+    "adr-link": true,
+    "depends-on": true,
+    "documents": true,
+    "comment-link": true,
+    "md-link": true
+  },
+  "commentLinkPatterns": [
+    "\\[\\[([^\\]]+)\\]\\]",
+    "@see\\s+\\[\\[([^\\]]+)\\]\\]",
+    "@link\\s+([^\\s,;]+)",
+    "(?:ref|see|see\\s+also)[:\\s]+\\[\\[([^\\]]+)\\]\\]"
+  ],
+  "excludeFolders": [
+    "node_modules",
+    ".git",
+    "dist",
+    "build",
+    "out",
+    "coverage",
+    ".cache",
+    ".turbo",
+    ".next",
+    ".svelte-kit",
+    "target",
+    "vendor",
+    "__pycache__",
+    ".venv",
+    ".idea",
+    "wasm",
+    ".pytest_cache",
+    ".ipynb_checkpoints",
+    "docs/_build",
+    ".ruff_cache",
+    ".mypy_cache",
+    ".remember/logs",
+    ".remember/tmp",
+    ".claude",
+    ".cursor",
+    ".agents",
+    ".codex"
+  ],
+  "excludeFileTypes": [
+    "d.ts",
+    "min.js",
+    "min.mjs",
+    "min.css",
+    "bundle.js"
+  ],
+  "includeMdLinks": true,
+  "showNotes": false,
+  "showSymbols": false,
+  "showCodeFiles": true,
+  "physicsEnabled": true,
+  "neighborhoodHops": 2,
+  "nodeSizingMode": "constant",
+  "nodeSizeMin": 8,
+  "nodeSizeMax": 25,
+  "highlightDeadCode": false,
+  "showBadges": true,
+  "animateEdges": false,
+  "centerForce": 30,
+  "repelForce": 90,
+  "linkForce": 50,
+  "linkDistance": 140,
+  "stretchiness": 1.618,
+  "labelFadeZoom": 0.45,
+  "colorMode": "domain",
+  "clusterHubs": false,
+  "clusterThreshold": 15,
+  "clusterMode": "none",
+  "colorGroups": [
+    {
+      "id": "g-backends",
+      "name": "backends",
+      "query": "path:src/nlp_shap/backends/",
+      "color": "#0ea5e9",
+      "enabled": true
+    },
+    {
+      "id": "g-domain",
+      "name": "domain",
+      "query": "path:src/nlp_shap/domain/",
+      "color": "#10b981",
+      "enabled": true
+    },
+    {
+      "id": "g-estimation",
+      "name": "estimation",
+      "query": "path:src/nlp_shap/estimation/",
+      "color": "#14b8a6",
+      "enabled": true
+    },
+    {
+      "id": "g-masking",
+      "name": "masking",
+      "query": "path:src/nlp_shap/masking/",
+      "color": "#8b5cf6",
+      "enabled": true
+    },
+    {
+      "id": "g-pipeline",
+      "name": "pipeline",
+      "query": "path:src/nlp_shap/pipeline/",
+      "color": "#ec4899",
+      "enabled": true
+    },
+    {
+      "id": "g-plugins",
+      "name": "plugins",
+      "query": "path:src/nlp_shap/plugins/",
+      "color": "#84cc16",
+      "enabled": true
+    },
+    {
+      "id": "g-protocols",
+      "name": "protocols",
+      "query": "path:src/nlp_shap/protocols/",
+      "color": "#f97316",
+      "enabled": true
+    },
+    {
+      "id": "g-runtime",
+      "name": "runtime",
+      "query": "path:src/nlp_shap/runtime/",
+      "color": "#06b6d4",
+      "enabled": true
+    },
+    {
+      "id": "g-value",
+      "name": "value",
+      "query": "path:src/nlp_shap/value/",
+      "color": "#a855f7",
+      "enabled": true
+    },
+    {
+      "id": "g-viz",
+      "name": "viz",
+      "query": "path:src/nlp_shap/viz/",
+      "color": "#eab308",
+      "enabled": true
+    },
+    {
+      "id": "g-nlp_shap",
+      "name": "nlp_shap",
+      "query": "path:src/nlp_shap/",
+      "color": "#6366f1",
+      "enabled": true
+    },
+    {
+      "id": "g-tests",
+      "name": "tests",
+      "query": "path:tests/",
+      "color": "#f59e0b",
+      "enabled": true
+    },
+    {
+      "id": "g-examples",
+      "name": "examples",
+      "query": "path:examples/",
+      "color": "#ef4444",
+      "enabled": true
+    },
+    {
+      "id": "g-docs",
+      "name": "docs",
+      "query": "path:docs/",
+      "color": "#64748b",
+      "enabled": true
+    },
+    {
+      "id": "g-knowledge",
+      "name": "knowledge",
+      "query": "path:knowledge/",
+      "color": "#0f766e",
+      "enabled": true
+    }
+  ],
+  "showZones": true,
+  "hoverFocusEnabled": true,
+  "zoneColorMode": "groups"
+}

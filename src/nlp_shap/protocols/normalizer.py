@@ -1,4 +1,8 @@
-"""Attribution normalizer protocol."""
+"""Attribution normalizer protocol.
+
+@domain protocols
+@see [[knowledge/architecture/protocols]]
+"""
 
 from collections.abc import Sequence
 from typing import Protocol

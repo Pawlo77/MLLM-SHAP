@@ -1,0 +1,52 @@
+# Abbreviations used in the vault, with the expansion used at first mention.
+# scripts/check_vault.py flags a knowledge note that uses one without spelling it out
+# anywhere in its prose. Add new abbreviations here when a note introduces them.
+# Keys are matched case-sensitively as whole words (an optional plural "s" is allowed).
+ADR:
+  expansion: architecture decision record
+  plural: architecture decision records
+API:
+  expansion: application programming interface
+CC:
+  expansion: complementary contribution
+  plural: complementary contributions
+CFF:
+  expansion: Citation File Format
+CI:
+  expansion: continuous integration
+CUDA:
+  expansion: Compute Unified Device Architecture
+DOI:
+  expansion: digital object identifier
+HF:
+  expansion: Hugging Face
+KV:
+  expansion: key-value
+  also:
+  - key-value cache
+LLM:
+  expansion: large language model
+  plural: large language models
+LMS:
+  expansion: LM Studio
+MC:
+  expansion: Monte Carlo
+MPS:
+  expansion: Metal Performance Shaders
+MVP:
+  expansion: minimum viable product
+PR:
+  expansion: pull request
+  plural: pull requests
+RAG:
+  expansion: retrieval-augmented generation
+SGPA:
+  expansion: Spectrogram-Guided Phonetic Alignment
+SHAP:
+  expansion: SHapley Additive exPlanations
+TF-IDF:
+  expansion: term frequency-inverse document frequency
+  also:
+  - term frequency–inverse document frequency
+XAI:
+  expansion: explainable artificial intelligence

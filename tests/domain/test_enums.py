@@ -1,8 +1,11 @@
-"""Tests for conversation domain enums."""
+"""Tests for conversation domain enums.
+
+@see [[src/nlp_shap/domain/enums.py]]
+"""
 
 import pytest
 
-from nlp_shap.domain.enums import EmbeddingMode, Role, SystemRolesSetup
+from nlp_shap.domain.enums import EmbeddingMode, Role
 
 
 def test_role_wire_values_are_stable() -> None:
@@ -10,13 +13,6 @@ def test_role_wire_values_are_stable() -> None:
     assert Role.USER.value == "user"
     assert Role.ASSISTANT.value == "assistant"
     assert Role.SYSTEM.value == "system"
-
-
-def test_system_roles_setup_values_are_stable() -> None:
-    """System role setup members serialize to stable strings."""
-    assert SystemRolesSetup.NONE.value == "none"
-    assert SystemRolesSetup.SYSTEM.value == "system"
-    assert SystemRolesSetup.SYSTEM_ASSISTANT.value == "system_assistant"
 
 
 def test_embedding_mode_values_are_stable() -> None:

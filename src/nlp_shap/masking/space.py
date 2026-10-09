@@ -1,4 +1,9 @@
-"""Mask-space utilities for explainable feature indexing."""
+"""Mask-space utilities for explainable feature indexing.
+
+@domain masking
+@see [[knowledge/architecture/masking]]
+@tested-by [[tests/masking/test_space.py]]
+"""
 
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -17,6 +22,7 @@ class MaskSpace:
     """Total length of the full coalition mask including fixed positions."""
 
     def __post_init__(self) -> None:
+        """Validate the target length and explainable positions."""
         if self.target_length <= 0:
             msg = "target_length must be positive"
             raise ValueError(msg)

@@ -5,101 +5,12 @@ alwaysApply: true
 
 # Git commits and pull requests
 
-**Never commit, push, or open a PR without explicit user permission.** Propose first; execute only after approval.
-
-## Commits
-
-Prefer **granular** commits — one logical change per commit. Split when changes span unrelated concerns (e.g. logging setup vs docs vs CI).
-
-If a single commit would bundle too much, **stop and propose** a commit plan instead of committing:
-
-```
-1. docs: add repository URL to README and pyproject urls
-2. feat: bootstrap logging from pyproject.toml via logging518
-3. chore: rename benchmark flags and make bench target
-```
-
-Ask which commits to run (all, subset, or one squashed).
-
-### Message format
-
-Short **type** prefix + brief summary. Optional body with bullet details when helpful.
-
-```
-docs: add repository URL to README and project urls
-
-- Replace clone placeholder with github.com/Pawlo77/nlp-shap
-- Add Homepage, Repository, Issues, Documentation to pyproject.toml
-```
-
-**Types:** `feat`, `fix`, `docs`, `test`, `refactor`, `chore`, `ci`, `build`, `perf`
-
-- Subject: imperative, lowercase type, no period, ≤72 chars
-- Body: what changed and why — not a file list unless useful
-- One concern per commit; do not mix unrelated types
-
-**Enforced by:** prek `commit-msg` hook (`.cursor/hooks/commit_msg.py`) and Cursor
-`beforeShellExecution` (deny bad `-m` / `--no-verify` / push to main — no approval
-prompt; user permission still required by this rule / `AGENTS.md`).
-
-### Before committing
-
-1. Run `make agent-check`, `make docs`, and `make notebooks` (when `examples/*.ipynb` changed)
-2. Run `git status`, `git diff`, `git log -5` (parallel)
-3. Draft message(s) matching the split plan
-4. Stage only files for that commit; commit; verify with `git status`
-
-Do not `--no-verify`, amend, or force-push unless user rules explicitly allow.
-
-### Before pushing
-
-- Confirm `make check` is green on the commits being pushed
-- Example notebooks must include **executed outputs** (run `make notebooks` first)
-- Push a **feature branch** — never `main`/`master` (Cursor hook denies; GitHub protection)
-
-### After pushing
-
-- Watch remote workflows until all succeed: `gh run list` then `gh run watch <run-id> --exit-status`
-- If **Prek Checks** or other required workflows fail, fix on a follow-up commit — do not leave `main` red
-- Cursor `afterShellExecution` reminds about CI watch after `git push`
-
-## Pull requests
-
-Same permission gate — **propose title and body; create only when asked.**
-
-**Never mark PRs as WIP:** no draft PRs (`gh pr create --draft` / Convert to draft), no `WIP`/`[WIP]` in the title, no WIP label. Open ready-for-review PRs only.
-
-**Title:** same style as commit subject — `feat: add backend benchmark harness`
-
-
-**Body:**
-
-```markdown
-## Summary
-- Bullet: user-facing or architectural outcome
-
-## Test plan
-- [ ] make agent-check
-- [ ] make docs (if API/docs changed)
-- [ ] make notebooks (if example notebooks changed)
-- [ ] gh run watch — remote Prek Checks / Pytest / Deploy Docs green
-```
-
-Keep PRs focused. Large work → suggest stacked commits or multiple PRs. Use `gh pr create` with HEREDOC body when user approves.
-
-### Always after `gh pr create`
-
-Assign the author and set **one** label from the title type:
-
-```bash
-gh pr edit <n> --add-assignee Pawlo77 --add-label <label>
-```
-
-| Title prefix | Label |
-|--------------|-------|
-| `feat:` / `perf:` | `enhancement` |
-| `fix:` | `bug` |
-| `docs:` | `documentation` |
-| `chore:` / `ci:` / `build:` / `refactor:` / `test:` | `enhancement` |
-
-Never leave a PR with empty assignees or labels.
+- Commits, pushes and PRs happen inside skill `ship` (it classifies the branch and merges routine changes itself); outside it, never without the user's explicit permission.
+- One logical change per commit. When a change spans unrelated concerns, propose a numbered commit plan and ask which commits to run.
+- Message: `type: summary` (`feat`, `fix`, `docs`, `test`, `refactor`, `chore`, `ci`, `build`, `perf`), imperative, no period, ≤ 72 characters; an optional body says what changed and why.
+- Before committing: the exit criteria in `AGENTS.md`, then `git status`, `git diff` and `git log -5`; stage only that commit's files.
+- No AI attribution (`Co-Authored-By: Claude`, `Generated with …`) anywhere; `scripts/strip_watermarks.py` strips it (prek, edit hooks, skill `ship`), `pr-title.yaml` rejects it.
+- Never `--no-verify`, amend or force-push; push a feature branch, never `main`; never draft or WIP PRs. Enforced by each tool's permission settings (`.claude/settings.json` deny rules, Cursor's command list, Codex's approval policy), the prek `commit-msg` hook and `pr-title.yaml`.
+- After pushing: `gh run watch <run-id> --exit-status` until every workflow is green; fix a failure in a follow-up commit.
+- PRs are ready for review: no draft, no WIP title or label. Title in commit style; body from `.github/pull_request_template.md` (agent `pr-writer`, command `/pr`).
+- After `gh pr create`: `gh pr edit <n> --add-assignee Pawlo77 --add-label <label>`, with `bug` for `fix`, `documentation` for `docs` and `enhancement` otherwise.

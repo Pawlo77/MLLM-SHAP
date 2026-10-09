@@ -1,4 +1,8 @@
-"""Attribution renderer protocol."""
+"""Attribution renderer protocol.
+
+@domain protocols
+@see [[knowledge/architecture/protocols]]
+"""
 
 from collections.abc import Sequence
 from typing import Any, Protocol

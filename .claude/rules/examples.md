@@ -1,0 +1,43 @@
+---
+paths:
+  - "examples/**"
+  - "src/nlp_shap/__init__.py"
+---
+
+<!-- Generated from .cursor/rules/examples.mdc by scripts/sync_rules.py; do not edit. -->
+
+# Examples (contributors)
+
+User-facing workflows live in `examples/` as **Jupyter notebooks** — not in `src/nlp_shap/`.
+`examples/README.md` is the **gallery for end users** (setup + catalog). Contributor rules live here.
+
+## When required
+
+Add or update a minimal notebook when you introduce **entirely new public logic**, such as:
+
+- A new backend under `src/nlp_shap/backends/`
+- A new explainer or attribution entry point
+- A new estimand, estimator, or value-function workflow users can run standalone
+- A new multimodal workflow users are expected to run end-to-end
+
+Not required for: bug fixes, internal refactors, typing/doc-only changes, or private helpers.
+
+## Notebook standards
+
+1. **One workflow per notebook**, with a focused name (`text_hf_causal.ipynb`, not `misc.ipynb`).
+2. **Full feature scope**: every public path of the feature (APIs, config keys, plugin resolution, validation guards, meaningful variants); no stubs or future-only placeholders.
+3. **Top-level imports**: cell 1 is one import block (stdlib, third-party, then every `nlp_shap` symbol the notebook uses).
+4. **Opening markdown**: goal, business context (auditability, reproducibility, product risk), prerequisites and expected output; short section intros; no filler. Size budgets: rule `brevity`.
+5. **Lightweight**: smallest model and data that prove the path; CPU first; tiny prompts.
+6. **Minimal code**: import, configure, demonstrate, show the result; no notebook-only framework or duplicated library logic.
+7. **Runnable after install** from the repository root (`make install`, or `pip install nlp-shap` for published examples).
+8. **Same change**: ship the notebook with the feature; update or remove it when the public API changes.
+9. **Executed before commit**: `make notebooks` after notebook edits, after a `src/` change to a public workflow and before every release PR; commit only notebooks with stored outputs.
+
+## Catalog
+
+- `examples/README.md`: the file list; `docs/examples.rst`: the descriptive catalog.
+- `docs/examples.rst`: the gallery table and embedded toctree entry.
+- Cross-link from the guide (`docs/guides/<topic>.rst`) that the notebook demonstrates.
+
+Correctness lives in `tests/` and speed in `tests/benchmarks/` (`benchmarks.mdc`); the notebook is the integration story.

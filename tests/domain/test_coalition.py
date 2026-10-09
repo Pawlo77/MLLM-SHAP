@@ -1,4 +1,7 @@
-"""Tests for coalition masks."""
+"""Tests for coalition masks.
+
+@see [[src/nlp_shap/domain/coalition.py]]
+"""
 
 import pytest
 

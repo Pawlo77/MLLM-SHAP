@@ -8,3 +8,8 @@
 **/secrets.json
 **/id_rsa
 **/id_rsa.pub
+# Obsidian AI plugins: local embeddings and agent settings (may hold keys)
+.smart-env/
+.obsidian/plugins/realclaudian/data.json
+# jit-context plugin logs and per-session markers
+.claude/jit-context/.discovery/

@@ -1,24 +1,11 @@
-"""Tests for optional coalition progress on ExplainRunner."""
+"""Tests for optional coalition progress on ExplainRunner.
 
-from dataclasses import dataclass, field
+@see [[src/nlp_shap/pipeline/runner.py]]
+"""
 
 from nlp_shap import ExplainConfig, ExplainRunner
 from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
 from nlp_shap.domain.enums import Role
-
-
-@dataclass
-class RecordingProgress:
-    """Capture progress callbacks for assertions."""
-
-    planned: list[int] = field(default_factory=list)
-    finished: list[tuple[int, int]] = field(default_factory=list)
-
-    def on_coalitions_planned(self, total: int) -> None:
-        self.planned.append(total)
-
-    def on_coalition_finished(self, done: int, total: int) -> None:
-        self.finished.append((done, total))
 
 
 def _snapshot() -> ConversationSnapshot:
@@ -32,7 +19,6 @@ def _config() -> ExplainConfig:
         "generation": {
             "max_new_tokens": 8,
             "temperature": 0.0,
-            "precompute_base": True,
         },
         "explanation": {
             "estimator": "exact",
@@ -44,12 +30,12 @@ def _config() -> ExplainConfig:
             "budget": {"fraction": 1.0},
             "max_inflight": 2,
             "seed": 0,
+            "archive": {"path": ""},
         },
     })
 
 
-def test_explain_runner_reports_coalition_progress() -> None:
-    progress = RecordingProgress()
+def test_explain_runner_reports_coalition_progress(progress) -> None:
     output = ExplainRunner(_config(), progress=progress).explain_sync(_snapshot())
     assert progress.planned == [output.metrics.requested]
     assert progress.finished[-1] == (
@@ -57,3 +43,20 @@ def test_explain_runner_reports_coalition_progress() -> None:
         output.metrics.requested,
     )
     assert len(progress.finished) == output.metrics.requested
+
+
+def test_neyman_progress_reports_one_growing_plan(progress) -> None:
+    """Phase two extends the plan; finished counts never restart."""
+    payload = _config().model_dump(mode="python")
+    payload["explanation"]["estimator"] = "neyman_cc"
+    snapshot = ConversationSnapshot.from_turns((
+        Turn(messages=(Message(role=Role.USER, text="a b c d e f"),)),
+    ))
+    output = ExplainRunner(
+        ExplainConfig.model_validate(payload), progress=progress
+    ).explain_sync(snapshot)
+    assert progress.planned == sorted(progress.planned)
+    assert progress.planned[-1] == output.metrics.requested
+    done = [count for count, _ in progress.finished]
+    assert done == list(range(1, output.metrics.requested + 1))
+    assert progress.finished[-1] == (output.metrics.requested,) * 2

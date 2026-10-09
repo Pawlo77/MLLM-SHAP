@@ -1,26 +1,19 @@
-"""Shared helpers for estimand aggregation."""
+"""Shared helpers for estimand aggregation.
 
+@domain estimation
+@see [[knowledge/architecture/estimation]]
+@tested-by [[tests/estimation/estimands/test_weights.py]]
+"""
+
+import logging
 import math
 from collections.abc import Callable, Sequence
 
 import numpy as np
 
+from .._shared import present_to_mask_int
 
-def _factorial_table(num_players: int) -> list[float]:
-    """Return factorials 0! … num_players! as floats."""
-    values = [1.0]
-    for value in range(1, num_players + 1):
-        values.append(values[-1] * float(value))
-    return values
-
-
-def _mask_as_int(mask: Sequence[bool]) -> int:
-    """Encode a coalition mask as a little-endian bitset."""
-    value = 0
-    for index, present in enumerate(mask):
-        if present:
-            value |= 1 << index
-    return value
+logger = logging.getLogger(__name__)
 
 
 def is_complete_characteristic_table(masks: Sequence[Sequence[bool]]) -> bool:
@@ -29,7 +22,7 @@ def is_complete_characteristic_table(masks: Sequence[Sequence[bool]]) -> bool:
     expected = 1 << num_players
     if len(masks) != expected:
         return False
-    seen = {_mask_as_int(mask) for mask in masks}
+    seen = {present_to_mask_int(mask) for mask in masks}
     return len(seen) == expected
 
 
@@ -54,9 +47,11 @@ def aggregate_shapley_exact(
 ) -> list[float]:
     """Compute Shapley values from a complete characteristic-function table."""
     if not masks:
-        raise ValueError("masks must not be empty")
+        msg = "masks must not be empty"
+        raise ValueError(msg)
     if len(masks) != len(payoffs):
-        raise ValueError("masks and payoffs must have the same length")
+        msg = "masks and payoffs must have the same length"
+        raise ValueError(msg)
 
     array = np.asarray(masks, dtype=np.bool_)
     if array.ndim != 2:
@@ -99,7 +94,15 @@ def aggregate_from_marginals(
     payoffs: Sequence[float],
     weight_fn: Callable[[int, int], float],
 ) -> list[float]:
-    """Sum weighted marginal contributions for each player.
+    """Estimate per-player values from observed marginal contributions.
+
+    Each observed pair ``(S, S | {i})`` with ``i not in S`` contributes the
+    marginal ``v(S | {i}) - v(S)`` to the stratum ``|S|``. Under Shapley weights
+    every stratum carries weight ``1/n``; under Banzhaf weights stratum ``k``
+    carries ``C(n-1, k) / 2^(n-1)``. The estimate is the probability-weighted
+    mean of the per-stratum mean marginals, renormalized over the strata that
+    have observations. On a complete table it equals the exact value. A player
+    with no observed marginal gets 0 and a WARNING is logged.
 
     Args:
         masks: Coalition membership rows with shape ``(m, n)``.
@@ -108,51 +111,74 @@ def aggregate_from_marginals(
 
     Returns:
         Per-player attribution vector with length ``n``.
+
+    Raises:
+        ValueError: If masks are empty, ragged, or misaligned with payoffs.
     """
     if not masks:
-        raise ValueError("masks must not be empty")
+        msg = "masks must not be empty"
+        raise ValueError(msg)
     if len(masks) != len(payoffs):
-        raise ValueError("masks and payoffs must have the same length")
+        msg = "masks and payoffs must have the same length"
+        raise ValueError(msg)
 
     num_players = len(masks[0])
     if num_players == 0:
-        raise ValueError("masks must include at least one player")
+        msg = "masks must include at least one player"
+        raise ValueError(msg)
     if any(len(mask) != num_players for mask in masks):
-        raise ValueError("all masks must have the same number of players")
+        msg = "all masks must have the same number of players"
+        raise ValueError(msg)
 
     payoff_lookup: dict[int, float] = {}
-    mask_ints: list[int] = []
     for mask, payoff in zip(masks, payoffs, strict=True):
-        mask_int = _mask_as_int(mask)
-        mask_ints.append(mask_int)
-        payoff_lookup[mask_int] = payoff
+        payoff_lookup[present_to_mask_int(mask)] = payoff
 
-    factorials = _factorial_table(num_players)
     values = [0.0] * num_players
-
+    unobserved: list[int] = []
     for player_index in range(num_players):
         player_bit = 1 << player_index
-        total = 0.0
-        for mask_int, payoff in zip(mask_ints, payoffs, strict=True):
+        stratum_sum = np.zeros(num_players, dtype=np.float64)
+        stratum_count = np.zeros(num_players, dtype=np.int64)
+        for mask_int, payoff in payoff_lookup.items():
             if mask_int & player_bit:
                 continue
-
-            coalition_size = mask_int.bit_count()
-            extended_int = mask_int | player_bit
-            extended_payoff = payoff_lookup.get(extended_int)
+            extended_payoff = payoff_lookup.get(mask_int | player_bit)
             if extended_payoff is None:
                 continue
+            size = mask_int.bit_count()
+            stratum_sum[size] += extended_payoff - payoff
+            stratum_count[size] += 1
 
-            marginal = extended_payoff - payoff
-            if weight_fn is shapley_weight:
-                weight = (
-                    factorials[coalition_size]
-                    * factorials[num_players - coalition_size - 1]
-                    / factorials[num_players]
-                )
-            else:
-                weight = weight_fn(coalition_size, num_players)
-            total += weight * marginal
-        values[player_index] = total
+        observed = stratum_count > 0
+        if not observed.any():
+            unobserved.append(player_index)
+            continue
+        stratum_mean = stratum_sum[observed] / stratum_count[observed]
+        # p_k = weight(k, n) * C(n-1, k) is the semivalue's probability of stratum
+        # k (1/n each for Shapley, C(n-1, k)/2^(n-1) for Banzhaf). With every
+        # stratum observed this is an unbiased stratified mean; renormalizing over
+        # the observed strata drops the missing ones, which biases the estimate
+        # whenever their mean marginal differs from the observed ones.
+        probabilities = np.array(
+            [
+                weight_fn(int(size), num_players)
+                * math.comb(num_players - 1, int(size))
+                for size in np.flatnonzero(observed)
+            ],
+            dtype=np.float64,
+        )
+        values[player_index] = float(
+            (probabilities * stratum_mean).sum() / probabilities.sum()
+        )
 
+    if unobserved:
+        logger.warning(
+            "%d of %d players have no observed marginal (no sampled pair S, "
+            "S | {i}); their values are 0. Raise budget.fraction or set "
+            "include_minimal_masks. Players: %s",
+            len(unobserved),
+            num_players,
+            unobserved,
+        )
     return values

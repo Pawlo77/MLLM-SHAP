@@ -1,0 +1,54 @@
+{
+  "description": "nlp-shap project hooks for Codex. Same scripts and Claude-shaped JSON as .claude/settings.json; Codex has no TaskCompleted, PostToolUseFailure or FileChanged events.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$(git rev-parse --show-toplevel)/scripts/hooks/session_start.sh\"",
+            "timeout": 90
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$(git rev-parse --show-toplevel)/scripts/hooks/merge_gate.sh\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "apply_patch|Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$(git rev-parse --show-toplevel)/scripts/hooks/format_after_edit.sh\"",
+            "timeout": 30,
+            "statusMessage": "Formatting with Ruff"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$(git rev-parse --show-toplevel)/scripts/hooks/stop_test_gate.sh\"",
+            "timeout": 200,
+            "statusMessage": "Running make tests before hand-off"
+          }
+        ]
+      }
+    ]
+  }
+}
