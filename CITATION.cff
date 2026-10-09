@@ -1,0 +1,14 @@
+cff-version: 1.2.0
+message: "If you use nlp-shap in research, please cite it."
+title: "nlp-shap: Shapley-value explainability for conversational language models"
+type: software
+authors:
+  - family-names: Pozorski
+    given-names: Paweł
+    email: pozorski.paul@gmail.com
+version: 0.1.18
+date-released: "2026-10-09"
+license: Apache-2.0
+repository-code: "https://github.com/Pawlo77/nlp-shap"
+url: "https://pawlo77.github.io/nlp-shap/"
+keywords: [explainability, shapley-value, nlp, llm, xai]

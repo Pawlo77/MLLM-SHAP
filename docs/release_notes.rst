@@ -8,259 +8,418 @@ Changes in each published ``nlp-shap`` version. Newest first.
 Unreleased
 ----------
 
-.. _release-0-1-16:
+.. _release-0-1-18:
 
-0.1.16 (2026-07-19)
+0.1.18 (2026-10-09)
 -------------------
-
-Added
-~~~~~
-
-- Optional sync :class:`~nlp_shap.runtime.progress.CoalitionProgress` callbacks on
-  :class:`~nlp_shap.runtime.scheduler.InferenceScheduler` and
-  :class:`~nlp_shap.pipeline.runner.ExplainRunner` for per-coalition progress
-  reporting (no-op when omitted).
-- Deterministic hash embeddings on mock :func:`~nlp_shap.backends.mock.generation.generation_record_from_snapshot`
-  so embedding-based value functions work in CI / mock campaigns.
-- ``BackendConfig.serialize_generate`` (default ``True``) to serialize LM Studio
-  ``generate`` calls; required for MLX backends that crash under concurrent predict.
-- LM Studio SDK websocket INFO logs are silenced on backend import.
-
-Changed
-~~~~~~~
-
-- :class:`~nlp_shap.masking.policies.DeletePolicy` renders the empty coalition as
-  empty message text instead of raising, so exact Shapley can evaluate
-  :math:`v(\emptyset)` under deletion absence.
-- :class:`~nlp_shap.estimation.neyman.NeymanEstimator` initial sampling no longer
-  waits on empty/grand M-matrix columns (which are never yielded), fixing an
-  infinite loop on small player counts.
-- LM Studio model handles use ``ttl=None`` and retry once after unload/crash.
-
-.. _release-0-1-15:
-
-0.1.15 (2026-07-15)
--------------------
-
-Added
-~~~~~
-
-- Runtime micro-benchmarks in ``tests/benchmarks/`` for dedup keys, mask
-  pack/unpack, archive round-trip (10k coalitions), and prefix-cache hits.
-- ``make bench`` and ``make bench-regression`` targets with recorded
-  ``baselines.json`` and an optional >10% regression gate.
-
-.. _release-0-1-14:
-
-0.1.14 (2026-07-15)
--------------------
-
-Added
-~~~~~
-
-- :doc:`guides/extending` user guide for optional extras and plugin entry points.
-- ``[dev]`` optional extra for contributor tooling.
-- Base-wheel smoke test ensuring ``torch`` is not installed without extras.
-
-Changed
-~~~~~~~
-
-- Removed the transitional ``explain.use_v2`` YAML flag; the v2 explain pipeline
-  is now the only path.
-- :func:`~nlp_shap.render_attribution` and :func:`~nlp_shap.render_attribution_html`
-  load lazily so ``import nlp_shap`` works without ``[viz]``.
-
-Documentation
-~~~~~~~~~~~~~
-
-- README quickstart with :class:`~nlp_shap.ExplainRunner`.
-- Getting-started explain walkthrough and API export table updates.
-
-.. _release-0-1-13:
-
-0.1.13 (2026-07-15)
--------------------
-
-Added
-~~~~~
-
-- :mod:`nlp_shap.viz` with ``token_text`` and ``token_bar`` renderer plugins and
-  :func:`~nlp_shap.render_attribution` public helper.
-- :class:`~nlp_shap.protocols.renderer.AttributionRenderer` protocol and
-  ``nlp_shap.renderers`` entry-point group.
-- Optional ``[viz]`` extra (``matplotlib``, ``ipywidgets``).
-- :doc:`guides/visualization` user guide and ``attribution_viz`` /
-  ``text_explain_e2e`` example notebooks.
 
 Fixed
 ~~~~~
 
-- Lazy visualization imports so the published wheel passes the base ``import nlp_shap``
-  smoke test without ``matplotlib``.
+- Without model embeddings (mock, LM Studio and API backends),
+  ``embedding_mode: contextual`` now hashes the generated text alone, so
+  ``explain`` and ``reanalyze`` agree and ``reanalyze --strict`` accepts the
+  archive (``embedding_source: hash``). The values of such runs change.
+- The ``token_text`` and ``token_bar`` renderers no longer log matplotlib's
+  ``Failed to find font weight semibold`` warning, and their labels no longer
+  overlap: ``token_text`` wraps long text onto new lines, and ``token_bar`` puts
+  value labels beyond the bar ends and the sign legend outside the axes.
+- Complementary and Neyman samplers now evaluate all ``n`` singleton pairs
+  ``({i}, N - {i})`` after the grand and empty pair. On an additive 8-player game
+  at ``budget.fraction: 0.5`` the attribution sum was on average 1.7 above
+  ``grand_value - base_value``; it is now within 0.03.
+- Neyman phase one walks its grid size by size, round-robin over players, so a
+  short budget leaves the same sizes empty for every player; its small-budget
+  error now matches complementary sampling (:doc:`theory/approximation`).
+- Complementary and Neyman budgets never drop below ``2n + 2`` masks (``2 ** n``
+  when smaller), so all singleton pairs fit. With the earlier ``2n`` floor, the
+  game ``v(S) = |S|`` with three players gave ``[1, 1, 1.333]`` instead of
+  ``[1, 1, 1]``.
 
-.. _release-0-1-12:
-
-0.1.12 (2026-07-15)
--------------------
-
-Added
-~~~~~
-
-- :class:`~nlp_shap.backends.api.ApiBackend` for OpenAI-compatible
-  ``/chat/completions`` HTTP APIs via ``httpx``.
-- In-memory response deduplication for identical request bodies at
-  ``temperature: 0.0``.
-- Optional ``[api]`` extra, ``config/dev_api.yaml``, and mock-transport contract
-  tests in CI.
-- User guide for generative backends: :doc:`guides/backends`.
-
-.. _release-0-1-11:
-
-0.1.11 (2026-07-15)
--------------------
-
-Added
-~~~~~
-
-- :class:`~nlp_shap.backends.transformers.text.TransformersTextBackend` with chat
-  templates, text-only validation, and contextual embedding hooks.
-- :class:`~nlp_shap.runtime.kv_cache.PrefixCacheManager` with scheduler prefix
-  grouping and ``kv_cache_hits`` metrics on :class:`~nlp_shap.runtime.scheduler.SchedulerMetrics`.
-- Optional ``[transformers]`` extra and ``config/dev_transformers.yaml``.
-- ``@pytest.mark.gpu`` integration tests for local Hugging Face runs.
-
-.. _release-0-1-10:
-
-0.1.10 (2026-07-15)
--------------------
-
-Added
-~~~~~
-
-- :class:`~nlp_shap.backends.lmstudio.LmStudioBackend` using ``lmstudio.AsyncClient``.
-- :exc:`~nlp_shap.errors.BackendUnavailableError` when the LM Studio API server is down.
-- Optional ``[lmstudio]`` extra, ``config/dev_lmstudio.yaml``, and ``@pytest.mark.lms`` tests.
-
-.. _release-0-1-9:
-
-0.1.9 (2026-07-15)
-------------------
-
-Added
-~~~~~
-
-- :meth:`~nlp_shap.pipeline.runner.ExplainRunner.reanalyze` rescoring on archived
-  coalitions with zero backend executions.
-- Grand-coalition ``base_generation.txt`` persisted in run archives before the
-  coalition scheduler loop when ``precompute_base`` is enabled.
-- :mod:`nlp_shap.runtime.telemetry` with :class:`~nlp_shap.runtime.telemetry.InMemoryObservabilitySink`
-  stage spans for orchestrator and estimator phases.
-- :class:`~nlp_shap.runtime.metrics.PerfSummary` on
-  :class:`~nlp_shap.pipeline.result.ExplainRunOutput`.
-- :meth:`~nlp_shap.runtime.archive.RunArchive.load` for reopening existing archives.
-
-.. _release-0-1-8:
-
-0.1.8 (2026-07-14)
-------------------
-
-Added
-~~~~~
-
-- :class:`~nlp_shap.pipeline.runner.ExplainRunner` with ``explain`` and
-  ``explain_sync`` entry points.
-- :class:`~nlp_shap.pipeline.orchestrator.ExplainOrchestrator` wiring partition,
-  estimation, generation, value functions, and normalizers.
-- :class:`~nlp_shap.backends.mock.MockBackend` for deterministic CI-safe E2E runs.
-- :class:`~nlp_shap.pipeline.result.ExplainRunOutput` with scheduler metrics and
-  run manifest metadata.
-- ``mock`` backend entry point and :meth:`~nlp_shap.plugins.registry.PluginRegistry.resolve_type`.
-
-.. _release-0-1-7:
-
-0.1.7 (2026-07-14)
-------------------
-
-Added
-~~~~~
-
-- :class:`~nlp_shap.value.tfidf.TfIdfCosineValue` with frozen-corpus TF-IDF cosine
-  scoring (U3).
-- :class:`~nlp_shap.value.embedding.CosineEmbeddingValue` and
-  :class:`~nlp_shap.value.embedding.EuclideanEmbeddingValue` for embedding utilities
-  (U1/U2/U4).
-- :class:`~nlp_shap.value.logprob.LogprobValue` with deterministic stub logprobs.
-- Presentation normalizers in ``nlp_shap.estimation.normalizers``.
-- :class:`~nlp_shap.GenerationRecord` for token rows, embeddings, and logprobs.
-- ``tfidf_cosine``, ``embedding_cosine``, ``embedding_euclidean``, and ``logprob``
-  value-function entry points; ``identity``, ``abs_sum``, ``power_shift``, and
-  ``min_max`` normalizer entry points.
-
-.. _release-0-1-6:
-
-0.1.6 (2026-07-14)
-------------------
-
-Added
-~~~~~
-
-- :class:`~nlp_shap.estimation.monte_carlo.MonteCarloEstimator` for budgeted
-  random coalition sampling with estimand-plugin aggregation.
-- :class:`~nlp_shap.estimation.complementary.ComplementaryEstimator` for
-  complementary-pair sampling and CC Shapley aggregation.
-- :class:`~nlp_shap.estimation.neyman.NeymanEstimator` for two-phase Neyman-CC
-  sampling with :class:`~nlp_shap.pipeline.config.NeymanConfig` controls.
-- Shared sampling helpers in ``nlp_shap.estimation._shared``.
-- ``mc``, ``complementary``, and ``neyman_cc`` estimator entry points.
-- Theory and guide pages for approximate estimation.
-- ``estimator_comparison.ipynb`` comparing budget, sample count, and accuracy.
+- Monte Carlo and other partial-sample estimates log a ``WARNING`` naming the
+  players with no observed marginal (their value is 0), typically at small
+  budgets where only the grand and empty coalitions were sampled.
+- The transformers backend reuses cached prompt-prefix KV state. Every prompt
+  but its last token is a prefix: on a miss the prefix is computed once, stored
+  and handed to ``generate``; on a hit a copy of the longest cached prefix,
+  cropped to the shared tokens, is extended with the prompt tokens it does not
+  cover, stored, and handed to ``generate``. No prompt token is processed twice.
+  Earlier versions ran one forward pass per prefix length and never used the
+  cache. Prefix states are bounded by ``kv_cache.max_entries`` (default 8), model
+  calls (tokenization included) are serialized, and
+  ``metrics.kv_cache_reused_tokens`` reports the prompt tokens served from the
+  cache next to ``metrics.kv_cache_hits``; both count the current run only, also
+  when ``ExplainRunner(backend=...)`` reuses the backend across runs. Greedy
+  outputs are identical with the cache on and off.
+- The transformers backend runs on Apple MPS when available. The new
+  ``backend.options.dtype`` (``auto``, ``float32``, ``float16``, ``bfloat16``)
+  defaults to ``auto``: bfloat16 on CUDA and MPS when supported, float16 on other
+  accelerators and float32 on CPU. Earlier versions loaded float16 on every
+  accelerator, which overflows to NaN on many bfloat16-trained models.
+  ``backend.options.revision`` pins the Hub revision the model and tokenizer are
+  loaded from.
+- The transformers backend computes static and contextual embeddings only when
+  the value function needs them (see
+  :class:`~nlp_shap.protocols.value.RequiresEmbeddings`), and ``explain`` then
+  scores the model's embeddings. Earlier versions ran two extra forward passes
+  per coalition and discarded the result. :meth:`~nlp_shap.ExplainRunner.reanalyze`
+  still scores hash embeddings derived from the archived text, because archives
+  store text only; embedding-based values of a transformers run therefore differ
+  between ``explain`` and ``reanalyze``. The manifest records which embeddings
+  the run scored (``embedding_source``: ``none``, ``hash`` or ``backend``, and
+  ``embedding_model``); reanalyzing a ``backend`` run with an embedding value
+  function logs a ``WARNING``, and ``ExplainRunner.reanalyze(..., strict=True)``
+  (``nlp-shap reanalyze --strict``) raises
+  :exc:`~nlp_shap.errors.ReanalyzeMismatchError` instead.
+- The HTTP API backend retries status 408, 429, 500, 502, 503 and 504 and
+  transport errors up to ``backend.max_retries`` times with exponential backoff
+  (honouring ``Retry-After`` up to ``backend.timeout_s``), raises
+  :exc:`~nlp_shap.errors.BackendUnavailableError` for non-JSON responses, and
+  keeps at most 1024 cached responses. It sends ``NLP_SHAP_API_KEY`` as the
+  bearer key to any host and ``OPENAI_API_KEY`` only when that is unset and
+  ``backend.api_host`` is ``api.openai.com``; earlier versions preferred
+  ``OPENAI_API_KEY`` and sent it to every host, local servers included.
+- The LM Studio backend retries only connection failures, re-raises
+  ``ValueError`` and ``TypeError`` at once, and matches downloaded models exactly
+  first, then by the prefix of the last path segment, then by substring; an
+  ambiguous id raises with the list of candidates. With ``auto_download`` it
+  refuses (:exc:`~nlp_shap.errors.BackendUnavailableError`, listing the hits)
+  when no repository hit is flagged exact or matches the name, instead of
+  downloading the first one.
+- :meth:`~nlp_shap.ExplainRunner.explain_sync` called inside a running event
+  loop raises a ``RuntimeError`` that points to ``await runner.explain(...)``.
+  With an injected backend, repeated ``explain_sync`` calls run on one event loop
+  owned by the runner, so loop-bound clients and locks keep working.
+- A run that fails part-way leaves an archive that
+  :meth:`~nlp_shap.ExplainRunner.reanalyze` refuses with
+  :exc:`~nlp_shap.errors.ArchiveIncompleteError`, even when the run failed before
+  its first coalition; so are archives without the grand or empty coalition,
+  full-budget archives (``budget.fraction: 1.0``, any estimator) missing rows and
+  archives not written by :class:`~nlp_shap.ExplainRunner`. Re-running explain
+  replaces the archive of a run that did not finish without needing
+  ``on_exists: overwrite``. :meth:`~nlp_shap.runtime.archive.RunArchive.load`
+  opens the database read-only and writes nothing, so archives on read-only
+  storage can be reanalyzed; it raises
+  :exc:`~nlp_shap.errors.ArchiveNotFoundError` (a ``FileNotFoundError``) when
+  ``manifest.json`` or ``archive.sqlite`` is missing instead of creating an
+  empty database, and :exc:`~nlp_shap.errors.ArchiveCorruptError` when either
+  cannot be read or the manifest's fields are invalid, so the command line exits
+  with 2 on a damaged archive.
+- Monte Carlo sampling counts the grand and empty coalitions toward the budget;
+  earlier versions could exceed it by two calls.
+- Progress callbacks report one growing plan and a monotonic finished count
+  across the two Neyman phases.
+- Partial-sample marginal aggregation renormalizes over observed strata with the
+  semivalue's stratum probabilities, for any estimand.
+- ``explanation.neyman`` and ``explanation.embedding_mode`` now reach the
+  Neyman estimator and the embedding value functions; earlier versions ignored
+  them. ``neyman.initial_fraction`` must lie in ``(0, 1]`` and
+  ``neyman.initial_num_samples`` be at least 1.
+- ``run_id`` hashes the model id of an injected backend, not the one in
+  ``backend.model_id``.
 
 Changed
 ~~~~~~~
 
-- :class:`~nlp_shap.pipeline.config.ExplanationConfig` adds ``neyman`` settings
-  for Neyman-CC runs.
-- Drop unnecessary ``from __future__ import annotations`` across the package;
-  document the policy in development rules.
-- Consolidate :doc:`examples` into a single list-table with hidden toctree.
+- The ``api`` backend requires ``backend.api_host``; the ``OPENAI_BASE_URL``
+  environment fallback and the ``http://127.0.0.1:1234/v1`` default are gone, so
+  a configuration without a host fails at load time with :class:`~nlp_shap.ConfigError`
+  instead of silently targeting a local server.
+- The coalition scheduler runs jobs in an :class:`asyncio.TaskGroup`. The first
+  failing job still cancels the others and its exception is raised unwrapped,
+  not as an ``ExceptionGroup``, also when it sits next to a nested group of
+  cancellations.
+- ``estimator: complementary`` and ``neyman_cc`` with ``estimand: banzhaf`` are
+  refused with :exc:`~nlp_shap.errors.ConfigError` when the config is validated
+  instead of failing after every coalition was generated.
+- The ``context_id`` argument of
+  :func:`~nlp_shap.value.generation_records.generation_record_from_text` is
+  ignored and raises a ``DeprecationWarning``; it will be removed in 0.2.0.
+  Custom backends call ``generation_record_from_text(text)``.
 
-.. _release-0-1-5:
-
-0.1.5 (2026-07-13)
-------------------
+- Plugin factories receive a :class:`~nlp_shap.plugins.PluginContext` (the run's
+  config, the plugin's options and the registry), and every built-in plugin
+  class takes it as its first constructor argument.
+  :meth:`~nlp_shap.plugins.PluginRegistry.resolve` takes the context as its
+  third argument. Third-party plugins must accept ``context``.
+- LM Studio settings ``hub_search``, ``quantization``, ``auto_download`` and
+  ``serialize_generate`` moved from ``backend`` to ``backend.options`` and are
+  validated by the LM Studio backend; unknown keys raise
+  :exc:`~nlp_shap.errors.ConfigError`.
+- Backends take a :class:`~nlp_shap.plugins.PluginContext` instead of a
+  ``BackendConfig``, and ``generate(snapshot, generation)`` receives the whole
+  :class:`~nlp_shap.domain.config.GenerationConfig`.
+- :class:`~nlp_shap.domain.conversation.Message` holds ``content`` parts
+  (:class:`~nlp_shap.domain.conversation.TextPart`,
+  :class:`~nlp_shap.domain.conversation.AudioPart`); ``Message(role=...,
+  text=...)`` still works and ``Message.text`` joins the text parts. Snapshot ids
+  of text-only conversations are unchanged; audio is detected by part type, no
+  longer by an ``audio:`` text prefix.
+- Partitioners return a :class:`~nlp_shap.domain.players.PlayerSet` with one
+  :class:`~nlp_shap.domain.players.PlayerSpan` per player. Absence policies and
+  labels read the spans instead of re-tokenising, so custom partitioners work in
+  :class:`~nlp_shap.ExplainRunner`, and text outside every span is kept. Rendered
+  messages keep their original whitespace instead of collapsing it to single
+  spaces.
+- ``GenerationConfig``, ``DedupConfig`` and ``KvCacheConfig`` live in
+  :mod:`nlp_shap.domain.config` (still importable from
+  ``nlp_shap.pipeline.config``); the runtime no longer imports the pipeline.
+- ``import nlp_shap`` no longer reads ``[tool.logging]`` from the nearest
+  ``pyproject.toml``. Set ``NLP_SHAP_LOGGING_CONFIG`` or call
+  :func:`nlp_shap.configure_logging`.
+- The orchestrator logs run start, base generation, scheduled coalitions and
+  run duration at ``INFO``.
+- ``kv_cache.enabled`` defaults to ``false``; new ``kv_cache.max_entries``.
+- New ``backend.timeout_s`` (default 120) and ``backend.max_retries`` (default
+  3); the HTTP client caps connections at ``explanation.max_inflight``.
+- Run archives store generation text in the SQLite row (no ``blobs/``
+  directory), use WAL journaling and carry ``user_version`` 3 and manifest
+  schema version 3. Archives written by 0.1.17 raise
+  :exc:`~nlp_shap.errors.ManifestVersionError`; re-run explain to rebuild them.
+- Coalition jobs are rendered lazily while the scheduler consumes them.
+- :func:`~nlp_shap.explain_config_from_yaml` raises
+  :exc:`~nlp_shap.errors.ConfigError` (not pydantic's ``ValidationError``) for
+  settings that contradict each other, and for an empty document or a YAML root
+  that is not a mapping (earlier a ``TypeError``).
+- The ``transformers`` extra requires ``transformers>=4.56``; the build backend
+  is ``uv_build`` 0.12.
 
 Added
 ~~~~~
 
-- :class:`~nlp_shap.estimation.exact.ExactEstimator` for lazy coalition
-  enumeration with estimand-plugin aggregation.
-- :meth:`~nlp_shap.estimation.exact.ExactEstimator.iter_mask_ints` and
-  :meth:`~nlp_shap.estimation.exact.ExactEstimator.iter_masks` for streaming
-  masks without materializing ``2^n`` coalitions.
-- :meth:`~nlp_shap.estimation.exact.ExactEstimator.estimate_attributions` wires
-  coalition payoffs to Shapley or Banzhaf aggregators.
-- Vectorized exact Shapley aggregation for complete characteristic tables.
-- :meth:`~nlp_shap.runtime.scheduler.InferenceScheduler.run_iter` and
-  ``run_stream`` for bounded pending-task scheduling.
-- ``exact`` estimator entry point under ``nlp_shap.estimators``.
+- ``Message(speaker=...)`` names who wrote a message when people share a role.
+  It is part of the snapshot id and of snapshot JSON (``"speaker"``), backends
+  send ``"<speaker>: <text>"``, and labels and ``to_dict`` report it.
+- ``explanation.players: messages`` (:class:`~nlp_shap.masking.MessagePartitioner`)
+  makes each message one player labelled ``"<role>[/<speaker>] <n>: <text>"``;
+  plugin option ``roles`` keeps other roles always present.
+- ``value_fn: logprob`` scores the mean log probability of each coalition's own
+  generated tokens. The transformers and ``api`` backends return logprobs
+  (:class:`~nlp_shap.protocols.backend.SupportsLogprobs`); other backends raise
+  :exc:`~nlp_shap.errors.ConfigError`. Archives store them (``user_version`` and
+  manifest schema 4), so older archives need a new ``explain``.
+- ``nlp-shap`` command line (:doc:`guides/cli`): ``explain`` (JSON result,
+  optional PNG chart), ``reanalyze`` (``--strict`` refuses runs scored with
+  backend embeddings), ``plugins`` and ``config --example`` / ``--check``. It uses ``argparse`` only and exits with 2 for invalid input
+  (arguments, ``--log-level``, configuration, snapshot, unreadable input files or
+  archives) and 3 when the backend is unavailable or the connection fails; any
+  other exception propagates with its traceback.
+- :meth:`nlp_shap.ConversationSnapshot.from_json` and
+  :meth:`nlp_shap.ConversationSnapshot.to_json` read and write snapshots as
+  ``{"turns": [{"messages": [{"role": ..., "text": ...}]}]}``, with an optional
+  ``"snapshot_id"`` when the id is not the content-derived one, so the id (and
+  the ``run_id``) survives a round trip. Messages with several content parts are
+  refused, like audio.
+- :meth:`nlp_shap.ExplainRunOutput.to_dict` returns a JSON-compatible result
+  with a stable key order, including one label per player (text and character
+  span); :attr:`ExplainRunOutput.player_set
+  <nlp_shap.ExplainRunOutput.player_set>` holds the explained players as a
+  :class:`~nlp_shap.PlayerSet`.
+- :func:`~nlp_shap.configure_logging` accepts ``level=`` and ``json=True`` to log
+  the pipeline's stage events to stderr, as plain lines or one JSON object per
+  line, without a TOML file (the package logger then stops propagating to the
+  root logger); ``json=True`` with a ``config_path`` raises ``ValueError``.
+  ``config/logging.example.toml`` is a starting point for
+  ``NLP_SHAP_LOGGING_CONFIG``.
+- ``explanation.budget.evaluations`` sets an absolute budget instead of
+  ``budget.fraction``: that many coalition evaluations in total, the empty and
+  grand coalitions included, at any number of players. Each estimator applies
+  its floor (2 for ``mc``; ``2n + 2`` for ``complementary`` and ``neyman_cc``,
+  which also round an odd count down to whole pairs) and the ceiling ``2 ** n``;
+  ``exact`` accepts only ``fraction: 1.0``, and setting both keys raises
+  :exc:`~nlp_shap.errors.ConfigError`. ``max_players`` refuses counts above
+  ``2 ** max_players``. Configurations without ``evaluations`` serialise as
+  before, so their run ids do not change.
 
-Changed
+- ``explanation.plugin_options``: per-plugin options keyed by
+  ``<group>/<name>`` (for example ``absence_policies/pad: {placeholder:
+  "<unk>"}``) or by the bare plugin name when only one plugin of the run has it.
+  Built-in plugins declare their options in a
+  :class:`~nlp_shap.protocols.plugin.PluginOptions` model; unknown keys, wrong
+  types and keys that name no plugin of the run raise
+  :exc:`~nlp_shap.errors.ConfigError` before the run starts, naming the group,
+  plugin and key.
+- Error hierarchy rooted at :exc:`~nlp_shap.errors.NlpShapError`:
+  :exc:`~nlp_shap.errors.PluginNotFoundError`,
+  :exc:`~nlp_shap.errors.PluginConflictError`,
+  :exc:`~nlp_shap.errors.PluginLoadError`, :exc:`~nlp_shap.errors.ConfigError`,
+  :exc:`~nlp_shap.errors.ArchiveNotFoundError` and
+  :exc:`~nlp_shap.errors.ArchiveCorruptError` join the existing errors.
+- Config cross-validation: ``estimator: exact`` requires ``budget.fraction: 1.0``
+  and ``neyman_cc`` rejects ``include_minimal_masks: true``.
+- Capability protocols :class:`~nlp_shap.protocols.SupportsKvCache`,
+  :class:`~nlp_shap.protocols.SupportsAclose`,
+  :class:`~nlp_shap.protocols.FittableValueFunction` and
+  :class:`~nlp_shap.protocols.value.RequiresEmbeddings`; any value function with
+  ``fit`` is fitted on the run corpus, not only TF-IDF.
+  ``GenerationConfig.compute_embeddings`` asks a backend for model embeddings.
+- :func:`~nlp_shap.plugins.default_registry` registers all eight plugin groups
+  (estimands and renderers included) and loads third-party entry points;
+  registering a name twice raises :exc:`~nlp_shap.errors.PluginConflictError`
+  unless ``replace=True``. :attr:`~nlp_shap.ExplainRunner.registry` can be passed
+  to :func:`~nlp_shap.render_attribution` to reuse custom renderers.
+- Top-level exports for every built-in plugin class, the absence policies,
+  :class:`~nlp_shap.TokenPartitioner`, all errors, the observability and
+  progress protocols and ``display_attribution_html``.
+- ``ExplainRunner(backend=...)`` reuses one backend across ``explain`` calls;
+  :meth:`~nlp_shap.ExplainRunner.close`, :meth:`~nlp_shap.ExplainRunner.aclose`
+  and ``with`` / ``async with`` blocks close it.
+- New ``explanation.max_players`` (default 24): a run whose budget plans more
+  than ``2 ** max_players`` coalitions (``budget.fraction * 2 ** n`` for ``n``
+  players, whatever the estimator) raises :exc:`~nlp_shap.errors.ConfigError`.
+
+Removed
 ~~~~~~~
 
-- :class:`~nlp_shap.runtime.dedup.build_coalition_key` uses compact binary
-  hashing instead of JSON serialization.
-- Marginal estimand aggregation uses integer bitmask keys and cached factorial
-  weights.
-- :class:`~nlp_shap.protocols.estimator.EstimatorStrategy.sample_masks` yields
-  an iterator instead of a materialized tuple.
+- ``generation.precompute_base`` (the base generation always runs; remove the key
+  from YAML configs), ``CoalitionJob.utility``, ``CoalitionRecord.utility``,
+  ``SystemRolesSetup``, ``CooperativeGame.empty_value`` and
+  ``masking.prefix_tree.PrefixTreeStub``.
 
 Documentation
 ~~~~~~~~~~~~~
 
-- Theory and usage guides for exact estimation and streaming scheduler usage.
-- API reference for :mod:`nlp_shap.estimation.exact`.
-- Example notebook ``examples/exact_estimation.ipynb``.
-- Performance review rules in contributor workflow.
+- New "How a run works" page (stages, scheduler counters, archives,
+  ``reanalyze``, progress and telemetry, ``explain`` vs ``explain_sync``),
+  "Choosing an estimator", and "Coming from MLLM-Shap" guides; citing and
+  contributing pages.
+- Configuration reference and the public-exports table are generated from the
+  installed package; every runnable guide snippet is executed on each docs
+  build from the page source.
+- Theory pages state the efficiency convention
+  ``sum(values) = grand_value - base_value`` (exact on the full coalition table
+  only), the stratified partial-sample estimand, and corrected DOIs
+  (Štrumbelj & Kononenko 2014, Young 1985).
+- ``make docs`` builds with ``-W --keep-going -n``; ``make -C docs linkcheck``
+  checks external links.
+
+Tooling
+~~~~~~~
+
+- Delivery autopilot: skill ``ship`` opens the pull request with a Copilot review
+  request, addresses the threads and merges routine changes (``scripts/pr_policy.py``)
+  itself; other changes stop before the merge for the maintainer.
+- Upgrades and releases: ``make upgrade-check`` and ``make upgrade``
+  (``scripts/upgrade.py``) list and apply new package versions, prek hook revisions,
+  workflow action pins, the uv version and Obsidian plugins, except the pins in
+  ``publish.yaml``. ``scripts/pr_policy.py --bump`` derives the next version from the
+  commits since the last tag; skill ``release`` commits it and tags after the merge.
+- Benchmarks use ``pytest-benchmark``: ``make bench`` writes a JSON report and
+  ``make bench-regression`` fails when a median is more than 25% slower than the
+  committed ``tests/benchmarks/baseline.json``. New benchmarks cover exact,
+  stratified and complementary aggregation, the scheduler, TF-IDF scoring and an
+  end-to-end mock run.
+- ``make mutate`` runs ``mutmut`` on the estimation package.
+- Tests that build a wheel or reach the network are marked ``slow`` and run in
+  ``make tests-all`` only.
+- Practical tests: ``make practical FEATURE=<id|glob|all>`` runs about 30
+  scenarios (marker ``practical``) on ``Qwen/Qwen2.5-1.5B-Instruct`` and
+  ``SmolLM2-360M-Instruct`` on a GPU, with rubric checks and a logit judge. Skill
+  ``ship`` runs the scenarios ``scripts/practical_features.py`` maps from the
+  diff; ``make check`` excludes them.
+- Deep practical tier: ``make practical TIER=deep`` runs nine ``deep.*``
+  scenarios on ``Qwen/Qwen2.5-3B-Instruct`` under an 8 GB VRAM cap. They cover error
+  versus budget against a 10-player exact reference, estimator stability, Banzhaf, a
+  counterfactual pair per value function, a 10-turn three-speaker thread, the KV
+  cache, archive reanalysis and CLI parity. Skill ``release`` runs it.
+
+.. _release-0-1-17:
+
+0.1.17 (2026-10-07)
+-------------------
+
+Fixed
+~~~~~
+
+- Exact, Monte Carlo, complementary and Neyman attributions now satisfy
+  efficiency on the full coalition table (``budget.fraction: 1.0``); approximate
+  budgets converge to it as coverage grows. Earlier versions omitted the grand coalition (exact, Monte Carlo)
+  and the :math:`(N, \emptyset)` pair (complementary, Neyman), which
+  under-reported every player by its :math:`S = N\setminus\{i\}` marginal.
+  Re-run explanations produced by 0.1.x.
+- Coalition payoffs stay aligned with their masks when ``kv_cache.enabled``
+  reorders jobs for prefix reuse; earlier versions could score a coalition with
+  another coalition's generation.
+- Monte Carlo partial samples use a stratified mean of observed marginals
+  instead of an un-normalised weighted sum.
+- Complementary and Neyman aggregation pair masks by complement, independent of
+  evaluation order.
+- Neyman phase one no longer stalls on cells that cannot be filled, and phase two
+  now runs inside :class:`~nlp_shap.ExplainRunner` and spends the remaining
+  budget. The allocation uses the complement column :math:`n - j`.
+- :class:`~nlp_shap.runtime.scheduler.InferenceScheduler` surfaces the first
+  coalition failure and cancels the remaining jobs.
+
+Changed
+~~~~~~~
+
+- ``run_id`` includes a digest of the configuration and model id. Re-running into
+  an existing archive raises :exc:`~nlp_shap.errors.ArchiveExistsError` unless
+  ``explanation.archive.on_exists`` is ``overwrite``.
+- Manifest schema version 2 records the estimator, value function, normalizer,
+  absence policy, partition, backend, model, player ids and the full config.
+  Archives also carry SQLite ``user_version`` 2; older archives raise
+  :exc:`~nlp_shap.errors.ManifestVersionError` on load.
+- :meth:`~nlp_shap.ExplainRunner.reanalyze` re-aggregates with the archived
+  estimator, refuses a mismatched estimator, absence policy or partition with
+  :exc:`~nlp_shap.errors.ReanalyzeMismatchError`, and reproduces ``explain``
+  values for the same value function.
+- Value functions score records built from the generated text in both
+  ``explain`` and ``reanalyze``
+  (:func:`~nlp_shap.value.generation_records.generation_record_from_text`).
+- :meth:`~nlp_shap.masking.codec.MaskCodec.hash_mask` is stable across processes.
+- Complementary and Neyman estimators raise ``ValueError`` for the ``banzhaf``
+  estimand; earlier versions returned complementary Shapley values under a
+  Banzhaf label.
+
+Added
+~~~~~
+
+- :attr:`~nlp_shap.pipeline.result.ExplainResult.base_value` and
+  :attr:`~nlp_shap.pipeline.result.ExplainResult.grand_value`.
+- :class:`~nlp_shap.protocols.estimator.TwoPhaseEstimator` protocol; every
+  estimator exposes ``estimate_attributions(masks, payoffs, aggregator)``.
+
+Removed
+~~~~~~~
+
+- ``InferenceScheduler.run_stream`` (use
+  :meth:`~nlp_shap.runtime.scheduler.InferenceScheduler.run_iter`) and the
+  ``nlp_shap.backends.mock.generation`` module.
+
+.. _release-earlier:
+
+Earlier releases
+----------------
+
+- **0.1.16** (2026-07-19): coalition progress callbacks on the scheduler and
+  runner; ``BackendConfig.serialize_generate`` for LM Studio; ``DeletePolicy``
+  renders the empty coalition; a Neyman infinite loop at small player counts is
+  fixed.
+- **0.1.15** (2026-07-15): runtime micro-benchmarks and the ``make bench`` and
+  ``make bench-regression`` targets.
+- **0.1.14** (2026-07-15): :doc:`guides/extending` guide; renderers load lazily,
+  so ``import nlp_shap`` works without ``[viz]``.
+- **0.1.13** (2026-07-15): :mod:`nlp_shap.viz` with the ``token_text`` and
+  ``token_bar`` renderers and the ``[viz]`` extra (on PyPI; no ``v0.1.13`` git
+  tag).
+- **0.1.12** (2026-07-15): :class:`~nlp_shap.backends.api.ApiBackend` for
+  OpenAI-compatible HTTP APIs and the ``[api]`` extra.
+- **0.1.11** (2026-07-15):
+  :class:`~nlp_shap.backends.transformers.text.TransformersTextBackend`, prefix
+  KV caching and the ``[transformers]`` extra.
+- **0.1.10** (2026-07-15): :class:`~nlp_shap.backends.lmstudio.LmStudioBackend`
+  and the ``[lmstudio]`` extra.
+- **0.1.9** (2026-07-15): :meth:`~nlp_shap.pipeline.runner.ExplainRunner.reanalyze`,
+  stage telemetry and :class:`~nlp_shap.runtime.metrics.PerfSummary`.
+- **0.1.8** (2026-07-14): :class:`~nlp_shap.pipeline.runner.ExplainRunner`, the
+  orchestrator and the ``mock`` backend.
+- **0.1.7** (2026-07-14): TF-IDF, embedding and logprob value functions,
+  presentation normalizers and :class:`~nlp_shap.GenerationRecord`.
+- **0.1.6** (2026-07-14): the ``mc``, ``complementary`` and ``neyman_cc``
+  estimators.
+- **0.1.5** (2026-07-13): :class:`~nlp_shap.estimation.exact.ExactEstimator`
+  and :meth:`~nlp_shap.runtime.scheduler.InferenceScheduler.run_iter`.
 
 .. _release-0-1-4:
 
