@@ -1,18 +1,41 @@
-"""SHAP-style inline colored token attribution renderer."""
+"""SHAP-style inline colored token attribution renderer.
+
+@domain viz
+@see [[knowledge/architecture/viz]]
+"""
 
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from ..domain.estimands import Estimand
+from ..protocols.plugin import PluginOptions
 from .colors import token_background_css, token_background_rgba
+from .labels import check_attribution
 from .style import new_attribution_figure, polish_text_axes
 
 if TYPE_CHECKING:
     from matplotlib.figure import Figure
 
+    from ..plugins.context import PluginContext
+
+
+_BOX_PAD = 0.35
+"""Token box padding, as a fraction of the font size."""
+_HEADER_INCHES = 1.4
+"""Figure height outside the token lines (title, legend, margins)."""
+_LINE_INCHES = 0.5
+"""Figure height of one line of tokens."""
+
 
 class TokenTextRenderer:
     """Render attributions as inline colored tokens."""
+
+    options_model: ClassVar[type[PluginOptions]] = PluginOptions
+    """Accepts no ``explanation.plugin_options``."""
+
+    def __init__(self, context: "PluginContext | None" = None) -> None:
+        """Accept the plugin context; this plugin reads no settings from it."""
+        _ = context
 
     @property
     def name(self) -> str:
@@ -28,12 +51,7 @@ class TokenTextRenderer:
         title: str | None = None,
     ) -> "Figure":
         """Build a matplotlib figure with SHAP-style colored token labels."""
-        if len(labels) != len(values):
-            msg = "labels and values must have the same length"
-            raise ValueError(msg)
-        if not labels:
-            msg = "cannot render an empty attribution"
-            raise ValueError(msg)
+        check_attribution(labels, values)
 
         vmax = max(abs(value) for value in values)
         header = title or f"{estimand.value.title()} token attributions"
@@ -44,34 +62,36 @@ class TokenTextRenderer:
             header,
             loc="left",
             fontsize=13,
-            fontweight="semibold",
+            fontweight="bold",
             color="#111827",
             pad=12,
         )
-        cursor_x = 0.02
-        baseline_y = 0.42
-        for label, value in zip(labels, values, strict=True):
-            red, green, blue, alpha = token_background_rgba(value, vmax)
-            token_width = max(0.06, len(label) * 0.013)
+        fontsize = 12.0
+        tokens = [
             axis.text(
-                cursor_x,
-                baseline_y,
+                0.0,
+                0.0,
                 label,
                 transform=axis.transAxes,
-                fontsize=12,
+                fontsize=fontsize,
                 va="center",
                 ha="left",
                 color="#111827",
                 bbox={
-                    "boxstyle": "round,pad=0.35,rounding_size=0.08",
-                    "facecolor": (red, green, blue, alpha),
+                    "boxstyle": f"round,pad={_BOX_PAD},rounding_size=0.08",
+                    "facecolor": token_background_rgba(value, vmax),
                     "edgecolor": "none",
                 },
             )
-            cursor_x += token_width
-        _draw_color_legend(axis)
+            for label, value in zip(labels, values, strict=True)
+        ]
         fig.tight_layout()
-        return cast("Figure", fig)
+        lines = _wrap_tokens(axis, tokens, fontsize)
+        fig.set_size_inches(width, _HEADER_INCHES + _LINE_INCHES * len(lines))
+        fig.tight_layout()
+        _place_tokens(axis, tokens, lines, fontsize)
+        _draw_color_legend(axis)
+        return fig
 
     def to_html(
         self,
@@ -82,9 +102,7 @@ class TokenTextRenderer:
         title: str | None = None,
     ) -> str:
         """Return an HTML fragment with colored token spans for Jupyter."""
-        if len(labels) != len(values):
-            msg = "labels and values must have the same length"
-            raise ValueError(msg)
+        check_attribution(labels, values)
         vmax = max(abs(value) for value in values)
         header = title or f"{estimand.value.title()} token attributions"
         spans: list[str] = []
@@ -119,6 +137,47 @@ class TokenTextRenderer:
             ".nlp-shap-token:hover{box-shadow:0 0 0 1px rgba(17,24,39,.12);}"
             "</style>"
         )
+
+
+def _box_metrics(
+    axis: Any, tokens: Sequence[Any], fontsize: float
+) -> tuple[list[float], float, float]:
+    """Return rendered box widths, the box padding and the gap in pixels."""
+    pad = _BOX_PAD * fontsize * float(axis.figure.dpi) / 72.0
+    gap = 0.5 * fontsize * float(axis.figure.dpi) / 72.0
+    widths = [float(token.get_window_extent().width) + 2.0 * pad for token in tokens]
+    return widths, pad, gap
+
+
+def _wrap_tokens(axis: Any, tokens: Sequence[Any], fontsize: float) -> list[list[int]]:
+    """Group token indices into lines that fit the axes width, measured in pixels."""
+    widths, _, gap = _box_metrics(axis, tokens, fontsize)
+    limit = float(axis.get_window_extent().width) * 0.98
+    lines: list[list[int]] = [[]]
+    used = 0.0
+    for index, width in enumerate(widths):
+        if lines[-1] and used + width > limit:
+            lines.append([])
+            used = 0.0
+        lines[-1].append(index)
+        used += width + gap
+    return lines
+
+
+def _place_tokens(
+    axis: Any, tokens: Sequence[Any], lines: list[list[int]], fontsize: float
+) -> None:
+    """Position tokens left to right per line so each box clears the next."""
+    widths, pad, gap = _box_metrics(axis, tokens, fontsize)
+    bounds = axis.get_window_extent()
+    axis_width, axis_height = float(bounds.width), float(bounds.height)
+    line_px = _LINE_INCHES * float(axis.figure.dpi)
+    for row, line in enumerate(lines):
+        cursor = 0.01 * axis_width
+        y_frac = 1.0 - (row + 0.5) * line_px / axis_height
+        for index in line:
+            tokens[index].set_position(((cursor + pad) / axis_width, y_frac))
+            cursor += widths[index] + gap
 
 
 def _draw_color_legend(axis: Any) -> None:
