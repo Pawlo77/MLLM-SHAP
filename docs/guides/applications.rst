@@ -64,7 +64,9 @@ vendor escalation.
 Players may be retrieved passages or sentences within them. Coalition masking
 simulates missing evidence; Shapley or Banzhaf scores show which sources were
 load-bearing for the final answer — critical for knowledge-base maintenance and
-hallucination post-mortems.
+hallucination post-mortems. The built-in partitioner makes every token a player;
+to make each retrieved passage one player, register a partitioner as shown in
+:doc:`extending` and set ``explanation.players`` to its name.
 
 **Content moderation and safety.**
 Safety classifiers on user-generated text benefit from explanations that isolate
@@ -73,8 +75,10 @@ noise from attribution dashboards shown to human moderators.
 
 **Internal copilots and document workflows.**
 Legal, HR, and finance copilots process sensitive documents. Run archives with
-typed manifests support internal audit: reproducible :class:`~nlp_shap.ExplainConfig`
-YAML, estimand labels, and coalition payoffs for each reviewed document.
+typed manifests support internal audit: each archive keeps the full
+:class:`~nlp_shap.ExplainConfig`, the estimand label, the base generation and every
+coalition output, and :meth:`~nlp_shap.ExplainRunner.reanalyze` recomputes payoffs
+and attributions from them without calling the model again.
 
 Model risk management
 ---------------------
@@ -123,8 +127,8 @@ Before production use:
 
 1. Define players (tokens, spans, chunks) and absence policy for your use case.
 2. Choose **estimand** (Shapley vs Banzhaf) to match stakeholder questions.
-3. Persist :class:`~nlp_shap.RunManifest` metadata and coalition archives for
-   reproducibility.
+3. Keep run archives (manifest, base generation and coalition outputs) for
+   reproducibility; attributions are recomputed from them with ``reanalyze``.
 4. Document value functions and baselines (:math:`v(\emptyset)`) in run configs.
 5. Validate on known toy games (majority rule, additive cases) before scaling.
 
@@ -141,11 +145,11 @@ References
 
 - Board of Governors of the Federal Reserve System. (2011). SR 11-7: Guidance on
   model risk management.
-  `Federal Reserve SR 11-7 <https://www.federalreserve.gov/supervisionreg/srletters/sr1107.htm>`__
+  `Federal Reserve SR 11-7 <https://www.federalreserve.gov/boarddocs/srletters/2011/sr1107.htm>`__
 - Regulation (EU) 2016/679 (GDPR), Article 22 — automated individual decision-making.
 - Lundberg, S. M., & Lee, S.-I. (2017). A unified approach to interpreting model
   predictions. *Advances in Neural Information Processing Systems*, 30.
   `arXiv:1705.07874 <https://arxiv.org/abs/1705.07874>`__
 - Fryer, D. V., Strümke, I., & Nguyen, H. D. (2021). Shapley values for feature
   selection: The good, the bad, and the axioms. *IEEE Access*, 9, 144352–144360.
-  `DOI:10.1109/ACCESS.2021.3115252 <https://doi.org/10.1109/ACCESS.2021.3115252>`__
+  `arXiv:2102.10936 <https://arxiv.org/abs/2102.10936>`__

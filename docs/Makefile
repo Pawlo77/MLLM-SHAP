@@ -1,17 +1,22 @@
 # Minimal makefile for Sphinx documentation
 #
+# Strict by default: warnings are errors (-W), every warning is reported
+# (--keep-going) and every cross-reference must resolve (-n, see conf.py).
 
-SPHINXOPTS    ?=
+SPHINXOPTS    ?= -W --keep-going -n
 SPHINXBUILD   ?= sphinx-build
 SOURCEDIR     = .
 BUILDDIR      = _build
 
-NOTEBOOK_SOURCES = estimands_toy_game.ipynb masking_views.ipynb runtime_core.ipynb exact_estimation.ipynb estimator_comparison.ipynb attribution_viz.ipynb text_explain_e2e.ipynb
+NOTEBOOK_SOURCES = explain_pipeline.ipynb archive_reanalyze.ipynb cli.ipynb plugins_extending.ipynb estimands_toy_game.ipynb masking_views.ipynb runtime_core.ipynb exact_estimation.ipynb estimator_comparison.ipynb attribution_viz.ipynb text_explain_e2e.ipynb
 
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
-.PHONY: help Makefile copy-notebooks render-guide-outputs
+.PHONY: help Makefile clean copy-notebooks render-guide-outputs export-knowledge linkcheck
+
+clean:
+	rm -rf "$(BUILDDIR)" notebooks
 
 copy-notebooks:
 	@mkdir -p notebooks
@@ -22,5 +27,12 @@ copy-notebooks:
 render-guide-outputs:
 	@cd .. && uv run python docs/scripts/render_guide_outputs.py
 
-%: Makefile copy-notebooks render-guide-outputs
+export-knowledge:
+	@cd .. && uv run python scripts/export_knowledge.py
+
+# External links only; doi.org is skipped (rate limits), see linkcheck_ignore.
+linkcheck: copy-notebooks export-knowledge
+	@$(SPHINXBUILD) -M linkcheck "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+
+%: Makefile copy-notebooks render-guide-outputs export-knowledge
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)

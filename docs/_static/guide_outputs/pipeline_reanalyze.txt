@@ -1,0 +1,4 @@
+archive files: ['archive.sqlite', 'base_generation.txt', 'manifest.json']
+explain:   (0.5, 0.5)
+min_max:   (0.5, 0.5)
+backend calls during reanalyze: 0

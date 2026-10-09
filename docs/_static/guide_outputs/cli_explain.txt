@@ -1,0 +1,8 @@
+exit code: 0
+keys: ['values', 'labels', 'base_value', 'grand_value', 'estimand', 'metrics', 'manifest', 'perf']
+  Why +0.2000
+   is +0.2000
+  the +0.2000
+  sky +0.2000
+ blue +0.2000
+sum == grand - base: True

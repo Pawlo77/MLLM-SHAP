@@ -1,1 +1,1 @@
-mc complementary neyman_cc
+('complementary', 'exact', 'mc', 'neyman_cc')

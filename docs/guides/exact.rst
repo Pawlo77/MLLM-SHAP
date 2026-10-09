@@ -2,8 +2,8 @@ Using the exact estimator
 =========================
 
 :class:`~nlp_shap.estimation.exact.ExactEstimator` lazily enumerates every
-coalition mask (except the grand coalition) and delegates attribution to a
-registered estimand plugin.
+coalition mask, including the empty and grand coalitions, and delegates
+attribution to a registered estimand plugin.
 
 Quick start
 -----------
@@ -12,10 +12,13 @@ Quick start
 
    from itertools import product
 
-   from nlp_shap.domain.coalition import CoalitionMask
-   from nlp_shap.domain.players import PlayerSet
-   from nlp_shap.estimation.estimands import BanzhafAggregator, ShapleyAggregator
-   from nlp_shap.estimation.exact import ExactEstimator
+   from nlp_shap import (
+       BanzhafAggregator,
+       CoalitionMask,
+       ExactEstimator,
+       PlayerSet,
+       ShapleyAggregator,
+   )
 
    player_set = PlayerSet(player_ids=("p0", "p1", "p2"))
    estimator = ExactEstimator()
@@ -26,7 +29,7 @@ Quick start
        include_minimal_masks=False,
        seed=0,
    ))
-   print("coalitions:", len(masks))  # 7 for three players
+   print("coalitions:", len(masks))  # 8 for three players
 
    all_masks = [
        tuple(bits) for bits in product([False, True], repeat=player_set.num_players)
@@ -62,7 +65,7 @@ needed:
 
 .. code-block:: python
 
-   from nlp_shap.estimation.exact import ExactEstimator
+   from nlp_shap import ExactEstimator
 
    for index, mask_int in enumerate(ExactEstimator.iter_mask_ints(3)):
        present = ExactEstimator.mask_int_to_present(mask_int, 3)
@@ -79,8 +82,7 @@ Exact enumeration requires a full budget fraction:
 
 .. code-block:: python
 
-   from nlp_shap.domain.players import PlayerSet
-   from nlp_shap.estimation.exact import ExactEstimator
+   from nlp_shap import ExactEstimator, PlayerSet
 
    player_set = PlayerSet(player_ids=("p0",))
    try:
@@ -98,20 +100,72 @@ Exact enumeration requires a full budget fraction:
 Plugin resolution
 -----------------
 
-Resolve the estimator from packaging entry points:
+The pipeline builds the estimator through the plugin registry. Every plugin
+factory receives a :class:`~nlp_shap.plugins.context.PluginContext` holding the
+run configuration:
 
 .. code-block:: python
 
-   from nlp_shap.plugins import PluginGroup, PluginRegistry, register_builtin_plugins
+   from nlp_shap import ExplainConfig, PluginContext, PluginGroup, PluginRegistry
+   from nlp_shap.plugins import register_builtin_plugins
 
    registry = PluginRegistry()
    register_builtin_plugins(registry)
-   registry.load_entry_points(PluginGroup.ESTIMATORS)
+   config = ExplainConfig.model_validate({
+       "backend": {"kind": "mock", "model_id": "stub"},
+       "explanation": {"estimator": "exact"},
+   })
+   context = PluginContext(config=config, registry=registry)
 
-   estimator = registry.resolve(PluginGroup.ESTIMATORS, "exact")
-   print(estimator.name)
+   estimator = registry.resolve(
+       PluginGroup.ESTIMATORS, config.explanation.estimator, context
+   )
+   print(type(estimator).__name__, estimator.name)
 
 .. guide-result:: exact_plugin
+
+Inside the pipeline
+-------------------
+
+With ``estimator: exact`` the runner requests all :math:`2^n` coalitions. The
+grand coalition :math:`N` is the unmasked prompt, whose output the base
+generation already produced, so it is served from the hot store instead of a
+second backend call:
+
+.. code-block:: python
+
+   from nlp_shap import (
+       ConversationSnapshot,
+       ExplainConfig,
+       ExplainRunner,
+       Message,
+       Role,
+       Turn,
+   )
+
+   snapshot = ConversationSnapshot.from_turns((
+       Turn(messages=(Message(role=Role.USER, text="is it in stock"),)),
+   ))
+   config = ExplainConfig.model_validate({
+       "backend": {"kind": "mock", "model_id": "stub"},
+       "explanation": {
+           "estimator": "exact",
+           "absence_policy": "pad",
+           "archive": {"path": ""},
+       },
+   })
+   output = ExplainRunner(config).explain_sync(snapshot)
+   print("players:", len(output.result.values))
+   print("requested:", output.metrics.requested)
+   print("served from the base generation:", output.metrics.cache_hits)
+   print(
+       "sum of values:",
+       round(sum(output.result.values), 6),
+       "= v(N) - v(empty):",
+       round(output.result.grand_value - output.result.base_value, 6),
+   )
+
+.. guide-result:: exact_pipeline
 
 Notebook
 --------

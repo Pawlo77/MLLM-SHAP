@@ -20,7 +20,9 @@ From a local clone:
 
    make install
 
-Use the project ``.venv`` as the notebook kernel when working from source.
+``make notebooks`` re-executes every notebook and stores its outputs. For
+interactive work, register the project environment as a kernel with
+``make kernel`` (``nlp-shap (uv)``) or select ``.venv`` as the kernel.
 
 Notebooks
 ---------
@@ -31,57 +33,101 @@ open the ``.ipynb`` on GitHub or browse the full catalog in
 
 .. list-table::
    :header-rows: 1
-   :widths: 24 56 20
+   :widths: 22 48 14 16
 
    * - Notebook
      - What it demonstrates
+     - Extras
      - Source
+
+   * - :doc:`notebooks/explain_pipeline`
+     - :class:`~nlp_shap.ExplainRunner` end to end: content parts and
+       snapshot JSON, :class:`~nlp_shap.PlayerSet` spans, YAML configuration
+       and its :exc:`~nlp_shap.ConfigError` guards, the efficiency check,
+       :meth:`~nlp_shap.ExplainRunOutput.to_dict`, every estimator and
+       estimand, progress callbacks, stage spans and logging.
+     - none
+     - `GitHub <https://github.com/Pawlo77/nlp-shap/blob/main/examples/explain_pipeline.ipynb>`__
+
+   * - :doc:`notebooks/archive_reanalyze`
+     - Run archives (manifest version 4, WAL, ``on_exists``),
+       :meth:`~nlp_shap.ExplainRunner.reanalyze` reproducing explain,
+       rescoring with every value function and normalizer, the archive
+       errors and ``strict=True``.
+     - none
+     - `GitHub <https://github.com/Pawlo77/nlp-shap/blob/main/examples/archive_reanalyze.ipynb>`__
+
+   * - :doc:`notebooks/cli`
+     - ``nlp-shap explain``, ``reanalyze``, ``plugins`` and ``config``; JSON
+       and PNG output; exit codes 0, 2 and 3.
+     - ``[viz]``
+     - `GitHub <https://github.com/Pawlo77/nlp-shap/blob/main/examples/cli.ipynb>`__
+
+   * - :doc:`notebooks/plugins_extending`
+     - :func:`~nlp_shap.default_registry`, :class:`~nlp_shap.PluginContext`,
+       ``plugin_options`` and their validation, a custom backend and value
+       function, plugin conflicts and entry points.
+     - none
+     - `GitHub <https://github.com/Pawlo77/nlp-shap/blob/main/examples/plugins_extending.ipynb>`__
 
    * - :doc:`notebooks/estimands_toy_game`
      - Shapley and Banzhaf aggregators on majority vs additive games;
-       :class:`~nlp_shap.pipeline.result.ExplainResult` labelling and
-       :class:`~nlp_shap.pipeline.manifest.RunManifest` wire format. CPU-only.
-     - `GitHub <https://github.com/Pawlo77/nlp-shap/blob/main/examples/estimands_toy_game.ipynb>`_
+       :class:`~nlp_shap.ExplainResult` labelling and
+       :class:`~nlp_shap.RunManifest` wire format.
+     - none
+     - `GitHub <https://github.com/Pawlo77/nlp-shap/blob/main/examples/estimands_toy_game.ipynb>`__
 
    * - :doc:`notebooks/masking_views`
      - Token partition, delete/pad/neutral absence policies,
-       :class:`~nlp_shap.masking.builder.MaskedSnapshot`,
-       :class:`~nlp_shap.masking.codec.MaskCodec`, and
-       :class:`~nlp_shap.masking.space.MaskSpace`. CPU-only.
-     - `GitHub <https://github.com/Pawlo77/nlp-shap/blob/main/examples/masking_views.ipynb>`_
+       :class:`~nlp_shap.masking.MaskedSnapshot`,
+       :class:`~nlp_shap.masking.MaskCodec`, and
+       :class:`~nlp_shap.masking.MaskSpace`.
+     - none
+     - `GitHub <https://github.com/Pawlo77/nlp-shap/blob/main/examples/masking_views.ipynb>`__
 
    * - :doc:`notebooks/runtime_core`
      - Run archive persistence, coalition dedup keys, hot LRU cache, and async
-       :class:`~nlp_shap.runtime.scheduler.InferenceScheduler` metrics.
-       CPU-only.
-     - `GitHub <https://github.com/Pawlo77/nlp-shap/blob/main/examples/runtime_core.ipynb>`_
+       :class:`~nlp_shap.runtime.InferenceScheduler` metrics.
+     - none
+     - `GitHub <https://github.com/Pawlo77/nlp-shap/blob/main/examples/runtime_core.ipynb>`__
 
    * - :doc:`notebooks/exact_estimation`
-     - :class:`~nlp_shap.estimation.exact.ExactEstimator` coalition enumeration
-       and :meth:`~nlp_shap.estimation.exact.ExactEstimator.estimate_attributions`
-       estimand delegation with budget guards. CPU-only.
-     - `GitHub <https://github.com/Pawlo77/nlp-shap/blob/main/examples/exact_estimation.ipynb>`_
+     - :class:`~nlp_shap.ExactEstimator` enumeration of all :math:`2^n`
+       coalitions and
+       :meth:`~nlp_shap.ExactEstimator.estimate_attributions` estimand delegation
+       with budget guards.
+     - none
+     - `GitHub <https://github.com/Pawlo77/nlp-shap/blob/main/examples/exact_estimation.ipynb>`__
 
    * - :doc:`notebooks/estimator_comparison`
-     - Eight-player benchmark (cap ≤ 20) plus five-player fraction sweep
-       0.1–0.5, MC bias analysis, multi-seed L1 vs exact Shapley. CPU-only.
-     - `GitHub <https://github.com/Pawlo77/nlp-shap/blob/main/examples/estimator_comparison.ipynb>`_
+     - Monte Carlo, complementary and Neyman-CC against exact Shapley values;
+       relative L1 error as the budget fraction grows.
+     - ``[viz]``
+     - `GitHub <https://github.com/Pawlo77/nlp-shap/blob/main/examples/estimator_comparison.ipynb>`__
 
    * - :doc:`notebooks/attribution_viz`
-     - Mock exact explain run with ``token_text`` and ``token_bar`` attribution
-       renderers. Requires ``[viz]``.
-     - `GitHub <https://github.com/Pawlo77/nlp-shap/blob/main/examples/attribution_viz.ipynb>`_
+     - Signed Shapley and Banzhaf values rendered with ``token_text`` and
+       ``token_bar``, :func:`~nlp_shap.display_attribution_html`,
+       :func:`~nlp_shap.render_attribution_html` and the renderer classes.
+     - ``[viz]``
+     - `GitHub <https://github.com/Pawlo77/nlp-shap/blob/main/examples/attribution_viz.ipynb>`__
 
    * - :doc:`notebooks/text_explain_e2e`
-     - Refund-policy prompt explained with LM Studio and transformers backends on
-       the same model id, then visualized with
-       :func:`~nlp_shap.render_attribution`. Optional LM Studio at runtime.
-     - `GitHub <https://github.com/Pawlo77/nlp-shap/blob/main/examples/text_explain_e2e.ipynb>`_
+     - One refund prompt on the LM Studio, transformers (KV cache, ``dtype``,
+       pinned ``revision``) and HTTP API backends from the ``config/``
+       presets, then visualized with :func:`~nlp_shap.render_attribution`;
+       LM Studio is skipped when no server runs.
+     - ``[lmstudio]``, ``[transformers]``, ``[api]``, ``[viz]``
+     - `GitHub <https://github.com/Pawlo77/nlp-shap/blob/main/examples/text_explain_e2e.ipynb>`__
 
 .. toctree::
    :hidden:
    :maxdepth: 1
 
+   notebooks/explain_pipeline
+   notebooks/archive_reanalyze
+   notebooks/cli
+   notebooks/plugins_extending
    notebooks/estimands_toy_game
    notebooks/masking_views
    notebooks/runtime_core
