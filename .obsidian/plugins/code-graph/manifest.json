@@ -1,0 +1,11 @@
+{
+	"id": "code-graph",
+	"name": "Code Graph",
+	"version": "1.0.8",
+	"minAppVersion": "1.7.2",
+	"description": "Visualize how your code files connect — imports, calls, inheritance, implements, comment-links, ADRs, and tests — as an interactive graph alongside your notes.",
+	"author": "Joshua Williams",
+	"authorUrl": "https://github.com/mrjw717",
+	"fundingUrl": "https://buymeacoffee.com/JoshuaWilliams",
+	"isDesktopOnly": true
+}

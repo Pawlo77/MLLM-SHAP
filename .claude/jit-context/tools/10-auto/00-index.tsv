@@ -1,0 +1,1 @@
+Bash	~(^|[;&|\n] *)(([a-z_][a-z0-9_]*=[^[:space:];&|]*|rtk|command|[e]nv|sudo|nohup|nice|time)[[:space:]]+)*git[[:space:]]+(-[^[:space:];&|]*[[:space:]]+([^-;&|[:space:]][^[:space:];&|]*[[:space:]]+)?)*push($|[[:space:];&|])	git-push.md	remind			
