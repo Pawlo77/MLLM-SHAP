@@ -28,6 +28,8 @@ Optional, not part of `make check`: `make tests-all`, `make bench`, `make practi
 - Upgrades and releases go through skills `upgrade`, `release` and `ship`.
 - Claude reviews its own work before a PR (skill `review`, agent `reviewer`) and answers
   Copilot's threads on its own PR; it never reviews other PRs on GitHub.
+- Subagents default to Sonnet, Haiku for mechanical work; pass `model: opus` or `fable`
+  when depth pays: estimator math, hard bugs, security or design review, a failed Sonnet run.
 - No new markdown or doc expansion unless it is requested or crucial new information.
 - No runtime dependency without a justification in `pyproject.toml`.
 - Use `prek`, never the `pre-commit` CLI; change dependencies in `pyproject.toml` plus
