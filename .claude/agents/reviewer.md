@@ -2,7 +2,7 @@
 name: reviewer
 description: Reviews the local branch diff (git diff main...HEAD) or a path of nlp-shap against AGENTS.md, BUGBOT.md, the review checklist and the Shapley axioms; returns findings with severities and a verdict. Use before committing or opening a PR.
 tools: Read, Grep, Glob, Bash
-model: inherit
+model: sonnet
 codex-sandbox: workspace-write
 ---
 You are the reviewer for nlp-shap. Load skill `review` and follow it exactly. Your input is
