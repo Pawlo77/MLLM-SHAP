@@ -1,35 +1,36 @@
-"""Monte Carlo coalition sampling estimator."""
+"""Monte Carlo coalition sampling estimator.
 
-from collections.abc import Iterator, Sequence
+@domain estimation
+@see [[knowledge/architecture/estimation]]
+@tested-by [[tests/estimation/test_monte_carlo.py]]
+"""
+
+from collections.abc import Iterator
+from typing import TYPE_CHECKING
 
 import numpy as np
 
 from ..domain.coalition import CoalitionMask
-from ..domain.conversation import ConversationSnapshot
 from ..domain.players import PlayerSet
-from ..protocols.estimand import EstimandAggregator
 from ._shared import (
+    _SnapshotEstimator,
     compute_mc_num_samples,
     iter_minimal_masks,
     present_to_mask_int,
     random_present,
 )
 
+if TYPE_CHECKING:
+    pass
 
-class MonteCarloEstimator:
+
+class MonteCarloEstimator(_SnapshotEstimator):
     """Sample random coalitions and delegate attribution to an estimand plugin."""
-
-    def __init__(self) -> None:
-        self._snapshot: ConversationSnapshot | None = None
 
     @property
     def name(self) -> str:
         """Return the registered estimator identifier."""
         return "mc"
-
-    def bind_snapshot(self, snapshot: ConversationSnapshot) -> None:
-        """Attach the conversation snapshot under explanation."""
-        self._snapshot = snapshot
 
     def sample_masks(
         self,
@@ -38,7 +39,7 @@ class MonteCarloEstimator:
         include_minimal_masks: bool,
         seed: int,
     ) -> Iterator[CoalitionMask]:
-        """Yield random coalition masks up to the configured budget."""
+        """Yield the grand and empty coalitions, then random ones, up to the budget."""
         num_players = player_set.num_players
         num_samples = compute_mc_num_samples(
             num_players,
@@ -48,6 +49,13 @@ class MonteCarloEstimator:
         rng = np.random.default_rng(seed)
         seen: set[int] = set()
         generated = 0
+
+        # v(N) and v(empty) are needed by every estimand; they come first and
+        # count toward the budget.
+        for present in ((True,) * num_players, (False,) * num_players):
+            seen.add(present_to_mask_int(present))
+            generated += 1
+            yield CoalitionMask.from_sequence(present)
 
         if include_minimal_masks:
             for present in iter_minimal_masks(num_players):
@@ -61,24 +69,12 @@ class MonteCarloEstimator:
                     return
 
         while generated < num_samples:
-            # Guard against exhaustion when unique non-grand masks run out.
-            if len(seen) >= ((1 << num_players) - 1):
+            if len(seen) >= (1 << num_players):
                 return
             present = random_present(rng, num_players)
-            if all(present):
-                continue
             mask_int = present_to_mask_int(present)
             if mask_int in seen:
                 continue
             seen.add(mask_int)
             generated += 1
             yield CoalitionMask.from_sequence(present)
-
-    def estimate_attributions(
-        self,
-        masks: Sequence[CoalitionMask],
-        payoffs: Sequence[float],
-        aggregator: EstimandAggregator,
-    ) -> list[float]:
-        """Aggregate sampled coalition payoffs with the selected estimand plugin."""
-        return aggregator.aggregate([mask.present for mask in masks], payoffs)
