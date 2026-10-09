@@ -1,43 +1,138 @@
 name: Pytest
 
+# No path filters: `tests-passed` is a required status check, and a workflow
+# skipped by a path filter never reports it, which would block unrelated PRs.
 on:
   push:
     branches:
       - main
-    paths:
-      - ".github/workflows/test.yaml"
-      - "src/**"
-      - "tests/**"
-      - "pyproject.toml"
-      - "uv.lock"
   pull_request:
     branches:
       - main
-    paths:
-      - ".github/workflows/test.yaml"
-      - "src/**"
-      - "tests/**"
-      - "pyproject.toml"
-      - "uv.lock"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.12", "3.13", "3.14"]
+    env:
+      # Overrides the tracked .python-version so `uv run` keeps the matrix interpreter.
+      UV_PYTHON: ${{ matrix.python }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v8.3.2
+        uses: astral-sh/setup-uv@v10.2.0
         with:
           enable-cache: true
-          version: "0.11.28"
+          version: "0.12.23"
+
+      - name: Set up Python
+        run: uv python install "$UV_PYTHON"
+
+      - name: Sync dependencies
+        run: uv sync --locked --all-groups --extra api --extra viz --python "$UV_PYTHON"
+
+      - name: Show interpreter
+        run: uv run python --version
+
+      - name: Run pytest with coverage
+        run: >-
+          uv run pytest
+          --cov=./src/nlp_shap
+          --cov-report=xml
+          --cov-fail-under=85
+          -m "not lms and not gpu and not bench and not slow and not practical"
+          tests/
+
+      - name: Run slow tests (wheel build)
+        if: matrix.python == '3.12'
+        run: uv run pytest -m slow tests/
+
+      - name: Upload coverage to Codecov
+        if: matrix.python == '3.12'
+        uses: codecov/codecov-action@v7.1.1
+        with:
+          files: coverage.xml
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+
+  notebooks:
+    # Executes the CPU-only notebooks (blocking) and compares the fresh outputs with
+    # the committed ones (advisory until the notebooks are fully deterministic).
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      PYTHONHASHSEED: "0"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.2.0
+        with:
+          enable-cache: true
+          version: "0.12.23"
 
       - name: Set up Python
         run: uv python install 3.12
 
       - name: Sync dependencies
-        run: uv sync --locked --all-groups
+        run: uv sync --locked --all-groups --extra api --extra viz
 
-      - name: Run pytest
-        run: uv run pytest -m "not lms and not gpu and not bench" tests/
+      - name: Execute notebooks
+        run: |
+          set -euo pipefail
+          notebooks="estimands_toy_game masking_views runtime_core exact_estimation attribution_viz"
+          before="$RUNNER_TEMP/nb-before"
+          after="$RUNNER_TEMP/nb-after"
+          mkdir -p "$before" "$after"
+          for name in $notebooks; do
+            nb="examples/$name.ipynb"
+            # Cell metadata (execution timestamps) is cleared on both sides.
+            uv run jupyter nbconvert --to notebook \
+              --ClearMetadataPreprocessor.enabled=True \
+              --output-dir "$before" "$nb"
+            uv run jupyter nbconvert --to notebook --execute --inplace "$nb"
+            uv run jupyter nbconvert --to notebook \
+              --ClearMetadataPreprocessor.enabled=True \
+              --output-dir "$after" "$nb"
+          done
+
+      - name: Compare with committed outputs
+        # Advisory: some outputs are not yet deterministic (scheduler counters,
+        # rendered PNG bytes). Remove continue-on-error once they are.
+        continue-on-error: true
+        run: diff -ru -I '"image/png"' "$RUNNER_TEMP/nb-before" "$RUNNER_TEMP/nb-after"
+
+  tests-passed:
+    # Single required status check for branch protection.
+    name: tests-passed
+    if: always()
+    needs: [test, notebooks]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Fail when a test job did not succeed
+        if: ${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped') }}
+        run: |
+          echo "A required test job did not succeed." >&2
+          exit 1
+
+      - name: All test jobs succeeded
+        run: echo "All test jobs succeeded."
