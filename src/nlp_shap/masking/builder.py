@@ -1,4 +1,9 @@
-"""View-based masked snapshots with structural sharing."""
+"""View-based masked snapshots with structural sharing.
+
+@domain masking
+@see [[knowledge/architecture/masking]]
+@tested-by [[tests/masking/test_builder.py]]
+"""
 
 from dataclasses import dataclass
 
@@ -26,6 +31,7 @@ class MaskedSnapshot:
     """Registered absence-policy identifier used to render the view."""
 
     def __post_init__(self) -> None:
+        """Check that the mask matches the players."""
         self.mask.validate_against(self.players)
 
     @property
@@ -43,6 +49,7 @@ class MaskBuilder:
     """Build masked snapshot views without copying the base conversation."""
 
     def __init__(self, policy: AbsencePolicy) -> None:
+        """Render coalitions with ``policy``."""
         self._policy = policy
 
     @property

@@ -1,4 +1,7 @@
-"""Tests for mask-space projection."""
+"""Tests for mask-space projection.
+
+@see [[src/nlp_shap/masking/space.py]]
+"""
 
 import pytest
 

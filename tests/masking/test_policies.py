@@ -1,4 +1,7 @@
-"""Tests for absence-policy rendering."""
+"""Tests for absence-policy rendering.
+
+@see [[src/nlp_shap/masking/policies.py]]
+"""
 
 from nlp_shap.domain.coalition import CoalitionMask
 from nlp_shap.domain.conversation import ConversationSnapshot

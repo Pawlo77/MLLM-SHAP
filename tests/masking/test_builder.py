@@ -1,4 +1,7 @@
-"""Tests for masked snapshot views and structural sharing."""
+"""Tests for masked snapshot views and structural sharing.
+
+@see [[src/nlp_shap/masking/builder.py]]
+"""
 
 import random
 

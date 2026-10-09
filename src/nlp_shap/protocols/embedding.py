@@ -1,4 +1,8 @@
-"""Embedding provider protocol."""
+"""Embedding provider protocol.
+
+@domain protocols
+@see [[knowledge/architecture/protocols]]
+"""
 
 from typing import Protocol
 
