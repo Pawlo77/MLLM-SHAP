@@ -4,6 +4,7 @@ default_language_version:
 default_install_hook_types:
   - pre-commit
   - commit-msg
+  - pre-push
 
 exclude: |
   (?x)^(
@@ -12,10 +13,11 @@ exclude: |
     dist/|
     \.pytest_cache/|
     \.ruff_cache/|
-    \.pytest_benchmark/
+    \.pytest_benchmark/|
+    \.obsidian/plugins/[^/]+/(manifest\.json|main\.js|styles\.css)
   )
 
-minimum_prek_version: "0.4.0"
+minimum_prek_version: "0.5.0"
 
 ci:
   autofix_commit_msg: |
@@ -27,6 +29,8 @@ repos:
   - repo: builtin
     hooks:
       - id: trailing-whitespace
+        # Generated jit-context indexes end in empty TSV columns.
+        exclude: \.tsv$
         args: [--markdown-linebreak-ext=md]
       - id: end-of-file-fixer
       - id: mixed-line-ending
@@ -63,15 +67,101 @@ repos:
         pass_filenames: false
         always_run: false
 
+      - id: strip-watermarks
+        name: strip AI attribution watermarks
+        entry: uv run python scripts/strip_watermarks.py
+        language: system
+        types: [text]
+        exclude: ^(scripts/strip_watermarks\.py|tests/scripts/test_strip_watermarks\.py)$
+
+      - id: memory-content-guard
+        name: memory files contain no secrets or personal data
+        entry: uv run python scripts/hooks/check_memory_files.py
+        language: system
+        files: ^(\.remember/|knowledge/).*\.md$
+
+      - id: knowledge-build
+        name: rebuild generated knowledge notes
+        entry: uv run python scripts/build_knowledge.py
+        language: system
+        files: ^(src/|pyproject\.toml|tests/benchmarks/(baselines?|mutation-results)\.json|docs/release_notes\.rst|knowledge/(issues|decisions|architecture|concepts)/|\.claude/jit-context/)
+        pass_filenames: false
+
+
+      - id: vault-check
+        name: vault consistency (notes, links, tags, generated notes)
+        entry: bash -c 'uv run python scripts/check_vault.py --quiet --strict-tags && uv run python scripts/build_knowledge.py --check'
+        language: system
+        always_run: true
+        pass_filenames: false
+
+      - id: brevity
+        name: brevity budgets (rule brevity)
+        entry: uv run python scripts/check_brevity.py
+        language: system
+        files: \.(md|mdc|rst|py|ipynb)$
+        pass_filenames: false
+
+      - id: rules-sync
+        name: Claude Code rules match Cursor rules
+        entry: uv run python scripts/sync_rules.py --check
+        language: system
+        files: ^(\.cursor/rules/.*\.mdc|\.claude/rules/.*\.md|scripts/sync_rules\.py)$
+        pass_filenames: false
+
+      - id: agents-sync
+        name: Codex agents match Claude Code agents
+        entry: uv run python scripts/sync_agents.py --check
+        language: system
+        files: ^(\.claude/agents/.*\.md|\.codex/agents/.*\.toml|scripts/sync_agents\.py)$
+        pass_filenames: false
+
+      - id: skills-ref
+        name: skills follow the Agent Skills spec
+        entry: uv run pytest -q -p no:cacheprovider tests/skills/test_skill_frontmatter.py
+        language: system
+        files: ^(\.agents/skills/|\.claude/agents/|tests/skills/)
+        pass_filenames: false
+
+      - id: mypy
+        name: mypy
+        entry: uv run mypy --config-file=pyproject.toml
+        language: system
+        files: ^src/
+        pass_filenames: false
+
+      - id: ty
+        name: ty (advisory)
+        entry: bash -c 'uv run ty check src || true'
+        language: system
+        pass_filenames: false
+        always_run: true
+        verbose: true
+
+      - id: agent-check
+        name: make agent-check (mirrors CI)
+        entry: make agent-check
+        language: system
+        stages: [pre-push]
+        pass_filenames: false
+        always_run: true
+
+      - id: strip-watermarks-msg
+        name: strip AI attribution from the commit message
+        entry: uv run python scripts/strip_watermarks.py
+        language: system
+        stages: [commit-msg]
+        always_run: true
+
       - id: conventional-commit-msg
         name: conventional commit message
-        entry: python .cursor/hooks/commit_msg.py
+        entry: python scripts/hooks/commit_msg.py
         language: system
         stages: [commit-msg]
         always_run: true
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.21
+    rev: v0.16.10
     hooks:
       - id: ruff-check
         types_or: [python, pyi]
@@ -79,16 +169,12 @@ repos:
       - id: ruff-format
         types_or: [python, pyi]
 
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.16.0
+  - repo: https://github.com/zizmorcore/zizmor-pre-commit
+    rev: v1.30.1
     hooks:
-      - id: mypy
-        files: ^src/
-        additional_dependencies:
-          - numpy>=2.0.0,<3.0.0
-          - pydantic>=2.11.0,<3.0.0
-          - types-PyYAML>=6.0.12.20250915
-        args: [--config-file=pyproject.toml]
+      - id: zizmor
+        args: [-q, --min-severity=medium]
+        files: ^\.github/workflows/[^/]+\.ya?ml$
 
   - repo: https://github.com/PyCQA/bandit
     rev: 1.9.4
@@ -107,6 +193,8 @@ repos:
           (?x)^(
             uv\.lock|
             LICENSE|
+            \.remember/|
+            \.claude/jit-context/|
             docs/_build/|
             examples/.*\.ipynb
           )

@@ -1,0 +1,60 @@
+# The PR title appears in the merge commit and drives the label (assign-author.yaml), so it
+# follows the commit convention (AGENTS.md). No drafts, WIP titles or WIP labels: PRs are
+# opened ready for review. The body carries no AI attribution (scripts/strip_watermarks.py).
+name: PR title
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize, ready_for_review, converted_to_draft, labeled, unlabeled]
+
+permissions: {}
+
+concurrency:
+  group: pr-title-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  title:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: scripts/strip_watermarks.py
+          sparse-checkout-cone-mode: false
+
+      - name: Body carries no AI attribution
+        env:
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          printf '%s\n' "$BODY" > "$RUNNER_TEMP/body.md"
+          if ! python3 scripts/strip_watermarks.py --check "$RUNNER_TEMP/body.md"; then
+            echo "::error::Remove the AI attribution line(s) above from the PR body."
+            exit 1
+          fi
+
+      - name: 'Title is "type: subject"; not a draft, not WIP'
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+          DRAFT: ${{ github.event.pull_request.draft }}
+          LABELS: ${{ join(github.event.pull_request.labels.*.name, ' ') }}
+        run: |
+          if [ "$DRAFT" = true ]; then
+            echo "::error::Draft pull requests are not allowed; mark it ready for review."
+            exit 1
+          fi
+          if printf '%s' "$LABELS" | grep -Eiq '(^|[^a-z])wip([^a-z]|$)'; then
+            echo "::error::WIP labels are not allowed; remove the label when the PR is ready. Labels: $LABELS"
+            exit 1
+          fi
+          pattern='^(feat|fix|docs|test|refactor|chore|ci|build|perf)(\([a-z0-9/_-]+\))?: [^ ]'
+          if ! printf '%s' "$TITLE" | grep -Eq "$pattern"; then
+            echo "::error::PR title must look like 'type: subject' or 'type(scope): subject' with type in feat|fix|docs|test|refactor|chore|ci|build|perf. Got: $TITLE"
+            exit 1
+          fi
+          if printf '%s' "$TITLE" | grep -Eiq '(^|[^a-z])wip([^a-z]|$)'; then
+            echo "::error::WIP pull requests are not allowed; open the PR when it is ready for review. Got: $TITLE"
+            exit 1
+          fi
