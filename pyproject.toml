@@ -1,6 +1,6 @@
 [project]
 name = "nlp-shap"
-version = "0.1.18"
+version = "0.1.19"
 description = "Shapley-value attributions for conversational language models."
 readme = "README.md"
 requires-python = ">=3.12"

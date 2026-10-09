@@ -12,7 +12,8 @@ tags: [generated]
 
 | Version | Date | Added | Changed | Fixed | Other |
 |---|---|---|---|---|---|
-| Unreleased |  | 0 | 0 | 2 | 0 |
+| Unreleased |  | 0 | 0 | 0 | 0 |
+| 0.1.19 | 2026-10-09 | 0 | 0 | 2 | 0 |
 | 0.1.18 | 2026-10-09 | 19 | 18 | 28 | 12 |
 | 0.1.17 | 2026-10-07 | 2 | 6 | 6 | 1 |
 | Earlier releases |  | 0 | 0 | 0 | 0 |
