@@ -1,4 +1,9 @@
-"""Numpy similarity metrics for value functions."""
+"""Numpy similarity metrics for value functions.
+
+@domain value
+@see [[knowledge/architecture/value]]
+@tested-by [[tests/value/test_metrics.py]]
+"""
 
 from collections.abc import Sequence
 

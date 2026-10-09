@@ -1,4 +1,7 @@
-"""Tests for player sets."""
+"""Tests for player sets.
+
+@see [[src/nlp_shap/domain/players.py]]
+"""
 
 import pytest
 

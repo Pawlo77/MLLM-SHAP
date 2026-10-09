@@ -1,4 +1,7 @@
-"""Ensure domain modules remain backend-free."""
+"""Ensure domain modules remain backend-free.
+
+@see [[knowledge/architecture/domain]]
+"""
 
 import ast
 from pathlib import Path
@@ -14,9 +17,11 @@ def test_domain_modules_do_not_import_backends() -> None:
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
-                for alias in node.names:
-                    if _is_forbidden(alias.name, forbidden_roots):
-                        violations.append(f"{path.name}: import {alias.name}")
+                violations.extend(
+                    f"{path.name}: import {alias.name}"
+                    for alias in node.names
+                    if _is_forbidden(alias.name, forbidden_roots)
+                )
             elif (
                 isinstance(node, ast.ImportFrom)
                 and node.module is not None

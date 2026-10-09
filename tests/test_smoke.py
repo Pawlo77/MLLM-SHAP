@@ -1,4 +1,7 @@
-"""Smoke tests for the nlp_shap package."""
+"""Smoke tests for the nlp_shap package.
+
+@see [[knowledge/architecture/core]]
+"""
 
 from importlib.metadata import version
 from pathlib import Path

@@ -46,15 +46,32 @@ satisfying four axioms on the space of cooperative games. Let :math:`\phi(v) =
 Efficiency
 ~~~~~~~~~~
 
-The entire worth of the grand coalition is distributed:
+The entire worth of the grand coalition is distributed. For games normalized
+so that :math:`v(\emptyset) = 0`:
 
 .. math::
 
    \sum_{i \in N} \phi_i(v) = v(N)
 
-**Explainability reading:** attributions sum to the model utility difference
-between the grand coalition and the empty baseline (when :math:`v(\emptyset)` is
-the reference). This supports global consistency checks in audit workflows.
+Payoffs in ``nlp-shap`` are similarities to the base generation, so the empty
+prompt usually scores above zero. The library therefore uses the convention
+
+.. math::
+
+   \sum_{i \in N} \phi_i(v) = v(N) - v(\emptyset)
+
+which is the axiom applied to the normalized game
+:math:`v'(S) = v(S) - v(\emptyset)`: subtracting a constant from every payoff
+leaves every marginal contribution, and hence every Shapley value, unchanged.
+Each result reports both terms as
+:attr:`~nlp_shap.ExplainResult.grand_value` (:math:`v(N)`) and
+:attr:`~nlp_shap.ExplainResult.base_value` (:math:`v(\emptyset)`).
+
+**Explainability reading:** attributions sum to the change in model utility
+between the full prompt and the fully masked prompt. On the full coalition table
+(``exact``, or any estimator at ``budget.fraction: 1.0``) the identity holds to
+floating-point precision and is the first consistency check in an audit; sampled
+estimates approach it as the budget grows.
 
 Symmetry
 ~~~~~~~~
@@ -123,9 +140,12 @@ features do not contribute), the Shapley value yields the SHAP explanation.
 Important distinction for ``nlp-shap``:
 
 - **SHAP** names a family of explanation methods tied to Shapley allocations.
-- An **estimand** is the quantity your pipeline actually estimates. Monte Carlo
-  averaging over sampled coalitions without Shapley weights targets the
-  **Banzhaf index**, not the Shapley value — see :doc:`estimands`.
+- An **estimand** is the quantity your pipeline actually estimates. Averaging
+  the marginal contributions of sampled coalitions uniformly targets the
+  **Banzhaf index**; averaging them within each coalition size first and then
+  across sizes (a size-stratified mean) targets the **Shapley value**. The
+  ``nlp-shap`` aggregators do the latter for Shapley and the former for Banzhaf
+  — see :doc:`estimands` and :doc:`approximation`.
 
 When Shapley values are appropriate
 -----------------------------------
@@ -161,4 +181,4 @@ References
   Shapley*. Cambridge University Press.
 - Young, H. P. (1985). Monotonic solutions of cooperative games.
   *International Journal of Game Theory*, 14(2), 65–72.
-  `DOI:10.1007/BF01270210 <https://doi.org/10.1007/BF01270210>`__
+  `DOI:10.1007/BF01769885 <https://doi.org/10.1007/BF01769885>`__

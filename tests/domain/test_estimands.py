@@ -1,4 +1,7 @@
-"""Tests for estimand domain types."""
+"""Tests for estimand domain types.
+
+@see [[src/nlp_shap/domain/estimands.py]]
+"""
 
 import pytest
 

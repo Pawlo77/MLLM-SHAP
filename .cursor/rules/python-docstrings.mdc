@@ -6,9 +6,7 @@ alwaysApply: false
 
 # Python docstrings (Google style)
 
-Use [Google-style](https://google.github.io/styleguide/pyguide.html#383-functions-and-methods) docstrings in `src/nlp_shap`. Types live in annotations — **do not repeat them** in `Args`/`Returns`.
-
-Every Python file in `src/nlp_shap` starts with a module docstring — including `__init__.py`. Every module-level constant gets a docstring on the line immediately below its definition.
+Use [Google-style](https://google.github.io/styleguide/pyguide.html#383-functions-and-methods) docstrings in `src/nlp_shap`. Types live in annotations; **do not repeat them** in `Args`/`Returns`.
 
 | Surface | Rule |
 |---------|------|
@@ -19,7 +17,24 @@ Every Python file in `src/nlp_shap` starts with a module docstring — including
 | Enum / StrEnum members | **Required**: one-line docstring directly under every member |
 | Public function/method | One line when name + signature + return type are sufficient; otherwise add only the sections that add information (`Args`, `Returns`, `Raises`, `Note`) |
 | `_private` fields | Omit unless logic is genuinely non-obvious |
-| `tests/` | Docstring optional; prefer clear test names |
+| `tests/` | Module docstring with an `@see [[...]]` tag (traceability); test docstrings optional |
+
+## Traceability tags (Code Graph)
+
+After the one-line module summary and a blank line, package modules carry
+`@domain <subpackage>`, `@see [[knowledge/architecture/<subpackage>]]` and, when a test file
+covers the module, `@tested-by [[tests/<path>.py]]`. Top-level modules use `@domain core`.
+Test files carry `@see [[src/nlp_shap/<path>.py]]` in their module docstring.
+`make vault-check` (`check_vault.py --strict-tags`) lists missing tags.
+
+```python
+"""Exact coalition enumeration estimator.
+
+@domain estimation
+@see [[knowledge/architecture/estimation]]
+@tested-by [[tests/estimation/test_exact.py]]
+"""
+```
 
 **Redundant (forbidden):** restating parameter types, echoing the function name, empty `Args`/`Returns`, module essays.
 
@@ -28,48 +43,18 @@ Every Python file in `src/nlp_shap` starts with a module docstring — including
 **Examples:** only on public entry points (`__init__.py` exports, primary user-facing APIs) where usage is non-obvious. Keep minimal and runnable.
 
 ```python
-"""Public exports for the estimation package."""
-
 DEFAULT_BUDGET: int = 100
 """Default evaluation budget when the caller does not override it."""
 
-@dataclass(frozen=True, slots=True)
-class ExplainResult:
-    """Attribution output for a single explain run."""
-
-    estimand: Estimand
-    """Estimand used to aggregate coalition samples."""
-
-    values: tuple[float, ...]
-    """Per-player attribution values."""
-
-class Estimand(StrEnum):
-    """Supported cooperative-game value formulations."""
-
-    SHAPLEY = "shapley"
-    """Shapley value with coalition weights k!(n-k-1)!/n!."""
-
-    BANZHAF = "banzhaf"
-    """Banzhaf index with uniform coalition weights 1/2^(n-1)."""
-
-# Sufficient — contract is obvious
-def version() -> str:
-    """Return the package version."""
-
-# Needed — constraints not visible in types
 def explain(chat: Chat, budget: int) -> Result:
     """Attribute ``chat`` under a fixed evaluation budget.
 
     Args:
         chat: Conversation to explain; must include at least one user turn.
-        budget: Maximum number of model evaluations.
-
-    Returns:
-        Token attributions and run metadata.
 
     Raises:
         ValueError: If ``chat`` has no explainable tokens.
     """
 ```
 
-Comments: non-obvious logic only — never narrate what the code already says.
+Comments: non-obvious logic only; never narrate what the code already says.

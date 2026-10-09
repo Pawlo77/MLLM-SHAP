@@ -1,9 +1,9 @@
 [project]
 name = "nlp-shap"
-version = "0.1.16"
-description = "Multimodal explainability tool for NLP based on Shapley value."
+version = "0.1.18"
+description = "Shapley-value attributions for conversational language models."
 readme = "README.md"
-requires-python = ">=3.12,<3.13"
+requires-python = ">=3.12"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
 
@@ -24,11 +24,14 @@ keywords = [
 ]
 
 classifiers = [
-  "Development Status :: 2 - Pre-Alpha",
+  "Development Status :: 3 - Alpha",
   "Intended Audience :: Information Technology",
   "Intended Audience :: Science/Research",
   "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 
@@ -38,6 +41,9 @@ dependencies = [
     "pydantic>=2.11.0,<3.0.0",
     "pyyaml>=6.0.2,<7.0.0",
 ]
+
+[project.scripts]
+nlp-shap = "nlp_shap.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/Pawlo77/nlp-shap"
@@ -57,6 +63,7 @@ banzhaf = "nlp_shap.estimation.estimands.banzhaf:BanzhafAggregator"
 
 [project.entry-points."nlp_shap.partitions"]
 tokens = "nlp_shap.masking.partitions:TokenPartitioner"
+messages = "nlp_shap.masking.partitions:MessagePartitioner"
 
 [project.entry-points."nlp_shap.absence_policies"]
 delete = "nlp_shap.masking.policies:DeletePolicy"
@@ -92,7 +99,7 @@ lmstudio = [
 transformers = [
     "accelerate>=1.0.0",
     "torch>=2.5.0",
-    "transformers>=4.40.0",
+    "transformers>=4.56.0",
 ]
 api = [
     "httpx>=0.28.0",
@@ -102,36 +109,24 @@ viz = [
     "seaborn>=0.13.0",
     "ipywidgets>=8.1.0",
 ]
-dev = [
-    "bandit>=1.9.4",
-    "httpx>=0.28.0",
-    "matplotlib>=3.9.0",
-    "seaborn>=0.13.0",
-    "mypy>=1.16.0",
-    "prek>=0.4.9",
-    "pytest>=8.4.2",
-    "pytest-cov>=7.1.0",
-    "ruff>=0.15.20",
-]
 
 [build-system]
-requires = ["uv_build>=0.11.0,<0.12.0"]
+requires = ["uv_build>=0.12.23,<0.13.0"]
 build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
   "bandit>=1.9.4",
-  "httpx>=0.28.0",
+  "hypothesis>=6.168.0",
   "ipykernel>=7.3.0",
-  "ipywidgets>=8.1.0",
-  "matplotlib>=3.9.0",
-  "seaborn>=0.13.0",
-  "mypy>=1.16.0",
+  "mutmut>=3.8.0",
+  "mypy>=2.4.0",
   "nbconvert>=7.17.1",
-  "prek>=0.4.9",
+  "prek>=0.5.5",
   "pytest>=8.4.2",
+  "pytest-benchmark>=5.3.0",
   "pytest-cov>=7.1.0",
-  "ruff>=0.15.20",
+  "ruff>=0.16.10",
   "furo>=2024.8.6",
   "myst-nb>=1.3.0",
   "sphinx>=9.1.0",
@@ -139,17 +134,54 @@ dev = [
   "sphinx-design>=0.6.1",
   "types-pyyaml>=6.0.12.20250915",
   "scikit-learn>=1.7.0",
+  "ty>=0.0.85",
 ]
 
+[tool.uv.build-backend]
+source-exclude = ["**/AGENTS.md", "**/CLAUDE.md"]
+
 [tool.uv]
-required-version = ">=0.11.28"
+required-version = ">=0.12.23"
 
 [tool.ruff]
 target-version = "py312"
 line-length = 88
+# Generated rules, the vault and skill Markdown hold Python fences that
+# ``ruff format`` must not rewrite; the vendored skill stays as upstream ships it.
+# Our own skill scripts (.agents/skills/*/scripts) are linted.
+extend-exclude = [
+  ".claude/rules",
+  "knowledge",
+  ".agents/skills/caveman",
+  ".agents/**/*.md",
+]
 
 [tool.ruff.lint]
-select = ["B", "E", "F", "I", "N", "RUF", "SIM", "T10", "UP"]
+select = [
+  "B", "E", "F", "I", "N", "RUF", "SIM", "T10", "UP",
+  "D", "PT", "PTH", "TRY", "PERF", "FURB", "ARG", "C4", "ISC", "RET",
+  "C901", "PLR0915",
+]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 12
+
+[tool.ruff.lint.pylint]
+max-statements = 50
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["D", "ARG"]
+"docs/**" = ["D", "ARG", "PTH"]
+# Existing size; new code must fit the budget.
+"src/nlp_shap/pipeline/orchestrator.py" = ["PLR0915"]
+"src/nlp_shap/pipeline/reanalyze.py" = ["PLR0915"]
+"src/nlp_shap/estimation/complementary.py" = ["PLR0915"]
+"scripts/check_vault.py" = ["C901"]
+"scripts/build_knowledge.py" = ["C901"]
+".agents/skills/plugin/scripts/new_plugin.py" = ["PLR0915"]
 
 [tool.ruff.format]
 preview = true
@@ -171,11 +203,11 @@ module = ["logging518", "logging518.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = ["lmstudio", "lmstudio.*"]
+module = ["lmstudio"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = ["matplotlib", "matplotlib.*", "seaborn", "seaborn.*", "IPython", "IPython.*"]
+module = ["matplotlib", "matplotlib.*", "seaborn", "IPython", "IPython.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
@@ -183,27 +215,39 @@ module = ["httpx", "httpx.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = ["torch", "torch.*", "transformers", "transformers.*"]
+module = ["torch", "transformers"]
 ignore_missing_imports = true
 
 [tool.bandit]
 exclude_dirs = [".venv", "tests", "docs/_build", "examples", ".cursor"]
 
 [tool.pytest.ini_options]
-pythonpath = ["src"]
+pythonpath = ["src", "."]
 filterwarnings = [
 ]
 markers = [
   "bench: local performance benchmark (run with make bench)",
   "lms: LM Studio integration test (requires local LM Studio with qwen2-500m-instruct)",
   "gpu: transformers integration test (requires torch and optional GPU)",
+  "slow: builds a wheel or reaches the network (make tests-all, not make tests)",
+  "practical(feature): real model on a GPU (make practical TIER=quick|deep FEATURE=<glob>)",
 ]
+
+[tool.mutmut]
+# ``make mutate`` (slow, on demand, not CI): mutate the estimation package and
+# run only its tests against each mutant.
+source_paths = ["src"]
+only_mutate = ["src/nlp_shap/estimation/*"]
+also_copy = ["tests"]
+pytest_add_cli_args_test_selection = ["tests/estimation"]
+pytest_add_cli_args = ["-p", "no:cacheprovider", "-q"]
 
 [tool.coverage.run]
 source = ["nlp_shap"]
 branch = true
 
 [tool.coverage.report]
+fail_under = 85
 show_missing = true
 skip_empty = true
 

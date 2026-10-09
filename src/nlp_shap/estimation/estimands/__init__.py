@@ -1,4 +1,8 @@
-"""Estimand aggregation plugins."""
+"""Estimand aggregation plugins.
+
+@domain estimation
+@see [[knowledge/architecture/estimation]]
+"""
 
 from .banzhaf import BanzhafAggregator
 from .shapley import ShapleyAggregator

@@ -1,0 +1,4 @@
+players: 4
+requested: 16
+served from the base generation: 1
+sum of values: 1.0 = v(N) - v(empty): 1.0

@@ -1,4 +1,7 @@
-"""Tests for explain pipeline telemetry."""
+"""Tests for explain pipeline telemetry.
+
+@see [[src/nlp_shap/runtime/telemetry.py]]
+"""
 
 from nlp_shap.runtime.telemetry import InMemoryObservabilitySink
 

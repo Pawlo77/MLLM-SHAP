@@ -1,24 +1,25 @@
-"""Micro-benchmarks for mask pack and unpack throughput."""
+"""Micro-benchmarks for mask pack and unpack throughput.
 
-import time
+@see [[src/nlp_shap/masking/codec.py]]
+"""
 
 import pytest
+from pytest_benchmark.fixture import BenchmarkFixture
 
 from nlp_shap.masking.codec import MaskCodec
 
-from ._regression import BaselineStore
+_MASKS = [tuple(bit == "1" for bit in format(index, "08b")) for index in range(256)]
+
+
+def _pack_unpack_10k() -> int:
+    restored_bits = 0
+    for index in range(10_000):
+        restored = MaskCodec.unpack(MaskCodec.pack(_MASKS[index % len(_MASKS)]))
+        restored_bits += len(restored)
+    return restored_bits
 
 
 @pytest.mark.bench
-def test_mask_pack_unpack_10k(baseline_store: BaselineStore) -> None:
-    """Packing and unpacking 10k masks stays within budget."""
-    masks = [
-        tuple(bit == 1 for bit in format(index % 256, "08b")) for index in range(256)
-    ]
-    start = time.perf_counter()
-    for index in range(10_000):
-        packed = MaskCodec.pack(masks[index % len(masks)])
-        restored = MaskCodec.unpack(packed)
-        assert len(restored) == len(masks[index % len(masks)])
-    elapsed = time.perf_counter() - start
-    baseline_store.check("mask_pack_unpack_10k", elapsed, ceiling_s=0.25)
+def test_mask_pack_unpack_10k(benchmark: BenchmarkFixture) -> None:
+    """Packing and unpacking 10k eight-player masks."""
+    assert benchmark(_pack_unpack_10k) == 80_000

@@ -2,3 +2,7 @@ backend:
   kind: mock
   model_id: stub
   api_host: null
+  timeout_s: 120.0
+  max_retries: 3
+  options: {}
+generation:

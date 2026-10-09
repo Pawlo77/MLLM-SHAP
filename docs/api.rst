@@ -2,61 +2,16 @@ API reference
 =============
 
 ``nlp-shap`` exposes a small, typed public surface. Import the symbols below
-from :mod:`nlp_shap` or follow the module pages for implementation detail.
+from :mod:`nlp_shap`; the module pages document every class and function where it
+is defined.
 
 Public exports
 --------------
 
-.. list-table::
-   :header-rows: 1
-   :widths: 30 70
+The table is generated from ``nlp_shap.__all__`` at build time, so it always lists
+what ``from nlp_shap import ...`` accepts.
 
-   * - Symbol
-     - Description
-   * - :func:`~nlp_shap.render_attribution`
-     - Render token attributions with a registered viz plugin. See :doc:`api/viz`.
-   * - :func:`~nlp_shap.render_attribution_html`
-     - Return inline HTML for Jupyter token coloring. See :doc:`api/viz`.
-   * - :class:`~nlp_shap.ExplainRunner`
-     - End-to-end explain pipeline entry point. See :doc:`api/pipeline`.
-   * - :class:`~nlp_shap.ExplainConfig`
-     - Top-level explain pipeline configuration. See :doc:`api/pipeline`.
-   * - :func:`~nlp_shap.explain_config_from_yaml`
-     - Parse YAML into :class:`~nlp_shap.ExplainConfig`.
-   * - :func:`~nlp_shap.explain_config_to_yaml`
-     - Serialize :class:`~nlp_shap.ExplainConfig` to YAML.
-   * - :class:`~nlp_shap.ConversationSnapshot`
-     - Frozen conversation input for explainability. See :doc:`api/domain`.
-   * - :class:`~nlp_shap.PlayerSet`
-     - Ordered explainability players. See :doc:`api/domain`.
-   * - :class:`~nlp_shap.CoalitionMask`
-     - Boolean coalition presence mask. See :doc:`api/domain`.
-   * - :class:`~nlp_shap.CooperativeGame`
-     - Cooperative-game player set and references. See :doc:`api/domain`.
-   * - :class:`~nlp_shap.PluginRegistry`
-     - Plugin discovery and resolution. See :doc:`api/plugins`.
-   * - :class:`~nlp_shap.masking.TokenPartitioner`
-     - Whitespace token partition plugin. See :doc:`api/masking`.
-   * - :class:`~nlp_shap.masking.MaskBuilder`
-     - Shared masked snapshot views. See :doc:`api/masking`.
-   * - :class:`~nlp_shap.runtime.RunArchive`
-     - SQLite + blob coalition archive. See :doc:`api/runtime`.
-   * - :class:`~nlp_shap.runtime.InferenceScheduler`
-     - Async bounded coalition execution. See :doc:`api/runtime`.
-   * - :class:`~nlp_shap.Estimand`
-     - Estimand label enum (``shapley`` | ``banzhaf``). See :doc:`api/domain`.
-   * - :class:`~nlp_shap.ShapleyAggregator`
-     - Shapley-weighted coalition aggregation. See :doc:`api/estimation`.
-   * - :class:`~nlp_shap.ExactEstimator`
-     - Exact coalition enumeration. See :doc:`api/estimation`.
-   * - :class:`~nlp_shap.BanzhafAggregator`
-     - Uniform Banzhaf coalition aggregation. See :doc:`api/estimation`.
-   * - :class:`~nlp_shap.ExplainResult`
-     - Labelled explain output. See :doc:`api/pipeline`.
-   * - :class:`~nlp_shap.RunManifest`
-     - Run-archive metadata builder. See :doc:`api/pipeline`.
-   * - :func:`~nlp_shap.parse_manifest`
-     - Parse manifest payloads at archive boundaries. See :doc:`api/pipeline`.
+.. public-exports::
 
 Modules
 -------
@@ -68,6 +23,8 @@ Modules
    api/protocols
    api/plugins
    api/pipeline
+   api/cli
+   api/errors
    api/masking
    api/runtime
    api/estimation
@@ -75,9 +32,16 @@ Modules
    api/backends
    api/viz
 
-Package version
----------------
+Package-level objects
+---------------------
 
 .. automodule:: nlp_shap
-   :members: __version__
-   :undoc-members:
+   :no-members:
+
+.. autofunction:: nlp_shap.configure_logging
+
+.. py:data:: nlp_shap.__version__
+   :type: str
+
+   Installed package version, read from the distribution metadata
+   (``0.0.0+unknown`` when the package is not installed).

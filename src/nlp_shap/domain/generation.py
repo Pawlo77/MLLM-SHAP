@@ -1,4 +1,8 @@
-"""Generation payloads scored by value functions."""
+"""Generation payloads scored by value functions.
+
+@domain domain
+@see [[knowledge/architecture/domain]]
+"""
 
 from dataclasses import dataclass
 
@@ -16,8 +20,9 @@ class GenerationRecord:
     audio_token_rows: tuple[tuple[int, ...], ...] = ()
     """Token rows hashed for TF-IDF similarity (multimodal audio stream)."""
 
-    logprobs: tuple[float, ...] = ()
-    """Per-token log probabilities when the backend exposes them."""
+    logprobs: tuple[float, ...] | None = None
+    """Natural-log probability of each generated token; ``None`` when the
+    backend did not return them."""
 
     embedding: tuple[float, ...] = ()
     """Static embedding vector for embedding-based value functions."""

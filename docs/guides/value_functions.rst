@@ -1,11 +1,33 @@
 Using value functions
 =====================
 
-Value functions score coalition model outputs relative to a base generation.
-They are separate from estimands (Shapley/Banzhaf) and estimators (sampling).
+A value function turns a coalition's model output into a payoff :math:`v(S)` by
+comparing it with the base generation (the output for the full prompt). Value
+functions are independent of the estimand (Shapley or Banzhaf) and the estimator
+(how coalitions are sampled). ``explanation.value_fn`` selects one by name.
 
-TF-IDF cosine (U3)
-------------------
+.. list-table::
+   :header-rows: 1
+   :widths: 24 76
+
+   * - ``value_fn``
+     - Payoff of a coalition output
+   * - ``tfidf_cosine``
+     - Cosine similarity of TF-IDF vectors of the output and the base generation,
+       with IDF weights frozen on all outputs of the run
+   * - ``embedding_cosine``
+     - Cosine similarity of the output and base embeddings (static or contextual)
+   * - ``embedding_euclidean``
+     - ``1 / (1 + distance)`` between the output and base embeddings
+   * - ``logprob``
+     - Mean log probability of the output's own tokens; needs a backend that
+       returns them
+
+:doc:`migrating_from_mllm_shap` maps these to the U1–U4 utility labels used by
+MLLM-Shap.
+
+TF-IDF cosine
+-------------
 
 .. code-block:: python
 
@@ -27,11 +49,12 @@ TF-IDF cosine (U3)
 
 .. guide-result:: value_tfidf
 
-Call :meth:`~nlp_shap.value.tfidf.TfIdfCosineValue.fit` once at run start to
-freeze inverse document frequency weights for the full archive corpus.
+The pipeline calls :meth:`~nlp_shap.value.tfidf.TfIdfCosineValue.fit` once on
+every output of the run, so all coalitions are scored with the same IDF weights,
+and :meth:`~nlp_shap.ExplainRunner.reanalyze` refits on the archived outputs.
 
-Embedding utilities (U1/U2/U4)
-------------------------------
+Embedding similarity
+--------------------
 
 .. code-block:: python
 
@@ -47,8 +70,30 @@ Embedding utilities (U1/U2/U4)
 
 .. guide-result:: value_embedding
 
-Use ``embedding_euclidean`` for U4-style ``1 / (1 + distance)`` scoring.
-Set ``embedding_mode=EmbeddingMode.CONTEXTUAL`` for U2 contextual embeddings.
+In a run the mode comes from ``explanation.embedding_mode`` (``static`` or
+``contextual``): the registry builds the value function with a
+:class:`~nlp_shap.plugins.context.PluginContext` and the plugin reads the setting
+from it, so the YAML below is all you need:
+
+.. code-block:: yaml
+
+   explanation:
+     value_fn: embedding_cosine
+     embedding_mode: contextual
+
+Where the vectors come from depends on the backend. The embedding value functions
+declare ``needs_embeddings`` (:class:`~nlp_shap.protocols.value.RequiresEmbeddings`),
+so the pipeline asks the backend for model embeddings
+(``GenerationConfig.compute_embeddings``): the transformers backend returns the
+mean of the output tokens' input embeddings (``static``) and of the last hidden
+state (``contextual``), and ``explain`` scores those. Backends without embeddings
+(mock, LM Studio, HTTP API) give deterministic hash vectors of the generated text,
+which only make sense for tests. :meth:`~nlp_shap.ExplainRunner.reanalyze` always
+scores the hash vectors, because archives store the generated text only, so for a
+transformers run its embedding values differ from those of ``explain``.
+
+Settings of third-party value functions go under
+``explanation.plugin_options.<name>``; see :doc:`extending`.
 
 Logprob utility
 ---------------
@@ -63,15 +108,26 @@ Logprob utility
 
 .. guide-result:: value_logprob
 
-When logprobs are absent, :class:`~nlp_shap.value.logprob.LogprobValue` falls
-back to a deterministic stub so reanalysis paths can swap utilities without
-new backend calls.
+``v(S)`` is the mean natural-log probability of the tokens the model generated
+for coalition ``S``, so it lies in ``(-inf, 0]`` and an empty generation scores 0.
+It measures how confident the model is in its own answer; the base generation is
+not read, and ``v(N)`` is the base generation's own mean.
+
+:class:`~nlp_shap.value.logprob.LogprobValue` declares ``needs_logprobs``
+(:class:`~nlp_shap.protocols.value.RequiresLogprobs`). A run with a backend that is
+not :class:`~nlp_shap.protocols.backend.SupportsLogprobs` (``mock``, ``lmstudio``)
+raises :exc:`~nlp_shap.errors.ConfigError` before any generation. A record that
+still arrives without logprobs (an HTTP server that ignores the request) raises
+:exc:`~nlp_shap.errors.LogprobsUnavailableError`. Archives store logprobs per
+coalition, and :meth:`~nlp_shap.ExplainRunner.reanalyze` refuses ``logprob`` on
+an archive whose rows have none. Backend support: :doc:`backends`.
 
 Attribution normalizers
 -----------------------
 
-Normalizers scale aggregated attributions for presentation. They do **not**
-change archived coalition utilities.
+Normalizers rescale aggregated attributions for presentation. They do **not**
+change coalition payoffs, so ``base_value`` and ``grand_value`` stay comparable
+across normalizers, and efficiency only holds for ``identity``.
 
 .. code-block:: python
 
@@ -85,3 +141,5 @@ change archived coalition utilities.
 
 Config keys: ``identity``, ``abs_sum``, ``power_shift``, ``min_max``. See
 :doc:`config` and :doc:`../theory/value_functions`.
+``examples/archive_reanalyze.ipynb`` (embedded on :doc:`../examples`) rescores
+one archived run with every value function and normalizer.

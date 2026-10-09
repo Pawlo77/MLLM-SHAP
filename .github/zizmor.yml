@@ -1,0 +1,8 @@
+# zizmor configuration — https://docs.zizmor.sh/configuration/
+# Allow version-tag pins (for example actions/checkout@v7.0.1) instead of
+# requiring full commit SHAs. Unpinned refs (for example @main) are still flagged.
+rules:
+  unpinned-uses:
+    config:
+      policies:
+        "*": ref-pin

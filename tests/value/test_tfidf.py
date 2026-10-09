@@ -1,4 +1,7 @@
-"""Tests for TF-IDF cosine value function."""
+"""Tests for TF-IDF cosine value function.
+
+@see [[src/nlp_shap/value/tfidf.py]]
+"""
 
 import math
 

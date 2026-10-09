@@ -1,0 +1,11 @@
+# Machine-local state from the remember plugin — never committed.
+logs/
+tmp/
+run/
+.install-marker
+*.lock
+*.pid
+# Live session buffer changes every tool call; the compressed layers are committed.
+now.md
+# Per-session handoff notes (handoff_mode: per_session) are private to one session.
+remember.*.md

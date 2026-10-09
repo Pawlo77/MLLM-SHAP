@@ -1,4 +1,8 @@
-"""Runtime archive, deduplication, caching, and scheduling."""
+"""Runtime archive, deduplication, caching, and scheduling.
+
+@domain runtime
+@see [[knowledge/architecture/runtime]]
+"""
 
 from .archive import (
     BASE_GENERATION_FILE,

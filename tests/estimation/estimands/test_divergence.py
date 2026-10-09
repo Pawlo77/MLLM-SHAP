@@ -1,4 +1,7 @@
-"""Tests that Shapley and Banzhaf diverge on identical coalition samples."""
+"""Tests that Shapley and Banzhaf diverge on identical coalition samples.
+
+@see [[knowledge/architecture/estimation]]
+"""
 
 from itertools import product
 

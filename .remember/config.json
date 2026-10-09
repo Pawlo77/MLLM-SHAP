@@ -1,0 +1,8 @@
+{
+  "data_dir": ".remember",
+  "prompt_stamp": "stable",
+  "handoff_mode": "single",
+  "model": "haiku",
+  "features": {"plugin_promos": false},
+  "thresholds": {"min_human_messages": 2}
+}

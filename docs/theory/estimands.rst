@@ -7,29 +7,19 @@ estimator. Monte Carlo coalition averaging does **not** automatically estimate
 Shapley values; unweighted means over sampled coalitions estimate the **Banzhaf
 index** unless Shapley weights are applied.
 
-For Shapley axioms and uniqueness, see :doc:`shapley_values`. For cooperative-game
-foundations, see :doc:`cooperative_games`.
+For cooperative-game foundations, see :doc:`cooperative_games`.
 
 Shapley value (estimand)
 ------------------------
 
-The Shapley estimand uses factorial coalition weights:
-
-.. math::
-
-   \phi_i(v) = \sum_{S \subseteq N \setminus \{i\}}
-   \frac{|S|!\,(|N|-|S|-1)!}{|N|!}
-   \bigl(v(S \cup \{i\}) - v(S)\bigr)
+The Shapley value :math:`\phi_i` (definition, axioms and uniqueness:
+:doc:`shapley_values`) weights each coalition of size :math:`k` by
 
 .. math::
 
    w_{\mathrm{Shapley}}(k, n) = \frac{k!\,(n-k-1)!}{n!}
 
 Implemented in :class:`~nlp_shap.estimation.estimands.shapley.ShapleyAggregator`.
-
-**Axiomatic summary:** efficiency, symmetry, dummy player, additivity — uniquely
-characterizing :math:`\phi` among cooperative-game allocation rules (Shapley,
-1953). See :doc:`shapley_values` for formal statements.
 
 Banzhaf index (estimand)
 ------------------------
@@ -107,17 +97,31 @@ A common pitfall in explainability codebases is to:
 3. Label the result "Shapley"
 
 Step 2 estimates a **Banzhaf-style** quantity (uniform coalition average), not
-:math:`\phi`. Strumbelj & Kononenko (2014) discuss coalition-based feature
+:math:`\phi`. Štrumbelj & Kononenko (2014) discuss coalition-based feature
 contributions; Fryer et al. (2021) analyze when Shapley axioms justify feature
 selection in ML. Always apply the estimand aggregator that matches the quantity
 you intend to report.
+
+Estimands under partial samples
+-------------------------------
+
+With ``budget.fraction`` below 1 the aggregators see only some coalitions. The
+Shapley aggregator then averages the observed marginal contributions of each
+player within each coalition size and weights the sizes equally (a stratified
+mean); the Banzhaf aggregator uses the same strata weighted by their binomial
+probabilities :math:`\binom{n-1}{k} / 2^{n-1}`, renormalized over the sizes it
+observed.
+Both estimates are exact on additive games and converge to their estimand as
+coverage grows, but only the full table guarantees efficiency. See
+:ref:`theory-partial-samples` for the formulas and
+:doc:`../guides/choosing_an_estimator` for budgets.
 
 Labelling in ``nlp-shap``
 -------------------------
 
 Every :class:`~nlp_shap.pipeline.result.ExplainResult` carries an
 :class:`~nlp_shap.domain.estimands.Estimand` label. Run archives persist the
-same label in :class:`~nlp_shap.pipeline.manifest.RunManifestPayload` so
+same label in :class:`~nlp_shap.RunManifest` so
 downstream analysis and compliance reviews can verify which estimand was used.
 
 The :class:`~nlp_shap.protocols.estimand.EstimandAggregator` protocol defines the
@@ -136,17 +140,16 @@ References
 - Dubey, P., & Shapley, L. S. (1979). Mathematical properties of the Banzhaf
   power index. *Mathematics of Operations Research*, 4(2), 99–131.
   `DOI:10.1287/moor.4.2.99 <https://doi.org/10.1287/moor.4.2.99>`__
-- Strumbelj, E., & Kononenko, I. (2014). Explaining prediction models and
+- Štrumbelj, E., & Kononenko, I. (2014). Explaining prediction models and
   individual predictions with feature contributions.
-  *Knowledge-Based Systems*, 41, 78–84.
-  `DOI:10.1016/j.knosys.2013.10.012 <https://doi.org/10.1016/j.knosys.2013.10.012>`__
+  *Knowledge and Information Systems*, 41(3), 647–665.
+  `DOI:10.1007/s10115-013-0679-x <https://doi.org/10.1007/s10115-013-0679-x>`__
 - Lundberg, S. M., & Lee, S.-I. (2017). A unified approach to interpreting model
   predictions. *Advances in Neural Information Processing Systems*, 30.
   `ML Anthology <https://mlanthology.org/neurips/2017/lundberg2017neurips-unified/>`__;
   `arXiv:1705.07874 <https://arxiv.org/abs/1705.07874>`__
 - Fryer, D. V., Strümke, I., & Nguyen, H. D. (2021). Shapley values for feature
   selection: The good, the bad, and the axioms. *IEEE Access*, 9, 144352–144360.
-  `DOI:10.1109/ACCESS.2021.3115252 <https://doi.org/10.1109/ACCESS.2021.3115252>`__;
   `arXiv:2102.10936 <https://arxiv.org/abs/2102.10936>`__
 - Ethayarajh, K., & Jurafsky, D. (2021). Attention flows are Shapley value
   explanations. In *Proceedings of the 59th Annual Meeting of the Association for

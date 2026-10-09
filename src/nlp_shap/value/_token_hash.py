@@ -1,4 +1,8 @@
-"""Token hashing helpers for TF-IDF value functions."""
+"""Token hashing helpers for TF-IDF value functions.
+
+@domain value
+@see [[knowledge/architecture/value]]
+"""
 
 import hashlib
 from collections.abc import Sequence

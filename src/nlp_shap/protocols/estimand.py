@@ -1,4 +1,8 @@
-"""Estimand aggregation protocol."""
+"""Estimand aggregation protocol.
+
+@domain protocols
+@see [[knowledge/architecture/protocols]]
+"""
 
 from collections.abc import Sequence
 from typing import Protocol

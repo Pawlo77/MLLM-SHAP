@@ -1,4 +1,7 @@
-"""Unit tests for LM Studio model resolution and download helpers."""
+"""Unit tests for LM Studio model resolution and download helpers.
+
+@see [[src/nlp_shap/backends/lmstudio/models.py]]
+"""
 
 from types import SimpleNamespace
 
@@ -48,6 +51,16 @@ def test_pick_search_result_prefers_exact_name_match() -> None:
     )
     picked = pick_search_result(results, "qwen2.5-3b-instruct")
     assert picked.search_result.name == "Qwen2.5 3B Instruct"
+
+
+def test_pick_search_result_refuses_hits_that_do_not_match() -> None:
+    """With no exact flag and no name match, nothing is picked for download."""
+    results = (
+        SimpleNamespace(search_result=SimpleNamespace(name="Llama 3", exact=False)),
+        SimpleNamespace(search_result=SimpleNamespace(name="Gemma 2", exact=False)),
+    )
+    with pytest.raises(BackendUnavailableError, match="Llama 3, Gemma 2"):
+        pick_search_result(results, "qwen2.5-3b-instruct")
 
 
 def test_pick_download_option_prefers_requested_quantization() -> None:

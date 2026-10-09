@@ -1,4 +1,7 @@
-"""Tests for coalition deduplication keys and registry."""
+"""Tests for coalition deduplication keys and registry.
+
+@see [[src/nlp_shap/runtime/dedup.py]]
+"""
 
 from nlp_shap.pipeline.config import DedupConfig, GenerationConfig
 from nlp_shap.runtime.dedup import (

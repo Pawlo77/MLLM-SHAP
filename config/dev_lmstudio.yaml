@@ -1,14 +1,15 @@
+# Development config for a local LM Studio (extra: nlp-shap[lmstudio]).
+# Start LM Studio, then run the `lms`-marked tests: uv run pytest -m lms tests/
 backend:
   kind: lmstudio
   model_id: qwen2-500m-instruct
-  api_host: null
-  serialize_generate: true
+  options:
+    serialize_generate: true
 
 generation:
   max_new_tokens: 32
   temperature: 0.0
   top_k: 1
-  precompute_base: true
 
 explanation:
   estimand: shapley
@@ -24,9 +25,10 @@ explanation:
   archive:
     path: ""
     flush_every: 50
+    on_exists: overwrite
   dedup:
     enabled: auto
   kv_cache:
-    enabled: true
+    enabled: false
   embedding_mode: static
   seed: 0

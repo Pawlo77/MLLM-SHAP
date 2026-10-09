@@ -1,4 +1,9 @@
-"""Cooperative-game domain types."""
+"""Cooperative-game domain types.
+
+@domain domain
+@see [[knowledge/architecture/domain]]
+@tested-by [[tests/domain/test_game.py]]
+"""
 
 from dataclasses import dataclass
 
@@ -11,6 +16,3 @@ class CooperativeGame:
 
     player_set: PlayerSet
     """Ordered explainability players that define the game."""
-
-    empty_value: float = 0.0
-    """Reference payoff :math:`v(\\emptyset)` for the characteristic function."""

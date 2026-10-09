@@ -5,23 +5,7 @@ alwaysApply: true
 
 # uv workflow
 
-- Install: `make install` or `uv sync --all-groups`
-- Run tools: `uv run pytest …`, `uv run prek …`, `uv run mypy …`
-- Add dev deps: edit `[dependency-groups].dev` in `pyproject.toml`, then `uv lock`
-- Build: `uv build` or `make build`
-- Never commit without updated `uv.lock` when dependencies change
-- Do not use `pip install -e .` as the primary workflow
-- Python pin: 3.12 (see `.python-version`)
-
-Hook runner is **prek**, not `pre-commit`:
-
-```bash
-make prek-all    # preferred — must pass before push (matches remote Prek Checks)
-uv run prek run --all-files
-```
-
-Agent validate: `make agent-check` (filtered pytest + prek-all). Optional markers: `make tests-all` · `make bench`.
-
-Before push: `make check` · `make docs` (when API/docs change) · `make notebooks` (when `examples/*.ipynb` change).
-
-After push: `gh run list` then `gh run watch <run-id> --exit-status` for each workflow on that commit.
+- Install: `make install` (`uv sync --all-groups --all-extras`); run tools with `uv run`; build with `make build`.
+- Dependencies: edit `pyproject.toml`, then `uv lock`; commit `uv.lock` with them. Never `pip install`.
+- Hooks: `prek`, never the `pre-commit` CLI; `make prek-all` matches the remote Prek Checks.
+- Python 3.12 (`.python-version`).

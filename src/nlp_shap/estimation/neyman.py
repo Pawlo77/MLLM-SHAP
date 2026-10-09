@@ -1,26 +1,32 @@
-"""Neyman complementary allocation estimator."""
+"""Neyman complementary allocation estimator.
+
+@domain estimation
+@see [[knowledge/architecture/estimation]]
+@tested-by [[tests/estimation/test_neyman.py]]
+"""
 
 import math
 from collections.abc import Iterator, Sequence
 from enum import IntEnum
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 import numpy as np
 
 from ..domain.coalition import CoalitionMask
-from ..domain.conversation import ConversationSnapshot
 from ..domain.players import PlayerSet
 from ._shared import (
-    aggregate_complementary_shapley,
     build_c_matrix_from_pairs,
     build_c_squared_from_pairs,
     compute_complementary_num_splits,
     increment_m_counts,
-    is_empty_or_grand,
+    iter_singletons,
     present_to_mask_int,
     random_present,
 )
 from .complementary import ComplementaryEstimator
+
+if TYPE_CHECKING:
+    from ..plugins.context import PluginContext
 
 
 class _NeymanStep(IntEnum):
@@ -35,11 +41,22 @@ class NeymanEstimator(ComplementaryEstimator):
 
     def __init__(
         self,
+        context: "PluginContext | None" = None,
         initial_fraction: float | None = None,
         initial_num_samples: int | None = None,
         use_standard_method: bool = False,
     ) -> None:
-        super().__init__()
+        """Configure phase-one sizing.
+
+        With a ``context`` the settings come from ``explanation.neyman`` and the
+        keyword arguments are ignored.
+        """
+        super().__init__(context)
+        if context is not None:
+            neyman = context.config.explanation.neyman
+            initial_fraction = neyman.initial_fraction
+            initial_num_samples = neyman.initial_num_samples
+            use_standard_method = neyman.use_standard_method
         self.initial_fraction = initial_fraction
         self.initial_num_samples = initial_num_samples
         self.use_standard_method = use_standard_method
@@ -50,12 +67,10 @@ class NeymanEstimator(ComplementaryEstimator):
         self._initial_num_splits = 0
         self._position_i = 0
         self._position_j = 0
-        self._first_call = True
         self._m_hat: np.ndarray | None = None
         self._c_matrix: np.ndarray | None = None
         self._c_squared: np.ndarray | None = None
         self._total_num_splits = 0
-        self._initial_masks_count = 0
         self._num_players = 0
         self._rng: np.random.Generator | None = None
         self._seen: set[int] | None = None
@@ -64,10 +79,6 @@ class NeymanEstimator(ComplementaryEstimator):
     def name(self) -> str:
         """Return the registered estimator identifier."""
         return "neyman_cc"
-
-    def bind_snapshot(self, snapshot: ConversationSnapshot) -> None:
-        """Attach the conversation snapshot under explanation."""
-        self._snapshot = snapshot
 
     def _resolve_initial_num_splits(self, num_players: int, total_splits: int) -> int:
         if self._use_default_initial_formula:
@@ -108,11 +119,9 @@ class NeymanEstimator(ComplementaryEstimator):
         self._position_i = 0
         # Sizes 0 and n are empty/grand and are never yielded; start at size 1.
         self._position_j = 1 if num_players >= 2 else 0
-        self._first_call = True
         self._m_hat = None
         self._c_matrix = None
         self._c_squared = None
-        self._initial_masks_count = 0
         self._rng = np.random.default_rng(seed)
         self._seen = set()
 
@@ -123,39 +132,56 @@ class NeymanEstimator(ComplementaryEstimator):
             raise RuntimeError(msg)
         return cast(int, math.ceil(m_counts.shape[0] / 2))
 
+    @staticmethod
+    def _complement_column(coalition_size: int, num_players: int) -> int:
+        """Return the M-matrix column holding the complement of a coalition."""
+        return num_players - coalition_size
+
+    def _cell_targets(self) -> np.ndarray:
+        """Per-cell phase-one targets capped by the number of distinct coalitions."""
+        n = self._num_players
+        targets = np.full((n, n + 1), self._initial_num_splits, dtype=np.int64)
+        for size in range(n + 1):
+            # Distinct size-``size`` coalitions containing a fixed player.
+            feasible = math.comb(n - 1, size - 1) if size >= 1 else 1
+            targets[:, size] = np.minimum(targets[:, size], feasible)
+        return targets
+
     def _update_m_position(self) -> bool:
         """Advance the initial-phase cursor.
 
         Return True when initial sampling completes.
 
-        Empty (size 0) and grand (size n) columns are ignored: those coalitions
-        are skipped by sampling, so requiring them to reach
-        ``initial_num_splits`` would loop forever.
+        Cells are visited size by size and, within a size, player by player.
+        Empty (size 0) and grand (size n) columns are ignored: the ``(N, empty)``
+        pair is sampled once up front. Every other cell targets
+        ``initial_num_splits`` capped by the number of distinct coalitions that
+        can fill it, so phase one always terminates.
         """
         m_counts = self._m_counts
         if m_counts is None:
             msg = "M matrix must be initialized before sampling."
             raise RuntimeError(msg)
-        incomplete = m_counts < self._initial_num_splits
+        incomplete = m_counts < self._cell_targets()
         incomplete[:, 0] = False
         incomplete[:, -1] = False
         if not np.any(incomplete):
             return True
 
-        flat = incomplete.reshape(-1)
-        start_index = self._position_i * m_counts.shape[1] + self._position_j + 1
+        # Walk the grid size by size, round-robin over players, so a budget that
+        # truncates phase one leaves the same strata empty for every player.
+        num_players = m_counts.shape[0]
+        flat = incomplete.T.reshape(-1)
+        start_index = self._position_j * num_players + self._position_i + 1
         next_indices = np.flatnonzero(flat[start_index:])
         if next_indices.size == 0:
             next_indices = np.flatnonzero(flat)
             start_index = 0
         next_index = int(next_indices[0]) + start_index
-        self._position_i, self._position_j = divmod(
-            next_index,
-            m_counts.shape[1],
-        )
+        self._position_j, self._position_i = divmod(next_index, num_players)
         return False
 
-    def _next_initial_split(self) -> tuple[bool, ...] | None:
+    def _next_initial_split(self) -> tuple[bool, ...]:
         rng = self._rng
         m_counts = self._m_counts
         if rng is None or m_counts is None:
@@ -190,9 +216,7 @@ class NeymanEstimator(ComplementaryEstimator):
             msg = "Neyman allocation state must be initialized."
             raise RuntimeError(msg)
         while self._position_j < m_hat.shape[0]:
-            remaining = int(m_hat[self._position_j])
-            if remaining > 0:
-                m_hat[self._position_j] = remaining - 1
+            if m_hat[self._position_j] > 0:
                 return random_present(
                     rng,
                     self._num_players,
@@ -200,6 +224,26 @@ class NeymanEstimator(ComplementaryEstimator):
                 )
             self._position_j += 1
         return None
+
+    def _unseen_pairs_by_size(self) -> np.ndarray:
+        """Count complementary pairs not yet sampled, indexed by larger side size."""
+        seen = self._seen
+        if seen is None:
+            msg = "Neyman sampling state must be initialized."
+            raise RuntimeError(msg)
+        n = self._num_players
+        seen_by_size = np.zeros(n + 1, dtype=np.int64)
+        for mask_int in seen:
+            seen_by_size[mask_int.bit_count()] += 1
+        unseen = np.zeros(n + 1, dtype=np.int64)
+        for size in range(self._allocation_start_index(), n):
+            total = math.comb(n, size)
+            if 2 * size == n:
+                # Both sides have size n/2: each pair holds two such coalitions.
+                unseen[size] = (total - seen_by_size[size]) // 2
+            else:
+                unseen[size] = total - seen_by_size[size]
+        return unseen
 
     def _yield_complementary_pair(
         self,
@@ -229,52 +273,56 @@ class NeymanEstimator(ComplementaryEstimator):
         include_minimal_masks: bool,
         seed: int,
     ) -> Iterator[CoalitionMask]:
-        """Yield phase-one Neyman masks until the initial M-matrix grid is filled."""
+        """Yield phase-one Neyman masks until the initial M-matrix grid is filled.
+
+        Order: the ``(N, empty)`` pair, the singleton pairs ``({i}, N - {i})``,
+        then the grid walk over (size, player) cells. All count toward the budget.
+        """
         if include_minimal_masks:
             msg = "Neyman estimator does not support include_minimal_masks=True"
             raise ValueError(msg)
         self._reset_neyman_state(player_set.num_players, budget_fraction, seed)
-        generated = 0
+        m_counts = self._m_counts
+        seen = self._seen
+        if m_counts is None or seen is None:
+            msg = "Neyman sampling state must be initialized."
+            raise RuntimeError(msg)
+        num_players = player_set.num_players
+        grand = (True,) * num_players
+        empty = (False,) * num_players
+        seen.add(present_to_mask_int(grand))
+        seen.add(present_to_mask_int(empty))
+        increment_m_counts(m_counts, grand)
+        increment_m_counts(m_counts, empty)
+        generated = 2
+        yield CoalitionMask.from_sequence(grand)
+        yield CoalitionMask.from_sequence(empty)
+        # The singleton pairs are the only way to fill each size-1 stratum; seed
+        # them before the grid walk; the ``2n + 2`` budget floor fits all of them.
+        for singleton in iter_singletons(num_players):
+            if generated + 2 > self._total_num_splits:
+                break
+            for mask in self._yield_complementary_pair(singleton):
+                generated += 1
+                yield mask
         stale_attempts = 0
-        max_stale = max(10_000, 32 * self._total_num_splits)
-
+        # One unproductive visit per grid cell in a row ends phase one.
+        max_stale = m_counts.size
+        # The cursor starts on cell (size 1, player 0), which the singletons
+        # filled, and advances before every draw. It only stops on cells of
+        # sizes 1 to n - 1, so a draw is never the empty or grand coalition.
         while generated < self._total_num_splits:
-            if self._step == _NeymanStep.INITIAL_SAMPLING:
-                if generated >= self._total_num_splits:
-                    break
-                if not self._first_call and self._update_m_position():
-                    self._initial_masks_count = generated
-                    return
-                self._first_call = False
-                if self._position_j in (0, self._num_players):
-                    if self._update_m_position():
-                        self._initial_masks_count = generated
-                        return
-                    stale_attempts += 1
-                    if stale_attempts >= max_stale:
-                        break
-                    continue
-                present = self._next_initial_split()
-                if present is None:
-                    break
-                if is_empty_or_grand(present):
-                    stale_attempts += 1
-                    if stale_attempts >= max_stale:
-                        break
-                    continue
-                yielded = 0
-                for mask in self._yield_complementary_pair(present):
-                    generated += 1
-                    yielded += 1
-                    yield mask
-                if yielded:
-                    stale_attempts = 0
-                else:
-                    stale_attempts += 1
-                    if stale_attempts >= max_stale:
-                        break
+            if self._update_m_position():
+                return
+            pair = list(self._yield_complementary_pair(self._next_initial_split()))
+            if pair:
+                generated += len(pair)
+                stale_attempts = 0
+                yield from pair
                 continue
-            break
+            stale_attempts += 1
+            if stale_attempts >= max_stale:
+                return
 
     def begin_allocation(
         self,
@@ -305,17 +353,21 @@ class NeymanEstimator(ComplementaryEstimator):
             msg = "M_hat must be initialized before allocation sampling."
             raise RuntimeError(msg)
 
-        planned = int(self._m_hat.sum())
-        generated = 0
-        while generated < planned:
-            present = self._next_allocation_split()
-            if present is None:
-                break
-            if is_empty_or_grand(present):
+        m_hat = self._m_hat
+        stale_attempts = 0
+        while (present := self._next_allocation_split()) is not None:
+            pair = list(self._yield_complementary_pair(present))
+            if pair:
+                m_hat[self._position_j] -= 1
+                stale_attempts = 0
+                yield from pair
                 continue
-            for mask in self._yield_complementary_pair(present):
-                generated += 1
-                yield mask
+            # Allocation never exceeds the unseen pairs of a size, so repeated
+            # draws only slow down near exhaustion; the guard is a safety net.
+            stale_attempts += 1
+            if stale_attempts >= 8 * math.comb(self._num_players, self._position_j):
+                m_hat[self._position_j] = 0
+                stale_attempts = 0
 
     def _estimate_m_hat(self, remaining_pairs: int) -> None:
         m_counts = self._m_counts
@@ -334,35 +386,41 @@ class NeymanEstimator(ComplementaryEstimator):
         sigma_squared = np.clip(sigma_squared, a_min=0.0, a_max=None)
 
         left = self._allocation_start_index()
-        right = sigma_squared.shape[0]
+        right = self._num_players
         coalition_indices = np.arange(left, right, dtype=np.int64)
+        complement_indices = np.array(
+            [
+                self._complement_column(int(size), self._num_players)
+                for size in coalition_indices
+            ],
+            dtype=np.int64,
+        )
         k_left = coalition_indices.astype(np.float64)
-        k_right = (right - coalition_indices - 1).astype(np.float64)
+        k_right = complement_indices.astype(np.float64)
         sigma_left = sigma_squared[:, coalition_indices]
-        sigma_right = sigma_squared[:, k_right.astype(np.int64)]
+        sigma_right = sigma_squared[:, complement_indices]
         inner = np.sqrt(
             np.sum(sigma_left / (k_left + 1.0), axis=0)
             + np.sum(sigma_right / (k_right + 1.0), axis=0)
         )
+        capacity = self._unseen_pairs_by_size()[left:right]
+        allocation = np.zeros(right - left, dtype=np.int64)
+        remaining = min(remaining_pairs, int(capacity.sum()))
+        while remaining > 0:
+            # Water-filling: split the remaining pairs in proportion to the Neyman
+            # weights among sizes that still have unseen pairs; zero variance
+            # everywhere falls back to splitting by remaining capacity.
+            spare = capacity - allocation
+            active = spare > 0
+            weights = np.where(active, inner, 0.0)
+            if weights.sum() <= 0:
+                weights = spare.astype(np.float64)
+            share = np.floor(remaining * weights / weights.sum()).astype(np.int64)
+            if share.sum() == 0:
+                share[int(np.argmax(weights))] = 1
+            share = np.minimum(share, spare)
+            allocation += share
+            remaining -= int(share.sum())
         m_hat = np.zeros(m_counts.shape[0], dtype=np.float64)
-        denominator = inner.sum()
-        if denominator > 0:
-            m_hat[left:right] = np.ceil((remaining_pairs / denominator) * inner)
+        m_hat[left:right] = allocation
         self._m_hat = m_hat
-
-    def estimate_attributions(
-        self,
-        masks: Sequence[CoalitionMask],
-        payoffs: Sequence[float],
-    ) -> list[float]:
-        """Aggregate Neyman CC payoffs into Shapley-style attributions."""
-        if self._m_counts is None:
-            msg = "M matrix must be initialized before calculating attributions."
-            raise RuntimeError(msg)
-        c_matrix = build_c_matrix_from_pairs(self._m_counts, masks, payoffs)
-        allocation_complete = self._step == _NeymanStep.NEYMAN_ALLOCATION
-        return aggregate_complementary_shapley(
-            self._m_counts,
-            c_matrix,
-            allocation_complete=allocation_complete,
-        )

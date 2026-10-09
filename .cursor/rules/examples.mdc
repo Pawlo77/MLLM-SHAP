@@ -1,6 +1,6 @@
 ---
 description: Jupyter notebook examples for new public workflows
-globs: examples/**/*.ipynb,src/nlp_shap/**/*.py
+globs: examples/**,src/nlp_shap/__init__.py
 alwaysApply: false
 ---
 
@@ -22,31 +22,20 @@ Not required for: bug fixes, internal refactors, typing/doc-only changes, or pri
 
 ## Notebook standards
 
-1. **One workflow per notebook** — focused name (`text_hf_causal.ipynb`, not `misc.ipynb` or `demo_v2.ipynb`).
-2. **Full feature scope** — cover **every public usability path** for the feature the notebook presents (APIs, config keys, plugin resolution, validation guards, and meaningful variants). Do not ship a partial demo when the release exposes more. **Omit stubs and future-only placeholders** that have no runnable behaviour today.
-3. **Top-level imports** — cell 1 is a single import block: stdlib and third-party deps first, then all `nlp_shap` symbols used anywhere in the notebook. No scattered imports in later cells except when a section explicitly re-imports for teaching isolation (avoid this by default).
-4. **Dual-audience commentary** — opening markdown plus short section intros for **technical behavior** and **business motivation** (auditability, compliance, product risk, reproducibility, stakeholder trust). Keep prose tight and high quality; avoid filler.
-5. **Lightweight** — smallest model/data that proves the path; CPU-first when feasible; tiny prompts.
-6. **Well described** — opening markdown: goal, business context, prerequisites, expected output; explain non-obvious steps.
-7. **Minimal code** — import → configure → demonstrate → show result; no notebook-only framework or duplicate library logic.
-8. **Runnable after install** — `nlp_shap` imports and paths work from repo root after `make install` (or `pip install nlp-shap` for published examples).
-9. **Same change** — ship the notebook with the feature; remove or update it when the public API changes.
-10. **Executed before commit** — run `make notebooks`; commit only notebooks with stored cell outputs.
+1. **One workflow per notebook**, with a focused name (`text_hf_causal.ipynb`, not `misc.ipynb`).
+2. **Full feature scope**: every public path of the feature (APIs, config keys, plugin resolution, validation guards, meaningful variants); no stubs or future-only placeholders.
+3. **Top-level imports**: cell 1 is one import block (stdlib, third-party, then every `nlp_shap` symbol the notebook uses).
+4. **Opening markdown**: goal, business context (auditability, reproducibility, product risk), prerequisites and expected output; short section intros; no filler. Size budgets: rule `brevity`.
+5. **Lightweight**: smallest model and data that prove the path; CPU first; tiny prompts.
+6. **Minimal code**: import, configure, demonstrate, show the result; no notebook-only framework or duplicated library logic.
+7. **Runnable after install** from the repository root (`make install`, or `pip install nlp-shap` for published examples).
+8. **Same change**: ship the notebook with the feature; update or remove it when the public API changes.
+9. **Executed before commit**: `make notebooks` after notebook edits, after a `src/` change to a public workflow and before every release PR; commit only notebooks with stored outputs.
 
 ## Catalog
 
-Add one bullet per notebook to:
+- `examples/README.md`: the file list; `docs/examples.rst`: the descriptive catalog.
+- `docs/examples.rst`: the gallery table and embedded toctree entry.
+- Cross-link from the guide (`docs/guides/<topic>.rst`) that the notebook demonstrates.
 
-- `examples/README.md` under **Notebooks** — user-facing line: what it shows and optional deps
-- `docs/examples.rst` — gallery entry and embedded toctree when the notebook is user-facing
-- `README.md` — table row linking the notebook file and a one-line summary (GitHub landing page)
-
-Cross-link from the relevant guide (`docs/guides/<topic>.rst`) when a notebook demonstrates that workflow.
-
-## Pair with tests
-
-- **Correctness** — `tests/` (TDD)
-- **Speed** — `tests/benchmarks/` for hot paths (see `benchmarks.mdc`)
-- **Integration story** — matching notebook in `examples/`
-
-Run the notebook locally before hand-off when the change is user-facing.
+Correctness lives in `tests/` and speed in `tests/benchmarks/` (`benchmarks.mdc`); the notebook is the integration story.

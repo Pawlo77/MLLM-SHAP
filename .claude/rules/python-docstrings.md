@@ -1,0 +1,61 @@
+---
+paths:
+  - "src/nlp_shap/**/*.py"
+---
+
+<!-- Generated from .cursor/rules/python-docstrings.mdc by scripts/sync_rules.py; do not edit. -->
+
+# Python docstrings (Google style)
+
+Use [Google-style](https://google.github.io/styleguide/pyguide.html#383-functions-and-methods) docstrings in `src/nlp_shap`. Types live in annotations; **do not repeat them** in `Args`/`Returns`.
+
+| Surface | Rule |
+|---------|------|
+| Module | **Required** on every file (including `__init__.py`): one line stating what the module owns |
+| Module-level constant | **Required**: one-line docstring directly under the assignment |
+| Public class | One-line summary; add body sections only when behavior is not obvious from the name |
+| Public class fields | **Required**: one-line docstring directly under every field (dataclass, Pydantic, TypedDict key) |
+| Enum / StrEnum members | **Required**: one-line docstring directly under every member |
+| Public function/method | One line when name + signature + return type are sufficient; otherwise add only the sections that add information (`Args`, `Returns`, `Raises`, `Note`) |
+| `_private` fields | Omit unless logic is genuinely non-obvious |
+| `tests/` | Module docstring with an `@see [[...]]` tag (traceability); test docstrings optional |
+
+## Traceability tags (Code Graph)
+
+After the one-line module summary and a blank line, package modules carry
+`@domain <subpackage>`, `@see [[knowledge/architecture/<subpackage>]]` and, when a test file
+covers the module, `@tested-by [[tests/<path>.py]]`. Top-level modules use `@domain core`.
+Test files carry `@see [[src/nlp_shap/<path>.py]]` in their module docstring.
+`make vault-check` (`check_vault.py --strict-tags`) lists missing tags.
+
+```python
+"""Exact coalition enumeration estimator.
+
+@domain estimation
+@see [[knowledge/architecture/estimation]]
+@tested-by [[tests/estimation/test_exact.py]]
+"""
+```
+
+**Redundant (forbidden):** restating parameter types, echoing the function name, empty `Args`/`Returns`, module essays.
+
+**Expand when:** side effects, valid input ranges, invariants, error conditions, or algorithm intent are not readable from code.
+
+**Examples:** only on public entry points (`__init__.py` exports, primary user-facing APIs) where usage is non-obvious. Keep minimal and runnable.
+
+```python
+DEFAULT_BUDGET: int = 100
+"""Default evaluation budget when the caller does not override it."""
+
+def explain(chat: Chat, budget: int) -> Result:
+    """Attribute ``chat`` under a fixed evaluation budget.
+
+    Args:
+        chat: Conversation to explain; must include at least one user turn.
+
+    Raises:
+        ValueError: If ``chat`` has no explainable tokens.
+    """
+```
+
+Comments: non-obvious logic only; never narrate what the code already says.

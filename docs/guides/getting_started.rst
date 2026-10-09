@@ -1,19 +1,19 @@
 Getting started
 ===============
 
-This page gets you from zero to a working Shapley vs Banzhaf comparison in a
-few minutes.
+This page gets you from zero to a first token attribution in a few minutes, and
+shows the two numbers every Shapley explanation is checked against.
 
 Installation
 ------------
 
-Install from PyPI:
+Install from PyPI (Python 3.12 or newer):
 
 .. code-block:: bash
 
    pip install nlp-shap
 
-From a local clone (requires `uv <https://docs.astral.sh/uv/>`_):
+From a local clone (development uses `uv <https://docs.astral.sh/uv/>`_):
 
 .. code-block:: bash
 
@@ -49,18 +49,28 @@ The estimand aggregators take boolean **coalition masks** and aligned payoffs
 
 .. guide-result:: getting_started_majority
 
+See :doc:`estimands` for why the two differ.
+
 Explain a short prompt
 ----------------------
 
 For end-to-end token attributions, build a
-:class:`~nlp_shap.domain.conversation.ConversationSnapshot`, load an
-:class:`~nlp_shap.ExplainConfig`, and call :class:`~nlp_shap.ExplainRunner`:
+:class:`~nlp_shap.ConversationSnapshot`, validate an
+:class:`~nlp_shap.ExplainConfig`, and call :class:`~nlp_shap.ExplainRunner`.
+The ``mock`` backend needs no model, GPU or optional extra:
 
 .. code-block:: python
 
-   from nlp_shap import ExplainConfig, ExplainRunner
-   from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
-   from nlp_shap.domain.enums import Role
+   import math
+
+   from nlp_shap import (
+       ConversationSnapshot,
+       ExplainConfig,
+       ExplainRunner,
+       Message,
+       Role,
+       Turn,
+   )
 
    snapshot = ConversationSnapshot.from_turns((
        Turn(messages=(Message(role=Role.USER, text="refund my order"),)),
@@ -71,44 +81,76 @@ For end-to-end token attributions, build a
            "estimator": "exact",
            "value_fn": "tfidf_cosine",
            "absence_policy": "pad",
+           "archive": {"path": ""},  # keep this demo off disk
        },
    })
    output = ExplainRunner(config).explain_sync(snapshot)
-   print(output.result.values)
+   result = output.result
+
+   print("values:", tuple(round(value, 4) for value in result.values))
+   print("base_value v(empty):", round(result.base_value, 4))
+   print("grand_value v(N):", round(result.grand_value, 4))
+   # Efficiency: Shapley values sum to v(N) - v(empty).
+   print(
+       "efficient:",
+       math.isclose(sum(result.values), result.grand_value - result.base_value),
+   )
 
 .. guide-result:: getting_started_explain
+
+Each token of ``"refund my order"`` is a player. ``base_value`` is the payoff of
+the fully masked prompt and ``grand_value`` the payoff of the full prompt; Shapley
+values distribute the difference. With the default ``identity`` normalizer the
+check above holds for every exact run and is the first thing to verify when an
+attribution looks wrong.
+
+Without ``archive.path: ""`` the run is archived under ``./runs/{run_id}``, and
+re-running the same configuration on the same snapshot raises
+:exc:`~nlp_shap.errors.ArchiveExistsError` unless
+``explanation.archive.on_exists`` is ``overwrite``. See :doc:`config`.
+
+Which estimator?
+----------------
+
+``exact`` scores all :math:`2^n` coalitions and is only practical for short
+prompts. For longer inputs pick ``mc``, ``complementary`` or ``neyman_cc`` and a
+``budget.fraction`` below 1; :doc:`choosing_an_estimator` has the decision table
+and :doc:`approximation` the code.
 
 Label results for archives
 --------------------------
 
-When you persist explain outputs, record which estimand was used:
+Every run carries a :class:`~nlp_shap.RunManifest` that records the estimand,
+estimator, value function and players. It round-trips through JSON:
 
 .. code-block:: python
 
-   from nlp_shap import Estimand, ExplainResult, RunManifest, parse_manifest
+   from nlp_shap import parse_manifest
 
-   result = ExplainResult(
-       estimand=Estimand.SHAPLEY,
-       values=(0.333, 0.333, 0.333),
-   )
-   manifest = RunManifest(estimand=result.estimand, run_id="run-42")
-   restored = parse_manifest(manifest.to_dict())
+   restored = parse_manifest(output.manifest.to_dict())
+   print("schema_version:", restored.schema_version)
    print("estimand:", restored.estimand.value)
-   print("run_id:", restored.run_id)
+   print("estimator:", restored.estimator)
+   print("players:", restored.player_ids)
 
 .. guide-result:: getting_started_manifest
+
+Logging
+-------
+
+Importing ``nlp_shap`` leaves your logging configuration alone. Call
+``nlp_shap.configure_logging(level="INFO")`` to see the pipeline's stage events
+(run start, base generation, scheduled coalitions and run duration) on stderr,
+``nlp_shap.configure_logging()`` to apply the ``[tool.logging]`` section of the
+nearest ``pyproject.toml`` (or pass a path), or set ``NLP_SHAP_LOGGING_CONFIG``.
+:doc:`runtime` lists the events.
 
 Next steps
 ----------
 
-- :doc:`estimands` — coalition weights, manifests, and wire types
-- :doc:`../theory/shapley_values` — Shapley axioms and uniqueness
-- :doc:`../theory/estimands` — why Shapley and Banzhaf differ
-- :doc:`applications` — business and compliance use cases
-- :doc:`../examples` — `estimands_toy_game.ipynb`, `masking_views.ipynb`, `runtime_core.ipynb`, and `exact_estimation.ipynb`
-- :doc:`pipeline` — :class:`~nlp_shap.ExplainRunner` end-to-end explain flow
-- :doc:`extending` — optional extras and plugin entry points
-- :doc:`masking` — coalition masking and absence policies
-- :doc:`runtime` — archive persistence, dedup, and async scheduling
-- :doc:`exact` — exact coalition enumeration and estimand wiring
-- :doc:`../api` — module reference
+- :doc:`pipeline` — what happens inside a run, metrics and archives
+- :doc:`cli` — the same run from the command line, with JSON input and output
+- :doc:`config` — every configuration key
+- :doc:`choosing_an_estimator` — exact, Monte Carlo, complementary or Neyman
+- :doc:`backends` — run against LM Studio, Hugging Face or an HTTP API
+- :doc:`../examples` — runnable notebooks

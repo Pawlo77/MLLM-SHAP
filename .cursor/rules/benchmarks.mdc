@@ -16,7 +16,11 @@ Benchmarks must cover representative operations (typical init, inference/explain
 
 New backends also need a matching minimal notebook in `examples/` (see `examples.mdc`).
 
-- Use the benchmark harness in `tests/conftest.py`
-- Run locally: `make bench` (`pytest -m bench --benchmark`)
-- Set explicit timing expectations or document baseline in the test when asserting bounds
-- Not run in CI — local only
+- Use the `benchmark` fixture of `pytest-benchmark` (`benchmark(fn, *args)`); keep
+  correctness asserts on the returned value
+- Run locally: `make bench` (writes `.pytest_benchmark/benchmark.json`)
+- CI: the weekly `Benchmarks` workflow runs `make bench` and uploads the JSON report as an
+  informational artifact; it does not gate PRs
+- Regression gate stays local: `make bench-regression` fails when a median is more than 25%
+  (at least 5 rounds, warm-up on) slower than `tests/benchmarks/baseline.json` (recorded on the maintainer's machine, named
+  in `tests/benchmarks/AGENTS.md`); re-record with `make bench-baseline`

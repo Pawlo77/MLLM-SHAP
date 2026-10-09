@@ -1,20 +1,47 @@
-"""Async coalition inference scheduling with deduplication."""
+"""Async coalition inference scheduling with deduplication.
+
+@domain runtime
+@see [[knowledge/architecture/runtime]]
+@tested-by [[tests/runtime/test_scheduler.py]]
+"""
 
 import asyncio
 import time
-from collections.abc import AsyncIterator, Awaitable, Callable, Iterable, Sequence
+from collections.abc import Awaitable, Callable, Iterable, Sequence
 from dataclasses import dataclass
 
+from ..domain.config import GenerationConfig
 from ..domain.conversation import ConversationSnapshot
+from ..domain.generation import GenerationRecord
 from ..masking.codec import PackedMask
-from ..pipeline.config import GenerationConfig
 from .archive import CoalitionRecordDraft, RunArchive
 from .dedup import CoalitionDedupRegistry
 from .progress import CoalitionProgress, NullCoalitionProgress
 from .store import HotResultStore
 
-GenerateFn = Callable[[ConversationSnapshot], Awaitable[str]]
-"""Async callable that returns generated text for one snapshot."""
+GenerateFn = Callable[[ConversationSnapshot], Awaitable[str | GenerationRecord]]
+"""Async callable that returns the generated text, or a record carrying it and
+its token logprobs, for one snapshot."""
+
+
+def _first_error(group: BaseExceptionGroup[BaseException]) -> BaseException:
+    """Return the first leaf exception of ``group`` that is not a cancellation.
+
+    Nested groups are searched depth first; ``group`` itself is returned when it
+    holds cancellations only.
+    """
+    return _find_error(group) or group
+
+
+def _find_error(group: BaseExceptionGroup[BaseException]) -> BaseException | None:
+    for error in group.exceptions:
+        if isinstance(error, BaseExceptionGroup):
+            found = _find_error(error)
+            if found is not None:
+                return found
+        elif not isinstance(error, asyncio.CancelledError):
+            return error
+    return None
 
 
 @dataclass(frozen=True, slots=True)
@@ -34,7 +61,11 @@ class SchedulerMetrics:
     """Number of jobs served from the hot result store without backend calls."""
 
     kv_cache_hits: int = 0
-    """Number of coalition generations that reused a cached prompt prefix."""
+    """Coalition generations that reused a cached prompt prefix; filled by the
+    orchestrator from the backend, 0 from the scheduler alone."""
+
+    kv_cache_reused_tokens: int = 0
+    """Prompt tokens served from cached prefixes; filled like ``kv_cache_hits``."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -62,9 +93,6 @@ class CoalitionJob:
     model_id: str
     """Backend model identifier used for generation."""
 
-    utility: float
-    """Utility score assigned after generation."""
-
     prefix_hash: str = ""
     """Shared prompt prefix hash used for KV-cache grouping."""
 
@@ -82,6 +110,7 @@ class InferenceScheduler:
         pending_limit: int | None = None,
         progress: CoalitionProgress | None = None,
     ) -> None:
+        """Configure concurrency, caching, archiving and progress reporting."""
         if max_inflight < 1:
             msg = "max_inflight must be at least 1"
             raise ValueError(msg)
@@ -93,6 +122,10 @@ class InferenceScheduler:
         self._semaphore = asyncio.Semaphore(max_inflight)
         self._pending_limit = pending_limit or max(max_inflight * 4, max_inflight)
         self._progress: CoalitionProgress = progress or NullCoalitionProgress()
+        # Progress counters span every run of this scheduler, so a second pass
+        # (Neyman phase two) extends the plan instead of restarting it.
+        self._planned = 0
+        self._finished = 0
 
     async def run(
         self,
@@ -100,7 +133,6 @@ class InferenceScheduler:
         generate: GenerateFn,
     ) -> SchedulerMetrics:
         """Execute coalition jobs and return scheduler counters."""
-        self._progress.on_coalitions_planned(len(jobs))
         return await self.run_iter(iter(jobs), generate, total=len(jobs))
 
     async def run_iter(
@@ -109,76 +141,45 @@ class InferenceScheduler:
         generate: GenerateFn,
         total: int | None = None,
     ) -> SchedulerMetrics:
-        """Execute jobs from an iterable without creating all coroutines upfront."""
+        """Execute jobs from an iterable without creating all coroutines upfront.
+
+        Jobs run in one :class:`asyncio.TaskGroup`, with at most
+        ``pending_limit`` tasks alive at a time. The first job failure cancels
+        every other task and is re-raised as is (not wrapped in an exception
+        group), so callers never observe partial success. With ``total`` the
+        progress sink is told the cumulative planned count of all runs so far.
+        """
+        if total is not None:
+            self._planned += total
+            self._progress.on_coalitions_planned(self._planned)
         mutable = {
             "executed": 0,
             "deduplicated": 0,
             "cache_hits": 0,
             "requested": 0,
-            "finished": 0,
-            "total": total if total is not None else 0,
         }
-        pending: set[asyncio.Task[None]] = set()
+        slots = asyncio.Semaphore(self._pending_limit)
 
-        for job in jobs:
-            mutable["requested"] += 1
-            if total is None:
-                mutable["total"] = mutable["requested"]
-            while len(pending) >= self._pending_limit:
-                _done, pending = await asyncio.wait(
-                    pending,
-                    return_when=asyncio.FIRST_COMPLETED,
-                )
-            task = asyncio.create_task(self._process_job(job, generate, mutable))
-            pending.add(task)
+        def release_slot(_task: asyncio.Task[None]) -> None:
+            slots.release()
 
-        if pending:
-            await asyncio.gather(*pending)
+        try:
+            async with asyncio.TaskGroup() as group:
+                for job in jobs:
+                    mutable["requested"] += 1
+                    if total is None:
+                        self._planned += 1
+                    await slots.acquire()
+                    task = group.create_task(self._process_job(job, generate, mutable))
+                    task.add_done_callback(release_slot)
+        except BaseExceptionGroup as errors:
+            raise _first_error(errors) from None
 
         return SchedulerMetrics(
             requested=mutable["requested"],
             executed=mutable["executed"],
             deduplicated=mutable["deduplicated"],
             cache_hits=mutable["cache_hits"],
-            kv_cache_hits=mutable.get("kv_cache_hits", 0),
-        )
-
-    async def run_stream(
-        self,
-        jobs: AsyncIterator[CoalitionJob],
-        generate: GenerateFn,
-    ) -> SchedulerMetrics:
-        """Execute jobs from an async iterator with bounded pending tasks."""
-        mutable = {
-            "executed": 0,
-            "deduplicated": 0,
-            "cache_hits": 0,
-            "requested": 0,
-            "finished": 0,
-            "total": 0,
-        }
-        pending: set[asyncio.Task[None]] = set()
-
-        async for job in jobs:
-            mutable["requested"] += 1
-            mutable["total"] = mutable["requested"]
-            while len(pending) >= self._pending_limit:
-                _done, pending = await asyncio.wait(
-                    pending,
-                    return_when=asyncio.FIRST_COMPLETED,
-                )
-            task = asyncio.create_task(self._process_job(job, generate, mutable))
-            pending.add(task)
-
-        if pending:
-            await asyncio.gather(*pending)
-
-        return SchedulerMetrics(
-            requested=mutable["requested"],
-            executed=mutable["executed"],
-            deduplicated=mutable["deduplicated"],
-            cache_hits=mutable["cache_hits"],
-            kv_cache_hits=mutable.get("kv_cache_hits", 0),
         )
 
     async def _process_job(
@@ -191,7 +192,8 @@ class InferenceScheduler:
             cached = self._store.get(job.coalition_key)
             if cached is not None:
                 mutable["cache_hits"] += 1
-                self._maybe_archive(job, cached, cache_hit=True, elapsed_ms=0.0)
+                logprobs = self._store.logprobs(job.coalition_key)
+                self._maybe_archive(job, cached, logprobs, True, elapsed_ms=0.0)
                 return
 
             if self._dedup is not None and not self._dedup.observe(job.coalition_key):
@@ -200,26 +202,27 @@ class InferenceScheduler:
 
             async with self._semaphore:
                 started = time.perf_counter()
-                generation_text = await generate(job.snapshot)
+                generated = await generate(job.snapshot)
                 elapsed_ms = (time.perf_counter() - started) * 1000.0
             mutable["executed"] += 1
-            self._store.put(job.coalition_key, generation_text)
-            self._maybe_archive(
-                job,
-                generation_text,
-                cache_hit=False,
-                elapsed_ms=elapsed_ms,
+            text, logprobs = (
+                (generated, None)
+                if isinstance(generated, str)
+                else (generated.text, generated.logprobs)
             )
+            self._store.put(job.coalition_key, text, logprobs)
+            self._maybe_archive(job, text, logprobs, False, elapsed_ms=elapsed_ms)
         finally:
-            mutable["finished"] += 1
-            total = mutable["total"] or mutable["requested"]
-            if total > 0:
-                self._progress.on_coalition_finished(mutable["finished"], total)
+            self._finished += 1
+            self._progress.on_coalition_finished(
+                self._finished, max(self._planned, self._finished)
+            )
 
     def _maybe_archive(
         self,
         job: CoalitionJob,
         generation_text: str,
+        logprobs: tuple[float, ...] | None,
         cache_hit: bool,
         elapsed_ms: float,
     ) -> None:
@@ -233,8 +236,8 @@ class InferenceScheduler:
                 absence_policy=job.absence_policy,
                 model_id=job.model_id,
                 generation_text=generation_text,
-                utility=job.utility,
                 elapsed_ms=elapsed_ms,
                 cache_hit=cache_hit,
+                logprobs=logprobs,
             )
         )

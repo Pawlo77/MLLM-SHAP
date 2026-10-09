@@ -1,0 +1,340 @@
+"""List or apply upgrades of packages, prek hooks, action pins, uv and Obsidian plugins.
+
+``--check`` prints one line per outdated item and exits 1 when there is any;
+``--apply`` upgrades every item that is not protected and prints the changed files.
+``publish.yaml`` is protected, so its action pins and the uv version (which
+``required-version`` must not outrun) are reported, never edited. External commands
+(``uv``, ``prek``, ``gh``) go through an injectable :data:`Runner`. Stdlib only.
+
+@see [[Process decisions#2026-10-08 — Automatic upgrades and releases]]
+@tested-by [[tests/scripts/test_upgrade.py]]
+"""
+
+import argparse
+import re
+import shutil
+import subprocess  # nosec B404 - fixed argv lists, no shell
+import sys
+import tempfile
+from collections.abc import Callable, Iterator, Sequence
+from dataclasses import dataclass
+from pathlib import Path
+
+from install_obsidian_plugins import REPOSITORIES, pinned_version
+
+ROOT = Path(__file__).resolve().parents[1]
+"""Repository root."""
+
+PROTECTED = "publish.yaml"
+"""Workflow whose pins the upgrade never edits (``scripts/pr_policy.py``)."""
+
+PRE_COMMIT = ".pre-commit-config.yaml"
+PREK = ("uv", "run", "prek", "update", "--color", "never", "--no-progress")
+INSTALL_PLUGINS = ("uv", "run", "python", "scripts/install_obsidian_plugins.py")
+
+_LOCK = re.compile(r"^(?:Would )?[Uu]pdate (\S+) v?(\S+) -> v?(\S+)$", re.MULTILINE)
+_HOOK = re.compile(r"would update rev `([^`]+)` -> `([^`]+)`")
+_PIN = re.compile(
+    r"(?P<pre>uses:[ \t]*)(?P<action>[\w.-]+/[\w.-]+[\w./-]*)@(?P<ref>[\w.-]+)"
+    r"(?:[ \t]*#[ \t]*(?P<tag>v?\d[\w.-]*))?"
+)
+_SHA = re.compile(r"[0-9a-f]{40}")
+_REQUIRED = re.compile(r'(required-version = ">=)([^"]+)(")')
+_UV_PIN = re.compile(r'(?m)^([ \t]+version: )"(\d[\w.]*)"$')
+_VERSION = re.compile(r"^v?(\d+(?:\.\d+)*)$")
+
+Runner = Callable[[Sequence[str], Path], str]
+"""Run ``argv`` in a directory and return stdout plus stderr; raise on failure."""
+
+
+class UpgradeError(RuntimeError):
+    """An external command failed."""
+
+
+@dataclass(frozen=True)
+class Item:
+    """One outdated pin."""
+
+    kind: str
+    name: str
+    old: str
+    new: str
+    where: str
+    protected: bool = False
+
+    def __str__(self) -> str:
+        """One report line."""
+        note = "  (protected: report only)" if self.protected else ""
+        return (
+            f"{self.kind:<8} {self.name} {self.old} -> {self.new}  {self.where}{note}"
+        )
+
+
+def run(argv: Sequence[str], cwd: Path) -> str:
+    """Default :data:`Runner`: subprocess without a shell."""
+    try:
+        proc = subprocess.run(  # nosec B603 - fixed argv lists
+            list(argv),
+            cwd=cwd,
+            capture_output=True,
+            text=True,
+            timeout=900,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise UpgradeError(f"{' '.join(argv[:4])} failed: {exc}") from exc  # noqa: TRY003
+    if proc.returncode:
+        tail = (proc.stderr or proc.stdout).strip()[-400:]
+        raise UpgradeError(f"{' '.join(argv[:4])} failed: {tail}")  # noqa: TRY003
+    return proc.stdout + proc.stderr
+
+
+def _version(tag: str) -> tuple[int, ...] | None:
+    match = _VERSION.match(tag)
+    return tuple(int(part) for part in match[1].split(".")) if match else None
+
+
+def newer(old: str, new: str) -> bool:
+    """Whether ``new`` is a higher version than ``old`` (both like ``v1.2.3``)."""
+    old_v, new_v = _version(old), _version(new)
+    return old_v is not None and new_v is not None and new_v > old_v
+
+
+class GitHub:
+    """Latest release tags and tag commits through ``gh api`` GET calls, cached."""
+
+    def __init__(self, runner: Runner, root: Path) -> None:
+        """Bind the runner and the directory ``gh`` runs in."""
+        self._run, self._root = runner, root
+        self._latest: dict[str, str] = {}
+
+    def _api(self, *args: str) -> str:
+        return self._run(["gh", "api", *args], self._root).strip()
+
+    def latest(self, repo: str) -> str:
+        """Tag of the latest release, else the highest ``vX.Y.Z`` tag."""
+        if repo not in self._latest:
+            try:
+                tag = self._api(f"repos/{repo}/releases/latest", "--jq", ".tag_name")
+            except UpgradeError:
+                tag = ""
+            if _version(tag) is None:
+                refs = self._api(
+                    "--paginate",
+                    f"repos/{repo}/git/matching-refs/tags/v",
+                    "--jq",
+                    ".[].ref",
+                ).split()
+                tags = [r.removeprefix("refs/tags/") for r in refs]
+                tags = [t for t in tags if _version(t) and t.count(".") == 2]
+                tag = max(tags, key=lambda t: _version(t) or (), default="")
+            self._latest[repo] = tag
+        return self._latest[repo]
+
+    def sha(self, repo: str, tag: str) -> str:
+        """Commit sha of ``tag`` (annotated tags dereferenced)."""
+        kind, sha = self._api(
+            f"repos/{repo}/git/ref/tags/{tag}",
+            "--jq",
+            '.object.type + " " + .object.sha',
+        ).split()
+        if kind == "tag":
+            sha = self._api(f"repos/{repo}/git/tags/{sha}", "--jq", ".object.sha")
+        return sha
+
+
+def python_deps(runner: Runner, root: Path, _gh: GitHub) -> list[Item]:
+    """Locked packages ``uv lock --upgrade`` would update."""
+    out = runner(["uv", "lock", "--upgrade", "--dry-run"], root)
+    return [Item("python", n, o, v, "uv.lock") for n, o, v in _LOCK.findall(out)]
+
+
+def _prek(runner: Runner, root: Path, *, dry_run: bool) -> tuple[str, str]:
+    """Run prek's updater on a copy of the config (prek refuses an unstaged one)."""
+    config = root / PRE_COMMIT
+    with tempfile.TemporaryDirectory() as tmp:
+        copy = Path(tmp) / config.name
+        shutil.copyfile(config, copy)
+        flags = ["--dry-run"] if dry_run else []
+        out = runner([*PREK, *flags, "-c", str(copy)], root)
+        return out, copy.read_text(encoding="utf-8")
+
+
+def hook_revs(runner: Runner, root: Path, _gh: GitHub) -> list[Item]:
+    """Prek hook repositories with a newer tagged revision."""
+    out, _ = _prek(runner, root, dry_run=True)
+    items, repo = [], ""
+    for line in out.splitlines():
+        if line and not line[0].isspace():
+            repo = line.strip()
+        elif match := _HOOK.search(line):
+            items.append(Item("hook", repo, *match.groups(), PRE_COMMIT))
+    return items
+
+
+def _workflows(root: Path) -> list[Path]:
+    return sorted((root / ".github" / "workflows").glob("*.y*ml"))
+
+
+def _pin(match: re.Match[str]) -> tuple[str, str] | None:
+    """Owner/repo and version tag of one action pin; None when it has no version."""
+    ref = match["ref"]
+    tag = match["tag"] if _SHA.fullmatch(ref) else ref
+    if not tag or _version(tag) is None:
+        return None
+    return "/".join(match["action"].split("/")[:2]), tag
+
+
+def _pins(text: str) -> Iterator[tuple[re.Match[str], str, str]]:
+    """Each versioned action pin with its owner/repo and tag."""
+    for match in _PIN.finditer(text):
+        if pin := _pin(match):
+            yield match, *pin
+
+
+def action_pins(_runner: Runner, root: Path, gh: GitHub) -> list[Item]:
+    """Workflow action pins below the action's latest release."""
+    items: dict[tuple[str, str, str], Item] = {}
+    for path in _workflows(root):
+        for match, repo, tag in _pins(path.read_text(encoding="utf-8")):
+            latest = gh.latest(repo)
+            if newer(tag, latest):
+                where = path.relative_to(root).as_posix()
+                protected = path.name == PROTECTED
+                item = Item("action", match["action"], tag, latest, where, protected)
+                items[where, item.name, tag] = item
+    return list(items.values())
+
+
+def _publish_pins_uv(root: Path) -> bool:
+    path = root / ".github" / "workflows" / PROTECTED
+    return path.is_file() and bool(_UV_PIN.search(path.read_text(encoding="utf-8")))
+
+
+def uv_version(_runner: Runner, root: Path, gh: GitHub) -> list[Item]:
+    """``required-version`` and the workflow uv pins below uv's latest release."""
+    match = _REQUIRED.search((root / "pyproject.toml").read_text(encoding="utf-8"))
+    if match is None:
+        return []
+    latest = gh.latest("astral-sh/uv")
+    if not newer(match[2], latest):
+        return []
+    where = "pyproject.toml, .github/workflows"
+    return [Item("uv", "uv", match[2], latest, where, _publish_pins_uv(root))]
+
+
+def obsidian_plugins(_runner: Runner, root: Path, gh: GitHub) -> list[Item]:
+    """Pinned Obsidian plugin manifests below the plugin's latest release."""
+    items = []
+    for plugin, repo in REPOSITORIES.items():
+        manifest = root / ".obsidian" / "plugins" / plugin / "manifest.json"
+        if not manifest.is_file():
+            continue
+        pinned, latest = pinned_version(plugin, root / ".obsidian"), gh.latest(repo)
+        if newer(pinned, latest):
+            where = manifest.relative_to(root).as_posix()
+            items.append(Item("obsidian", plugin, pinned, latest, where))
+    return items
+
+
+CHECKS = (python_deps, hook_revs, action_pins, uv_version, obsidian_plugins)
+"""Every check, in report order."""
+
+
+def check(runner: Runner = run, root: Path = ROOT) -> list[Item]:
+    """Every outdated item."""
+    gh = GitHub(runner, root)
+    return [item for found in CHECKS for item in found(runner, root, gh)]
+
+
+def _repin(match: re.Match[str], gh: GitHub) -> str:
+    pin = _pin(match)
+    latest = gh.latest(pin[0]) if pin else ""
+    if pin is None or not newer(pin[1], latest):
+        return match[0]
+    if _SHA.fullmatch(match["ref"]):
+        return f"{match['pre']}{match['action']}@{gh.sha(pin[0], latest)} # {latest}"
+    return f"{match['pre']}{match['action']}@{latest}"
+
+
+def _write(path: Path, text: str) -> None:
+    if path.read_text(encoding="utf-8") != text:
+        path.write_text(text, encoding="utf-8")
+
+
+def _apply_pins(root: Path, gh: GitHub) -> None:
+    for path in _workflows(root):
+        if path.name != PROTECTED:
+            text = path.read_text(encoding="utf-8")
+            _write(path, _PIN.sub(lambda match: _repin(match, gh), text))
+
+
+def _apply_uv(item: Item, root: Path) -> None:
+    pyproject = root / "pyproject.toml"
+    text = pyproject.read_text(encoding="utf-8")
+    _write(pyproject, _REQUIRED.sub(rf"\g<1>{item.new}\g<3>", text))
+    for path in _workflows(root):
+        text = path.read_text(encoding="utf-8")
+        _write(path, _UV_PIN.sub(rf'\g<1>"{item.new}"', text))
+
+
+def _apply_plugin(item: Item, root: Path) -> None:
+    manifest = root / item.where
+    pattern = rf'("version"\s*:\s*"){re.escape(item.old)}"'
+    text = manifest.read_text(encoding="utf-8")
+    _write(manifest, re.sub(pattern, rf'\g<1>{item.new}"', text, count=1))
+
+
+def apply(runner: Runner = run, root: Path = ROOT) -> tuple[list[str], list[Item]]:
+    """Upgrade everything that is not protected.
+
+    Returns:
+        The changed files and the protected items left for the maintainer.
+    """
+    gh = GitHub(runner, root)
+    watched = [root / name for name in ("pyproject.toml", "uv.lock", PRE_COMMIT)]
+    watched += _workflows(root) + sorted(root.glob(".obsidian/plugins/*/manifest.json"))
+    before = {p: p.read_bytes() for p in watched if p.is_file()}
+    runner(["uv", "lock", "--upgrade"], root)
+    runner(["uv", "sync", "--all-groups", "--all-extras"], root)
+    _write(root / PRE_COMMIT, _prek(runner, root, dry_run=False)[1])
+    protected = [item for item in action_pins(runner, root, gh) if item.protected]
+    _apply_pins(root, gh)
+    for item in uv_version(runner, root, gh):
+        if item.protected:
+            protected.append(item)
+        else:
+            _apply_uv(item, root)
+    plugins = obsidian_plugins(runner, root, gh)
+    for item in plugins:
+        _apply_plugin(item, root)
+    if plugins:
+        runner([*INSTALL_PLUGINS, "--force"], root)
+    changed = [p for p in watched if p.is_file() and p.read_bytes() != before.get(p)]
+    return [p.relative_to(root).as_posix() for p in changed], protected
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    """Run ``--check`` or ``--apply``."""
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--check", action="store_true", help="list outdated items")
+    mode.add_argument("--apply", action="store_true", help="upgrade them")
+    parser.add_argument("--root", type=Path, default=ROOT, help=argparse.SUPPRESS)
+    args = parser.parse_args(argv)
+    try:
+        if args.check:
+            items = check(run, args.root)
+            print("\n".join(map(str, items)) if items else "everything is current")
+            return int(bool(items))
+        changed, protected = apply(run, args.root)
+    except UpgradeError as exc:
+        print(f"upgrade: {exc}", file=sys.stderr)
+        return 2
+    print("\n".join(f"changed  {path}" for path in changed) or "nothing changed")
+    print("\n".join(str(item) for item in protected))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

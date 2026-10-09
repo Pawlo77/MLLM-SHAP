@@ -1,11 +1,33 @@
-"""Tests for coalition weight formulas used by estimand aggregators."""
+"""Tests for coalition weight formulas used by estimand aggregators.
 
+@see [[src/nlp_shap/estimation/estimands/_weights.py]]
+"""
+
+import logging
 import math
+from collections.abc import Callable
 
 import pytest
 
+from nlp_shap.estimation.estimands._weights import (
+    aggregate_from_marginals,
+    banzhaf_weight,
+    shapley_weight,
+)
 from nlp_shap.estimation.estimands.banzhaf import BanzhafAggregator
 from nlp_shap.estimation.estimands.shapley import ShapleyAggregator
+
+GAME: dict[tuple[bool, bool, bool], float] = {
+    (False, False, False): 0.0,
+    (True, False, False): 1.0,
+    (False, True, False): 2.0,
+    (False, False, True): 4.0,
+    (True, True, False): 5.0,
+    (True, False, True): 7.0,
+    (False, True, True): 6.0,
+    (True, True, True): 11.0,
+}
+"""Non-additive three-player game: players 0 and 2 gain 2 together, 0 and 1 gain 2."""
 
 
 @pytest.mark.parametrize(
@@ -37,3 +59,93 @@ def test_banzhaf_coalition_weight_is_uniform() -> None:
         assert aggregator.coalition_weight(
             coalition_size, num_players
         ) == pytest.approx(expected)
+
+
+def _aggregate(
+    masks: list[tuple[bool, bool, bool]],
+    weight_fn: Callable[[int, int], float],
+) -> list[float]:
+    return aggregate_from_marginals(masks, [GAME[mask] for mask in masks], weight_fn)
+
+
+@pytest.mark.parametrize(
+    ("weight_fn", "expected"),
+    [
+        # Player 0 marginals by |S|: 1; (5 - 2, 7 - 4) -> 3; 11 - 6 = 5.
+        # Player 1: 2; (5 - 1, 6 - 4) -> 3; 11 - 7 = 4.
+        # Player 2: 4; (7 - 1, 6 - 2) -> 5; 11 - 5 = 6.
+        # Shapley: each stratum has probability 1/3: (1 + 3 + 5) / 3 = 3, ...
+        (shapley_weight, [3.0, 3.0, 5.0]),
+        # Banzhaf: strata 0, 1, 2 have probability 1/4, 1/2, 1/4:
+        # 1/4 + 3/2 + 5/4 = 3, 2/4 + 3/2 + 4/4 = 3, 4/4 + 5/2 + 6/4 = 5.
+        (banzhaf_weight, [3.0, 3.0, 5.0]),
+    ],
+)
+def test_aggregate_from_marginals_on_full_table(
+    weight_fn: Callable[[int, int], float], expected: list[float]
+) -> None:
+    assert _aggregate(list(GAME), weight_fn) == pytest.approx(expected, abs=1e-12)
+
+
+# The partial table misses {2}: player 0 loses the pair ({2}, {0, 2}), player 1
+# loses ({2}, {1, 2}) and player 2 loses its whole size-0 stratum (∅, {2}).
+PARTIAL = [mask for mask in GAME if mask != (False, False, True)]
+
+
+def test_aggregate_from_marginals_partial_table_shapley() -> None:
+    # Player 0: strata 0, 1, 2 observed once: 1, 5 - 2 = 3, 11 - 6 = 5.
+    #   (1/3 * 1 + 1/3 * 3 + 1/3 * 5) / 1 = 3.
+    # Player 1: 2, 5 - 1 = 4, 11 - 7 = 4: (2 + 4 + 4) / 3 = 10/3.
+    # Player 2: stratum 0 empty; stratum 1 has two marginals, 7 - 1 = 6 and
+    #   6 - 2 = 4, mean 5; stratum 2: 11 - 5 = 6.
+    #   (1/3 * 5 + 1/3 * 6) / (2/3) = 5.5.
+    assert _aggregate(PARTIAL, shapley_weight) == pytest.approx(
+        [3.0, 10 / 3, 5.5], abs=1e-12
+    )
+
+
+def test_aggregate_from_marginals_partial_table_banzhaf() -> None:
+    # Stratum probabilities C(2, k) / 4 = 1/4, 1/2, 1/4.
+    # Player 0: 1/4 * 1 + 1/2 * 3 + 1/4 * 5 = 3.
+    # Player 1: 1/4 * 2 + 1/2 * 4 + 1/4 * 4 = 3.5.
+    # Player 2: (1/2 * 5 + 1/4 * 6) / (1/2 + 1/4) = 4 / 0.75 = 16/3.
+    assert _aggregate(PARTIAL, banzhaf_weight) == pytest.approx(
+        [3.0, 3.5, 16 / 3], abs=1e-12
+    )
+
+
+def test_aggregate_from_marginals_zero_fills_unobserved_players(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    # Only pairs (∅, {0}) and (∅, {1}) exist; player 2 has no marginal.
+    masks = [(False, False, False), (True, False, False), (False, True, False)]
+    with caplog.at_level(logging.WARNING):
+        values = _aggregate(masks, banzhaf_weight)
+    assert values == [1.0, 2.0, 0.0]
+    assert caplog.messages == [
+        (
+            "1 of 3 players have no observed marginal (no sampled pair S, S | {i}); "
+            "their values are 0. Raise budget.fraction or set "
+            "include_minimal_masks. Players: [2]"
+        )
+    ]
+
+
+@pytest.mark.parametrize(
+    ("masks", "payoffs", "message"),
+    [
+        ([], [], "masks must not be empty"),
+        ([(True,)], [1.0, 2.0], "masks and payoffs must have the same length"),
+        ([()], [1.0], "masks must include at least one player"),
+        (
+            [(True, False), (True,)],
+            [1.0, 2.0],
+            "all masks must have the same number of players",
+        ),
+    ],
+)
+def test_aggregate_from_marginals_rejects_malformed_tables(
+    masks: list[tuple[bool, ...]], payoffs: list[float], message: str
+) -> None:
+    with pytest.raises(ValueError, match=f"^{message}$"):
+        aggregate_from_marginals(masks, payoffs, shapley_weight)

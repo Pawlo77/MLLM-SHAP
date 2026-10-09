@@ -1,17 +1,22 @@
-"""Backend plugin construction helpers."""
+"""Backend plugin construction helpers.
+
+@domain plugins
+@see [[knowledge/architecture/plugins]]
+@tested-by [[tests/plugins/test_backends.py]]
+"""
 
 from typing import cast
 
-from ..pipeline.config import BackendConfig
 from ..protocols.backend import GenerativeBackend
+from .context import PluginContext
 from .groups import PluginGroup
-from .registry import PluginRegistry
 
 
-def instantiate_backend(
-    config: BackendConfig,
-    registry: PluginRegistry,
-) -> GenerativeBackend:
-    """Construct a backend instance for ``config.kind`` and ``config.model_id``."""
-    backend_type = registry.resolve_type(PluginGroup.BACKENDS, config.kind)
-    return cast(GenerativeBackend, backend_type(config))
+def instantiate_backend(context: PluginContext) -> GenerativeBackend:
+    """Build the backend named by ``context.config.backend.kind``."""
+    return cast(
+        GenerativeBackend,
+        context.registry.resolve(
+            PluginGroup.BACKENDS, context.config.backend.kind, context
+        ),
+    )

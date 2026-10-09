@@ -1,4 +1,7 @@
-"""Integration tests for the LM Studio backend."""
+"""Integration tests for the LM Studio backend.
+
+@see [[src/nlp_shap/backends/lmstudio/__init__.py]]
+"""
 
 import asyncio
 from pathlib import Path
@@ -6,11 +9,13 @@ from pathlib import Path
 import pytest
 
 from nlp_shap.backends.lmstudio import LmStudioBackend
+from nlp_shap.domain.config import GenerationConfig
 from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
 from nlp_shap.domain.enums import Role
 from nlp_shap.errors import BackendUnavailableError
 from nlp_shap.pipeline.config import BackendConfig, explain_config_from_yaml
 from nlp_shap.pipeline.runner import ExplainRunner
+from tests.backends._context import backend_context
 
 pytestmark = pytest.mark.lms
 
@@ -35,17 +40,20 @@ def _user_snapshot(text: str) -> ConversationSnapshot:
 def test_lmstudio_backend_generate_smoke(lmstudio_host: str) -> None:
     """LmStudioBackend returns non-empty text from a loaded local model."""
     backend = LmStudioBackend(
-        BackendConfig(
-            kind="lmstudio",
-            model_id="qwen2-500m-instruct",
-            api_host=lmstudio_host,
+        backend_context(
+            BackendConfig(
+                kind="lmstudio",
+                model_id="qwen2-500m-instruct",
+                api_host=lmstudio_host,
+            )
         )
     )
 
     async def run() -> str:
         try:
             record = await backend.generate(
-                _user_snapshot("Reply with the word ok."), 8, 0.0, 1
+                _user_snapshot("Reply with the word ok."),
+                GenerationConfig(max_new_tokens=8, temperature=0.0, top_k=1),
             )
             return record.text
         finally:
@@ -58,16 +66,21 @@ def test_lmstudio_backend_generate_smoke(lmstudio_host: str) -> None:
 def test_lmstudio_backend_raises_when_host_unreachable() -> None:
     """Invalid API hosts raise BackendUnavailableError without LM Studio calls."""
     backend = LmStudioBackend(
-        BackendConfig(
-            kind="lmstudio",
-            model_id="qwen2-500m-instruct",
-            api_host="127.0.0.1:1",
+        backend_context(
+            BackendConfig(
+                kind="lmstudio",
+                model_id="qwen2-500m-instruct",
+                api_host="127.0.0.1:1",
+            )
         )
     )
 
     async def run() -> None:
         try:
-            await backend.generate(_user_snapshot("hello"), 4, 0.0, 1)
+            await backend.generate(
+                _user_snapshot("hello"),
+                GenerationConfig(max_new_tokens=4, temperature=0.0, top_k=1),
+            )
         finally:
             await backend.aclose()
 

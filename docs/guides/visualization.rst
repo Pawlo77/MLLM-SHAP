@@ -2,7 +2,7 @@ Visualization
 =============
 
 Per-token Shapley and Banzhaf attributions are numeric tuples in
-:class:`~nlp_shap.pipeline.result.ExplainRunOutput`. Renderer plugins turn those
+:class:`~nlp_shap.ExplainRunOutput`. Renderer plugins turn those
 values into review-ready figures for notebooks, reports, and stakeholder decks.
 
 Renderers
@@ -35,10 +35,16 @@ Quick start
 
 .. code-block:: python
 
-   from nlp_shap import ExplainRunner, ExplainConfig, render_attribution
-   from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
-   from nlp_shap.domain.enums import Role
-   from nlp_shap.masking.partitions import TokenPartitioner
+   from nlp_shap import (
+       ConversationSnapshot,
+       ExplainConfig,
+       ExplainRunner,
+       Message,
+       Role,
+       Turn,
+       render_attribution,
+   )
+   from nlp_shap.masking import TokenPartitioner
 
    snapshot = ConversationSnapshot.from_turns((
        Turn(messages=(Message(role=Role.USER, text="refund within thirty days"),)),
@@ -50,29 +56,49 @@ Quick start
            "estimand": "shapley",
            "value_fn": "tfidf_cosine",
            "absence_policy": "pad",
+           "archive": {"path": ""},
        },
    })
    output = ExplainRunner(config).explain_sync(snapshot)
    player_set = TokenPartitioner().partition(snapshot)
 
-   figure = render_attribution(output, snapshot, player_set, renderer="token_bar")
-   figure.savefig("attribution.png", dpi=150, bbox_inches="tight")
+   bar = render_attribution(output, snapshot, player_set, renderer="token_bar")
+   text = render_attribution(output, snapshot, player_set, renderer="token_text")
+   bar.savefig("attribution.png", dpi=150, bbox_inches="tight")
 
 .. guide-result:: visualization_bar
-   :caption: Bar chart
+   :caption: Bar chart (``token_bar``)
    :figure:
    :alt: Horizontal token attribution bar chart
 
 .. guide-result:: visualization_text
-   :caption: Inline tokens
+   :caption: Inline tokens (``token_text``)
    :figure:
    :alt: Inline colored token attribution
+
+``player_set`` must be the partition the run used; with ``players: tokens`` that
+is :class:`~nlp_shap.masking.TokenPartitioner`. Pass ``title=`` to label a figure
+and ``registry=`` to use a renderer registered in your own
+:class:`~nlp_shap.PluginRegistry`.
 
 Jupyter HTML
 ------------
 
-For inline notebook display, use :func:`~nlp_shap.render_attribution_html` or
-:func:`~nlp_shap.viz.display_attribution_html` when IPython is available.
+In a notebook, :func:`~nlp_shap.viz.display_attribution_html` shows the colored
+tokens inline without matplotlib, and :func:`~nlp_shap.render_attribution_html`
+returns the same fragment as a string for reports:
+
+.. code-block:: python
+
+   from nlp_shap import render_attribution_html
+
+   html = render_attribution_html(output, snapshot, player_set, title="Refund")
+   print(type(html).__name__, all(word in html for word in ("refund", "days")))
+
+.. guide-result:: visualization_html
+
+In Jupyter, ``display_attribution_html(output, snapshot, player_set)`` renders it
+directly.
 
 Color scale
 -----------
@@ -85,6 +111,7 @@ each token with its signed value.
 Further reading
 ---------------
 
-- End-to-end explain notebook: :doc:`../examples`
+- ``examples/attribution_viz.ipynb`` and ``examples/text_explain_e2e.ipynb``
+  (embedded on :doc:`../examples`)
 - Generative backends: :doc:`backends`
 - API reference: :doc:`../api/viz`

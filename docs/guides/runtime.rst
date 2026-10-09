@@ -1,48 +1,136 @@
 Runtime core
 ============
 
-This guide shows how to persist coalition history, deduplicate repeated masks,
-and schedule async coalition generation with bounded concurrency.
+This guide covers the layer under :class:`~nlp_shap.ExplainRunner`: the run
+archive, coalition deduplication and the async scheduler. Most users only meet it
+through ``explanation.archive``, ``dedup`` and ``max_inflight``; the snippets show
+the pieces directly. They share one namespace.
 
-Open a run archive
-------------------
+Run archives
+------------
+
+An archived run is a directory with ``manifest.json``, the base generation and
+one row per coalition output in ``archive.sqlite``. Run an explanation with an
+archive path and read the rows back with
+:meth:`~nlp_shap.runtime.archive.RunArchive.load`:
 
 .. code-block:: python
 
    from pathlib import Path
 
-   from nlp_shap import Estimand
-   from nlp_shap.masking.codec import MaskCodec
-   from nlp_shap.pipeline.manifest import RunManifest
-   from nlp_shap.runtime import CoalitionRecordDraft, RunArchive
+   from nlp_shap import (
+       ConversationSnapshot,
+       ExplainConfig,
+       ExplainRunner,
+       Message,
+       Role,
+       Turn,
+   )
+   from nlp_shap.runtime import RunArchive
 
-   manifest = RunManifest(estimand=Estimand.SHAPLEY, run_id="demo-run")
-   root = Path("./runs/demo-run")
+   snapshot = ConversationSnapshot.from_turns((
+       Turn(messages=(Message(role=Role.USER, text="Who are you?"),)),
+   ))
+   config = ExplainConfig.model_validate({
+       "backend": {"kind": "mock", "model_id": "mock"},
+       "explanation": {
+           "estimator": "exact",
+           "absence_policy": "delete",
+           "archive": {"path": "runs/{run_id}"},
+       },
+   })
+   output = ExplainRunner(config).explain_sync(snapshot)
+   root = Path("runs") / output.run_id
 
-   with RunArchive.open(root, manifest, flush_every=25) as archive:
-       packed = MaskCodec.pack((True, False, True))
-       archive.append(
-           CoalitionRecordDraft(
-               snapshot_id="snap-1",
-               coalition_key="coalition-1",
-               mask=packed,
-               absence_policy="delete",
-               model_id="mock",
-               generation_text="Who you?",
-               utility=0.8,
-               elapsed_ms=12.5,
-               cache_hit=False,
-           )
-       )
-
-   with RunArchive.open(root, manifest) as archive:
-       for record in archive.history_lazy():
-           print(record.record_id, record.generation_text)
+   print("files:", sorted(path.name for path in root.iterdir()))
+   with RunArchive.load(root) as archive:
+       print("base:", repr(archive.read_base_generation()[:19]))
+       for record in list(archive.history_lazy())[:3]:
+           print(record.record_id, repr(record.generation_text[:19]))
 
 .. guide-result:: runtime_archive
 
+Re-running the same configuration on the same snapshot targets the same
+directory. :meth:`~nlp_shap.runtime.archive.RunArchive.open` creates archives and
+refuses to append to an existing one, so the second run raises
+:exc:`~nlp_shap.errors.ArchiveExistsError`; ``on_exists: overwrite`` deletes the
+old rows, manifest and base generation first:
+
+.. code-block:: python
+
+   from nlp_shap.errors import ArchiveExistsError
+
+   try:
+       ExplainRunner(config).explain_sync(snapshot)
+   except ArchiveExistsError as error:
+       print(type(error).__name__)
+
+   overwrite = config.model_copy(
+       update={
+           "explanation": config.explanation.model_copy(
+               update={"archive": config.explanation.archive.model_copy(
+                   update={"on_exists": "overwrite"},
+               )},
+           ),
+       },
+   )
+   again = ExplainRunner(overwrite).explain_sync(snapshot)
+   print("same run id:", again.run_id == output.run_id)
+
+.. guide-result:: runtime_archive_exists
+
+Run manifest
+------------
+
+Every archive stores ``manifest.json`` and one SQLite file, ``archive.sqlite``
+(WAL journal), whose rows hold the generated text. The manifest's
+``schema_version`` is :data:`~nlp_shap.runtime.archive.MANIFEST_SCHEMA_VERSION`
+and the database's ``PRAGMA user_version`` is
+:data:`~nlp_shap.runtime.archive.ARCHIVE_SCHEMA_VERSION`.
+:meth:`~nlp_shap.runtime.archive.RunArchive.load` refuses archives with any other
+version, such as those written by 0.1.17 or earlier, with
+:exc:`~nlp_shap.errors.ManifestVersionError`; re-run ``explain`` to rebuild them.
+The manifest written by :class:`~nlp_shap.ExplainRunner` records:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Field
+     - Meaning
+   * - ``schema_version``, ``nlp_shap_version``
+     - Manifest format and the package version that wrote it
+   * - ``run_id``, ``snapshot_id``
+     - Run identifier and the explained conversation snapshot
+   * - ``estimand``, ``estimator``, ``value_fn``, ``normalizer``
+     - How payoffs were sampled, scored and aggregated
+   * - ``absence_policy``, ``players``, ``player_ids``
+     - How the prompt was partitioned and masked; ``player_ids`` follow mask bit
+       order
+   * - ``backend_kind``, ``model_id``
+     - Which backend and model generated the coalition outputs
+   * - ``config``
+     - Full :class:`~nlp_shap.ExplainConfig` echo
+
+:meth:`~nlp_shap.ExplainRunner.reanalyze` rescores an archive with the runner's
+value function and normalizer, re-aggregates with the archived estimator, and
+raises :exc:`~nlp_shap.errors.ReanalyzeMismatchError` when the runner's
+estimator, absence policy or partition differs from the archived run. With the
+same value function it reproduces the ``explain`` attributions; :doc:`pipeline`
+has an example.
+
+When every coalition was generated the pipeline marks the archive complete.
+:meth:`~nlp_shap.ExplainRunner.reanalyze` raises
+:exc:`~nlp_shap.errors.ArchiveIncompleteError` for an archive of a run that failed
+part-way, one without the grand or empty coalition, a full-budget archive missing
+rows, or an archive whose manifest was not written by
+:class:`~nlp_shap.ExplainRunner`.
+
 Build coalition dedup keys
 --------------------------
+
+A coalition key hashes everything that determines a generation: snapshot, player
+order, mask, absence policy, model and generation settings. With ``dedup.enabled:
+auto`` deduplication is on only for deterministic decoding (``temperature`` 0):
 
 .. code-block:: python
 
@@ -65,13 +153,15 @@ Build coalition dedup keys
 Schedule async coalition jobs
 -----------------------------
 
+:class:`~nlp_shap.runtime.InferenceScheduler` checks the hot store, then the dedup
+registry, and only then calls ``generate`` under a ``max_inflight`` semaphore.
+Nine jobs over three distinct keys cost three calls:
+
 .. code-block:: python
 
    import asyncio
 
-   from nlp_shap.domain.conversation import ConversationSnapshot, Message, Role, Turn
    from nlp_shap.masking.codec import MaskCodec
-   from nlp_shap.pipeline.config import GenerationConfig
    from nlp_shap.runtime import (
        CoalitionDedupRegistry,
        CoalitionJob,
@@ -79,12 +169,10 @@ Schedule async coalition jobs
        InferenceScheduler,
    )
 
-   turn = Turn(messages=(Message(role=Role.USER, text="Who are you?"),))
-   snapshot = ConversationSnapshot.from_turns((turn,))
    packed = MaskCodec.pack((True, False, True))
 
-   async def generate(snapshot: ConversationSnapshot) -> str:
-       return snapshot.turns[0].messages[0].text
+   async def generate(prompt: ConversationSnapshot) -> str:
+       return prompt.turns[0].messages[0].text
 
    scheduler = InferenceScheduler(
        max_inflight=2,
@@ -101,7 +189,6 @@ Schedule async coalition jobs
            mask_words=packed.words,
            mask_n_bits=packed.n_bits,
            model_id="mock",
-           utility=1.0,
        )
        for index in range(9)
    ]
@@ -110,59 +197,191 @@ Schedule async coalition jobs
 
 .. guide-result:: runtime_scheduler
 
-Coalition progress callbacks
-----------------------------
-
-Pass an optional sync :class:`~nlp_shap.runtime.progress.CoalitionProgress`
-implementation to report planned and finished coalition counts. Omitting it
-uses a no-op sink:
-
-.. code-block:: python
-
-   class PrintProgress:
-       def on_coalitions_planned(self, total: int) -> None:
-           print(f"planned={total}")
-
-       def on_coalition_finished(self, done: int, total: int) -> None:
-           print(f"finished={done}/{total}")
-
-   scheduler = InferenceScheduler(
-       max_inflight=2,
-       generation=GenerationConfig(temperature=0.0),
-       store=HotResultStore(),
-       progress=PrintProgress(),
-   )
+Pass ``progress=`` (any object with ``on_coalitions_planned`` and
+``on_coalition_finished``) to observe the counts; :doc:`pipeline` shows one. The
+counts are cumulative over every run of one scheduler: when Neyman's second phase
+adds jobs, ``on_coalitions_planned`` is called again with the larger total and the
+finished count keeps growing.
 
 Streaming large job sets
 ------------------------
 
-For exact enumeration or other large coalition batches, pass a generator to
-:meth:`~nlp_shap.runtime.scheduler.InferenceScheduler.run_iter` so the
-scheduler does not create one coroutine per coalition upfront:
+:meth:`~nlp_shap.runtime.scheduler.InferenceScheduler.run_iter` accepts any
+iterable and only creates coroutines as slots free up, so an exact run over many
+players never holds all :math:`2^n` jobs in memory at once:
 
 .. code-block:: python
 
-   def job_stream():
-       for mask in ExactEstimator.iter_masks(player_set):
-           yield build_job_for_mask(mask)
+   from nlp_shap import ExactEstimator
+   from nlp_shap.masking import MaskBuilder, PadPolicy, TokenPartitioner
 
-   metrics = asyncio.run(scheduler.run_iter(job_stream(), generate))
+   players = TokenPartitioner().partition(snapshot)
+   builder = MaskBuilder(PadPolicy())
+
+   def job_stream():
+       for mask in ExactEstimator.iter_masks(players):
+           packed = MaskCodec.pack(mask.present)
+           yield CoalitionJob(
+               coalition_key=packed.words.hex(),
+               snapshot_id=snapshot.snapshot_id,
+               snapshot=builder.render(builder.view(snapshot, players, mask)),
+               absence_policy="pad",
+               mask_words=packed.words,
+               mask_n_bits=packed.n_bits,
+               model_id="mock",
+           )
+
+   streaming = InferenceScheduler(
+       max_inflight=4,
+       generation=GenerationConfig(temperature=0.0),
+       store=HotResultStore(),
+   )
+   metrics = asyncio.run(streaming.run_iter(job_stream(), generate, total=8))
+   print(metrics.requested, metrics.executed)
+
+.. guide-result:: runtime_run_iter
+
+Failure semantics
+-----------------
+
+Jobs run in one :class:`asyncio.TaskGroup`. When any ``generate`` call raises,
+the task group cancels every other job and the scheduler re-raises that first
+exception itself, not wrapped in an :class:`ExceptionGroup`, so ``except
+RuntimeError`` works as written; a run never returns partial metrics or a
+partially aggregated result:
+
+.. code-block:: python
+
+   async def flaky(prompt: ConversationSnapshot) -> str:
+       if "[MASK]" in prompt.turns[0].messages[0].text:
+           msg = "backend refused a masked prompt"
+           raise RuntimeError(msg)
+       return "ok"
+
+   failing = InferenceScheduler(
+       max_inflight=2,
+       generation=GenerationConfig(temperature=0.0),
+       store=HotResultStore(),
+   )
+   try:
+       asyncio.run(failing.run_iter(job_stream(), flaky, total=8))
+   except RuntimeError as error:
+       print("raised:", error)
+
+.. guide-result:: runtime_failure
+
+Logging
+-------
+
+Importing ``nlp_shap`` leaves the host application's logging alone. Opt in with
+:func:`~nlp_shap.configure_logging`:
+
+.. code-block:: python
+
+   import nlp_shap
+
+   nlp_shap.configure_logging(level="INFO")              # plain lines on stderr
+   nlp_shap.configure_logging(level="INFO", json=True)   # one JSON object per line
+   nlp_shap.configure_logging("config/logging.example.toml")  # a [tool.logging] file
+
+Without arguments it applies the ``[tool.logging]`` section of the nearest
+``pyproject.toml``. Setting ``NLP_SHAP_LOGGING_CONFIG`` to a TOML file applies that
+file on import instead; ``config/logging.example.toml`` in the repository is a
+starting point. At ``INFO`` the logger ``nlp_shap.pipeline.orchestrator`` reports
+each stage once:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 25 75
+
+   * - Event
+     - Message
+   * - Run start
+     - ``explain run <id> started: <n> players, estimator <name>, backend <kind>``
+   * - Base generation
+     - ``base generated in <ms> ms``
+   * - Coalitions scheduled
+     - ``<count> coalitions scheduled`` (once per sampling phase)
+   * - Run end
+     - ``explain run <id> done in <ms> ms (<n> coalitions, <calls> backend calls)``
+
+``DEBUG`` adds HTTP retries and skipped plugin entry points; LM Studio model
+downloads are logged at ``INFO`` by ``nlp_shap.backends.lmstudio.models``.
+
+Telemetry and progress
+----------------------
+
+:class:`~nlp_shap.runtime.telemetry.InMemoryObservabilitySink` records one
+:class:`~nlp_shap.runtime.telemetry.SpanRecord` (name and duration) per pipeline
+stage, and any :class:`~nlp_shap.runtime.progress.CoalitionProgress` receives the
+coalition counts:
+
+.. code-block:: python
+
+   from nlp_shap import InMemoryObservabilitySink
+
+
+   class CountingProgress:
+       def __init__(self) -> None:
+           self.planned: list[int] = []
+           self.finished = 0
+
+       def on_coalitions_planned(self, total: int) -> None:
+           self.planned.append(total)
+
+       def on_coalition_finished(self, done: int, total: int) -> None:
+           self.finished = done
+
+
+   sink = InMemoryObservabilitySink()
+   progress = CountingProgress()
+   ExplainRunner(overwrite, telemetry=sink, progress=progress).explain_sync(snapshot)
+   print("stages:", [span.name for span in sink.spans])
+   print("planned:", progress.planned, "finished:", progress.finished)
+
+.. guide-result:: runtime_telemetry
+
+A progress bar needs nothing more. With ``tqdm`` installed:
+
+.. code-block:: python
+
+   from tqdm import tqdm
+
+
+   class TqdmProgress:
+       def __init__(self) -> None:
+           self.bar = tqdm(total=0, unit="coalition")
+
+       def on_coalitions_planned(self, total: int) -> None:
+           self.bar.total = total
+           self.bar.refresh()
+
+       def on_coalition_finished(self, done: int, total: int) -> None:
+           self.bar.update(done - self.bar.n)
+
+
+   ExplainRunner(config, progress=TqdmProgress()).explain_sync(snapshot)
+
+The callbacks run synchronously on the event loop, so keep them cheap.
 
 Performance benchmarks
 ----------------------
 
-Local micro-benchmarks live in ``tests/benchmarks/``. They cover coalition
-deduplication keys, mask pack/unpack throughput, 10k-row archive round-trips,
-and prefix-cache hit rate.
+Benchmarks live in ``tests/benchmarks/`` and use ``pytest-benchmark``. They cover
+coalition deduplication keys, mask pack/unpack, 10k-row archive round trips,
+prefix-cache lookups, exact, stratified and complementary aggregation, the
+scheduler with 1 000 jobs, TF-IDF scoring and an end-to-end mock run.
 
 .. code-block:: bash
 
-   make bench              # record timings to .pytest_benchmark/benchmark.json
-   make bench-regression   # fail when a bench regresses >10% vs baselines.json
+   make bench              # run them and write .pytest_benchmark/benchmark.json
+   make bench-regression   # fail when a median is >25% slower than baseline.json
 
-Benchmarks are not part of ``make check`` latency gates on CI; run
-``make bench-regression`` locally before changing hot paths in
-``runtime/`` or ``masking/``.
+``tests/benchmarks/baseline.json`` is recorded on the maintainer's machine (named
+in ``tests/benchmarks/AGENTS.md``), so compare against it on comparable hardware.
+``make check`` does not run benchmarks; a weekly CI workflow runs ``make bench``
+and keeps the report as an artifact. Run ``make bench-regression`` before changing
+hot paths in ``runtime/``, ``masking/`` or ``estimation/``.
 
 Notebook
 --------
