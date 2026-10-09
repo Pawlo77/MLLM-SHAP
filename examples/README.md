@@ -7,28 +7,27 @@
 
 Install the package, then open a notebook with Jupyter or VS Code.
 
-From PyPI:
-
 ```bash
-pip install nlp-shap
+pip install nlp-shap                      # from PyPI
+git clone https://github.com/Pawlo77/nlp-shap && cd nlp-shap && make install   # from a clone
 ```
 
-From a local clone:
+## Run
 
-```bash
-git clone https://github.com/Pawlo77/nlp-shap
-cd nlp-shap
-make install
-```
-
-Use the project `.venv` as the notebook kernel when working from source.
+From a clone, `make notebooks` re-executes every notebook in place and stores its outputs. To work interactively, run `make kernel` (kernel `nlp-shap (uv)`) or select `.venv` as the kernel in VS Code. A notebook that needs an optional extra says so in its first cell; install it with `uv sync --extra <name>`.
 
 ## Notebooks
 
-- `estimands_toy_game.ipynb` — Estimand walkthrough: Shapley/Banzhaf aggregators, coalition weights, majority vs additive games, labelled `ExplainResult`, manifest wire format, and plugin entry points. CPU-only; no optional extras.
-- `masking_views.ipynb` — Masking walkthrough: token partition, delete/pad/neutral policies (including custom parameters), `MaskedSnapshot`/`MaskBuilder`, `MaskCodec`, `MaskSpace`, plugin registry, and validation guards. CPU-only; no optional extras.
-- `runtime_core.ipynb` — Runtime walkthrough: `RunArchive`, coalition dedup keys, `HotResultStore`, `InferenceScheduler`, and scheduler metrics. CPU-only; no optional extras.
-- `exact_estimation.ipynb` — Exact estimation walkthrough: `ExactEstimator`, coalition enumeration, estimand delegation, budget guard, and plugin resolution. CPU-only; no optional extras.
-- `estimator_comparison.ipynb` — Eight-player benchmark (≤20 evals) plus five-player fraction sweep 0.1–0.5; MC bias analysis; multi-seed L1 vs exact Shapley. CPU-only.
-- `attribution_viz.ipynb` — Mock exact run with `token_text` and `token_bar` renderers; CPU-only with `[viz]`.
-- `text_explain_e2e.ipynb` — End-to-end refund-policy prompt explained via LM Studio and transformers on the same `model_id`, with attribution charts. Requires `[lmstudio]`, `[transformers]`, `[viz]`; LM Studio optional at runtime.
+What each notebook demonstrates, and the extras it needs: [docs gallery](https://pawlo77.github.io/nlp-shap/examples.html) (source `docs/examples.rst`).
+
+- `explain_pipeline.ipynb`
+- `archive_reanalyze.ipynb`
+- `cli.ipynb`
+- `plugins_extending.ipynb`
+- `estimands_toy_game.ipynb`
+- `masking_views.ipynb`
+- `runtime_core.ipynb`
+- `exact_estimation.ipynb`
+- `estimator_comparison.ipynb`
+- `attribution_viz.ipynb`
+- `text_explain_e2e.ipynb`
