@@ -1,4 +1,8 @@
-"""Performance summaries for explain pipeline runs."""
+"""Performance summaries for explain pipeline runs.
+
+@domain runtime
+@see [[knowledge/architecture/runtime]]
+"""
 
 from dataclasses import dataclass
 

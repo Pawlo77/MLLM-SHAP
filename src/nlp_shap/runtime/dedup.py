@@ -1,11 +1,16 @@
-"""Coalition deduplication keys and registry."""
+"""Coalition deduplication keys and registry.
+
+@domain runtime
+@see [[knowledge/architecture/runtime]]
+@tested-by [[tests/runtime/test_dedup.py]]
+"""
 
 import hashlib
 import struct
 from dataclasses import dataclass
 
+from ..domain.config import DedupConfig, GenerationConfig
 from ..masking.codec import MaskCodec, PackedMask
-from ..pipeline.config import DedupConfig, GenerationConfig
 
 
 def dedup_enabled(config: DedupConfig, generation: GenerationConfig) -> bool:
@@ -18,7 +23,8 @@ def dedup_enabled(config: DedupConfig, generation: GenerationConfig) -> bool:
         case "auto":
             return generation.temperature == 0.0
         case _ as unreachable:
-            raise AssertionError(f"unsupported dedup mode: {unreachable!r}")
+            msg = f"unsupported dedup mode: {unreachable!r}"
+            raise AssertionError(msg)
 
 
 def _hash_packed_mask(packed: PackedMask) -> bytes:
@@ -61,6 +67,7 @@ class CoalitionDedupRegistry:
     """Track coalition keys that already required backend execution."""
 
     def __init__(self) -> None:
+        """Start with no observed coalition keys."""
         self._seen: set[str] = set()
 
     def observe(self, coalition_key: str) -> bool:
