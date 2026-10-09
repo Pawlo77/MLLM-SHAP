@@ -1,1 +1,1 @@
-SchedulerMetrics(requested=9, executed=3, deduplicated=0, cache_hits=6, kv_cache_hits=0)
+SchedulerMetrics(requested=9, executed=3, deduplicated=0, cache_hits=6, kv_cache_hits=0, kv_cache_reused_tokens=0)

@@ -2,25 +2,20 @@ Runtime
 =======
 
 .. automodule:: nlp_shap.runtime
-   :members:
-   :undoc-members:
+   :no-members:
 
 .. automodule:: nlp_shap.runtime.archive
-   :members:
-   :undoc-members:
 
 .. automodule:: nlp_shap.runtime.dedup
-   :members:
-   :undoc-members:
 
 .. automodule:: nlp_shap.runtime.store
-   :members:
-   :undoc-members:
 
 .. automodule:: nlp_shap.runtime.scheduler
-   :members:
-   :undoc-members:
 
 .. automodule:: nlp_shap.runtime.progress
-   :members:
-   :undoc-members:
+
+.. automodule:: nlp_shap.runtime.metrics
+
+.. automodule:: nlp_shap.runtime.telemetry
+
+.. automodule:: nlp_shap.runtime.kv_cache

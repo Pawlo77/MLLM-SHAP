@@ -1,0 +1,2 @@
+shapley shapley (0.25, 0.25, 0.25, 0.25)
+banzhaf banzhaf (0.125, 0.125, 0.125, 0.125)

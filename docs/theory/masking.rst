@@ -14,7 +14,10 @@ Partitioning
 
 :class:`~nlp_shap.masking.partitions.TokenPartitioner` splits each message into
 whitespace-delimited tokens. Each token becomes one player with a stable
-identifier derived from the base snapshot id and token coordinates.
+identifier derived from the base snapshot id and token coordinates. The
+:class:`~nlp_shap.PlayerSet` it returns lists the players in mask-bit order;
+another partitioner (sentences, retrieved passages, messages) only has to return
+a different player set, see :doc:`../guides/extending`.
 
 Absence policies
 ----------------
@@ -57,9 +60,13 @@ Packed masks
 ------------
 
 :class:`~nlp_shap.masking.codec.MaskCodec` packs boolean masks into little-endian
-bytes and exposes a stable integer hash compatible with the legacy MLLM-Shap
-codec. :class:`~nlp_shap.masking.space.MaskSpace` projects feature-level splits
-back into full-length masks when some positions are always present.
+bytes and hashes them with BLAKE2b. The hash depends only on the mask, not on the
+Python process (``PYTHONHASHSEED``), so coalition keys are reproducible across
+runs and machines.
+
+:class:`~nlp_shap.masking.space.MaskSpace` projects feature-level splits back into
+full-length masks when some positions are always present. It is a standalone
+utility for custom samplers; :class:`~nlp_shap.ExplainRunner` does not use it.
 
 See also
 --------

@@ -1,30 +1,31 @@
-Estimand aggregators and estimation
-===================================
+Estimation
+==========
+
+.. automodule:: nlp_shap.estimation
+   :no-members:
 
 .. automodule:: nlp_shap.estimation.exact
-   :members:
-   :undoc-members:
+   :inherited-members:
 
 .. automodule:: nlp_shap.estimation.monte_carlo
-   :members:
-   :undoc-members:
+   :inherited-members:
 
 .. automodule:: nlp_shap.estimation.complementary
-   :members:
-   :undoc-members:
+   :inherited-members:
 
 .. automodule:: nlp_shap.estimation.neyman
-   :members:
-   :undoc-members:
+
+Estimand aggregators
+--------------------
+
+.. automodule:: nlp_shap.estimation.estimands
+   :no-members:
 
 .. automodule:: nlp_shap.estimation.estimands.shapley
-   :members:
-   :undoc-members:
 
 .. automodule:: nlp_shap.estimation.estimands.banzhaf
-   :members:
-   :undoc-members:
+
+Normalizers
+-----------
 
 .. automodule:: nlp_shap.estimation.normalizers
-   :members:
-   :undoc-members:

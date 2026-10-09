@@ -1,525 +1,276 @@
-"""Execute guide snippets and write stdout / figures for Sphinx guides."""
+"""Execute guide snippets and write their output for the ``guide-result`` directive.
 
-import asyncio
+A ``.. code-block:: python`` in ``docs/guides`` or ``docs/theory`` followed by
+``.. guide-result:: <id>`` runs; snippets of a page share one namespace, in order,
+inside a temporary directory. Output goes to ``_static/guide_outputs/<id>.txt``;
+``:figure:`` directives get the opened figures as ``<id>.png``.
+
+Usage::
+
+    uv run python docs/scripts/render_guide_outputs.py            # render all
+    uv run python docs/scripts/render_guide_outputs.py --check    # list only
+"""
+
+import argparse
+import contextlib
 import io
+import os
+import re
 import sys
 import tempfile
-from collections.abc import Callable
-from contextlib import redirect_stdout
+import textwrap
+from collections.abc import Iterator
+from dataclasses import dataclass, field
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-SRC = ROOT / "src"
-if str(SRC) not in sys.path:
-    sys.path.insert(0, str(SRC))
+DOCS = ROOT / "docs"
+OUTPUT_DIR = DOCS / "_static" / "guide_outputs"
+PAGE_GLOBS = ("guides/*.rst", "theory/*.rst")
 
-OUTPUT_DIR = Path(__file__).resolve().parents[1] / "_static" / "guide_outputs"
-
-
-def _capture(run: Callable[[], None]) -> str:
-    buffer = io.StringIO()
-    with redirect_stdout(buffer):
-        run()
-    return buffer.getvalue().strip()
+_CODE_BLOCK = re.compile(r"^(?P<indent>[ \t]*)\.\. code-block:: python\s*$")
+_GUIDE_RESULT = re.compile(r"^(?P<indent>[ \t]*)\.\. guide-result:: (?P<id>\S+)\s*$")
+_OPTION = re.compile(r"^[ \t]+:(?P<name>[\w-]+):")
 
 
-def _write_text(snippet_id: str, text: str) -> None:
-    path = OUTPUT_DIR / f"{snippet_id}.txt"
-    path.write_text(text.rstrip() + "\n", encoding="utf-8")
+@dataclass(frozen=True)
+class GuideResult:
+    """One ``guide-result`` directive attached to a snippet."""
+
+    snippet_id: str
+    figure: bool
+    line: int
 
 
-def _write_figure(snippet_id: str, figure: object) -> None:
-    path = OUTPUT_DIR / f"{snippet_id}.png"
-    figure.savefig(path, dpi=150, bbox_inches="tight", facecolor="white")
+@dataclass(frozen=True)
+class Snippet:
+    """A runnable Python code block and the directives that show its output."""
+
+    page: Path
+    line: int
+    code: str
+    results: tuple[GuideResult, ...]
+
+    @property
+    def label(self) -> str:
+        """Return ``page:line`` for error messages."""
+        return f"{self.page.relative_to(ROOT)}:{self.line}"
+
+
+@dataclass
+class PageScan:
+    """Snippets and stray directives found on one page."""
+
+    page: Path
+    snippets: list[Snippet] = field(default_factory=list)
+    orphans: list[GuideResult] = field(default_factory=list)
+
+
+def _indent_of(line: str) -> int:
+    return len(line) - len(line.lstrip())
+
+
+def _block_body(lines: list[str], start: int, indent: int) -> tuple[str, int]:
+    """Return the dedented body of the directive opened at ``start - 1``."""
+    index = start
+    while index < len(lines) and _OPTION.match(lines[index]):
+        index += 1
+    body: list[str] = []
+    while index < len(lines):
+        line = lines[index]
+        if line.strip() and _indent_of(line) <= indent:
+            break
+        body.append(line)
+        index += 1
+    while body and not body[-1].strip():
+        body.pop()
+    return textwrap.dedent("\n".join(body)).strip("\n") + "\n", index
+
+
+def _directive_options(lines: list[str], start: int) -> tuple[set[str], int]:
+    names: set[str] = set()
+    index = start
+    while index < len(lines):
+        match = _OPTION.match(lines[index])
+        if match is None:
+            break
+        names.add(match.group("name"))
+        index += 1
+    return names, index
+
+
+def _skip_blank(lines: list[str], index: int) -> int:
+    while index < len(lines) and not lines[index].strip():
+        index += 1
+    return index
+
+
+def scan_page(page: Path) -> PageScan:
+    """Return the runnable snippets and orphan ``guide-result`` directives."""
+    lines = page.read_text(encoding="utf-8").splitlines()
+    scan = PageScan(page=page)
+    attached: set[int] = set()
+    index = 0
+    while index < len(lines):
+        match = _CODE_BLOCK.match(lines[index])
+        if match is None:
+            index += 1
+            continue
+        indent = len(match.group("indent"))
+        code, after = _block_body(lines, index + 1, indent)
+        results: list[GuideResult] = []
+        cursor = _skip_blank(lines, after)
+        while cursor < len(lines):
+            result = _GUIDE_RESULT.match(lines[cursor])
+            if result is None or len(result.group("indent")) != indent:
+                break
+            attached.add(cursor)
+            options, end = _directive_options(lines, cursor + 1)
+            results.append(
+                GuideResult(result.group("id"), "figure" in options, cursor + 1)
+            )
+            cursor = _skip_blank(lines, end)
+        if results:
+            scan.snippets.append(Snippet(page, index + 1, code, tuple(results)))
+        index = after
+    for number, line in enumerate(lines):
+        result = _GUIDE_RESULT.match(line)
+        if result is None or number in attached:
+            continue
+        options, _ = _directive_options(lines, number + 1)
+        scan.orphans.append(
+            GuideResult(result.group("id"), "figure" in options, number + 1)
+        )
+    return scan
+
+
+def scan_docs(docs: Path = DOCS) -> list[PageScan]:
+    """Scan every guide and theory page in document order."""
+    pages = sorted(path for pattern in PAGE_GLOBS for path in docs.glob(pattern))
+    return [scan_page(page) for page in pages]
+
+
+@contextlib.contextmanager
+def _working_directory(path: Path) -> Iterator[None]:
+    previous = Path.cwd()
+    os.chdir(path)
+    try:
+        yield
+    finally:
+        os.chdir(previous)
+
+
+def _new_figures(before: set[int]) -> list[object]:
+    if "matplotlib.pyplot" not in sys.modules:
+        return []
     import matplotlib.pyplot as plt
 
-    plt.close(figure)
+    return [plt.figure(number) for number in plt.get_fignums() if number not in before]
 
 
-def getting_started_majority() -> None:
-    from itertools import product
+def _open_figure_numbers() -> set[int]:
+    if "matplotlib.pyplot" not in sys.modules:
+        return set()
+    import matplotlib.pyplot as plt
 
-    from nlp_shap import BanzhafAggregator, ShapleyAggregator
-
-    num_players = 3
-    masks = [tuple(bits) for bits in product([False, True], repeat=num_players)]
-
-    def majority_payoff(mask: tuple[bool, ...]) -> float:
-        return 1.0 if sum(mask) >= 2 else 0.0
-
-    payoffs = [majority_payoff(mask) for mask in masks]
-    shapley = ShapleyAggregator().aggregate(masks, payoffs)
-    banzhaf = BanzhafAggregator().aggregate(masks, payoffs)
-    print("Shapley:", shapley)
-    print("Banzhaf:", banzhaf)
+    return set(plt.get_fignums())
 
 
-def getting_started_explain() -> None:
-    from nlp_shap import ExplainConfig, ExplainRunner
-    from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
-    from nlp_shap.domain.enums import Role
-
-    snapshot = ConversationSnapshot.from_turns((
-        Turn(messages=(Message(role=Role.USER, text="refund my order"),)),
-    ))
-    config = ExplainConfig.model_validate({
-        "backend": {"kind": "mock", "model_id": "stub"},
-        "explanation": {
-            "estimator": "exact",
-            "value_fn": "tfidf_cosine",
-            "absence_policy": "pad",
-        },
-    })
-    output = ExplainRunner(config).explain_sync(snapshot)
-    print(output.result.values)
-
-
-def getting_started_manifest() -> None:
-    from nlp_shap import Estimand, ExplainResult, RunManifest, parse_manifest
-
-    result = ExplainResult(
-        estimand=Estimand.SHAPLEY,
-        values=(0.333, 0.333, 0.333),
-    )
-    manifest = RunManifest(estimand=result.estimand, run_id="run-42")
-    restored = parse_manifest(manifest.to_dict())
-    print("estimand:", restored.estimand.value)
-    print("run_id:", restored.run_id)
-
-
-def estimands_coalition_weights() -> None:
-    from nlp_shap import BanzhafAggregator, ShapleyAggregator
-
-    shapley = ShapleyAggregator()
-    banzhaf = BanzhafAggregator()
-    num_players = 4
-    for coalition_size in range(num_players):
-        print(
-            f"k={coalition_size}",
-            round(shapley.coalition_weight(coalition_size, num_players), 6),
-            round(banzhaf.coalition_weight(coalition_size, num_players), 6),
-        )
-
-
-def masking_partition() -> None:
-    from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
-    from nlp_shap.domain.enums import Role
-    from nlp_shap.masking.partitions import TokenPartitioner
-
-    turn = Turn(messages=(Message(role=Role.USER, text="Who are you?"),))
-    snapshot = ConversationSnapshot(turns=(turn,), snapshot_id="demo-snap")
-    players = TokenPartitioner().partition(snapshot)
-    print(players.player_ids)
-
-
-def masking_render_coalition() -> None:
-    from nlp_shap.domain.coalition import CoalitionMask
-    from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
-    from nlp_shap.domain.enums import Role
-    from nlp_shap.masking import DeletePolicy, MaskBuilder
-    from nlp_shap.masking.partitions import TokenPartitioner
-
-    turn = Turn(messages=(Message(role=Role.USER, text="Who are you?"),))
-    snapshot = ConversationSnapshot(turns=(turn,), snapshot_id="demo-snap")
-    players = TokenPartitioner().partition(snapshot)
-    mask = CoalitionMask.from_sequence((True, False, True))
-    builder = MaskBuilder(DeletePolicy())
-    view = builder.view(snapshot, players, mask)
-    rendered = builder.render(view)
-    print(rendered.turns[0].messages[0].text)
-
-
-def masking_absence_policies() -> None:
-    from nlp_shap.domain.coalition import CoalitionMask
-    from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
-    from nlp_shap.domain.enums import Role
-    from nlp_shap.masking import MaskBuilder, NeutralPolicy, PadPolicy
-    from nlp_shap.masking.partitions import TokenPartitioner
-
-    turn = Turn(messages=(Message(role=Role.USER, text="Who are you?"),))
-    snapshot = ConversationSnapshot(turns=(turn,), snapshot_id="demo-snap")
-    players = TokenPartitioner().partition(snapshot)
-    mask = CoalitionMask.from_sequence((True, False, True))
-    pad_view = MaskBuilder(PadPolicy()).view(snapshot, players, mask)
-    neutral_view = MaskBuilder(NeutralPolicy()).view(snapshot, players, mask)
-    print(MaskBuilder(PadPolicy()).render(pad_view).turns[0].messages[0].text)
-    print(MaskBuilder(NeutralPolicy()).render(neutral_view).turns[0].messages[0].text)
-
-
-def masking_plugins() -> None:
-    from nlp_shap import ExplainConfig, PluginGroup, PluginRegistry
-    from nlp_shap.plugins import register_builtin_plugins
-
-    registry = PluginRegistry()
-    register_builtin_plugins(registry)
-    config = ExplainConfig.model_validate({
-        "backend": {"kind": "mock", "model_id": "stub"},
-        "explanation": {"players": "tokens", "absence_policy": "pad"},
-    })
-    partitioner = registry.resolve(PluginGroup.PARTITIONS, config.explanation.players)
-    policy = registry.resolve(
-        PluginGroup.ABSENCE_POLICIES,
-        config.explanation.absence_policy,
-    )
-    print(type(partitioner).__name__)
-    print(type(policy).__name__)
-
-
-def exact_quick_start() -> None:
-    from itertools import product
-
-    from nlp_shap.domain.coalition import CoalitionMask
-    from nlp_shap.domain.players import PlayerSet
-    from nlp_shap.estimation.estimands import BanzhafAggregator, ShapleyAggregator
-    from nlp_shap.estimation.exact import ExactEstimator
-
-    player_set = PlayerSet(player_ids=("p0", "p1", "p2"))
-    estimator = ExactEstimator()
-    masks = list(
-        estimator.sample_masks(
-            player_set,
-            budget_fraction=1.0,
-            include_minimal_masks=False,
-            seed=0,
-        )
-    )
-    print("coalitions:", len(masks))
-    all_masks = [
-        tuple(bits) for bits in product([False, True], repeat=player_set.num_players)
-    ]
-
-    def majority_payoff(mask: tuple[bool, ...]) -> float:
-        return 1.0 if sum(mask) >= 2 else 0.0
-
-    payoffs = [majority_payoff(mask) for mask in all_masks]
-    coalition_masks = tuple(CoalitionMask.from_sequence(mask) for mask in all_masks)
-    shapley = estimator.estimate_attributions(
-        coalition_masks,
-        payoffs,
-        ShapleyAggregator(),
-    )
-    banzhaf = estimator.estimate_attributions(
-        coalition_masks,
-        payoffs,
-        BanzhafAggregator(),
-    )
-    print("Shapley:", shapley)
-    print("Banzhaf:", banzhaf)
-
-
-def exact_bitmask_iteration() -> None:
-    from nlp_shap.estimation.exact import ExactEstimator
-
-    previews: list[str] = []
-    for index, mask_int in enumerate(ExactEstimator.iter_mask_ints(3)):
-        present = ExactEstimator.mask_int_to_present(mask_int, 3)
-        previews.append(str(present))
-        if index >= 2:
-            break
-    print("\n".join(previews))
-
-
-def exact_budget_requirement() -> None:
-    from nlp_shap.domain.players import PlayerSet
-    from nlp_shap.estimation.exact import ExactEstimator
-
-    player_set = PlayerSet(player_ids=("p0",))
+def run_snippet(snippet: Snippet, namespace: dict[str, object]) -> tuple[str, list]:
+    """Execute one snippet; return its stdout and the figures it opened."""
+    before = _open_figure_numbers()
+    buffer = io.StringIO()
+    compiled = compile(snippet.code, snippet.label, "exec")
     try:
-        ExactEstimator().sample_masks(
-            player_set,
-            budget_fraction=0.5,
-            include_minimal_masks=False,
-            seed=0,
+        with contextlib.redirect_stdout(buffer):
+            exec(compiled, namespace)  # nosec B102 - trusted docs code
+    except Exception as exc:
+        msg = f"guide snippet {snippet.label} failed: {exc!r}"
+        raise RuntimeError(msg) from exc
+    return buffer.getvalue().rstrip().lstrip("\n"), _new_figures(before)
+
+
+def _write_outputs(
+    snippet: Snippet, text: str, figures: list, output_dir: Path
+) -> list[Path]:
+    written: list[Path] = []
+    first = snippet.results[0]
+    if text:
+        path = output_dir / f"{first.snippet_id}.txt"
+        path.write_text(text.rstrip() + "\n", encoding="utf-8")
+        written.append(path)
+    figure_results = [result for result in snippet.results if result.figure]
+    if len(figures) < len(figure_results):
+        msg = (
+            f"guide snippet {snippet.label} opened {len(figures)} figure(s) but "
+            f"{len(figure_results)} guide-result directive(s) expect one"
         )
-    except ValueError as exc:
-        print(exc)
-
-
-def exact_plugin() -> None:
-    from nlp_shap.plugins import PluginGroup, PluginRegistry, register_builtin_plugins
-
-    registry = PluginRegistry()
-    register_builtin_plugins(registry)
-    registry.load_entry_points(PluginGroup.ESTIMATORS)
-    estimator = registry.resolve(PluginGroup.ESTIMATORS, "exact")
-    print(estimator.name)
-
-
-def pipeline_quick_start() -> None:
-    from nlp_shap import ExplainConfig, ExplainRunner
-    from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
-    from nlp_shap.domain.enums import Role
-
-    snapshot = ConversationSnapshot.from_turns((
-        Turn(messages=(Message(role=Role.USER, text="hello world"),)),
-    ))
-    config = ExplainConfig.model_validate({
-        "backend": {"kind": "mock", "model_id": "stub"},
-        "explanation": {
-            "estimator": "exact",
-            "estimand": "shapley",
-            "value_fn": "tfidf_cosine",
-            "normalizer": "identity",
-            "absence_policy": "pad",
-        },
-    })
-    output = ExplainRunner(config).explain_sync(snapshot)
-    print("values:", output.result.values)
-    print("requested:", output.metrics.requested)
-    print("executed:", output.metrics.executed)
-
-
-def runtime_archive() -> None:
-    from nlp_shap.domain.estimands import Estimand
-    from nlp_shap.masking.codec import MaskCodec
-    from nlp_shap.pipeline.manifest import RunManifest
-    from nlp_shap.runtime.archive import CoalitionRecordDraft, RunArchive
-
-    manifest = RunManifest(estimand=Estimand.SHAPLEY, run_id="demo-run")
-    packed = MaskCodec.pack((True, False, True))
-    with tempfile.TemporaryDirectory() as tmp:
-        root = Path(tmp) / "demo-run"
-        with RunArchive.open(root, manifest, flush_every=25) as archive:
-            archive.append(
-                CoalitionRecordDraft(
-                    snapshot_id="snap-1",
-                    coalition_key="coalition-1",
-                    mask=packed,
-                    absence_policy="delete",
-                    model_id="mock",
-                    generation_text="Who you?",
-                    utility=0.8,
-                    elapsed_ms=12.5,
-                    cache_hit=False,
-                )
+        raise RuntimeError(msg)
+    for result, figure in zip(figure_results, figures, strict=False):
+        path = output_dir / f"{result.snippet_id}.png"
+        figure.savefig(path, dpi=150, bbox_inches="tight", facecolor="white")
+        written.append(path)
+    if not first.figure and not text:
+        msg = f"guide snippet {snippet.label} printed nothing for {first.snippet_id}"
+        raise RuntimeError(msg)
+    for result in snippet.results[1:]:
+        if not result.figure:
+            msg = (
+                f"guide snippet {snippet.label}: only the first guide-result shows "
+                f"text; {result.snippet_id!r} needs the :figure: option"
             )
-        with RunArchive.open(root, manifest) as archive:
-            for record in archive.history_lazy():
-                print(record.record_id, record.generation_text)
+            raise RuntimeError(msg)
+    if "matplotlib.pyplot" in sys.modules:
+        import matplotlib.pyplot as plt
+
+        for figure in figures:
+            plt.close(figure)
+    return written
 
 
-def runtime_dedup() -> None:
-    from nlp_shap.pipeline.config import DedupConfig, GenerationConfig
-    from nlp_shap.runtime.dedup import build_coalition_key, dedup_enabled
-
-    generation = GenerationConfig(temperature=0.0)
-    key = build_coalition_key(
-        snapshot_id="snap-1",
-        player_ids=("snap-1:0:0:0", "snap-1:0:0:1"),
-        mask_present=(True, False),
-        absence_policy="delete",
-        model_id="mock",
-        generation=generation,
-    )
-    print(dedup_enabled(DedupConfig(enabled="auto"), generation), key[:12])
-
-
-def runtime_scheduler() -> None:
-    from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
-    from nlp_shap.domain.enums import Role
-    from nlp_shap.masking.codec import MaskCodec
-    from nlp_shap.pipeline.config import GenerationConfig
-    from nlp_shap.runtime.dedup import CoalitionDedupRegistry
-    from nlp_shap.runtime.scheduler import CoalitionJob, InferenceScheduler
-    from nlp_shap.runtime.store import HotResultStore
-
-    turn = Turn(messages=(Message(role=Role.USER, text="Who are you?"),))
-    snapshot = ConversationSnapshot.from_turns((turn,))
-    packed = MaskCodec.pack((True, False, True))
-
-    async def generate(snapshot: ConversationSnapshot) -> str:
-        return snapshot.turns[0].messages[0].text
-
-    scheduler = InferenceScheduler(
-        max_inflight=2,
-        generation=GenerationConfig(temperature=0.0),
-        store=HotResultStore(),
-        dedup=CoalitionDedupRegistry(),
-    )
-    jobs = [
-        CoalitionJob(
-            coalition_key=f"key-{index % 3}",
-            snapshot_id=snapshot.snapshot_id,
-            snapshot=snapshot,
-            absence_policy="delete",
-            mask_words=packed.words,
-            mask_n_bits=packed.n_bits,
-            model_id="mock",
-            utility=1.0,
-        )
-        for index in range(9)
-    ]
-    metrics = asyncio.run(scheduler.run(jobs, generate))
-    print(metrics)
-
-
-def value_tfidf() -> None:
-    from nlp_shap.value.generation_records import GenerationRecord
-    from nlp_shap.value.tfidf import TfIdfCosineValue
-
-    base = GenerationRecord(
-        text="hello world",
-        text_token_rows=((1, 0), (0, 1)),
-    )
-    candidate = GenerationRecord(
-        text="hello there",
-        text_token_rows=((1, 0), (2, 3)),
-    )
-    value_fn = TfIdfCosineValue()
-    value_fn.fit((base, candidate))
-    print(round(value_fn.score(base, candidate), 4))
-
-
-def value_embedding() -> None:
-    from nlp_shap.domain.enums import EmbeddingMode
-    from nlp_shap.value.embedding import CosineEmbeddingValue
-    from nlp_shap.value.generation_records import GenerationRecord
-
-    base = GenerationRecord(text="base", embedding=(1.0, 0.0))
-    candidate = GenerationRecord(text="candidate", embedding=(0.9, 0.1))
-    value_fn = CosineEmbeddingValue(embedding_mode=EmbeddingMode.STATIC)
-    print(round(value_fn.score(base, candidate), 4))
-
-
-def value_logprob() -> None:
-    from nlp_shap.value.generation_records import GenerationRecord
-    from nlp_shap.value.logprob import LogprobValue
-
-    candidate = GenerationRecord(text="answer", logprobs=(-0.1, -0.2, -0.3))
-    print(round(LogprobValue().score(candidate, candidate), 4))
-
-
-def value_normalizer() -> None:
-    from nlp_shap.estimation.normalizers import MinMaxNormalizer
-
-    raw = [1.0, -2.0, 3.0]
-    print(MinMaxNormalizer().normalize(raw))
-
-
-def approximation_monte_carlo() -> None:
-    from nlp_shap.domain.players import PlayerSet
-    from nlp_shap.estimation.estimands import ShapleyAggregator
-    from nlp_shap.estimation.monte_carlo import MonteCarloEstimator
-
-    player_set = PlayerSet(player_ids=("p0", "p1", "p2", "p3"))
-    estimator = MonteCarloEstimator()
-    masks = list(
-        estimator.sample_masks(
-            player_set,
-            budget_fraction=0.5,
-            include_minimal_masks=True,
-            seed=42,
-        )
-    )
-    payoffs = [float(index % 3) for index in range(len(masks))]
-    values = estimator.estimate_attributions(masks, payoffs, ShapleyAggregator())
-    print("samples:", len(masks))
-    print("values:", tuple(round(value, 4) for value in values))
-
-
-def approximation_plugins() -> None:
-    from nlp_shap.plugins import PluginGroup, PluginRegistry, register_builtin_plugins
-
-    registry = PluginRegistry()
-    register_builtin_plugins(registry)
-    mc = registry.resolve(PluginGroup.ESTIMATORS, "mc")
-    complementary = registry.resolve(PluginGroup.ESTIMATORS, "complementary")
-    neyman = registry.resolve(PluginGroup.ESTIMATORS, "neyman_cc")
-    print(mc.name, complementary.name, neyman.name)
-
-
-def config_roundtrip() -> None:
-    from nlp_shap import explain_config_from_yaml, explain_config_to_yaml
-
-    yaml_text = """
-backend:
-  kind: mock
-  model_id: stub
-explanation:
-  estimator: exact
-  estimand: shapley
-""".strip()
-    config = explain_config_from_yaml(yaml_text)
-    roundtrip = explain_config_to_yaml(config).strip().splitlines()[:4]
-    print("\n".join(roundtrip))
-
-
-def visualization_render() -> None:
-    import matplotlib
-
-    matplotlib.use("Agg")
-    from nlp_shap import ExplainConfig, ExplainRunner, render_attribution
-    from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
-    from nlp_shap.domain.enums import Role
-    from nlp_shap.masking.partitions import TokenPartitioner
-
-    snapshot = ConversationSnapshot.from_turns((
-        Turn(messages=(Message(role=Role.USER, text="refund within thirty days"),)),
-    ))
-    config = ExplainConfig.model_validate({
-        "backend": {"kind": "mock", "model_id": "stub"},
-        "explanation": {
-            "estimator": "exact",
-            "estimand": "shapley",
-            "value_fn": "tfidf_cosine",
-            "absence_policy": "pad",
-        },
-    })
-    output = ExplainRunner(config).explain_sync(snapshot)
-    player_set = TokenPartitioner().partition(snapshot)
-    bar_figure = render_attribution(
-        output,
-        snapshot,
-        player_set,
-        renderer="token_bar",
-    )
-    text_figure = render_attribution(
-        output,
-        snapshot,
-        player_set,
-        renderer="token_text",
-    )
-    _write_figure("visualization_bar", bar_figure)
-    _write_figure("visualization_text", text_figure)
-    print("saved attribution figures")
-
-
-TEXT_SNIPPETS: dict[str, Callable[[], None]] = {
-    "getting_started_majority": getting_started_majority,
-    "getting_started_explain": getting_started_explain,
-    "getting_started_manifest": getting_started_manifest,
-    "estimands_majority": getting_started_majority,
-    "estimands_coalition_weights": estimands_coalition_weights,
-    "estimands_manifest": getting_started_manifest,
-    "masking_partition": masking_partition,
-    "masking_render_coalition": masking_render_coalition,
-    "masking_absence_policies": masking_absence_policies,
-    "masking_plugins": masking_plugins,
-    "exact_quick_start": exact_quick_start,
-    "exact_bitmask_iteration": exact_bitmask_iteration,
-    "exact_budget_requirement": exact_budget_requirement,
-    "exact_plugin": exact_plugin,
-    "pipeline_quick_start": pipeline_quick_start,
-    "runtime_archive": runtime_archive,
-    "runtime_dedup": runtime_dedup,
-    "runtime_scheduler": runtime_scheduler,
-    "value_tfidf": value_tfidf,
-    "value_embedding": value_embedding,
-    "value_logprob": value_logprob,
-    "value_normalizer": value_normalizer,
-    "approximation_monte_carlo": approximation_monte_carlo,
-    "approximation_plugins": approximation_plugins,
-    "config_roundtrip": config_roundtrip,
-    "visualization_render": visualization_render,
-}
+def render(docs: Path = DOCS, output_dir: Path = OUTPUT_DIR) -> list[Path]:
+    """Run every snippet and write outputs; remove outputs no directive uses."""
+    os.environ.setdefault("MPLBACKEND", "Agg")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    written: list[Path] = []
+    for scan in scan_docs(docs):
+        if scan.orphans:
+            orphan = scan.orphans[0]
+            msg = (
+                f"{scan.page.relative_to(ROOT)}:{orphan.line}: guide-result "
+                f"{orphan.snippet_id!r} does not follow a python code-block"
+            )
+            raise RuntimeError(msg)
+        if not scan.snippets:
+            continue
+        namespace: dict[str, object] = {"__name__": "__guide__"}
+        with tempfile.TemporaryDirectory() as tmp, _working_directory(Path(tmp)):
+            for snippet in scan.snippets:
+                text, figures = run_snippet(snippet, namespace)
+                written.extend(_write_outputs(snippet, text, figures, output_dir))
+                print(f"wrote {', '.join(r.snippet_id for r in snippet.results)}")
+    keep = {path.name for path in written}
+    for stale in output_dir.iterdir():
+        if stale.is_file() and stale.name not in keep:
+            stale.unlink()
+            print(f"removed stale {stale.name}")
+    return written
 
 
 def main() -> None:
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    for snippet_id, runner in TEXT_SNIPPETS.items():
-        text = _capture(runner)
-        _write_text(snippet_id, text)
-        print(f"wrote {snippet_id}")
+    """Render guide outputs, or list snippets with ``--check``."""
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument(
+        "--check", action="store_true", help="list snippets without running them"
+    )
+    args = parser.parse_args()
+    if args.check:
+        for scan in scan_docs():
+            for snippet in scan.snippets:
+                ids = ", ".join(result.snippet_id for result in snippet.results)
+                print(f"{snippet.label}: {ids}")
+        return
+    render()
 
 
 if __name__ == "__main__":

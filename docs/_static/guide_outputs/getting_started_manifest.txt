@@ -1,2 +1,4 @@
+schema_version: 4
 estimand: shapley
-run_id: run-42
+estimator: exact
+players: ('f5986ca22ea8567e:0:0:0', 'f5986ca22ea8567e:0:0:1', 'f5986ca22ea8567e:0:0:2')

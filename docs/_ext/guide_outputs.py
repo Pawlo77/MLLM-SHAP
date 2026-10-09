@@ -1,11 +1,19 @@
-"""Sphinx directive for pre-rendered guide snippet outputs."""
+"""Sphinx directive for pre-rendered guide snippet outputs.
+
+``docs/scripts/render_guide_outputs.py`` runs every Python code block that is
+followed by ``.. guide-result:: <id>`` and stores its output under
+``_static/guide_outputs``. This directive embeds that output; a missing output is
+a build error, so a snippet cannot ship without a capture.
+"""
 
 from pathlib import Path
 from typing import ClassVar
 
 from docutils import nodes
 from docutils.parsers.rst import directives
+from sphinx.application import Sphinx
 from sphinx.util.docutils import SphinxDirective
+from sphinx.util.typing import ExtensionMetadata
 
 
 class GuideResultDirective(SphinxDirective):
@@ -21,6 +29,7 @@ class GuideResultDirective(SphinxDirective):
     }
 
     def run(self) -> list[nodes.Node]:
+        """Return a container with the captured text and figure."""
         snippet_id = self.arguments[0]
         output_dir = Path(self.env.app.srcdir) / "_static" / "guide_outputs"
         caption = self.options.get("caption", "Output")
@@ -29,22 +38,31 @@ class GuideResultDirective(SphinxDirective):
 
         text_path = output_dir / f"{snippet_id}.txt"
         image_path = output_dir / f"{snippet_id}.png"
-        if not text_path.is_file() and not (show_figure and image_path.is_file()):
-            return [
-                self.state.document.reporter.warning(
-                    f"missing guide output for {snippet_id!r}; "
-                    "run render_guide_outputs.py",
-                )
-            ]
+        has_text = text_path.is_file()
+        has_image = show_figure and image_path.is_file()
+        if show_figure and not has_image:
+            msg = (
+                f"missing guide figure {image_path.name!r}; "
+                "run docs/scripts/render_guide_outputs.py"
+            )
+            raise self.error(msg)
+        if not has_text and not has_image:
+            msg = (
+                f"missing guide output for {snippet_id!r}; "
+                "run docs/scripts/render_guide_outputs.py"
+            )
+            raise self.error(msg)
 
         body: list[nodes.Node] = []
-        if text_path.is_file():
+        if has_text:
+            self.env.note_dependency(str(text_path))
             content = text_path.read_text(encoding="utf-8").rstrip() + "\n"
             literal = nodes.literal_block(content, content)
             literal["language"] = "text"
             body.append(literal)
 
-        if show_figure and image_path.is_file():
+        if has_image:
+            self.env.note_dependency(str(image_path))
             image = nodes.image(
                 uri=f"/_static/guide_outputs/{snippet_id}.png",
                 alt=alt_text,
@@ -54,15 +72,14 @@ class GuideResultDirective(SphinxDirective):
 
         container = nodes.container("")
         container["classes"] = ["guide-result"]
-        if body:
-            title = nodes.paragraph("", "")
-            title += nodes.strong("", caption)
-            container += title
-            container += body
+        title = nodes.paragraph("", "")
+        title += nodes.strong("", caption)
+        container += title
+        container += body
         return [container]
 
 
-def setup(app: object) -> dict[str, object]:
+def setup(app: Sphinx) -> ExtensionMetadata:
     """Register the guide-result directive."""
     app.add_directive("guide-result", GuideResultDirective)
     return {"version": "1.0", "parallel_read_safe": True, "parallel_write_safe": True}
