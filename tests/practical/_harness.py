@@ -318,6 +318,10 @@ def vram_gb() -> dict[str, float]:
     return {}
 
 
+WEIGHT_FILES = ("*.json", "*.safetensors", "*.txt", "*.model")
+"""Files transformers loads; it never fetches README, LICENSE or .gitattributes."""
+
+
 def require_weights(spec: ModelSpec) -> None:
     """Skip unless the pinned weights are cached or downloads are allowed."""
     if os.environ.get("NLP_SHAP_PRACTICAL_DOWNLOAD") == "1":
@@ -325,7 +329,10 @@ def require_weights(spec: ModelSpec) -> None:
     hub = pytest.importorskip("huggingface_hub")
     try:
         hub.snapshot_download(
-            spec.model_id, revision=spec.revision, local_files_only=True
+            spec.model_id,
+            revision=spec.revision,
+            local_files_only=True,
+            allow_patterns=list(WEIGHT_FILES),
         )
     except hub.errors.LocalEntryNotFoundError:
         pytest.skip(
