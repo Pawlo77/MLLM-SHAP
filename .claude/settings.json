@@ -34,7 +34,8 @@
     "claude-jit-context@dpt-plugins": true
   },
   "env": {
-    "ENABLE_STOP_REVIEW": "0"
+    "ENABLE_STOP_REVIEW": "0",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet"
   },
   "hooks": {
     "SessionStart": [
