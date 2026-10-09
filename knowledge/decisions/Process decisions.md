@@ -89,4 +89,3 @@ Decision: PRs merge with a merge commit; head branches are deleted on merge.
 Why: A plan phase lands as one PR with one commit per task.
 
 Consequences: Task commits stay on `main` for `git bisect`. Rejected: squash (loses task history); rebase (rewrites hashes review comments cite).
-
