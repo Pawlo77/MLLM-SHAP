@@ -18,6 +18,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 DOCS = ROOT / "docs"
+EXAMPLES = ROOT / "examples"
 EXCLUDED_DIRS = ("_build", "notebooks", "handbook", "_static")
 
 STALE_PHRASES = (
@@ -81,8 +82,14 @@ def check_phrases(paths: list[Path]) -> list[Finding]:
     return findings
 
 
-def check_doc_links(paths: list[Path], docs: Path = DOCS) -> list[Finding]:
-    """Flag ``:doc:`` targets that do not exist."""
+def check_doc_links(
+    paths: list[Path], docs: Path = DOCS, examples: Path = EXAMPLES
+) -> list[Finding]:
+    """Flag ``:doc:`` targets that do not exist.
+
+    ``notebooks/<name>`` resolves to ``examples/<name>.ipynb``: the docs build copies
+    the notebooks there, so the copy may be absent (fresh clone, CI).
+    """
     findings: list[Finding] = []
     for path in paths:
         if path.suffix != ".rst":
@@ -92,11 +99,12 @@ def check_doc_links(paths: list[Path], docs: Path = DOCS) -> list[Finding]:
             target = match.group("target").strip()
             base = docs if target.startswith("/") else path.parent
             candidate = (base / target.lstrip("/")).resolve()
+            copied = candidate.parent == (docs / "notebooks").resolve()
             if not any(
                 candidate.with_suffix(suffix).is_file()
                 or (candidate.parent / f"{candidate.name}{suffix}").is_file()
                 for suffix in (".rst", ".md", ".ipynb")
-            ):
+            ) and not (copied and (examples / f"{candidate.name}.ipynb").is_file()):
                 line = text.count("\n", 0, match.start()) + 1
                 findings.append(Finding(path, line, f":doc: target {target!r} missing"))
     return findings
