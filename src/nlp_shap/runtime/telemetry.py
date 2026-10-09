@@ -1,7 +1,12 @@
-"""Optional observability hooks for explain pipeline stages."""
+"""Optional observability hooks for explain pipeline stages.
+
+@domain runtime
+@see [[knowledge/architecture/runtime]]
+@tested-by [[tests/runtime/test_telemetry.py]]
+"""
 
 import time
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from typing import Protocol
@@ -22,7 +27,7 @@ class ObservabilitySink(Protocol):
     """Protocol for recording explain pipeline stage spans."""
 
     @contextmanager
-    def span(self, name: str) -> Iterator[None]:
+    def span(self, name: str) -> Generator[None]:
         """Record wall-clock duration for one named pipeline stage."""
 
 
@@ -30,7 +35,7 @@ class NullObservabilitySink:
     """No-op observability sink used when telemetry is disabled."""
 
     @contextmanager
-    def span(self, name: str) -> Iterator[None]:
+    def span(self, name: str) -> Generator[None]:
         """Yield without recording span metadata."""
         _ = name
         yield
@@ -43,7 +48,7 @@ class InMemoryObservabilitySink:
     spans: list[SpanRecord] = field(default_factory=list)
 
     @contextmanager
-    def span(self, name: str) -> Iterator[None]:
+    def span(self, name: str) -> Generator[None]:
         """Append one span record when the context exits."""
         started = time.perf_counter()
         try:
