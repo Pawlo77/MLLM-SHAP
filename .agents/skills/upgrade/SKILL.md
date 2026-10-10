@@ -31,8 +31,24 @@ as `(protected: report only)`, never edited. List them in the PR body for the ma
    changed version in `uv.lock`.
 5. One commit, `build: upgrade dependencies and workflow pins`; when only workflows
    changed, `ci: upgrade workflow action pins` instead.
-6. Run skill `ship`; `scripts/pr_policy.py` classifies it routine (`build:`/`ci:` commits,
+6. Housekeeping (below) as its own commit, `chore: prune completed handoff and stale notes`;
+   skip it when nothing is stale.
+7. Run skill `ship`; `scripts/pr_policy.py` classifies it routine (`build:`/`ci:` commits,
    lock, hook revisions, pins, same package set) and it merges after Copilot and CI.
+
+## Housekeeping
+
+Remove what finished work left behind; git keeps history. Touch only the rows below.
+
+| Target | Prune |
+|--------|-------|
+| `.remember/remember.md` | drop done items and merged-PR detail; compress `State` to current version, CI and schedules; keep `User-only` and open `Next` |
+| `knowledge/issues/` | a fixed issue leaves its own note for one `Fixed issues` row; merge rows older than the last release into one line; keep it ≤ 800 words |
+| `plans/`, `runs/` | delete finished plans and stale run output; keep `plans/README.md` |
+| merged branches | `git branch --merged main` minus `main`: `git branch -d` each; no `-D`, no remote deletes |
+
+Check each claim against `git log` and `gh pr list` first; when unsure, keep it and list it
+in the PR body. Notes change only through skill `notes`; `make check` must still pass.
 
 ## Weekly cadence
 
