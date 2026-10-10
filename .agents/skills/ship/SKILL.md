@@ -8,7 +8,7 @@ description: >-
 # Ship: commit, pull request, Copilot review, merge
 
 Delivery autopilot for a finished branch. Routine changes merge themselves; others stop
-before the merge with the link. Prerequisites: Copilot
+before the merge. Prerequisites: Copilot
 code review enabled on the repository; `gh auth status` green; a remote `origin`.
 
 ## 1. Classify
@@ -59,9 +59,10 @@ CI, or "Needs maintainer review") and carries no AI attribution (`pr-title.yaml`
 
 ## 4. Outcome
 
-- Routine and success: `gh pr merge <n> --merge --delete-branch`; watch the `main`
-  workflows (`gh run watch <id> --exit-status`); with a bump, skill `release` "After
-  merge" tags it; skill `vibe` Compound step when something non-obvious was learned;
+- Routine and success: `gh pr merge <n> --auto --merge --delete-branch` (GitHub merges
+  after the required checks); watch the `main` workflows (`gh run watch <id>
+  --exit-status`); with a bump, skill `release` "After merge" tags it; skill `vibe`
+  Compound step when something non-obvious was learned;
   final line `Merged <url>`, plus `(no Copilot review: quota)` when it was skipped.
 - Review, round limit or a declined thread: stop; final line `Ready for your review:
   <url>` (with a bump: `; after you merge, run /release to tag vX.Y.Z`) plus one line
