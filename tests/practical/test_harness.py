@@ -64,13 +64,14 @@ def test_tier_selection(spec: str, feature: str, selected: bool) -> None:
     assert tier_selected(spec, feature) is selected
 
 
-def test_models_are_pinned_small_and_half_precision() -> None:
-    """Each tier pins a commit sha and loads in float16; quick < 4 GB, deep < 8 GB."""
-    assert set(MODELS) == {"default", "fast", "deep"}
+def test_models_are_pinned_small_and_typed() -> None:
+    """Chat tiers load in float16 (quick < 4 GB, deep < 8 GB); the CTC model in
+    float32 under 1 GB. Every model pins a commit sha."""
+    assert set(MODELS) == {"default", "fast", "deep", "alignment"}
     for name, spec in MODELS.items():
         assert re.fullmatch(r"[0-9a-f]{40}", spec.revision)
-        assert spec.dtype == "float16"
-        assert spec.size_gb < (8.0 if name == "deep" else 4.0)
+        assert spec.dtype == ("float32" if name == "alignment" else "float16")
+        assert spec.size_gb < {"deep": 8.0, "alignment": 1.0}.get(name, 4.0)
 
 
 def test_deep_scenarios_use_the_deep_model() -> None:
