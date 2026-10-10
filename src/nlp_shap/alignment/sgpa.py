@@ -246,6 +246,8 @@ class SpectrogramGuidedAligner:
             token_index=index,
             start_time=start_time,
             end_time=end_time,
+            ctc_start_time=chars[0][0],
+            ctc_end_time=chars[-1][1],
             confidence=float(np.mean([confidence for _, _, confidence in chars])),
             boundary_refined=start[1] and end[1],
             sample_rate=rate,
