@@ -120,6 +120,7 @@ See :doc:`guides/extending` for the full extras and entry-point matrix.
    guides/backends
    guides/runtime
    guides/visualization
+   guides/alignment
    guides/extending
    guides/applications
    guides/migrating_from_mllm_shap
