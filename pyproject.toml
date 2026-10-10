@@ -1,6 +1,6 @@
 [project]
 name = "nlp-shap"
-version = "0.2.0"
+version = "0.2.1"
 description = "Shapley-value attributions for conversational language models."
 readme = "README.md"
 requires-python = ">=3.12"
@@ -64,6 +64,7 @@ banzhaf = "nlp_shap.estimation.estimands.banzhaf:BanzhafAggregator"
 [project.entry-points."nlp_shap.partitions"]
 tokens = "nlp_shap.masking.partitions:TokenPartitioner"
 messages = "nlp_shap.masking.partitions:MessagePartitioner"
+sgpa_segments = "nlp_shap.alignment.partitions:SgpaSegmentPartitioner"
 
 [project.entry-points."nlp_shap.absence_policies"]
 delete = "nlp_shap.masking.policies:DeletePolicy"

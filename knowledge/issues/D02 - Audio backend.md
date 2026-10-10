@@ -35,4 +35,4 @@ Explain a snapshot whose message has an `AudioPart` with the transformers or API
 
 ## Fix
 
-- Deferred to the audio track (versions 0.2.x, [[Roadmap]]). Prerequisites done in 0.1.18: player spans owned by the partitioner, message content parts.
+- Deferred to the audio track (versions 0.2.x, [[Roadmap]]). Prerequisites done: player spans owned by the partitioner and message content parts (0.1.18), [[SGPA]] alignment (0.2.0), audio players and audio absence rendering (`sgpa_segments`, 0.2.1).

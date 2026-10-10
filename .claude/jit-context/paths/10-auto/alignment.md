@@ -11,7 +11,7 @@ Full note: `knowledge/architecture/alignment.md`; update it in the same change (
 ## Responsibility
 
 - Turn a transcript and its speech into one time segment per token, so audio segments can become players.
-- No backend, no masking and no pipeline wiring; the `audio` extra (`librosa`, `soundfile`) plus the `transformers` extra for the default model.
+- The `sgpa_segments` partition turns segments into players. No backend and no audio rendering (that is masking (`knowledge/architecture/masking.md`)); the `audio` extra (`librosa`, `soundfile`) plus the `transformers` extra for the default model.
 
 ## Invariants
 
@@ -22,4 +22,4 @@ Full note: `knowledge/architecture/alignment.md`; update it in the same change (
 
 ## Known issues
 
-- No partitioner or backend consumes segments yet (D02 - Audio backend (`knowledge/issues/D02 - Audio backend.md`)).
+- No backend generates from audio yet (D02 - Audio backend (`knowledge/issues/D02 - Audio backend.md`)); runs score the masked transcripts.

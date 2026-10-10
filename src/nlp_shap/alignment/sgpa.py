@@ -161,7 +161,7 @@ class SpectrogramGuidedAligner:
         edges = self._edges([rough[k] for k in kept], waveform, rate)
         source = waveform if attach_audio else None
         return [
-            self._segment(tokens[k], rough[k], edges[i], edges[i + 1], source, rate)
+            self._segment(tokens[k], k, rough[k], edges[i], edges[i + 1], source, rate)
             for i, k in enumerate(kept)
         ]
 
@@ -228,6 +228,7 @@ class SpectrogramGuidedAligner:
     def _segment(
         self,
         token: str,
+        index: int,
         chars: list[tuple[float, float, float]],
         start: tuple[float, bool],
         end: tuple[float, bool],
@@ -242,8 +243,11 @@ class SpectrogramGuidedAligner:
             audio = encode_wav(waveform[start_sample:end_sample], rate)
         return AudioSegment(
             token=token,
+            token_index=index,
             start_time=start_time,
             end_time=end_time,
+            ctc_start_time=chars[0][0],
+            ctc_end_time=chars[-1][1],
             confidence=float(np.mean([confidence for _, _, confidence in chars])),
             boundary_refined=start[1] and end[1],
             sample_rate=rate,

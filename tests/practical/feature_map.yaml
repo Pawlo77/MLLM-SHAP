@@ -21,6 +21,7 @@ paths:
   src/nlp_shap/backends/transformers/embeddings.py: [value.embedding_*]
 
   src/nlp_shap/alignment/*: [alignment.sgpa]
+  src/nlp_shap/alignment/partitions.py: [alignment.sgpa, partition.sgpa_segments]
 
   src/nlp_shap/domain/*: smoke
   src/nlp_shap/domain/conversation.py: [conversation.*]
@@ -36,7 +37,8 @@ paths:
   src/nlp_shap/estimation/normalizers.py: [value.normalizers]
 
   src/nlp_shap/masking/*: smoke
-  src/nlp_shap/masking/policies.py: [masking.*]
+  src/nlp_shap/masking/policies.py: [masking.*, partition.sgpa_segments]
+  src/nlp_shap/masking/audio.py: [partition.sgpa_segments]
   src/nlp_shap/masking/tokens.py: [masking.*, partition.tokens]
   src/nlp_shap/masking/partitions.py: [partition.*, conversation.multi_turn]
 
@@ -52,3 +54,4 @@ paths:
 
   src/nlp_shap/value/*: [value.*]
   src/nlp_shap/viz/*: [viz.render]
+  src/nlp_shap/viz/audio.py: [alignment.sgpa]

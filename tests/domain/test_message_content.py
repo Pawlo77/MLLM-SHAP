@@ -80,3 +80,19 @@ def test_snapshot_has_audio_checks_part_types() -> None:
     assert snapshot_has_audio(
         _snapshot(Message(role=Role.USER, content=(AudioPart(b"", 16_000),)))
     )
+
+
+def test_with_audio_replaces_the_first_audio_part_only() -> None:
+    first, second = AudioPart(b"a", 8000), AudioPart(b"b", 8000)
+    new = AudioPart(b"n", 8000)
+    message = Message(
+        role=Role.USER, content=(TextPart("hi"), first, second), speaker="Ann"
+    )
+    replaced = message.with_audio(new)
+    assert replaced.content == (TextPart("hi"), new, second)
+    assert replaced.speaker == "Ann"
+
+
+def test_with_audio_refuses_a_message_without_audio() -> None:
+    with pytest.raises(ValueError, match="no audio"):
+        Message(role=Role.USER, text="hi").with_audio(AudioPart(b"n", 8000))
