@@ -42,7 +42,7 @@ gh api repos/Pawlo77/nlp-shap/branches/main/protection --jq '.required_status_ch
 
 ```bash
 gh api -X PATCH repos/Pawlo77/nlp-shap -F delete_branch_on_merge=true -F has_wiki=false \
-  -F allow_squash_merge=false -F allow_rebase_merge=false
+  -F allow_squash_merge=false -F allow_rebase_merge=false -F allow_auto_merge=true
 gh api -X PUT repos/Pawlo77/nlp-shap/pages -f build_type=workflow
 gh api -X PUT repos/Pawlo77/nlp-shap/vulnerability-alerts
 gh api -X PATCH repos/Pawlo77/nlp-shap --input - <<'JSON'
