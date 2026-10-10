@@ -8,7 +8,7 @@ SPHINXBUILD   ?= sphinx-build
 SOURCEDIR     = .
 BUILDDIR      = _build
 
-NOTEBOOK_SOURCES = explain_pipeline.ipynb archive_reanalyze.ipynb cli.ipynb plugins_extending.ipynb estimands_toy_game.ipynb masking_views.ipynb runtime_core.ipynb exact_estimation.ipynb estimator_comparison.ipynb attribution_viz.ipynb text_explain_e2e.ipynb
+NOTEBOOK_SOURCES = explain_pipeline.ipynb archive_reanalyze.ipynb cli.ipynb plugins_extending.ipynb estimands_toy_game.ipynb masking_views.ipynb runtime_core.ipynb exact_estimation.ipynb estimator_comparison.ipynb attribution_viz.ipynb text_explain_e2e.ipynb audio_alignment.ipynb
 
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)

@@ -31,3 +31,4 @@ What each notebook demonstrates, and the extras it needs: [docs gallery](https:/
 - `estimator_comparison.ipynb`
 - `attribution_viz.ipynb`
 - `text_explain_e2e.ipynb`
+- `audio_alignment.ipynb`
