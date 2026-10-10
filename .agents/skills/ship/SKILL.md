@@ -7,18 +7,16 @@ description: >-
 
 # Ship: commit, pull request, Copilot review, merge
 
-Delivery autopilot for a finished branch. Routine changes merge themselves; everything
-else stops before the merge and hands the maintainer the link. Prerequisites: Copilot
+Delivery autopilot for a finished branch. Routine changes merge themselves; others stop
+before the merge with the link. Prerequisites: Copilot
 code review enabled on the repository; `gh auth status` green; a remote `origin`.
 
 ## 1. Classify
 
-- `make upgrade-check`: report outdated items in chat; never apply them here (skill
-  `upgrade` does).
+- `make upgrade-check`: report outdated items; skill `upgrade` applies them.
 - Exit criteria green (`make check`; `make docs` and `make notebooks` when they apply).
 - `uv run python scripts/practical_features.py --base main`: when it prints ids, run
-  `/practical <ids>` (quick tier); red blocks the PR, its summary line goes into the
-  PR body.
+  `/practical <ids>` (quick tier); red blocks the PR; its summary goes in the body.
 - Commits per rule `git-commits` (granular, `type: summary`, no AI attribution).
 - `uv run python scripts/pr_policy.py --bump`: when not `none`, run skill `release`
   "Before merge" now, so the PR carries the version bump.
@@ -40,9 +38,8 @@ gh pr edit <n> --add-assignee Pawlo77 --add-label <enhancement|bug|documentation
 uv run python scripts/pr_policy.py --pr <n> --session <key>
 ```
 
-Body from agent `pr-writer`; it names the kind ("Routine: merged by the delivery
-autopilot after Copilot review and green CI" or "Needs maintainer review") and carries
-no AI attribution (`pr-title.yaml` rejects one).
+Body from agent `pr-writer`: it names the kind (routine, merged after Copilot and green
+CI, or "Needs maintainer review") and carries no AI attribution (`pr-title.yaml`).
 
 ## 3. Review loop (at most 5 rounds)
 
@@ -57,15 +54,15 @@ no AI attribution (`pr-title.yaml` rejects one).
    resolve (`resolveReviewThread` mutation); re-request
    (`gh api -X POST repos/Pawlo77/nlp-shap/pulls/<n>/requested_reviewers -f 'reviewers[]=copilot-pull-request-reviewer[bot]'`).
    A declined thread gets the reason, stays unresolved and forces the review outcome.
-4. Success: no unresolved Copilot thread and CI green. Red CI: fix on a follow-up
-   commit (skill `ci`); never leave the PR red.
+4. Success: no unresolved Copilot thread and CI green; a Copilot review that only
+   reports its quota limit counts as done. Red CI: fix in a follow-up commit (skill `ci`).
 
 ## 4. Outcome
 
 - Routine and success: `gh pr merge <n> --merge --delete-branch`; watch the `main`
   workflows (`gh run watch <id> --exit-status`); with a bump, skill `release` "After
-  merge" tags it; Compound step of skill `vibe` when something non-obvious was learned;
-  final line `Merged <url>`.
+  merge" tags it; skill `vibe` Compound step when something non-obvious was learned;
+  final line `Merged <url>`, plus `(no Copilot review: quota)` when it was skipped.
 - Review, round limit or a declined thread: stop; final line `Ready for your review:
   <url>` (with a bump: `; after you merge, run /release to tag vX.Y.Z`) plus one line
   per open point. Never merge a review PR.
