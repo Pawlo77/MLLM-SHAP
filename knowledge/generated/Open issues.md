@@ -16,4 +16,4 @@ Open issues first, by severity; deferred issues last.
 |---|---|---|---|
 | [[D05 - Prefix cache speed-up fell below its threshold]] | minor | open | 2026-10-10 |
 | [[D02 - Audio backend]] | major | deferred | 2026-10-07 |
-| [[D03 - PR 4 rebase]] | minor | deferred | 2026-10-07 |
+| [[D06 - SGPA paper not in the papers list]] | minor | deferred | 2026-10-10 |
