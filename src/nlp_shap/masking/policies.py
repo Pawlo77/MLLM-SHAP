@@ -11,6 +11,7 @@ from ..domain.coalition import CoalitionMask
 from ..domain.conversation import ConversationSnapshot
 from ..domain.players import PlayerSet, PlayerSpan
 from ..protocols.plugin import PluginOptions
+from .audio import render_audio
 from .tokens import render_spans
 
 if TYPE_CHECKING:
@@ -60,12 +61,12 @@ class DeletePolicy:
         players: PlayerSet,
         mask: CoalitionMask,
     ) -> ConversationSnapshot:
-        """Drop absent players while preserving turn and message structure.
+        """Drop absent players (text, and audio samples) keeping the message structure.
 
         The empty coalition keeps every message with empty player text (v(empty)).
         """
         spans = _require_spans(players, mask)
-        return render_spans(
+        rendered = render_spans(
             snapshot,
             spans,
             [
@@ -73,6 +74,7 @@ class DeletePolicy:
                 for span, present in zip(spans, mask.present, strict=True)
             ],
         )
+        return render_audio(rendered, spans, mask.present, cut=True)
 
 
 class PadPolicy:
@@ -103,9 +105,9 @@ class PadPolicy:
         players: PlayerSet,
         mask: CoalitionMask,
     ) -> ConversationSnapshot:
-        """Substitute absent players with :attr:`placeholder`."""
+        """Substitute absent players with :attr:`placeholder`; silence their audio."""
         spans = _require_spans(players, mask)
-        return render_spans(
+        rendered = render_spans(
             snapshot,
             spans,
             [
@@ -113,6 +115,7 @@ class PadPolicy:
                 for span, present in zip(spans, mask.present, strict=True)
             ],
         )
+        return render_audio(rendered, spans, mask.present, cut=False)
 
 
 class NeutralPolicy:
@@ -143,12 +146,12 @@ class NeutralPolicy:
         players: PlayerSet,
         mask: CoalitionMask,
     ) -> ConversationSnapshot:
-        """Substitute absent players with width-matched neutral fillers."""
+        """Substitute width-matched fillers for absent players; silence their audio."""
         if len(self.fill_char) != 1:
             msg = "fill_char must be exactly one character"
             raise ValueError(msg)
         spans = _require_spans(players, mask)
-        return render_spans(
+        rendered = render_spans(
             snapshot,
             spans,
             [
@@ -156,3 +159,4 @@ class NeutralPolicy:
                 for span, present in zip(spans, mask.present, strict=True)
             ],
         )
+        return render_audio(rendered, spans, mask.present, cut=False)
