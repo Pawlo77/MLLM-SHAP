@@ -90,6 +90,10 @@ nitpick_ignore: list[tuple[str, str]] = [
     # numpy.typing.NDArray is rendered through its private alias module, which
     # the numpy inventory does not list.
     ("py:class", "numpy._typing._array_like.NDArray"),
+    # numpy documents float32 and int64 as aliases of single and int_, without a
+    # class entry of their own in its inventory.
+    ("py:class", "numpy.float32"),
+    ("py:class", "numpy.int64"),
     # pydantic ``Field(gt=..., ge=..., le=...)`` constraints appear in rendered
     # signatures as annotated_types markers, which have no inventory.
     ("py:class", "annotated_types.Ge"),
