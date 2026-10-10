@@ -14,5 +14,6 @@ Open issues first, by severity; deferred issues last.
 
 | Issue | Severity | Status | Found |
 |---|---|---|---|
+| [[D05 - Prefix cache speed-up fell below its threshold]] | minor | open | 2026-10-10 |
 | [[D02 - Audio backend]] | major | deferred | 2026-10-07 |
 | [[D03 - PR 4 rebase]] | minor | deferred | 2026-10-07 |
