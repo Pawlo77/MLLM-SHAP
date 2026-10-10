@@ -111,7 +111,7 @@ tags: [generated]
 | [[src/nlp_shap/value/logprob.py]] | Logprob-based value function. | value | [[knowledge/architecture/value]] | 61 | [[value]] |
 | [[src/nlp_shap/value/tfidf.py]] | Frozen-corpus TF-IDF cosine value function. | value | [[knowledge/architecture/value]] | 101 | [[value]] |
 | [[src/nlp_shap/viz/__init__.py]] | Token attribution visualization plugins. | viz | [[knowledge/architecture/viz]] | 37 | [[viz]] |
-| [[src/nlp_shap/viz/audio.py]] | Figure of aligned audio segments: waveform, refined boundaries and energy. | viz | [[knowledge/architecture/viz]] | 122 | [[viz]] |
+| [[src/nlp_shap/viz/audio.py]] | Figure of aligned audio segments: waveform, refined boundaries and energy. | viz | [[knowledge/architecture/viz]] | 134 | [[viz]] |
 | [[src/nlp_shap/viz/colors.py]] | SHAP-inspired diverging colors for signed attributions. | viz | [[knowledge/architecture/viz]] | 65 | [[viz]] |
 | [[src/nlp_shap/viz/labels.py]] | Token label helpers for attribution renderers. | viz | [[knowledge/architecture/viz]] | 45 | [[viz]] |
 | [[src/nlp_shap/viz/render.py]] | Public helpers for attribution visualization. | viz | [[knowledge/architecture/viz]] | 104 | [[viz]] |
