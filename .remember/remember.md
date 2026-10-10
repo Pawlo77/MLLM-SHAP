@@ -5,13 +5,12 @@ v0.1.19 released 2026-10-10 (PR 6: D04 half-precision KV-cache warning, C16 LM
 Studio repeated keys, brevity RST-fence fix, practical weight check); v0.1.18 on
 2026-10-09 (PR 5, audit remediation). 0.1.17 has notes but no tag. The repository is
 public since 2026-10-10; `main` is protected (`prek`, `tests-passed`, `CodeQL`,
-`title`), merge commits only. Pages deploys from GitHub Actions.
+`title`), merge commits only; secret scanning and push protection on. Pages deploys from GitHub Actions.
 Weekly local tasks: `nlp-shap-upgrade` (Mon 08:00) and `nlp-shap-lit-watch` (Mon 09:00).
 
 ## User-only
-- Secret scanning and push protection (.agents/skills/ci/reference.md).
-- Copilot code review failed with "quota limit" on PRs 5 and 6 although the plan shows
-  credits left; check the next PR.
+- Copilot code review reports "quota limit" (PRs 5 to 7); skill `ship` merges routine
+  PRs without it and says so. Optional: `CODECOV_TOKEN` secret.
 
 ## Next
 - `make practical` defaults `NLP_SHAP_PRACTICAL_LMS_MODEL=qwen2-500m-instruct`; start
