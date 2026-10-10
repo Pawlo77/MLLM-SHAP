@@ -22,7 +22,7 @@ tags: [generated]
 | [[src/nlp_shap/backends/lmstudio/__init__.py]] | LM Studio backend plugin. | backends | [[knowledge/architecture/backends]] | 10 | [[backends]] |
 | [[src/nlp_shap/backends/lmstudio/backend.py]] | LM Studio generative backend. | backends | [[knowledge/architecture/backends]] | 185 | [[backends]] |
 | [[src/nlp_shap/backends/lmstudio/chat.py]] | Convert conversation snapshots to LM Studio chat contexts. | backends | [[knowledge/architecture/backends]] | 42 | [[backends]] |
-| [[src/nlp_shap/backends/lmstudio/models.py]] | Resolve and download LM Studio models through the ``lmstudio`` SDK. | backends | [[knowledge/architecture/backends]] | 184 | [[backends]] |
+| [[src/nlp_shap/backends/lmstudio/models.py]] | Resolve and download LM Studio models through the ``lmstudio`` SDK. | backends | [[knowledge/architecture/backends]] | 185 | [[backends]] |
 | [[src/nlp_shap/backends/lmstudio/options.py]] | Settings of the LM Studio backend read from ``BackendConfig.options``. | backends | [[knowledge/architecture/backends]] | 43 | [[backends]] |
 | [[src/nlp_shap/backends/mock/__init__.py]] | Mock backend exports. | backends | [[knowledge/architecture/backends]] | 10 | [[backends]] |
 | [[src/nlp_shap/backends/mock/backend.py]] | Deterministic mock backend for CI-safe E2E tests. | backends | [[knowledge/architecture/backends]] | 73 | [[backends]] |
@@ -31,7 +31,7 @@ tags: [generated]
 | [[src/nlp_shap/backends/transformers/chat.py]] | Conversation snapshot helpers for Hugging Face chat templates. | backends | [[knowledge/architecture/backends]] | 26 | [[backends]] |
 | [[src/nlp_shap/backends/transformers/embeddings.py]] | Embedding helpers for the transformers text backend. | backends | [[knowledge/architecture/backends]] | 50 | [[backends]] |
 | [[src/nlp_shap/backends/transformers/options.py]] | Settings of the transformers backend read from ``BackendConfig.options``. | backends | [[knowledge/architecture/backends]] | 42 | [[backends]] |
-| [[src/nlp_shap/backends/transformers/text.py]] | Hugging Face causal language model backend (text-only). | backends | [[knowledge/architecture/backends]] | 300 | [[backends]] |
+| [[src/nlp_shap/backends/transformers/text.py]] | Hugging Face causal language model backend (text-only). | backends | [[knowledge/architecture/backends]] | 326 | [[backends]] |
 | [[src/nlp_shap/cli.py]] | Command-line interface: ``nlp-shap explain\|reanalyze\|plugins\|config``. | core | [[knowledge/architecture/core]] | 255 | [[core]] |
 | [[src/nlp_shap/domain/__init__.py]] | Domain types for cooperative-game explainability. | domain | [[knowledge/architecture/domain]] | 43 | [[domain]] |
 | [[src/nlp_shap/domain/coalition.py]] | Coalition masks over explainability players. | domain | [[knowledge/architecture/domain]] | 45 | [[domain]] |

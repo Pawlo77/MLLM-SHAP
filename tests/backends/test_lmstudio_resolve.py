@@ -101,6 +101,14 @@ def test_match_does_not_accept_shorter_keys() -> None:
     assert match_downloaded_model_key(_downloaded("qwen2"), "qwen2.5-3b") is None
 
 
+def test_match_accepts_a_key_listed_twice() -> None:
+    """LM Studio lists one key per downloaded variant; repeats are one model."""
+    downloaded = _downloaded("qwen2-500m-instruct", "qwen2-500m-instruct")
+    assert match_downloaded_model_key(downloaded, "qwen2-500m-instruct") == (
+        "qwen2-500m-instruct"
+    )
+
+
 def test_match_raises_on_ambiguous_candidates() -> None:
     downloaded = _downloaded("a/qwen2-7b-q4", "b/qwen2-7b-q8")
     with pytest.raises(BackendUnavailableError, match=r"a/qwen2-7b-q4.*b/qwen2-7b-q8"):
