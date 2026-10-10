@@ -2,15 +2,6 @@
 
 <!-- What does this PR change and why? Link related issues. -->
 
-## Type of change
-
-<!-- Keep the one that matches; it also decides the PR label. -->
-
-- [ ] Bug fix
-- [ ] New feature
-- [ ] Documentation only
-- [ ] Refactor or internal change (no user-visible behavior change)
-
 ## Checklist
 
 - [ ] I read [CONTRIBUTING.md](../CONTRIBUTING.md).
