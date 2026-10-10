@@ -10,6 +10,8 @@ Visualization
 
 .. automodule:: nlp_shap.viz.token_bar
 
+.. automodule:: nlp_shap.viz.audio
+
 .. automodule:: nlp_shap.viz.colors
 
 .. automodule:: nlp_shap.viz.labels

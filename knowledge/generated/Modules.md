@@ -18,8 +18,8 @@ tags: [generated]
 | [[src/nlp_shap/alignment/ctc.py]] | CTC forced alignment (Viterbi over the blank-extended target sequence). | alignment | [[knowledge/architecture/alignment]] | 82 | [[alignment]] |
 | [[src/nlp_shap/alignment/io.py]] | Encoded audio bytes to mono float waveforms and back. | alignment | [[knowledge/architecture/alignment]] | 61 | [[alignment]] |
 | [[src/nlp_shap/alignment/partitions.py]] | The ``sgpa_segments`` partition: one player per spoken word of an audio message. | alignment | [[knowledge/architecture/alignment]] | 127 | [[alignment]] |
-| [[src/nlp_shap/alignment/segments.py]] | Transcript tokens aligned to audio time ranges. | alignment | [[knowledge/architecture/alignment]] | 60 | [[alignment]] |
-| [[src/nlp_shap/alignment/sgpa.py]] | Spectrogram-guided alignment of transcript tokens to speech (SGPA). | alignment | [[knowledge/architecture/alignment]] | 277 | [[alignment]] |
+| [[src/nlp_shap/alignment/segments.py]] | Transcript tokens aligned to audio time ranges. | alignment | [[knowledge/architecture/alignment]] | 66 | [[alignment]] |
+| [[src/nlp_shap/alignment/sgpa.py]] | Spectrogram-guided alignment of transcript tokens to speech (SGPA). | alignment | [[knowledge/architecture/alignment]] | 279 | [[alignment]] |
 | [[src/nlp_shap/backends/__init__.py]] | Backend plugin implementations. | backends | [[knowledge/architecture/backends]] | 9 | [[backends]] |
 | [[src/nlp_shap/backends/_chat.py]] | Conversation helpers shared by chat-style backends. | backends | [[knowledge/architecture/backends]] | 47 | [[backends]] |
 | [[src/nlp_shap/backends/api/__init__.py]] | OpenAI-compatible HTTP API backend plugin. | backends | [[knowledge/architecture/backends]] | 10 | [[backends]] |
@@ -110,7 +110,8 @@ tags: [generated]
 | [[src/nlp_shap/value/generation_records.py]] | Build generation records from generated text for value-function scoring. | value | [[knowledge/architecture/value]] | 64 | [[value]] |
 | [[src/nlp_shap/value/logprob.py]] | Logprob-based value function. | value | [[knowledge/architecture/value]] | 61 | [[value]] |
 | [[src/nlp_shap/value/tfidf.py]] | Frozen-corpus TF-IDF cosine value function. | value | [[knowledge/architecture/value]] | 101 | [[value]] |
-| [[src/nlp_shap/viz/__init__.py]] | Token attribution visualization plugins. | viz | [[knowledge/architecture/viz]] | 31 | [[viz]] |
+| [[src/nlp_shap/viz/__init__.py]] | Token attribution visualization plugins. | viz | [[knowledge/architecture/viz]] | 37 | [[viz]] |
+| [[src/nlp_shap/viz/audio.py]] | Figure of aligned audio segments: waveform, refined boundaries and energy. | viz | [[knowledge/architecture/viz]] | 122 | [[viz]] |
 | [[src/nlp_shap/viz/colors.py]] | SHAP-inspired diverging colors for signed attributions. | viz | [[knowledge/architecture/viz]] | 65 | [[viz]] |
 | [[src/nlp_shap/viz/labels.py]] | Token label helpers for attribution renderers. | viz | [[knowledge/architecture/viz]] | 45 | [[viz]] |
 | [[src/nlp_shap/viz/render.py]] | Public helpers for attribution visualization. | viz | [[knowledge/architecture/viz]] | 104 | [[viz]] |

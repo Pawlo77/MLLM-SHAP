@@ -52,6 +52,11 @@ How it works
 4. A boundary moves only when that point is quiet (RMS at most half the window's
    mean); ``AudioSegment.boundary_refined`` says whether both edges moved.
 
+:func:`~nlp_shap.viz.plot_audio_segments` (``viz`` extra) draws the waveform with
+each segment, the rough CTC edges (``ctc_start_time``, ``ctc_end_time``) and the
+arrows to the refined boundaries, over the RMS energy whose dips the cuts land in;
+``values`` colours the segments like attribution renderers do.
+
 Segments last at least 50 ms. Times are in seconds and sample indices refer to the
 audio's own sample rate.
 
