@@ -20,5 +20,4 @@ Full note: `knowledge/architecture/backends.md`; update it in the same change (s
 
 ## Known issues
 
-- D05 - Prefix cache speed-up fell below its threshold (`knowledge/issues/D05 - Prefix cache speed-up fell below its threshold.md`): the deep KV-cache speed-up measured 0.93 to 1.02 on 2026-10-10.
-- Fixed: C06, C08, C15, D04 (Fixed issues (`knowledge/issues/Fixed issues.md`)).
+- None open. Fixed: C06, C08, C15, D04, D05 (Fixed issues (`knowledge/issues/Fixed issues.md`)).
