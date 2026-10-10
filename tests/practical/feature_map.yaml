@@ -54,3 +54,4 @@ paths:
 
   src/nlp_shap/value/*: [value.*]
   src/nlp_shap/viz/*: [viz.render]
+  src/nlp_shap/viz/audio.py: [alignment.sgpa]
