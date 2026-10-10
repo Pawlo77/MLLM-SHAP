@@ -319,9 +319,9 @@ scenarios:
         kv_cache: {enabled: true}
     variants:
       - {explanation: {kv_cache: {enabled: false}}}
-    # M4 Pro, MPS, battery: max gap 0.0138 in every run (greedy flips, issue D04;
-    # Qwen 1.5B agrees exactly). Speed-up off/on 1.39 (44.8 s / 62.2 s), 1.15 and
-    # 1.14 on reruns; 1.19 with 8-token answers. The brief's 1.5 (and 1.2) do not hold.
+    # M4 Pro, MPS: max gap 0.0138 in every run (greedy flips, issue D04; Qwen 1.5B
+    # agrees exactly). Speed-up off/on after a warm-up generation: 1.17 (73.8 s /
+    # 86.5 s); without it the first arm pays the warm-up and measures 0.93 to 1.02 (D05).
     expect: {max_gap: 0.02, min_speedup: 1.1}
   deep.runtime.dedup_archive:
     # mc draws distinct coalitions and messages render distinct chats: 0 of 64
