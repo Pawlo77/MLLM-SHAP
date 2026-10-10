@@ -106,10 +106,13 @@ open the ``.ipynb`` on GitHub or browse the full catalog in
      - `GitHub <https://github.com/Pawlo77/nlp-shap/blob/main/examples/estimator_comparison.ipynb>`__
 
    * - :doc:`notebooks/attribution_viz`
-     - Signed Shapley and Banzhaf values rendered with ``token_text`` and
-       ``token_bar``, :func:`~nlp_shap.display_attribution_html`,
-       :func:`~nlp_shap.render_attribution_html` and the renderer classes.
-     - ``[viz]``
+     - Real-model attributions of a prompt (words), a multi-speaker
+       conversation (messages, Shapley and Banzhaf) and a spoken sentence (audio
+       words), rendered with ``token_text``, ``token_bar``,
+       :func:`~nlp_shap.display_attribution_html`,
+       :func:`~nlp_shap.render_attribution_html`, the renderer classes and
+       :func:`~nlp_shap.viz.plot_audio_segments`.
+     - ``[viz]``, ``[transformers]``, ``[audio]``
      - `GitHub <https://github.com/Pawlo77/nlp-shap/blob/main/examples/attribution_viz.ipynb>`__
 
    * - :doc:`notebooks/text_explain_e2e`

@@ -35,51 +35,58 @@ Quick start
 
 .. code-block:: python
 
-   from nlp_shap import (
-       ConversationSnapshot,
-       ExplainConfig,
-       ExplainRunner,
-       Message,
-       Role,
-       Turn,
-       render_attribution,
-   )
-   from nlp_shap.masking import TokenPartitioner
+   from nlp_shap import render_attribution
 
-   snapshot = ConversationSnapshot.from_turns((
-       Turn(messages=(Message(role=Role.USER, text="refund within thirty days"),)),
-   ))
-   config = ExplainConfig.model_validate({
-       "backend": {"kind": "mock", "model_id": "stub"},
-       "explanation": {
-           "estimator": "exact",
-           "estimand": "shapley",
-           "value_fn": "tfidf_cosine",
-           "absence_policy": "pad",
-           "archive": {"path": ""},
-       },
-   })
    output = ExplainRunner(config).explain_sync(snapshot)
-   player_set = TokenPartitioner().partition(snapshot)
-
-   bar = render_attribution(output, snapshot, player_set, renderer="token_bar")
-   text = render_attribution(output, snapshot, player_set, renderer="token_text")
+   bar = render_attribution(output, snapshot, output.player_set, renderer="token_bar")
+   text = render_attribution(output, snapshot, output.player_set, renderer="token_text")
    bar.savefig("attribution.png", dpi=150, bbox_inches="tight")
 
-.. guide-result:: visualization_bar
-   :caption: Bar chart (``token_bar``)
-   :figure:
-   :alt: Horizontal token attribution bar chart
+Pass the run's ``output.player_set`` so labels match the players, ``title=`` to
+label a figure and ``registry=`` to use a renderer registered in your own
+:class:`~nlp_shap.PluginRegistry`. The figures below come from
+:doc:`../notebooks/attribution_viz`, which explains three inputs with
+``Qwen/Qwen2.5-1.5B-Instruct`` and ``tfidf_cosine``.
 
-.. guide-result:: visualization_text
-   :caption: Inline tokens (``token_text``)
-   :figure:
-   :alt: Inline colored token attribution
+Words of a prompt
+-----------------
 
-``player_set`` must be the partition the run used; with ``players: tokens`` that
-is :class:`~nlp_shap.masking.TokenPartitioner`. Pass ``title=`` to label a figure
-and ``registry=`` to use a renderer registered in your own
-:class:`~nlp_shap.PluginRegistry`.
+.. figure:: /_static/notebook_figures/viz_tokens_text.png
+   :alt: The refund prompt with each word shaded red or blue by its value.
+
+   ``token_text``: the words in reading order; "yes", "no.", "Refund?" and
+   "laptop" push the answer toward the original one, "opened it." pulls against it.
+
+.. figure:: /_static/notebook_figures/viz_tokens_bar.png
+   :alt: Bar chart of the 13 word attributions, sorted by size.
+
+   ``token_bar``: the same values sorted by absolute size, each bar labelled
+   with its signed value.
+
+Messages of a conversation
+--------------------------
+
+With ``players: messages`` each message is a player labelled with its role,
+speaker and position; ``title=`` names the figure.
+
+.. figure:: /_static/notebook_figures/viz_messages_bar.png
+   :alt: Bar chart of five conversation messages labelled with role and speaker.
+
+   A five-message support thread: Alice's order and Bob's two messages carry the
+   answer, the assistant's greeting and Alice's "used it once" matter less.
+
+Spoken words
+------------
+
+For audio players (``players: sgpa_segments``, :doc:`alignment`),
+:func:`~nlp_shap.viz.plot_audio_segments` colours each word's stretch of audio by
+its value over the waveform and its energy.
+
+.. figure:: /_static/notebook_figures/viz_audio.png
+   :alt: Waveform of a spoken sentence with word segments coloured by value.
+
+   "curiosity" and "I" shape the model's reading of the speaker's mood most;
+   "at" counts slightly against it.
 
 Jupyter HTML
 ------------
@@ -90,15 +97,10 @@ returns the same fragment as a string for reports:
 
 .. code-block:: python
 
-   from nlp_shap import render_attribution_html
+   from nlp_shap import display_attribution_html, render_attribution_html
 
-   html = render_attribution_html(output, snapshot, player_set, title="Refund")
-   print(type(html).__name__, all(word in html for word in ("refund", "days")))
-
-.. guide-result:: visualization_html
-
-In Jupyter, ``display_attribution_html(output, snapshot, player_set)`` renders it
-directly.
+   display_attribution_html(output, snapshot, output.player_set)
+   html = render_attribution_html(output, snapshot, output.player_set, title="Refund")
 
 Color scale
 -----------
