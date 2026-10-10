@@ -125,3 +125,28 @@ def test_exact_message_run_satisfies_efficiency() -> None:
     assert sum(output.result.values) == pytest.approx(
         output.result.grand_value - output.result.base_value, abs=1e-9
     )
+
+
+def test_token_partitioner_roles_option_keeps_other_roles_present() -> None:
+    """``tokens`` with ``roles: [user]`` explains user words only; ids are unchanged."""
+    snapshot = _three_messages()
+    every = TokenPartitioner().partition(snapshot)
+    users = TokenPartitioner(_messages_context(roles=["user"])).partition(snapshot)
+    assert {span.message_index for span in users.spans} == {1, 2}
+    assert [span.text for span in users.spans] == [
+        "Is",
+        "the",
+        "sky",
+        "blue?",
+        "And",
+        "the",
+        "grass?",
+    ]
+    assert set(users.player_ids) < set(every.player_ids)
+
+
+def test_token_partitioner_without_selected_tokens_is_refused() -> None:
+    with pytest.raises(ValueError, match="explainable token"):
+        TokenPartitioner(_messages_context(roles=["assistant"])).partition(
+            _three_messages()
+        )
