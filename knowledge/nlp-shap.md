@@ -69,4 +69,4 @@ Full citations: [[Papers]].
 
 ## Handbook
 
-[[Onboarding]] · [[How a run works]] · [[Debugging a wrong attribution]] · [[Roadmap]] · [[knowledge/handbook/Solutions/README|Solutions]] (problems already solved; read first by `review` and the vibe brainstorm)
+[[Onboarding]] · [[How a run works]] · [[Debugging a wrong attribution]] · [[Roadmap]] · [[Python SHAP visualization reference]] · [[knowledge/handbook/Solutions/README|Solutions]] (problems already solved; read first by `review` and the vibe brainstorm)
