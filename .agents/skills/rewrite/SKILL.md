@@ -7,9 +7,8 @@ description: >-
 
 # nlp-shap rewrite (audio track)
 
-The text track is done and released (current version 0.1.18; check `version` in
-`pyproject.toml`). The audio track (0.2.x) is pending. This skill covers audio and
-multimodal work only.
+The text track is done; the audio track (0.2.x) is in progress (check `version` in
+`pyproject.toml`). This skill covers audio and multimodal work only.
 
 ## External references (siblings, not in this repository)
 
@@ -33,7 +32,7 @@ Open the multi-root workspace file before audio-track or port work.
 1. **Gather logic, rewrite modules**: reference legacy; never bulk-copy files or god-classes
 2. **One phase, one tag, one PyPI publish**: do not batch phases
 3. **Dropped:** `shap/hierarchical/*`; do not implement or reference
-4. **Audio track** (Phases 15 to 21, `v0.2.0` to `v0.2.6`); the text sign-off it waited for is done
+4. **Audio track** (Phases 15 to 21; next is Phase 18, `v0.2.2`)
 5. **Deps:** torch / transformers / liquid-audio in extras only
 6. **Imports:** relative inside `src/nlp_shap/`; absolute `from nlp_shap...` in tests and examples
 7. **No `from __future__ import annotations`** unless required (`python-types.mdc`)
@@ -51,13 +50,13 @@ skill `release` for the version bump, tag and publish.
 
 | Phase | Tag | Module focus |
 |-------|-----|--------------|
-| 15 | v0.2.0 | multimodal domain + enums |
-| 16 | v0.2.1 | SGPA alignment (Wav2Vec2) |
-| 17 | v0.2.2 | audio masking, filters, sgpa partition |
-| 18 | v0.2.3 | mock audio backend |
-| 19 | v0.2.4 | liquid-audio backend |
-| 20 | v0.2.5 | multimodal E2E pipeline |
-| 21 | v0.2.6 | audio value fns + SGPA Audio smoke |
+| 15 | 0.1.18 | multimodal domain (content parts; done) |
+| 16 | v0.2.0 | SGPA alignment (Wav2Vec2; done) |
+| 17 | v0.2.1 | audio players `sgpa_segments` (done) |
+| 18 | v0.2.2 | mock audio backend |
+| 19 | v0.2.3 | liquid-audio backend |
+| 20 | v0.2.4 | multimodal E2E pipeline |
+| 21 | v0.2.5 | audio value fns + SGPA Audio smoke |
 
 ## Workflow
 
