@@ -23,8 +23,8 @@ uv run hf cache ls | grep -E "Qwen2.5-(1.5B|3B)-Instruct|SmolLM2-360M-Instruct"
 - No GPU: stop and say so (`NLP_SHAP_PRACTICAL_CPU=1` only if the user asks).
 - Weights missing: ask before downloading (quick 3.1 GB and 0.7 GB, deep 6.2 GB); on
   yes, set `NLP_SHAP_PRACTICAL_DOWNLOAD=1` for the run.
-- `backend.lmstudio` / `backend.api`: set `NLP_SHAP_PRACTICAL_LMS_MODEL` when LM Studio
-  serves a downloaded key; otherwise they skip.
+- `backend.lmstudio` / `backend.api`: need `lms server start`; they skip without it.
+  `make practical` sets `NLP_SHAP_PRACTICAL_LMS_MODEL=qwen2-500m-instruct`.
 - Optional quick-tier judge in LM Studio: `NLP_SHAP_PRACTICAL_JUDGE=lmstudio:<key>`.
 
 ## 2. Run
