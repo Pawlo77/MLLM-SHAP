@@ -27,8 +27,8 @@ Part of [[nlp-shap]].
 
 ## Public surface
 
-- `TokenPartitioner` (`tokens`): one player per whitespace token of every message; returns `PlayerSet(player_ids, spans)` built by `tokens.token_spans` (spans carry the message's speaker); player ids `"{snapshot_id}:{turn}:{message}:{token}"`.
-- `MessagePartitioner` (`messages`): one player per non-empty message of the roles in `MessagesOptions.roles` (default all); span = whole text, label `"<role>[/<speaker>] <n>: "` plus the first `LABEL_PREVIEW_CHARS` (30) characters; ids `"{snapshot_id}:{turn}:{message}"` ([[Masking decisions#2026-10-08 — Message players keep their slot when deleted|message players]]).
+- `TokenPartitioner` (`tokens`): one player per whitespace token of every message whose role is in `RolesOptions.roles` (default all; other messages stay present); returns `PlayerSet(player_ids, spans)` built by `tokens.token_spans` (spans carry the message's speaker); player ids `"{snapshot_id}:{turn}:{message}:{token}"`.
+- `MessagePartitioner` (`messages`): one player per non-empty message of the roles in `MessagesOptions.roles` (an alias of `RolesOptions`; default all); span = whole text, label `"<role>[/<speaker>] <n>: "` plus the first `LABEL_PREVIEW_CHARS` (30) characters; ids `"{snapshot_id}:{turn}:{message}"` ([[Masking decisions#2026-10-08 — Message players keep their slot when deleted|message players]]).
 - `DeletePolicy` (`delete`): removes absent spans together with the whitespace that separated them.
 - `PadPolicy` (`pad`): replaces absent spans with `placeholder` (default `[MASK]`, plugin option `PadOptions.placeholder`).
 - `NeutralPolicy` (`neutral`): replaces each absent span with `fill_char` (default `_`, plugin option `NeutralOptions.fill_char`) repeated to the span's width.
