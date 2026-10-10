@@ -24,6 +24,12 @@ class AudioSegment:
     end_time: float
     """End in seconds; greater than ``start_time``."""
 
+    ctc_start_time: float
+    """Start of the token's first character frame, before boundary refinement."""
+
+    ctc_end_time: float
+    """End of the token's last character frame, before boundary refinement."""
+
     confidence: float
     """Mean model probability of the token's characters, in ``[0, 1]``."""
 

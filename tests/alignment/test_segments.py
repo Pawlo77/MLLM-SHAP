@@ -14,6 +14,8 @@ def _segment(**changes: object) -> AudioSegment:
         "token_index": 0,
         "start_time": 0.5,
         "end_time": 0.75,
+        "ctc_start_time": 0.52,
+        "ctc_end_time": 0.74,
         "confidence": 0.9,
         "boundary_refined": True,
         "sample_rate": 16000,
