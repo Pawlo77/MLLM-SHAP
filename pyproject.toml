@@ -104,6 +104,12 @@ transformers = [
 api = [
     "httpx>=0.28.0",
 ]
+# Audio decoding (soundfile) and boundary refinement and resampling (librosa) for
+# nlp_shap.alignment; the Wav2Vec2 model itself comes from the transformers extra.
+audio = [
+    "librosa>=0.11.0",
+    "soundfile>=0.13.0",
+]
 viz = [
     "matplotlib>=3.9.0",
     "seaborn>=0.13.0",
