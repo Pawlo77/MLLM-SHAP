@@ -33,6 +33,8 @@ repos:
         exclude: \.tsv$
         args: [--markdown-linebreak-ext=md]
       - id: end-of-file-fixer
+        # Obsidian rewrites its own settings without a final newline on every open.
+        exclude: ^\.obsidian/[^/]+(/[^/]+/data)?\.json$
       - id: mixed-line-ending
         args: [--fix=lf]
       - id: check-yaml

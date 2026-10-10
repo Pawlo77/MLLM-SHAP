@@ -1,22 +1,19 @@
 # Handoff
 
 ## State
-v0.1.18 released 2026-10-09: PR 5 (audit remediation, 23 commits) merged as
-74f5a6e, tag pushed, Publish green, on PyPI and GitHub Releases. 0.1.17 has a
-release-notes section but no tag. `main` CI green; Pages deploys from GitHub Actions
-(https://pawlo77.github.io/nlp-shap/). CodeQL is skipped while the repository is private (code scanning needs paid Code
-Security).
+v0.1.19 released 2026-10-10 (PR 6: D04 half-precision KV-cache warning, C16 LM
+Studio repeated keys, brevity RST-fence fix, practical weight check); v0.1.18 on
+2026-10-09 (PR 5, audit remediation). 0.1.17 has notes but no tag. The repository is
+public since 2026-10-10; `main` is protected (`prek`, `tests-passed`, `CodeQL`,
+`title`), merge commits only. Pages deploys from GitHub Actions.
+Weekly local tasks: `nlp-shap-upgrade` (Mon 08:00) and `nlp-shap-lit-watch` (Mon 09:00).
 
 ## User-only
-- Copilot code review: quota was exhausted on PR 5, so skill `ship` had no review.
-- Approve the weekly literature watch task (.cursor/commands/lit-watch.md).
-- Branch protection and repository settings (.agents/skills/ci/reference.md).
-- Open the vault once in Obsidian: Code Graph colours and the Dashboard Dataview
-  tables.
+- Secret scanning and push protection (.agents/skills/ci/reference.md).
+- Copilot code review failed with "quota limit" on PRs 5 and 6 although the plan shows
+  credits left; check the next PR.
 
 ## Next
-Subagents default to Sonnet (`CLAUDE_CODE_SUBAGENT_MODEL`); AGENTS.md says when to
-pass Opus or Fable. Practical: `make practical TIER=all FEATURE=all` passed (34, 3
-skipped: LM Studio key unset, no audio backend; 72 min with downloads). D02 audio
-backend deferred. `/upgrade`
-weekly schedule not yet created; `make upgrade-check` lists pending bumps.
+- `make practical` defaults `NLP_SHAP_PRACTICAL_LMS_MODEL=qwen2-500m-instruct`; start
+  LM Studio with `lms server start` for the connector scenarios.
+- Open PR 4 (`feat/audio-track-v0.2`): D02 audio backend and D03 rebase, deferred.

@@ -60,7 +60,7 @@ Pytest markers select tests that need extra resources and are excluded from `mak
 
 - `NLP_SHAP_PRACTICAL_DOWNLOAD=1`: download missing weights.
 - `NLP_SHAP_PRACTICAL_CPU=1`: run without a GPU (slow).
-- `NLP_SHAP_PRACTICAL_LMS_MODEL`: a downloaded LM Studio model key, for example `qwen2.5-1.5b-instruct`.
+- `NLP_SHAP_PRACTICAL_LMS_MODEL`: a downloaded LM Studio model key (`make practical` default `qwen2-500m-instruct`).
 - `NLP_SHAP_PRACTICAL_API_HOST` (default `http://localhost:1234/v1`) and `NLP_SHAP_PRACTICAL_API_MODEL`; a remote host needs `NLP_SHAP_PRACTICAL_REMOTE=1`.
 - `NLP_SHAP_PRACTICAL_JUDGE=lmstudio:<key>`: the quick tier's judge runs in LM Studio, for example `qwen2.5-7b-instruct` 4-bit (4.7 GB).
 
