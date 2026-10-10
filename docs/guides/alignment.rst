@@ -52,6 +52,22 @@ How it works
 4. A boundary moves only when that point is quiet (RMS at most half the window's
    mean); ``AudioSegment.boundary_refined`` says whether both edges moved.
 
+.. figure:: /_static/notebook_figures/alignment_refinement.png
+   :alt: Waveform of a 3.4 s sentence with nine word segments, dashed CTC edges,
+         arrows to the refined boundaries, and the RMS energy below.
+
+   Nine words of a recorded sentence. Dashed lines are the rough CTC edges,
+   arrows show where refinement moved them, solid lines are the final
+   boundaries; each lands in a dip of the RMS energy (bottom). Between
+   "curiosity" and "beside" the speech never goes quiet, so that boundary stays.
+
+.. figure:: /_static/notebook_figures/alignment_flux_only.png
+   :alt: The same sentence aligned with flux_weight 1 and energy_weight 0.
+
+   ``energy_weight=0, flux_weight=1``: cuts follow spectral change instead of
+   energy, and fewer of them land on quiet points (1 of 9 boundaries refined
+   instead of 7).
+
 :func:`~nlp_shap.viz.plot_audio_segments` (``viz`` extra) draws the waveform with
 each segment, the rough CTC edges (``ctc_start_time``, ``ctc_end_time``) and the
 arrows to the refined boundaries, over the RMS energy whose dips the cuts land in;
@@ -85,6 +101,12 @@ same length.
                "model_id": "facebook/wav2vec2-base-960h", "revision": "main"}},
        },
    })
+
+.. figure:: /_static/notebook_figures/alignment_players.png
+   :alt: The sentence's word segments coloured by their attribution values.
+
+   Words as players, coloured by attribution with ``values``. The mock backend
+   scores every word alike, so the colours are equal here.
 
 Plugin options: ``model_id``, ``revision``, ``device``, ``energy_weight`` and
 ``flux_weight``. No backend generates from audio yet, so a run scores the masked
