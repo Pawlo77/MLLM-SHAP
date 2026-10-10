@@ -64,7 +64,7 @@ tags: [generated]
 | [[src/nlp_shap/masking/audio.py]] | Render audio players: cut or silence the sample ranges of absent players. | masking | [[knowledge/architecture/masking]] | 53 | [[masking]] |
 | [[src/nlp_shap/masking/builder.py]] | View-based masked snapshots with structural sharing. | masking | [[knowledge/architecture/masking]] | 83 | [[masking]] |
 | [[src/nlp_shap/masking/codec.py]] | Packed bitset encoding and stable hashing for coalition masks. | masking | [[knowledge/architecture/masking]] | 66 | [[masking]] |
-| [[src/nlp_shap/masking/partitions.py]] | Player partition plugins: whitespace tokens and whole messages. | masking | [[knowledge/architecture/masking]] | 117 | [[masking]] |
+| [[src/nlp_shap/masking/partitions.py]] | Player partition plugins: whitespace tokens and whole messages. | masking | [[knowledge/architecture/masking]] | 136 | [[masking]] |
 | [[src/nlp_shap/masking/policies.py]] | Absence policies for rendering masked conversation snapshots. | masking | [[knowledge/architecture/masking]] | 162 | [[masking]] |
 | [[src/nlp_shap/masking/space.py]] | Mask-space utilities for explainable feature indexing. | masking | [[knowledge/architecture/masking]] | 61 | [[masking]] |
 | [[src/nlp_shap/masking/tokens.py]] | Whitespace token spans and span-based snapshot rendering. | masking | [[knowledge/architecture/masking]] | 124 | [[masking]] |
@@ -110,9 +110,10 @@ tags: [generated]
 | [[src/nlp_shap/value/generation_records.py]] | Build generation records from generated text for value-function scoring. | value | [[knowledge/architecture/value]] | 64 | [[value]] |
 | [[src/nlp_shap/value/logprob.py]] | Logprob-based value function. | value | [[knowledge/architecture/value]] | 61 | [[value]] |
 | [[src/nlp_shap/value/tfidf.py]] | Frozen-corpus TF-IDF cosine value function. | value | [[knowledge/architecture/value]] | 101 | [[value]] |
-| [[src/nlp_shap/viz/__init__.py]] | Token attribution visualization plugins. | viz | [[knowledge/architecture/viz]] | 37 | [[viz]] |
+| [[src/nlp_shap/viz/__init__.py]] | Token attribution visualization plugins. | viz | [[knowledge/architecture/viz]] | 44 | [[viz]] |
 | [[src/nlp_shap/viz/audio.py]] | Figure of aligned audio segments: waveform, refined boundaries and energy. | viz | [[knowledge/architecture/viz]] | 122 | [[viz]] |
 | [[src/nlp_shap/viz/colors.py]] | SHAP-inspired diverging colors for signed attributions. | viz | [[knowledge/architecture/viz]] | 65 | [[viz]] |
+| [[src/nlp_shap/viz/conversation.py]] | Conversation view: each message under its role, players coloured in place. | viz | [[knowledge/architecture/viz]] | 203 | [[viz]] |
 | [[src/nlp_shap/viz/labels.py]] | Token label helpers for attribution renderers. | viz | [[knowledge/architecture/viz]] | 45 | [[viz]] |
 | [[src/nlp_shap/viz/render.py]] | Public helpers for attribution visualization. | viz | [[knowledge/architecture/viz]] | 104 | [[viz]] |
 | [[src/nlp_shap/viz/style.py]] | Seaborn-backed styling for attribution figures. | viz | [[knowledge/architecture/viz]] | 95 | [[viz]] |

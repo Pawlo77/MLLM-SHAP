@@ -8,6 +8,16 @@ Changes in each published ``nlp-shap`` version. Newest first.
 Unreleased
 ----------
 
+Added
+~~~~~
+
+- ``players: tokens`` takes the plugin option ``roles`` (like ``messages``): only
+  the words of the listed roles become players, other messages stay present.
+- :func:`~nlp_shap.viz.plot_conversation` and
+  :func:`~nlp_shap.viz.render_conversation_html` draw a conversation message by
+  message under role and speaker headers, with token or message players shaded in
+  place and text that is no player in grey.
+
 .. _release-0-2-1:
 
 0.2.1 (2026-10-10)

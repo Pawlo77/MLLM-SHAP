@@ -75,6 +75,25 @@ speaker and position; ``title=`` names the figure.
    A five-message support thread: Alice's order and Bob's two messages carry the
    answer, the assistant's greeting and Alice's "used it once" matter less.
 
+:func:`~nlp_shap.viz.plot_conversation` keeps the thread's shape: each message
+under its role, speaker and position, with every player shaded where it stands
+and text that is no player in grey. :func:`~nlp_shap.viz.render_conversation_html`
+returns the same view as HTML. It works for message and token players alike.
+
+.. figure:: /_static/notebook_figures/viz_thread_messages.png
+   :alt: The thread drawn message by message, each message shaded by its value.
+
+   ``plot_conversation`` with ``players: messages``.
+
+With ``players: tokens`` and ``plugin_options: {tokens: {roles: [user]}}`` only the
+users' words are players; the other messages stay present and appear grey.
+
+.. figure:: /_static/notebook_figures/viz_thread_tokens.png
+   :alt: The thread with the users' words shaded and the assistant message grey.
+
+   Per-word attributions of the users' messages: "Can", "Answer" and "yes" in
+   Bob's question decide; the assistant's greeting is context, not a player.
+
 Spoken words
 ------------
 
