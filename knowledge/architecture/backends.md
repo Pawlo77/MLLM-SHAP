@@ -72,8 +72,7 @@ Part of [[nlp-shap]].
 
 ## Known issues
 
-- [[D05 - Prefix cache speed-up fell below its threshold]]: the deep KV-cache speed-up measured 0.93 to 1.02 on 2026-10-10.
-- Fixed: C06, C08, C15, D04 ([[Fixed issues]]).
+- None open. Fixed: C06, C08, C15, D04, D05 ([[Fixed issues]]).
 
 ## Tests
 
