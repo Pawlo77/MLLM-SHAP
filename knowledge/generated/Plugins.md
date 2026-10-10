@@ -32,6 +32,7 @@ A plugin registered only as an entry point resolves only through `PluginRegistry
 | nlp_shap.normalizers | explanation.normalizer | `min_max` | `MinMaxNormalizer` | [[src/nlp_shap/estimation/normalizers.py]] | entry point | Min-max scale to ``[0, 1]`` then normalize to sum one. |
 | nlp_shap.normalizers | explanation.normalizer | `power_shift` | `PowerShiftNormalizer` | [[src/nlp_shap/estimation/normalizers.py]] | entry point | Shift to non-negative values, apply a power, then scale to sum one. |
 | nlp_shap.partitions | explanation.players | `messages` | `MessagePartitioner` | [[src/nlp_shap/masking/partitions.py]] | entry point | Partition a snapshot into one player per non-empty message. |
+| nlp_shap.partitions | explanation.players | `sgpa_segments` | `SgpaSegmentPartitioner` | [[src/nlp_shap/alignment/partitions.py]] | entry point | Make each spellable word of every audio message's transcript a player. |
 | nlp_shap.partitions | explanation.players | `tokens` | `TokenPartitioner` | [[src/nlp_shap/masking/partitions.py]] | entry point | Partition a snapshot into whitespace-delimited text tokens. |
 | nlp_shap.renderers | render_attribution(renderer=...) | `token_bar` | `TokenBarRenderer` | [[src/nlp_shap/viz/token_bar.py]] | entry point | Render attributions as a SHAP-style horizontal bar chart. |
 | nlp_shap.renderers | render_attribution(renderer=...) | `token_text` | `TokenTextRenderer` | [[src/nlp_shap/viz/token_text.py]] | entry point | Render attributions as inline colored tokens. |

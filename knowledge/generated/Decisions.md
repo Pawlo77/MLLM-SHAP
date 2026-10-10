@@ -15,6 +15,7 @@ Newest first.
 | Date | Domain | Decision | Status |
 |---|---|---|---|
 | 2026-10-10 | alignment | [[Alignment decisions#2026-10-10 — Own CTC alignment instead of torchaudio\|Own CTC alignment instead of torchaudio]] | accepted |
+| 2026-10-10 | masking | [[Masking decisions#2026-10-10 — Audio players are sample ranges on the player span\|Audio players are sample ranges on the player span]] | accepted |
 | 2026-10-09 | backends | [[Backends decisions#2026-10-09 — Half-precision prefix cache warns instead of promising equality\|Half-precision prefix cache warns instead of promising equality]] | accepted |
 | 2026-10-09 | process | [[Process decisions#2026-10-09 — AI attribution stripped\|AI attribution stripped]] | accepted |
 | 2026-10-08 | domain | [[Domain decisions#2026-10-08 — Speaker rendered into the message content\|Speaker rendered into the message content]] | accepted |

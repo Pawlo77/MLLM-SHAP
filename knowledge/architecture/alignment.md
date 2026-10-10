@@ -9,6 +9,7 @@ related-code:
   - "[[src/nlp_shap/alignment/__init__.py]]"
   - "[[src/nlp_shap/alignment/ctc.py]]"
   - "[[src/nlp_shap/alignment/io.py]]"
+  - "[[src/nlp_shap/alignment/partitions.py]]"
   - "[[src/nlp_shap/alignment/segments.py]]"
   - "[[src/nlp_shap/alignment/sgpa.py]]"
 ---
@@ -20,13 +21,14 @@ Part of [[nlp-shap]]. Concept: [[SGPA]]. Decisions: [[Alignment decisions]].
 ## Responsibility
 
 - Turn a transcript and its speech into one time segment per token, so audio segments can become players.
-- No backend, no masking and no pipeline wiring; the `audio` extra (`librosa`, `soundfile`) plus the `transformers` extra for the default model.
+- The `sgpa_segments` partition turns segments into players. No backend and no audio rendering (that is [[masking]]); the `audio` extra (`librosa`, `soundfile`) plus the `transformers` extra for the default model.
 
 ## Public surface
 
 - `SpectrogramGuidedAligner(model=None, energy_weight=0.8, flux_weight=0.2, separator="|")`; `align(transcript, audio: AudioPart, attach_audio=False) -> list[AudioSegment]`.
 - `CtcModel` protocol (`sample_rate`, `blank_id`, `vocab`, `log_probs(waveform)`); `Wav2Vec2Ctc(model_id="facebook/wav2vec2-base-960h", revision=None, device="cpu")` implements it.
-- `AudioSegment(token, start_time, end_time, confidence, boundary_refined, sample_rate, start_sample, end_sample, audio=b"")` with `duration`.
+- `SgpaSegmentPartitioner` (`sgpa_segments`, options `SgpaOptions`: `model_id`, `revision`, `device`, `energy_weight`, `flux_weight`): one player per spellable word of every message with an `AudioPart` and a transcript; ids `"{snapshot_id}:{turn}:{message}:{token}"`; spans carry the word's text range and `samples`; the default aligner loads on the first `partition`.
+- `AudioSegment(token, token_index, start_time, end_time, confidence, boundary_refined, sample_rate, start_sample, end_sample, audio=b"")` with `duration`.
 - `decode_audio(data, sample_rate=None)` (mono float32, optional resampling) and `encode_wav(waveform, sample_rate)` (16-bit PCM).
 - `ctc.forced_align(log_probs, targets, blank)` and `ctc.target_spans(...)`: Viterbi alignment over the blank-extended target sequence.
 
@@ -34,7 +36,7 @@ Part of [[nlp-shap]]. Concept: [[SGPA]]. Decisions: [[Alignment decisions]].
 
 - In: `AudioPart` from [[domain]] and a transcript string or token list.
 - Steps: decode and resample for the model; `log_probs`; CTC forced alignment of the spellable characters (separator between tokens); token spans from their characters; each edge moves to the minimum of `energy_weight` × RMS (root mean square energy) + `flux_weight` × spectral flux within its search window when that point is quiet.
-- Out: `AudioSegment`s in token order, at the source sample rate; the planned `sgpa_segments` partitioner turns them into players ([[D02 - Audio backend]]).
+- Out: `AudioSegment`s in token order, at the source sample rate; `sgpa_segments` turns them into players for the [[pipeline]].
 
 ## Invariants
 
@@ -45,7 +47,7 @@ Part of [[nlp-shap]]. Concept: [[SGPA]]. Decisions: [[Alignment decisions]].
 
 ## Known issues
 
-- No partitioner or backend consumes segments yet ([[D02 - Audio backend]]).
+- No backend generates from audio yet ([[D02 - Audio backend]]); runs score the masked transcripts.
 
 ## Tests
 
@@ -53,3 +55,4 @@ Part of [[nlp-shap]]. Concept: [[SGPA]]. Decisions: [[Alignment decisions]].
 - [[tests/alignment/test_io.py]]
 - [[tests/alignment/test_segments.py]]
 - [[tests/alignment/test_sgpa.py]]
+- [[tests/alignment/test_sgpa_players.py]]
