@@ -41,12 +41,19 @@ gh api repos/Pawlo77/nlp-shap/branches/main/protection --jq '.required_status_ch
 ## Other settings
 
 ```bash
-gh api -X PATCH repos/Pawlo77/nlp-shap -F delete_branch_on_merge=true -F has_wiki=false
-gh api -X PUT repos/Pawlo77/nlp-shap/pages -f build_type=workflow   # POST if Pages is off
+gh api -X PATCH repos/Pawlo77/nlp-shap -F delete_branch_on_merge=true -F has_wiki=false \
+  -F allow_squash_merge=false -F allow_rebase_merge=false
+gh api -X PUT repos/Pawlo77/nlp-shap/pages -f build_type=workflow
 gh api -X PUT repos/Pawlo77/nlp-shap/vulnerability-alerts
-gh api -X PATCH repos/Pawlo77/nlp-shap/code-scanning/default-setup -f state=not-configured
-gh secret set CODECOV_TOKEN                                          # optional
+gh api -X PATCH repos/Pawlo77/nlp-shap --input - <<'JSON'
+{"security_and_analysis": {"secret_scanning": {"status": "enabled"},
+ "secret_scanning_push_protection": {"status": "enabled"}}}
+JSON
+gh secret set CODECOV_TOKEN
 ```
 
-Discussions stay off (`has_discussions=true` enables them). After the first Actions docs
-deployment the `gh-pages` branch can be deleted.
+- No inline `#` comments: interactive zsh passes them to `gh` as arguments.
+- Pages takes `-X POST` when it is off. `CODECOV_TOKEN` is optional.
+- Code scanning runs from `codeql.yaml` (advanced setup) and needs a public repository
+  or GitHub Code Security; leave the default setup off.
+- Discussions stay off (`has_discussions=true` enables them).
