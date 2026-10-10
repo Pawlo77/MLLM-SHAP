@@ -110,6 +110,22 @@ class Message:
             parts.insert(0, TextPart(text))
         return Message(role=self.role, content=tuple(parts), speaker=self.speaker)
 
+    def with_audio(self, audio: AudioPart) -> "Message":
+        """Return a copy whose first audio part is replaced by ``audio``.
+
+        Raises:
+            ValueError: If the message has no audio part.
+        """
+        index = next(
+            (i for i, part in enumerate(self.content) if isinstance(part, AudioPart)),
+            None,
+        )
+        if index is None:
+            msg = "message has no audio part to replace"
+            raise ValueError(msg)
+        parts = (*self.content[:index], audio, *self.content[index + 1 :])
+        return Message(role=self.role, content=parts, speaker=self.speaker)
+
 
 @dataclass(frozen=True, slots=True)
 class Turn:
