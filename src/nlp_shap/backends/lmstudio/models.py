@@ -39,7 +39,8 @@ def match_downloaded_model_key(
     target = normalize_model_token(model_id)
     if not target:
         return None
-    keys = [str(getattr(entry, "model_key", "")) for entry in downloaded]
+    # LM Studio lists a key once per downloaded variant; repeats are one model.
+    keys = list(dict.fromkeys(str(getattr(e, "model_key", "")) for e in downloaded))
     stages: tuple[Callable[[str], bool], ...] = (
         lambda key: normalize_model_token(key) == target,
         lambda key: normalize_model_token(key.split("/")[-1]).startswith(target),

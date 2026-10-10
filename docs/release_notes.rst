@@ -8,6 +8,21 @@ Changes in each published ``nlp-shap`` version. Newest first.
 Unreleased
 ----------
 
+.. _release-0-1-19:
+
+0.1.19 (2026-10-09)
+-------------------
+
+Fixed
+~~~~~
+
+- The transformers backend warns once when ``explanation.kv_cache`` runs with
+  ``float16`` or ``bfloat16`` weights: cached prefixes round differently from one
+  forward pass, so greedy outputs can differ from the cache off. The backends guide
+  no longer promises equality; ``backend.options.dtype: float32`` is identical.
+- The LM Studio backend accepts a model key that LM Studio lists once per
+  downloaded quantisation; earlier versions refused it as ambiguous.
+
 .. _release-0-1-18:
 
 0.1.18 (2026-10-09)
@@ -21,9 +36,10 @@ Fixed
   ``explain`` and ``reanalyze`` agree and ``reanalyze --strict`` accepts the
   archive (``embedding_source: hash``). The values of such runs change.
 - The ``token_text`` and ``token_bar`` renderers no longer log matplotlib's
-  ``Failed to find font weight semibold`` warning, and their labels no longer
-  overlap: ``token_text`` wraps long text onto new lines, and ``token_bar`` puts
-  value labels beyond the bar ends and the sign legend outside the axes.
+  ``Failed to find font weight semibold`` warning.
+- Renderer labels no longer overlap: ``token_text`` wraps long text onto new
+  lines, and ``token_bar`` puts value labels beyond the bar ends and the sign
+  legend outside the axes.
 - Complementary and Neyman samplers now evaluate all ``n`` singleton pairs
   ``({i}, N - {i})`` after the grand and empty pair. On an additive 8-player game
   at ``budget.fraction: 0.5`` the attribution sum was on average 1.7 above
@@ -39,72 +55,74 @@ Fixed
 - Monte Carlo and other partial-sample estimates log a ``WARNING`` naming the
   players with no observed marginal (their value is 0), typically at small
   budgets where only the grand and empty coalitions were sampled.
-- The transformers backend reuses cached prompt-prefix KV state. Every prompt
-  but its last token is a prefix: on a miss the prefix is computed once, stored
-  and handed to ``generate``; on a hit a copy of the longest cached prefix,
-  cropped to the shared tokens, is extended with the prompt tokens it does not
-  cover, stored, and handed to ``generate``. No prompt token is processed twice.
-  Earlier versions ran one forward pass per prefix length and never used the
-  cache. Prefix states are bounded by ``kv_cache.max_entries`` (default 8), model
-  calls (tokenization included) are serialized, and
-  ``metrics.kv_cache_reused_tokens`` reports the prompt tokens served from the
-  cache next to ``metrics.kv_cache_hits``; both count the current run only, also
-  when ``ExplainRunner(backend=...)`` reuses the backend across runs. Greedy
-  outputs are identical with the cache on and off.
+- The transformers backend reuses cached prompt-prefix KV state (every prompt
+  token but the last). A miss computes the prefix once and stores it. A hit
+  copies the longest cached prefix, crops it to the shared tokens and extends it.
+  No prompt token is processed twice; earlier versions ran one forward pass per
+  prefix length.
+- ``kv_cache.max_entries`` (default 8) bounds the prefix states, and model calls
+  (tokenization included) are serialized. ``metrics.kv_cache_reused_tokens``
+  reports the prompt tokens served from the cache next to
+  ``metrics.kv_cache_hits``. Both count the current run only, also when
+  ``ExplainRunner(backend=...)`` reuses the backend. In ``float32`` greedy outputs
+  are identical with the cache on and off.
 - The transformers backend runs on Apple MPS when available. The new
   ``backend.options.dtype`` (``auto``, ``float32``, ``float16``, ``bfloat16``)
   defaults to ``auto``: bfloat16 on CUDA and MPS when supported, float16 on other
   accelerators and float32 on CPU. Earlier versions loaded float16 on every
   accelerator, which overflows to NaN on many bfloat16-trained models.
-  ``backend.options.revision`` pins the Hub revision the model and tokenizer are
-  loaded from.
+- ``backend.options.revision`` pins the Hub revision of the model and tokenizer.
 - The transformers backend computes static and contextual embeddings only when
   the value function needs them (see
   :class:`~nlp_shap.protocols.value.RequiresEmbeddings`), and ``explain`` then
   scores the model's embeddings. Earlier versions ran two extra forward passes
-  per coalition and discarded the result. :meth:`~nlp_shap.ExplainRunner.reanalyze`
-  still scores hash embeddings derived from the archived text, because archives
-  store text only; embedding-based values of a transformers run therefore differ
-  between ``explain`` and ``reanalyze``. The manifest records which embeddings
-  the run scored (``embedding_source``: ``none``, ``hash`` or ``backend``, and
-  ``embedding_model``); reanalyzing a ``backend`` run with an embedding value
-  function logs a ``WARNING``, and ``ExplainRunner.reanalyze(..., strict=True)``
-  (``nlp-shap reanalyze --strict``) raises
-  :exc:`~nlp_shap.errors.ReanalyzeMismatchError` instead.
+  per coalition and discarded the result.
+- :meth:`~nlp_shap.ExplainRunner.reanalyze` still scores hash embeddings of the
+  archived text, because archives store text only. Embedding-based values of a
+  transformers run therefore differ
+  between ``explain`` and ``reanalyze``.
+- The manifest records which embeddings the run scored: ``embedding_source``
+  (``none``, ``hash`` or ``backend``) and ``embedding_model``. Reanalyzing a
+  ``backend`` run with an embedding value function logs a ``WARNING``;
+  ``ExplainRunner.reanalyze(..., strict=True)`` (``nlp-shap reanalyze --strict``)
+  raises :exc:`~nlp_shap.errors.ReanalyzeMismatchError` instead.
 - The HTTP API backend retries status 408, 429, 500, 502, 503 and 504 and
-  transport errors up to ``backend.max_retries`` times with exponential backoff
-  (honouring ``Retry-After`` up to ``backend.timeout_s``), raises
-  :exc:`~nlp_shap.errors.BackendUnavailableError` for non-JSON responses, and
-  keeps at most 1024 cached responses. It sends ``NLP_SHAP_API_KEY`` as the
-  bearer key to any host and ``OPENAI_API_KEY`` only when that is unset and
-  ``backend.api_host`` is ``api.openai.com``; earlier versions preferred
-  ``OPENAI_API_KEY`` and sent it to every host, local servers included.
-- The LM Studio backend retries only connection failures, re-raises
-  ``ValueError`` and ``TypeError`` at once, and matches downloaded models exactly
+  transport errors up to ``backend.max_retries`` times. The backoff is
+  exponential and honours ``Retry-After`` up to ``backend.timeout_s``. Non-JSON
+  responses raise :exc:`~nlp_shap.errors.BackendUnavailableError`, and at most
+  1024 responses are cached.
+- The HTTP API backend sends ``NLP_SHAP_API_KEY`` as the bearer key to any host.
+  It sends ``OPENAI_API_KEY`` only when that is unset and ``backend.api_host`` is
+  ``api.openai.com``; earlier versions sent it to every host, local servers
+  included.
+- The LM Studio backend retries only connection failures and re-raises
+  ``ValueError`` and ``TypeError`` at once. It matches downloaded models exactly
   first, then by the prefix of the last path segment, then by substring; an
-  ambiguous id raises with the list of candidates. With ``auto_download`` it
-  refuses (:exc:`~nlp_shap.errors.BackendUnavailableError`, listing the hits)
-  when no repository hit is flagged exact or matches the name, instead of
-  downloading the first one.
+  ambiguous id raises with the list of candidates.
+- With ``auto_download``, the LM Studio backend refuses
+  (:exc:`~nlp_shap.errors.BackendUnavailableError`, listing the hits) when no
+  repository hit is flagged exact or matches the name. Earlier versions
+  downloaded the first hit.
 - :meth:`~nlp_shap.ExplainRunner.explain_sync` called inside a running event
   loop raises a ``RuntimeError`` that points to ``await runner.explain(...)``.
   With an injected backend, repeated ``explain_sync`` calls run on one event loop
   owned by the runner, so loop-bound clients and locks keep working.
-- A run that fails part-way leaves an archive that
-  :meth:`~nlp_shap.ExplainRunner.reanalyze` refuses with
-  :exc:`~nlp_shap.errors.ArchiveIncompleteError`, even when the run failed before
-  its first coalition; so are archives without the grand or empty coalition,
-  full-budget archives (``budget.fraction: 1.0``, any estimator) missing rows and
-  archives not written by :class:`~nlp_shap.ExplainRunner`. Re-running explain
-  replaces the archive of a run that did not finish without needing
-  ``on_exists: overwrite``. :meth:`~nlp_shap.runtime.archive.RunArchive.load`
-  opens the database read-only and writes nothing, so archives on read-only
-  storage can be reanalyzed; it raises
-  :exc:`~nlp_shap.errors.ArchiveNotFoundError` (a ``FileNotFoundError``) when
-  ``manifest.json`` or ``archive.sqlite`` is missing instead of creating an
-  empty database, and :exc:`~nlp_shap.errors.ArchiveCorruptError` when either
-  cannot be read or the manifest's fields are invalid, so the command line exits
-  with 2 on a damaged archive.
+- :meth:`~nlp_shap.ExplainRunner.reanalyze` refuses with
+  :exc:`~nlp_shap.errors.ArchiveIncompleteError` the archive of a run that failed
+  part-way, even before its first coalition. It also refuses archives without
+  the grand or empty coalition, full-budget archives (``budget.fraction: 1.0``)
+  missing rows, and archives not written by :class:`~nlp_shap.ExplainRunner`.
+- Re-running explain replaces the archive of a run that did not finish without
+  needing ``on_exists: overwrite``.
+- :meth:`~nlp_shap.runtime.archive.RunArchive.load` opens the database read-only
+  and writes nothing, so archives on read-only storage can be reanalyzed. It
+  raises :exc:`~nlp_shap.errors.ArchiveNotFoundError` (a ``FileNotFoundError``)
+  when ``manifest.json`` or ``archive.sqlite`` is missing, instead of creating an
+  empty database.
+- :meth:`~nlp_shap.runtime.archive.RunArchive.load` raises
+  :exc:`~nlp_shap.errors.ArchiveCorruptError` when either file cannot be read or
+  the manifest's fields are invalid, so the command line exits with 2 on a
+  damaged archive.
 - Monte Carlo sampling counts the grand and empty coalitions toward the budget;
   earlier versions could exceed it by two calls.
 - Progress callbacks report one growing plan and a monotonic finished count
@@ -200,10 +218,11 @@ Added
   manifest schema 4), so older archives need a new ``explain``.
 - ``nlp-shap`` command line (:doc:`guides/cli`): ``explain`` (JSON result,
   optional PNG chart), ``reanalyze`` (``--strict`` refuses runs scored with
-  backend embeddings), ``plugins`` and ``config --example`` / ``--check``. It uses ``argparse`` only and exits with 2 for invalid input
+  backend embeddings), ``plugins`` and ``config --example`` / ``--check``.
+- The command line uses ``argparse`` only. It exits with 2 for invalid input
   (arguments, ``--log-level``, configuration, snapshot, unreadable input files or
-  archives) and 3 when the backend is unavailable or the connection fails; any
-  other exception propagates with its traceback.
+  archives) and with 3 when the backend is unavailable or the connection fails.
+  Any other exception propagates with its traceback.
 - :meth:`nlp_shap.ConversationSnapshot.from_json` and
   :meth:`nlp_shap.ConversationSnapshot.to_json` read and write snapshots as
   ``{"turns": [{"messages": [{"role": ..., "text": ...}]}]}``, with an optional
@@ -216,20 +235,23 @@ Added
   <nlp_shap.ExplainRunOutput.player_set>` holds the explained players as a
   :class:`~nlp_shap.PlayerSet`.
 - :func:`~nlp_shap.configure_logging` accepts ``level=`` and ``json=True`` to log
-  the pipeline's stage events to stderr, as plain lines or one JSON object per
-  line, without a TOML file (the package logger then stops propagating to the
-  root logger); ``json=True`` with a ``config_path`` raises ``ValueError``.
+  the pipeline's stage events to stderr without a TOML file. Events are plain
+  lines or one JSON object per line, and the package logger then stops
+  propagating to the root logger. ``json=True`` with a ``config_path`` raises
+  ``ValueError``.
   ``config/logging.example.toml`` is a starting point for
   ``NLP_SHAP_LOGGING_CONFIG``.
 - ``explanation.budget.evaluations`` sets an absolute budget instead of
   ``budget.fraction``: that many coalition evaluations in total, the empty and
-  grand coalitions included, at any number of players. Each estimator applies
-  its floor (2 for ``mc``; ``2n + 2`` for ``complementary`` and ``neyman_cc``,
-  which also round an odd count down to whole pairs) and the ceiling ``2 ** n``;
-  ``exact`` accepts only ``fraction: 1.0``, and setting both keys raises
-  :exc:`~nlp_shap.errors.ConfigError`. ``max_players`` refuses counts above
-  ``2 ** max_players``. Configurations without ``evaluations`` serialise as
-  before, so their run ids do not change.
+  grand coalitions included, at any number of players.
+- Each estimator applies its floor to ``budget.evaluations`` and the ceiling
+  ``2 ** n``: 2 for ``mc``, ``2n + 2`` for ``complementary`` and ``neyman_cc``
+  (which also round an odd count down to whole pairs). ``exact`` accepts only
+  ``fraction: 1.0``, and setting both keys raises
+  :exc:`~nlp_shap.errors.ConfigError`.
+- ``max_players`` refuses ``budget.evaluations`` above ``2 ** max_players``.
+  Configurations without ``evaluations`` serialise as before, so their run ids do
+  not change.
 
 - ``explanation.plugin_options``: per-plugin options keyed by
   ``<group>/<name>`` (for example ``absence_policies/pad: {placeholder:

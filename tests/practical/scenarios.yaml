@@ -157,7 +157,7 @@ scenarios:
     expect: {answer: Paris}
   backend.transformers.kv_cache:
     # float32: cache on and off agree exactly. The float16 gap is recorded only:
-    # see knowledge/issues/D04 - KV prefix cache changes float16 greedy outputs.md.
+    # see D04 in knowledge/issues/Fixed issues.md.
     tier: fast
     turns: *three_turns
     overrides:

@@ -115,7 +115,8 @@ def prose(text: str, suffix: str) -> str:
     for line in lines[len(out) :]:
         stripped = line.lstrip()
         indent = len(line) - len(stripped)
-        if fence or stripped.startswith(("```", "~~~")):
+        # RST section underlines start with ``~~~``; fences exist only in Markdown.
+        if fence or (suffix != ".rst" and stripped.startswith(("```", "~~~"))):
             if not fence:
                 fence = stripped[:3]
             elif stripped.startswith(fence):

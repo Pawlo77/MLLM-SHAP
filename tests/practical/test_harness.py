@@ -8,7 +8,14 @@ import re
 import pytest
 
 from nlp_shap import ExplainConfig
-from tests.practical._harness import MODELS, SCENARIOS, feature_selected, tier_selected
+from tests.practical._harness import (
+    MODELS,
+    SCENARIOS,
+    WEIGHT_FILES,
+    feature_selected,
+    require_weights,
+    tier_selected,
+)
 
 
 @pytest.mark.parametrize(
@@ -77,3 +84,23 @@ def test_null_in_a_variant_deletes_the_key() -> None:
     scenario = SCENARIOS["deep.conversation.long"]
     config = scenario.config(MODELS["deep"], scenario.variants[0])
     assert config.explanation.plugin_options == {"focus_tokens": {"message_index": 5}}
+
+
+def test_require_weights_checks_only_the_files_the_backend_loads(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A snapshot without README or LICENSE (transformers skips them) is cached."""
+    hub = pytest.importorskip("huggingface_hub")
+    calls: list[object] = []
+
+    def snapshot_download(*args: object, **kwargs: object) -> str:
+        calls.append(kwargs.get("allow_patterns"))
+        if kwargs.get("allow_patterns") is None:
+            msg = "README.md, LICENSE missing"
+            raise hub.errors.LocalEntryNotFoundError(msg)
+        return "/cache"
+
+    monkeypatch.delenv("NLP_SHAP_PRACTICAL_DOWNLOAD", raising=False)
+    monkeypatch.setattr(hub, "snapshot_download", snapshot_download)
+    require_weights(MODELS["deep"])
+    assert calls == [list(WEIGHT_FILES)]
