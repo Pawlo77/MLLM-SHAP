@@ -682,7 +682,8 @@ def aux_markdown(vault: Vault) -> list[Path]:
         paths = [
             path.relative_to(vault.root).as_posix()
             for path in vault.root.rglob("*.md")
-            if not set(path.relative_to(vault.root).parts) & STRAY_SKIP
+            # Templates are link-checked; the git-ignored watch shortlists are not.
+            if not set(path.relative_to(vault.root).parts) & (STRAY_SKIP | {"_watch"})
         ]
     else:
         paths = listed.splitlines()
