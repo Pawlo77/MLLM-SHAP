@@ -8,6 +8,17 @@ Changes in each published ``nlp-shap`` version. Newest first.
 Unreleased
 ----------
 
+Added
+~~~~~
+
+- ``explanation.players: sgpa_segments`` (:class:`~nlp_shap.SgpaSegmentPartitioner`)
+  makes each spoken word of an audio message's transcript a player. Its
+  :class:`~nlp_shap.PlayerSpan` carries the new ``samples`` range, and
+  ``delete`` cuts absent audio while ``pad`` and ``neutral`` silence it.
+  See :doc:`guides/alignment`.
+- :meth:`nlp_shap.Message.with_audio` replaces a message's first audio part;
+  :class:`~nlp_shap.alignment.AudioSegment` records ``token_index``.
+
 .. _release-0-2-0:
 
 0.2.0 (2026-10-10)
