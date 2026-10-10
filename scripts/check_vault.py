@@ -636,17 +636,6 @@ def check_freshness(vault: Vault) -> list[Finding]:
 
 STRAY_SKIP = {".git", ".venv", ".obsidian", "_build", "node_modules", ".superpowers"}
 STRAY_TOKENS = ("<%", "%>", "{{", "}}")
-AUX_MARKDOWN = (
-    "knowledge/_templates/*.md",
-    "docs/*.md",
-    "examples/*.md",
-    "README.md",
-    "CONTRIBUTING.md",
-    ".agents/skills/**/*.md",
-    ".claude/agents/*.md",
-    ".cursor/**/*.md",
-    ".remember/*.md",
-)
 
 
 def check_stray_files(vault: Vault) -> list[Finding]:
@@ -682,13 +671,37 @@ def check_stray_files(vault: Vault) -> list[Finding]:
     return findings
 
 
+def aux_markdown(vault: Vault) -> list[Path]:
+    """Every Markdown file outside the notes and plans (checked on their own).
+
+    Uses ``git ls-files`` (tracked and untracked, ``.gitignore`` honoured) and falls
+    back to walking the tree without ``STRAY_SKIP`` folders outside a repository.
+    """
+    listed = _git(vault.root, "ls-files", "-co", "--exclude-standard")
+    if listed is None:
+        paths = [
+            path.relative_to(vault.root).as_posix()
+            for path in vault.root.rglob("*.md")
+            if not set(path.relative_to(vault.root).parts) & STRAY_SKIP
+        ]
+    else:
+        paths = listed.splitlines()
+    own = {vault.rel(path) for path in [*vault.notes, *vault.plans]}
+    return [
+        vault.root / rel
+        for rel in sorted(paths)
+        if rel.endswith(".md") and rel not in own and (vault.root / rel).is_file()
+    ]
+
+
 def check_aux_links(vault: Vault) -> list[Finding]:
-    """Return broken-wikilink findings for Markdown outside the vault folders."""
+    """Return broken-wikilink findings for every other Markdown file.
+
+    Obsidian creates an empty note when a broken link anywhere is clicked.
+    """
     findings: list[Finding] = []
-    for pattern in AUX_MARKDOWN:
-        for path in sorted(vault.root.glob(pattern)):
-            if path.is_file():
-                findings += check_links(vault, path, path.read_text(encoding="utf-8"))
+    for path in aux_markdown(vault):
+        findings += check_links(vault, path, path.read_text(encoding="utf-8"))
     return findings
 
 

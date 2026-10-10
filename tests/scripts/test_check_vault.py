@@ -262,3 +262,26 @@ def test_main_quiet_prints_only_errors(
     output = capsys.readouterr().out
     assert "knowledge/concepts/Coalition.md:" in output
     assert "broken link [[Nowhere]]" in output
+
+
+@pytest.mark.parametrize(
+    "rel",
+    ["src/pkg/AGENTS.md", "plans/notes/extra.md", ".claude/rules/rule.md", "x/y/z.md"],
+)
+def test_broken_links_are_found_in_every_markdown_file(
+    checker: ModuleType, clean_vault: Path, rel: str
+) -> None:
+    """Obsidian creates a stray note from any broken link, so every file is checked."""
+    write(clean_vault, rel, "See [[Missing note]].\n")
+    assert any(
+        rel in error and "broken link [[Missing note]]" in error
+        for error in _errors(checker, clean_vault)
+    )
+
+
+def test_ignored_markdown_is_not_link_checked(
+    checker: ModuleType, clean_vault: Path
+) -> None:
+    write(clean_vault, ".venv/lib/site.md", "See [[Missing note]].\n")
+    write(clean_vault, "docs/_build/page.md", "See [[Missing note]].\n")
+    assert _errors(checker, clean_vault) == []
