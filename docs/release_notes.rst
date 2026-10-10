@@ -22,7 +22,11 @@ Added
   ``delete`` cuts absent audio while ``pad`` and ``neutral`` silence it.
   See :doc:`guides/alignment`.
 - :meth:`nlp_shap.Message.with_audio` replaces a message's first audio part;
-  :class:`~nlp_shap.alignment.AudioSegment` records ``token_index``.
+  :class:`~nlp_shap.alignment.AudioSegment` records ``token_index`` and the rough
+  CTC edges ``ctc_start_time`` and ``ctc_end_time``.
+- :func:`~nlp_shap.viz.plot_audio_segments` draws aligned segments over the
+  waveform, the shift of each boundary from its CTC edge and the RMS energy;
+  ``values`` colours segments by attribution.
 
 .. _release-0-2-0:
 
