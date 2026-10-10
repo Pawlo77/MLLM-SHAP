@@ -4,7 +4,7 @@ type: module
 domain: domain
 tags: [architecture, domain]
 created: 2026-10-07
-updated: 2026-10-09
+updated: 2026-10-10
 related-code:
   - "[[src/nlp_shap/domain/__init__.py]]"
   - "[[src/nlp_shap/domain/coalition.py]]"
