@@ -1,6 +1,6 @@
 [project]
 name = "nlp-shap"
-version = "0.1.19"
+version = "0.2.0"
 description = "Shapley-value attributions for conversational language models."
 readme = "README.md"
 requires-python = ">=3.12"
@@ -103,6 +103,12 @@ transformers = [
 ]
 api = [
     "httpx>=0.28.0",
+]
+# Audio decoding (soundfile) and boundary refinement and resampling (librosa) for
+# nlp_shap.alignment; the Wav2Vec2 model itself comes from the transformers extra.
+audio = [
+    "librosa>=0.11.0",
+    "soundfile>=0.13.0",
 ]
 viz = [
     "matplotlib>=3.9.0",

@@ -44,7 +44,7 @@ jobs:
         run: uv python install "$UV_PYTHON"
 
       - name: Sync dependencies
-        run: uv sync --locked --all-groups --extra api --extra viz --python "$UV_PYTHON"
+        run: uv sync --locked --all-groups --extra api --extra viz --extra audio --python "$UV_PYTHON"
 
       - name: Show interpreter
         run: uv run python --version
