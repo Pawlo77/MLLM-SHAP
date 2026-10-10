@@ -20,6 +20,8 @@ paths:
   src/nlp_shap/backends/transformers/*: [backend.transformers, backend.transformers.kv_cache, value.logprob]
   src/nlp_shap/backends/transformers/embeddings.py: [value.embedding_*]
 
+  src/nlp_shap/alignment/*: [alignment.sgpa]
+
   src/nlp_shap/domain/*: smoke
   src/nlp_shap/domain/conversation.py: [conversation.*]
   src/nlp_shap/domain/players.py: [partition.*, viz.render]

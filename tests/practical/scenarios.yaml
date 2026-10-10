@@ -194,6 +194,13 @@ scenarios:
     tier: fast
     turns: *france
     expect: {}
+  alignment.sgpa:
+    tier: fast
+    turns:
+      - [{role: user, text: "I had that curiosity beside me at this moment"}]
+    # examples/data/voices_sp0307.wav: VOiCES corpus (Lab41, SRI), CC BY 4.0; the 3.4 s clip
+    # of torchaudio's forced-alignment tutorial.
+    expect: {audio: examples/data/voices_sp0307.wav, min_confidence: 0.8, longest: curiosity}
   viz.render:
     tier: fast
     turns: *multi_user
