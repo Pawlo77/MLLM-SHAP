@@ -4,9 +4,10 @@ type: module
 domain: masking
 tags: [architecture, masking]
 created: 2026-10-07
-updated: 2026-10-09
+updated: 2026-10-10
 related-code:
   - "[[src/nlp_shap/masking/__init__.py]]"
+  - "[[src/nlp_shap/masking/audio.py]]"
   - "[[src/nlp_shap/masking/builder.py]]"
   - "[[src/nlp_shap/masking/codec.py]]"
   - "[[src/nlp_shap/masking/partitions.py]]"
@@ -31,7 +32,7 @@ Part of [[nlp-shap]].
 - `DeletePolicy` (`delete`): removes absent spans together with the whitespace that separated them.
 - `PadPolicy` (`pad`): replaces absent spans with `placeholder` (default `[MASK]`, plugin option `PadOptions.placeholder`).
 - `NeutralPolicy` (`neutral`): replaces each absent span with `fill_char` (default `_`, plugin option `NeutralOptions.fill_char`) repeated to the span's width.
-- All three take a `PluginContext` first and read only `PlayerSet.spans`; a player set without spans raises.
+- All three take a `PluginContext` first and read only `PlayerSet.spans`; a player set without spans raises. For spans with `samples` (audio players, [[alignment]]) `audio.render_audio` also edits the message's first `AudioPart`: `delete` cuts absent samples, `pad` and `neutral` replace them with silence of the same length ([[Masking decisions#2026-10-10 — Audio players are sample ranges on the player span|audio players]]).
 - `tokens.py`: `token_spans(snapshot)`, `render_spans(snapshot, spans, replacements)` (replaces character ranges per message, `None` deletes, text outside every span is kept).
 - `MaskBuilder(policy)`: `view(snapshot, players, mask) -> MaskedSnapshot` (no copy), `render(masked) -> ConversationSnapshot`.
 - `MaskCodec`: `pack` to little-endian bytes, `unpack`, `hash_mask` (64-bit `blake2b` over the packed bytes and bit count, stable across processes).

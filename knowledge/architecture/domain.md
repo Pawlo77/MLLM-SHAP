@@ -4,7 +4,7 @@ type: module
 domain: domain
 tags: [architecture, domain]
 created: 2026-10-07
-updated: 2026-10-09
+updated: 2026-10-10
 related-code:
   - "[[src/nlp_shap/domain/__init__.py]]"
   - "[[src/nlp_shap/domain/coalition.py]]"
@@ -29,11 +29,11 @@ Part of [[nlp-shap]].
 ## Public surface
 
 - `TextPart(text)`, `AudioPart(source, sample_rate)` (`source` is a path or bytes; `data()` reads it), `ContentPart` union ([[Message]]).
-- `Message(role, text=... | content=..., speaker=None)`: `content` is a tuple of parts; `text` joins the text parts with spaces; `with_text(text)` replaces the text parts and keeps audio and speaker.
+- `Message(role, text=... | content=..., speaker=None)`: `content` is a tuple of parts; `text` joins the text parts with spaces; `with_text(text)` replaces the text parts and keeps audio and speaker; `with_audio(audio)` replaces the first audio part.
 - `Message.speaker` must be a non-empty single line ([[Domain decisions#2026-10-08 — Speaker rendered into the message content|speaker]]).
 - `Turn(messages)`; `ConversationSnapshot(turns, snapshot_id)` ([[Snapshot]]): `from_turns` derives `snapshot_id` (first 16 hex characters of a SHA-256 over every message; text-only messages hash role and text as before 0.1.18, other messages hash every part, audio by the SHA-256 of its bytes; a speaker is hashed only when set); `messages()` flattens the turns.
 - `ConversationSnapshot.from_json(text)` / `to_json(indent=2)` with the `SnapshotPayload`, `TurnPayload`, `MessagePayload` TypedDicts: `{"turns": [{"messages": [{"role", "text", "speaker"?}]}]}` plus an optional `snapshot_id` when it is not the content-derived one; multi-part and audio messages are refused; shape errors raise `TypeError`, bad JSON, roles or empty turns raise `ValueError`.
-- `PlayerSpan(message_index, start, end, text, speaker=None, label=None)` with `display_label` ([[Player span]]); `PlayerSet(player_ids, spans=())` with `num_players`.
+- `PlayerSpan(message_index, start, end, text, speaker=None, label=None, samples=None)` with `display_label`; `samples` is the `[start, end)` sample range of an audio player ([[Player span]]); `PlayerSet(player_ids, spans=())` with `num_players`.
 - `CoalitionMask(present)`: `from_sequence`, `coalition_size()`, `validate_against(player_set)` ([[masking]]).
 - `GenerationRecord`: `text`, `text_token_rows`, `audio_token_rows`, `logprobs` (`None` when the backend returned none), `embedding`, `contextual_embedding`.
 - `domain/config.py`: `GenerationConfig(max_new_tokens=128, temperature=0.0, top_k=1, compute_embeddings=False)`, `DedupConfig(enabled="auto")`, `KvCacheConfig(enabled=False, max_entries=8)`; also importable from `nlp_shap.pipeline.config`.

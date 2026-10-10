@@ -49,6 +49,9 @@ that shares the snapshot) and renders the prompt the backend receives:
 Compare absence policies
 ------------------------
 
+For audio players (``sgpa_segments``, :doc:`alignment`) the policies also edit the
+audio: ``delete`` cuts absent samples, ``pad`` and ``neutral`` silence them.
+
 ``delete`` drops absent tokens, ``pad`` replaces each with a placeholder and
 ``neutral`` with a width-matched filler. The same coalition under the other two:
 

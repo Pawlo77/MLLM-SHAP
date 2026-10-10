@@ -5,7 +5,7 @@
 
 import pytest
 
-from nlp_shap.domain.players import PlayerSet
+from nlp_shap.domain.players import PlayerSet, PlayerSpan
 
 
 def test_player_set_exposes_count() -> None:
@@ -24,3 +24,10 @@ def test_player_set_rejects_duplicate_ids() -> None:
     """Player ids must be unique."""
     with pytest.raises(ValueError, match="unique"):
         PlayerSet(player_ids=("t0", "t0"))
+
+
+def test_spans_carry_no_sample_range_unless_audio() -> None:
+    text = PlayerSpan(message_index=0, start=0, end=2, text="hi")
+    audio = PlayerSpan(message_index=0, start=0, end=2, text="hi", samples=(10, 90))
+    assert text.samples is None
+    assert audio.samples == (10, 90)

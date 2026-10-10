@@ -65,6 +65,7 @@ tags: [generated]
 | `ReanalyzeMismatchError` | [[src/nlp_shap/errors.py]] | Raised when reanalyze settings disagree with the archived run. |
 | `Role` | [[src/nlp_shap/domain/enums.py]] | Participant role attached to a message or token. |
 | `RunManifest` | [[src/nlp_shap/pipeline/manifest.py]] | Top-level metadata persisted alongside a run archive. |
+| `SgpaSegmentPartitioner` | [[src/nlp_shap/alignment/partitions.py]] | Make each spellable word of every audio message's transcript a player. |
 | `ShapleyAggregator` | [[src/nlp_shap/estimation/estimands/shapley.py]] | Aggregate coalition samples with Shapley coalition weights. |
 | `TextPart` | [[src/nlp_shap/domain/conversation.py]] | Text content of a message. |
 | `TfIdfCosineValue` | [[src/nlp_shap/value/tfidf.py]] | Score generations with cosine similarity of frozen TF-IDF vectors. |

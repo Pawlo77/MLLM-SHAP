@@ -10,6 +10,8 @@ Masking
 
 .. automodule:: nlp_shap.masking.policies
 
+.. automodule:: nlp_shap.masking.audio
+
 .. automodule:: nlp_shap.masking.builder
 
 .. automodule:: nlp_shap.masking.codec

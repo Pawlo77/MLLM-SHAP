@@ -31,6 +31,10 @@ class PlayerSpan:
     """Display label set by the partitioner; :attr:`display_label` falls back
     to the text."""
 
+    samples: tuple[int, int] | None = None
+    """Sample range ``[start, end)`` of an audio player in the message's first
+    :class:`~nlp_shap.AudioPart`; ``None`` for text-only players."""
+
     @property
     def display_label(self) -> str:
         """Return :attr:`label`, else the text prefixed with ``"<speaker>: "``."""
