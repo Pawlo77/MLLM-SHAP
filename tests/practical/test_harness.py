@@ -44,7 +44,8 @@ def test_scenario_configs_validate(scenario_id: str) -> None:
         scenario.config(model, variant) for variant in scenario.variants
     ]
     assert all(isinstance(config, ExplainConfig) for config in configs)
-    assert configs[0].backend.options["revision"] == model.revision
+    if configs[0].backend.kind == "transformers":
+        assert configs[0].backend.options["revision"] == model.revision
     assert scenario.snapshot.messages()
 
 
