@@ -8,6 +8,13 @@ Changes in each published ``nlp-shap`` version. Newest first.
 Unreleased
 ----------
 
+Changed
+~~~~~~~
+
+- :func:`~nlp_shap.viz.plot_audio_segments` with ``values`` lightens every second
+  segment and keeps fills translucent, so neighbouring words stay distinct (equal
+  values no longer merge into one block) and the waveform shows through.
+
 .. _release-0-2-1:
 
 0.2.1 (2026-10-10)
