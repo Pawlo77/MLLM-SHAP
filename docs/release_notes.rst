@@ -8,6 +8,11 @@ Changes in each published ``nlp-shap`` version. Newest first.
 Unreleased
 ----------
 
+.. _release-0-2-0:
+
+0.2.0 (2026-10-10)
+------------------
+
 Added
 ~~~~~
 
