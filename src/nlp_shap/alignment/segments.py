@@ -15,6 +15,9 @@ class AudioSegment:
     token: str
     """Transcript token as given to the aligner."""
 
+    token_index: int
+    """Position of ``token`` in the transcript's token list."""
+
     start_time: float
     """Start in seconds."""
 
