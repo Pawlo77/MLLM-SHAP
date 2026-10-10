@@ -3,12 +3,14 @@
 @see [[src/nlp_shap/runtime/kv_cache.py]]
 """
 
+import asyncio
 import time
 from pathlib import Path
 from typing import Any
 
 import pytest
 
+from nlp_shap.domain.config import GenerationConfig
 from nlp_shap.runtime.archive import RunArchive
 from tests.practical._harness import (
     ModelPool,
@@ -26,8 +28,15 @@ def test_prefix_cache_is_faster_and_equal(
     scenario: Scenario, deep_model: PracticalModel, practical_record: dict[str, Any]
 ) -> None:
     """Exact over six messages: cache on equals off within float16, and is faster."""
+    # Other deep tests may come from the generation cache, leaving the model cold;
+    # an unwarmed first arm pays the accelerator warm-up (issue D05).
+    asyncio.run(
+        deep_model.backend.generate(
+            scenario.snapshot, GenerationConfig(max_new_tokens=8)
+        )
+    )
     seconds, outputs = [], []
-    for variant in ({}, scenario.variants[0]):  # on first: warm-up favours off
+    for variant in ({}, scenario.variants[0]):
         started = time.perf_counter()
         outputs.append(deep_model.explain(scenario, variant, deep_model.backend))
         seconds.append(time.perf_counter() - started)
