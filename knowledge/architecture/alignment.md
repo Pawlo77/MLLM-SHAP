@@ -48,6 +48,7 @@ Part of [[nlp-shap]]. Concept: [[SGPA]]. Decisions: [[Alignment decisions]].
 ## Known issues
 
 - No backend generates from audio yet ([[D02 - Audio backend]]); runs score the masked transcripts.
+- [[D06 - SGPA paper not in the papers list]]: the method's paper is under review, so it has no [[Papers]] section yet.
 
 ## Tests
 

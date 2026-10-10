@@ -15,4 +15,4 @@ Open issues first, by severity; deferred issues last.
 | Issue | Severity | Status | Found |
 |---|---|---|---|
 | [[D02 - Audio backend]] | major | deferred | 2026-10-07 |
-| [[D03 - PR 4 rebase]] | minor | deferred | 2026-10-07 |
+| [[D06 - SGPA paper not in the papers list]] | minor | deferred | 2026-10-10 |
