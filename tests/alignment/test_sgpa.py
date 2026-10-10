@@ -95,3 +95,19 @@ def test_wav2vec2_log_probs_are_normalised_per_frame() -> None:
     assert lp.ndim == 2
     assert lp.shape[1] == len(model.vocab)
     assert np.exp(lp).sum(axis=1) == pytest.approx(1.0, abs=1e-4)
+
+
+def test_loud_audio_keeps_unrefined_boundaries() -> None:
+    """Without a quiet point the boundary stays at the middle of the CTC gap."""
+    noise = np.random.default_rng(0).uniform(-0.6, 0.6, len(FRAMES) * FRAME)
+    audio = AudioPart(encode_wav(noise, RATE), RATE)
+    segments = SpectrogramGuidedAligner(_FakeCtc()).align("ab c", audio)
+    assert [s.boundary_refined for s in segments] == [False, False]
+    assert 0.3 < segments[0].end_time == segments[1].start_time < 0.45
+
+
+def test_short_search_window_keeps_the_rough_edge() -> None:
+    """A gap narrower than one analysis frame cannot be refined."""
+    aligner = SpectrogramGuidedAligner(_FakeCtc())
+    waveform = np.zeros(100, dtype=np.float32)
+    assert aligner._refine(waveform, RATE, 0.005, 0.001) == (0.005, False)

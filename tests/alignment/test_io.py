@@ -50,3 +50,10 @@ def test_encode_clips_out_of_range_samples() -> None:
 def test_decode_rejects_undecodable_bytes() -> None:
     with pytest.raises(ValueError, match="decode"):
         decode_audio(b"not audio")
+
+
+def test_missing_optional_dependency_names_the_extra() -> None:
+    from nlp_shap.alignment.io import require
+
+    with pytest.raises(ImportError, match=r"nlp-shap\[audio\]"):
+        require("nlp_shap_no_such_module")
