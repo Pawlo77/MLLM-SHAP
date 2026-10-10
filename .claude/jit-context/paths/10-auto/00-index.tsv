@@ -1,3 +1,4 @@
+src/nlp_shap/alignment/	alignment.md
 src/nlp_shap/backends/	backends.md
 src/nlp_shap/[^/]+[.]py$	core.md
 src/nlp_shap/domain/	domain.md

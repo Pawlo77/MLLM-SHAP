@@ -4,7 +4,7 @@ type: map
 domain: index
 tags: [moc, nlp-shap]
 created: 2026-10-07
-updated: 2026-10-08
+updated: 2026-10-10
 ---
 
 # nlp-shap
@@ -31,6 +31,7 @@ Start here: [[Onboarding]], then [[How a run works]]. Vault rules: [[knowledge/R
 | [[plugins]] | Registry, entry-point groups, built-in table, plugin context and options |
 | [[backends]] | Mock, LM Studio, Hugging Face transformers and OpenAI-compatible HTTP application programming interface (API) backends |
 | [[viz]] | Token attribution renderers |
+| [[alignment]] | Spectrogram-guided alignment of transcript tokens to speech segments |
 
 Generated from the code: [[Modules]], [[Public API]], [[Config keys]], [[Plugins]].
 
@@ -52,7 +53,7 @@ Groups, config keys and built-in names: [[Plugins]]. `BUILTIN_PLUGINS` registers
 
 ## Decisions
 
-One log per domain, newest first: [[Domain decisions|domain]] · [[Masking decisions|masking]] · [[Estimation decisions|estimation]] · [[Pipeline decisions|pipeline]] · [[Backends decisions|backends]] · [[Runtime decisions|runtime]] · [[Value decisions|value]] · [[Process decisions|process]] · [[Tooling decisions|tooling]] · [[Vault decisions|vault]]
+One log per domain, newest first: [[Domain decisions|domain]] · [[Masking decisions|masking]] · [[Estimation decisions|estimation]] · [[Pipeline decisions|pipeline]] · [[Backends decisions|backends]] · [[Runtime decisions|runtime]] · [[Value decisions|value]] · [[Process decisions|process]] · [[Tooling decisions|tooling]] · [[Vault decisions|vault]] · [[Alignment decisions|alignment]]
 
 ## Papers
 

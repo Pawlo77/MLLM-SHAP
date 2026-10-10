@@ -8,6 +8,21 @@ Changes in each published ``nlp-shap`` version. Newest first.
 Unreleased
 ----------
 
+.. _release-0-2-0:
+
+0.2.0 (2026-10-10)
+------------------
+
+Added
+~~~~~
+
+- :mod:`nlp_shap.alignment` (``audio`` extra): :class:`~nlp_shap.alignment.SpectrogramGuidedAligner`
+  aligns a transcript to its speech in an :class:`~nlp_shap.AudioPart` and returns one
+  :class:`~nlp_shap.alignment.AudioSegment` per token. Each boundary moves to a quiet
+  point between words. :class:`~nlp_shap.alignment.Wav2Vec2Ctc` runs a Hugging Face
+  Wav2Vec2 model (``transformers`` extra); any :class:`~nlp_shap.alignment.CtcModel`
+  can replace it. See :doc:`guides/alignment`.
+
 .. _release-0-1-19:
 
 0.1.19 (2026-10-09)

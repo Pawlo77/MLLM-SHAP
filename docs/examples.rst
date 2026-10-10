@@ -120,6 +120,14 @@ open the ``.ipynb`` on GitHub or browse the full catalog in
      - ``[lmstudio]``, ``[transformers]``, ``[api]``, ``[viz]``
      - `GitHub <https://github.com/Pawlo77/nlp-shap/blob/main/examples/text_explain_e2e.ipynb>`__
 
+   * - :doc:`notebooks/audio_alignment`
+     - :class:`~nlp_shap.alignment.SpectrogramGuidedAligner` on a recorded
+       sentence with a pinned Wav2Vec2 model: word segments, shared refined
+       boundaries, boundary weights, attached segment audio, the
+       ``ValueError`` guards and a custom :class:`~nlp_shap.alignment.CtcModel`.
+     - ``[audio]``, ``[transformers]``
+     - `GitHub <https://github.com/Pawlo77/nlp-shap/blob/main/examples/audio_alignment.ipynb>`__
+
 .. toctree::
    :hidden:
    :maxdepth: 1
@@ -135,3 +143,4 @@ open the ``.ipynb`` on GitHub or browse the full catalog in
    notebooks/estimator_comparison
    notebooks/attribution_viz
    notebooks/text_explain_e2e
+   notebooks/audio_alignment

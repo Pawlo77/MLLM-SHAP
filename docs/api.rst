@@ -31,6 +31,7 @@ Modules
    api/value
    api/backends
    api/viz
+   api/alignment
 
 Package-level objects
 ---------------------

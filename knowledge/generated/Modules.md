@@ -14,6 +14,11 @@ tags: [generated]
 |---|---|---|---|---|---|
 | [[src/nlp_shap/__init__.py]] | Shapley-value attributions for conversational language models. | core | [[knowledge/architecture/core]] | 181 | [[core]] |
 | [[src/nlp_shap/_logging.py]] | Central logging bootstrap for nlp_shap. | core | [[knowledge/architecture/core]] | 149 | [[core]] |
+| [[src/nlp_shap/alignment/__init__.py]] | Spectrogram-guided alignment of transcript tokens to speech (``audio`` extra). | alignment | [[knowledge/architecture/alignment]] | 18 | [[alignment]] |
+| [[src/nlp_shap/alignment/ctc.py]] | CTC forced alignment (Viterbi over the blank-extended target sequence). | alignment | [[knowledge/architecture/alignment]] | 82 | [[alignment]] |
+| [[src/nlp_shap/alignment/io.py]] | Encoded audio bytes to mono float waveforms and back. | alignment | [[knowledge/architecture/alignment]] | 61 | [[alignment]] |
+| [[src/nlp_shap/alignment/segments.py]] | Transcript tokens aligned to audio time ranges. | alignment | [[knowledge/architecture/alignment]] | 57 | [[alignment]] |
+| [[src/nlp_shap/alignment/sgpa.py]] | Spectrogram-guided alignment of transcript tokens to speech (SGPA). | alignment | [[knowledge/architecture/alignment]] | 275 | [[alignment]] |
 | [[src/nlp_shap/backends/__init__.py]] | Backend plugin implementations. | backends | [[knowledge/architecture/backends]] | 9 | [[backends]] |
 | [[src/nlp_shap/backends/_chat.py]] | Conversation helpers shared by chat-style backends. | backends | [[knowledge/architecture/backends]] | 47 | [[backends]] |
 | [[src/nlp_shap/backends/api/__init__.py]] | OpenAI-compatible HTTP API backend plugin. | backends | [[knowledge/architecture/backends]] | 10 | [[backends]] |

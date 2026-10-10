@@ -6,8 +6,8 @@ authors:
   - family-names: Pozorski
     given-names: Paweł
     email: pozorski.paul@gmail.com
-version: 0.1.19
-date-released: "2026-10-09"
+version: 0.2.0
+date-released: "2026-10-10"
 license: Apache-2.0
 repository-code: "https://github.com/Pawlo77/nlp-shap"
 url: "https://pawlo77.github.io/nlp-shap/"

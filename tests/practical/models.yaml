@@ -10,6 +10,11 @@ fast:
   revision: a10cc1512eabd3dde888204e902eca88bddb4951
   dtype: float16
   size_gb: 0.7
+alignment:  # CTC model of alignment.sgpa (not a chat model; float32 on CPU)
+  model_id: facebook/wav2vec2-base-960h
+  revision: 22aad52d435eb6dbaf354bdad9b0da84ce7d6156
+  dtype: float32
+  size_gb: 0.36
 deep:  # deep tier: generator and judge in one model; the 8 GB VRAM cap allows no second
   model_id: Qwen/Qwen2.5-3B-Instruct
   revision: aa8e72537993ba99e69dfaafa59ed015b17504d1
