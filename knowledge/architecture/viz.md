@@ -31,7 +31,7 @@ Part of [[nlp-shap]].
 - `TokenTextRenderer` (`token_text`, also `to_html`), `TokenBarRenderer` (`token_bar`); both take a `PluginContext`.
 - `token_labels(snapshot, player_set)`: each span's `display_label` (the partitioner's label, else the text with a `"<speaker>: "` prefix) from `PlayerSet.spans`; raises without spans or when spans do not match the snapshot.
 - `check_attribution(labels, values)`: the `ValueError` both renderers raise for unequal lengths or an empty attribution.
-- `plot_audio_segments(audio, segments, values=None)`: a two-panel figure of [[alignment]] segments, with the waveform, segment shading (by `values` on the diverging scale when given), refined boundaries, dashed CTC edges with arrows to where refinement moved them, and the RMS energy below; not a renderer plugin, since it draws audio, not a player attribution table.
+- `plot_audio_segments(audio, segments, values=None)`: a two-panel figure of [[alignment]] segments, with the waveform, segment shading (by `values` on the diverging scale when given, at most 55 % opaque, every second segment lightened), refined boundaries, dashed CTC edges with arrows to where refinement moved them, and the RMS energy below; not a renderer plugin, since it draws audio, not a player attribution table.
 - `colors.py` (red-blue diverging scale), `style.py` (seaborn theme).
 
 ## Data flow
