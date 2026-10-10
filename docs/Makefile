@@ -13,16 +13,19 @@ NOTEBOOK_SOURCES = explain_pipeline.ipynb archive_reanalyze.ipynb cli.ipynb plug
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
-.PHONY: help Makefile clean copy-notebooks render-guide-outputs export-knowledge linkcheck
+.PHONY: help Makefile clean copy-notebooks notebook-figures render-guide-outputs export-knowledge linkcheck
 
 clean:
-	rm -rf "$(BUILDDIR)" notebooks
+	rm -rf "$(BUILDDIR)" notebooks _static/notebook_figures
 
 copy-notebooks:
 	@mkdir -p notebooks
 	@for nb in $(NOTEBOOK_SOURCES); do \
 		cp ../examples/$$nb notebooks/$$nb; \
 	done
+
+notebook-figures:
+	@cd .. && uv run python docs/scripts/notebook_figures.py
 
 render-guide-outputs:
 	@cd .. && uv run python docs/scripts/render_guide_outputs.py
@@ -31,8 +34,8 @@ export-knowledge:
 	@cd .. && uv run python scripts/export_knowledge.py
 
 # External links only; doi.org is skipped (rate limits), see linkcheck_ignore.
-linkcheck: copy-notebooks export-knowledge
+linkcheck: copy-notebooks notebook-figures export-knowledge
 	@$(SPHINXBUILD) -M linkcheck "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
-%: Makefile copy-notebooks render-guide-outputs export-knowledge
+%: Makefile copy-notebooks notebook-figures render-guide-outputs export-knowledge
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)

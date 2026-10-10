@@ -23,16 +23,16 @@ Part of [[nlp-shap]]. Detailed plans live outside this repository.
 
 ## Audio track
 
-One phase, one tag, one publish (skill `rewrite`); pull request (PR) 4 is rebased and split per phase ([[D03 - PR 4 rebase]]).
+One phase, one tag, one publish (skill `rewrite`). Pull request (PR) 4 was ported per phase onto the 0.1.18 message model and closed ([[Fixed issues|D03]]).
 
 | Phase | Tag | Module focus |
 |---|---|---|
-| 15 | v0.2.0 | multimodal domain and enums |
-| 16 | v0.2.1 | Spectrogram-Guided Phonetic Alignment ([[SGPA]]) with Wav2Vec2 |
-| 17 | v0.2.2 | audio masking, filters, SGPA partition |
-| 18 | v0.2.3 | mock audio backend |
-| 19 | v0.2.4 | liquid-audio backend |
-| 20 | v0.2.5 | multimodal end-to-end pipeline |
-| 21 | v0.2.6 | audio value functions and SGPA audio smoke test |
+| 15 | 0.1.18 | multimodal domain: message content parts (done) |
+| 16 | v0.2.0 | Spectrogram-Guided Phonetic Alignment ([[SGPA]]) with Wav2Vec2 (done) |
+| 17 | v0.2.1 | audio players (`sgpa_segments`) and audio absence rendering (done) |
+| 18 | v0.2.2 | mock audio backend |
+| 19 | v0.2.3 | liquid-audio backend |
+| 20 | v0.2.4 | multimodal end-to-end pipeline |
+| 21 | v0.2.5 | audio value functions and SGPA audio smoke test |
 
 Prerequisite: [[D02 - Audio backend]].
