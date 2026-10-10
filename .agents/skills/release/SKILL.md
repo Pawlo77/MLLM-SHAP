@@ -43,8 +43,9 @@ Skip a step that is already done (the version already reads `X.Y.Z`).
 Skill `ship` runs this after a routine merge. For a review PR the maintainer merges, then
 runs `/release` on `main` (or `/ship --after-merge`).
 
-1. `git switch main && git pull --ff-only`; `pyproject.toml` reads `X.Y.Z` and
-   `git tag -l vX.Y.Z` is empty.
+1. `git switch main && git pull --ff-only --prune`; `git branch -d` each branch in
+   `git branch --merged main` except `main` (GitHub deletes the remote one on merge).
+   `pyproject.toml` reads `X.Y.Z` and `git tag -l vX.Y.Z` is empty.
 2. Tag and push:
 
    ```bash

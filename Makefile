@@ -40,6 +40,9 @@ tests: ## Unit tests (skip lms/gpu/bench/slow/practical)
 
 FEATURE ?= all
 TIER ?= quick
+# LM Studio key for the backend.lmstudio and backend.api scenarios (environment wins).
+NLP_SHAP_PRACTICAL_LMS_MODEL ?= qwen2-500m-instruct
+export NLP_SHAP_PRACTICAL_LMS_MODEL
 
 practical: ## Practical tests on real models (GPU); TIER=quick|deep|all FEATURE=<id|glob|all>
 	uv run pytest tests/practical -m practical --tier='$(TIER)' --feature='$(FEATURE)' -rs
