@@ -55,6 +55,36 @@ How it works
 Segments last at least 50 ms. Times are in seconds and sample indices refer to the
 audio's own sample rate.
 
+Audio players
+-------------
+
+``explanation.players: sgpa_segments``
+(:class:`~nlp_shap.SgpaSegmentPartitioner`) makes each spoken word a player. A
+message qualifies when it holds an :class:`~nlp_shap.AudioPart` and its transcript
+as text; other messages add no players. Each player's
+:class:`~nlp_shap.PlayerSpan` covers the word in the transcript and, in
+``samples``, its stretch of audio, so the absence policies mask both: ``delete``
+cuts the absent samples, ``pad`` and ``neutral`` replace them with silence of the
+same length.
+
+.. code-block:: python
+
+   from nlp_shap import ExplainConfig, Message, Role, TextPart
+
+   spoken = Message(role=Role.USER, content=(TextPart("I had that curiosity"), audio))
+   config = ExplainConfig.model_validate({
+       "backend": {"kind": "mock", "model_id": "stub"},
+       "explanation": {
+           "players": "sgpa_segments",
+           "plugin_options": {"sgpa_segments": {
+               "model_id": "facebook/wav2vec2-base-960h", "revision": "main"}},
+       },
+   })
+
+Plugin options: ``model_id``, ``revision``, ``device``, ``energy_weight`` and
+``flux_weight``. No backend generates from audio yet, so a run scores the masked
+transcripts.
+
 Other CTC models
 ----------------
 
