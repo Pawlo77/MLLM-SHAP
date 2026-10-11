@@ -1,11 +1,11 @@
 """Tests for optional coalition progress on ExplainRunner.
 
-@see [[src/nlp_shap/pipeline/runner.py]]
+@see [[src/mllm_shap/pipeline/runner.py]]
 """
 
-from nlp_shap import ExplainConfig, ExplainRunner
-from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
-from nlp_shap.domain.enums import Role
+from mllm_shap import ExplainConfig, ExplainRunner
+from mllm_shap.domain.conversation import ConversationSnapshot, Message, Turn
+from mllm_shap.domain.enums import Role
 
 
 def _snapshot() -> ConversationSnapshot:

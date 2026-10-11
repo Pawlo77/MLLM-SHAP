@@ -1,6 +1,6 @@
 """Absolute evaluation budgets: validation, exact counts and the player guard.
 
-@see [[src/nlp_shap/pipeline/config.py]]
+@see [[src/mllm_shap/pipeline/config.py]]
 """
 
 import subprocess
@@ -10,11 +10,11 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from nlp_shap import ExplainConfig, ExplainRunner
-from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
-from nlp_shap.domain.enums import Role
-from nlp_shap.errors import ConfigError
-from nlp_shap.pipeline.config import (
+from mllm_shap import ExplainConfig, ExplainRunner
+from mllm_shap.domain.conversation import ConversationSnapshot, Message, Turn
+from mllm_shap.domain.enums import Role
+from mllm_shap.errors import ConfigError
+from mllm_shap.pipeline.config import (
     BudgetConfig,
     explain_config_from_yaml,
     explain_config_to_yaml,
@@ -132,7 +132,7 @@ def _cli_check(tmp_path: Path, budget: str) -> subprocess.CompletedProcess[str]:
     path = tmp_path / "config.yaml"
     path.write_text(_yaml(budget), encoding="utf-8")
     return subprocess.run(
-        [sys.executable, "-m", "nlp_shap.cli", "config", "--check", str(path)],
+        [sys.executable, "-m", "mllm_shap.cli", "config", "--check", str(path)],
         capture_output=True,
         text=True,
         check=False,

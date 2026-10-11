@@ -1,14 +1,14 @@
 """Tests for LM Studio backend options carried in ``BackendConfig.options``.
 
-@see [[src/nlp_shap/backends/lmstudio/options.py]]
+@see [[src/mllm_shap/backends/lmstudio/options.py]]
 """
 
 import pytest
 
-from nlp_shap.backends.lmstudio import LmStudioBackend
-from nlp_shap.backends.lmstudio.options import LmStudioOptions
-from nlp_shap.errors import ConfigError
-from nlp_shap.pipeline.config import BackendConfig
+from mllm_shap.backends.lmstudio import LmStudioBackend
+from mllm_shap.backends.lmstudio.options import LmStudioOptions
+from mllm_shap.errors import ConfigError
+from mllm_shap.pipeline.config import BackendConfig
 from tests.backends._context import backend_context
 
 

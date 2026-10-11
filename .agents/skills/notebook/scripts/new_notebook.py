@@ -22,8 +22,8 @@ def _notebook(title: str, stem: str) -> dict:
         "`make install` from repo root. Note optional extras if needed.\n"
     )
     imports = (
-        "# Cell 1 — all imports (stdlib / third-party, then nlp_shap)\n"
-        "from nlp_shap import ExplainRunner  # replace with symbols you need\n"
+        "# Cell 1 — all imports (stdlib / third-party, then mllm_shap)\n"
+        "from mllm_shap import ExplainRunner  # replace with symbols you need\n"
     )
     body = (
         "# Demonstrate the workflow here\n"

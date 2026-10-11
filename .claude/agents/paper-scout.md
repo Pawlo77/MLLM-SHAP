@@ -1,6 +1,6 @@
 ---
 name: paper-scout
-description: Returns a verified shortlist of papers on a topic for nlp-shap from Semantic Scholar and arXiv; never fabricates citations. Use before adding a paper to the papers list, when surveying a method, and for the scheduled literature watch.
+description: Returns a verified shortlist of papers on a topic for mllm-shap from Semantic Scholar and arXiv; never fabricates citations. Use before adding a paper to the papers list, and when surveying a method.
 tools: WebSearch, WebFetch, Read, Grep, Glob
 model: sonnet
 ---
@@ -31,7 +31,7 @@ A Markdown table, best first, with exactly these columns:
 
 - **Citation**: authors (first three, then "et al."), year, title, venue (or "arXiv preprint").
 - **URL**: the DOI (`https://doi.org/<doi>`) or arXiv (`https://arxiv.org/abs/<id>`) URL you verified.
-- **Relevance**: one line: method, estimand, and what nlp-shap could take from it.
+- **Relevance**: one line: method, estimand, and what mllm-shap could take from it.
 - **Attaches to**: the vault note, as a wikilink to an existing architecture or concept note
   (`[[estimation]]`, `[[Prefix hash]]`, ...) or `new concept: <term>`.
 

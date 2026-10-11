@@ -1,19 +1,19 @@
 Masking
 =======
 
-.. automodule:: nlp_shap.masking
+.. automodule:: mllm_shap.masking
    :no-members:
 
-.. automodule:: nlp_shap.masking.partitions
+.. automodule:: mllm_shap.masking.partitions
 
-.. automodule:: nlp_shap.masking.tokens
+.. automodule:: mllm_shap.masking.tokens
 
-.. automodule:: nlp_shap.masking.policies
+.. automodule:: mllm_shap.masking.policies
 
-.. automodule:: nlp_shap.masking.audio
+.. automodule:: mllm_shap.masking.audio
 
-.. automodule:: nlp_shap.masking.builder
+.. automodule:: mllm_shap.masking.builder
 
-.. automodule:: nlp_shap.masking.codec
+.. automodule:: mllm_shap.masking.codec
 
-.. automodule:: nlp_shap.masking.space
+.. automodule:: mllm_shap.masking.space

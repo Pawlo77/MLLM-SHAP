@@ -1,6 +1,6 @@
 """Audio segment figures: waveform, boundaries, CTC shifts and energy.
 
-@see [[src/nlp_shap/viz/audio.py]]
+@see [[src/mllm_shap/viz/audio.py]]
 """
 
 import pytest
@@ -9,9 +9,9 @@ pytest.importorskip("matplotlib")
 pytest.importorskip("librosa")
 pytest.importorskip("soundfile")
 
-from nlp_shap.alignment.sgpa import SpectrogramGuidedAligner
-from nlp_shap.domain.conversation import AudioPart
-from nlp_shap.viz import plot_audio_segments
+from mllm_shap.alignment.sgpa import SpectrogramGuidedAligner
+from mllm_shap.domain.conversation import AudioPart
+from mllm_shap.viz import plot_audio_segments
 from tests.alignment._fakes import RATE, FakeCtc, speech
 
 AUDIO = AudioPart(speech(), RATE)

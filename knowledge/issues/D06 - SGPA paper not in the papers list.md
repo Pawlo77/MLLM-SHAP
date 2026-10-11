@@ -9,7 +9,7 @@ created: 2026-10-10
 fixed_in: ""
 tags: [issue, deferred, papers]
 related-code:
-  - "[[src/nlp_shap/alignment/sgpa.py]]"
+  - "[[src/mllm_shap/alignment/sgpa.py]]"
 ---
 
 # D06 - SGPA paper not in the papers list

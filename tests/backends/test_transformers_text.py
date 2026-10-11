@@ -1,6 +1,6 @@
 """Tests for the Hugging Face transformers text backend.
 
-@see [[src/nlp_shap/backends/transformers/text.py]]
+@see [[src/mllm_shap/backends/transformers/text.py]]
 """
 
 import asyncio
@@ -11,20 +11,20 @@ from typing import Any
 
 import pytest
 
-from nlp_shap.backends.transformers import text as transformers_text
-from nlp_shap.domain.config import GenerationConfig
-from nlp_shap.domain.conversation import (
+from mllm_shap.backends.transformers import text as transformers_text
+from mllm_shap.domain.config import GenerationConfig
+from mllm_shap.domain.conversation import (
     AudioPart,
     ConversationSnapshot,
     Message,
     Turn,
 )
-from nlp_shap.domain.enums import Role
-from nlp_shap.domain.generation import GenerationRecord
-from nlp_shap.errors import BackendUnavailableError, ConfigError
-from nlp_shap.pipeline.config import BackendConfig
-from nlp_shap.protocols import SupportsLogprobs
-from nlp_shap.value.generation_records import generation_record_from_text
+from mllm_shap.domain.enums import Role
+from mllm_shap.domain.generation import GenerationRecord
+from mllm_shap.errors import BackendUnavailableError, ConfigError
+from mllm_shap.pipeline.config import BackendConfig
+from mllm_shap.protocols import SupportsLogprobs
+from mllm_shap.value.generation_records import generation_record_from_text
 from tests.backends._context import backend_context
 
 PROMPT_IDS = {

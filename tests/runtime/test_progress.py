@@ -1,16 +1,16 @@
 """Tests for optional coalition progress callbacks.
 
-@see [[src/nlp_shap/runtime/progress.py]]
+@see [[src/mllm_shap/runtime/progress.py]]
 """
 
 import asyncio
 
-from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
-from nlp_shap.domain.enums import Role
-from nlp_shap.pipeline.config import GenerationConfig
-from nlp_shap.runtime.progress import NullCoalitionProgress
-from nlp_shap.runtime.scheduler import CoalitionJob, InferenceScheduler
-from nlp_shap.runtime.store import HotResultStore
+from mllm_shap.domain.conversation import ConversationSnapshot, Message, Turn
+from mllm_shap.domain.enums import Role
+from mllm_shap.pipeline.config import GenerationConfig
+from mllm_shap.runtime.progress import NullCoalitionProgress
+from mllm_shap.runtime.scheduler import CoalitionJob, InferenceScheduler
+from mllm_shap.runtime.store import HotResultStore
 
 
 def _job(key: str) -> CoalitionJob:

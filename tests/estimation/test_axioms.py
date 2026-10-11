@@ -7,16 +7,16 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from nlp_shap.domain.players import PlayerSet
-from nlp_shap.estimation._shared import compute_complementary_num_splits
-from nlp_shap.estimation.complementary import ComplementaryEstimator
-from nlp_shap.estimation.estimands import BanzhafAggregator, ShapleyAggregator
-from nlp_shap.estimation.estimands._weights import (
+from mllm_shap.domain.players import PlayerSet
+from mllm_shap.estimation._shared import compute_complementary_num_splits
+from mllm_shap.estimation.complementary import ComplementaryEstimator
+from mllm_shap.estimation.estimands import BanzhafAggregator, ShapleyAggregator
+from mllm_shap.estimation.estimands._weights import (
     aggregate_from_marginals,
     banzhaf_weight,
     shapley_weight,
 )
-from nlp_shap.estimation.neyman import NeymanEstimator
+from mllm_shap.estimation.neyman import NeymanEstimator
 from tests.estimation._games import additive_payoffs, full_table, random_game
 
 Game = tuple[int, list[tuple[bool, ...]], list[float]]

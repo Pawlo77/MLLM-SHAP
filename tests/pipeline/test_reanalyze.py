@@ -1,20 +1,20 @@
 """Direct tests for reanalyzing hand-built run archives.
 
-@see [[src/nlp_shap/pipeline/reanalyze.py]]
+@see [[src/mllm_shap/pipeline/reanalyze.py]]
 """
 
 from pathlib import Path
 
 import pytest
 
-from nlp_shap import ExplainConfig, PluginGroup, PluginRegistry
-from nlp_shap.domain.estimands import Estimand
-from nlp_shap.errors import ReanalyzeMismatchError
-from nlp_shap.masking.codec import MaskCodec
-from nlp_shap.pipeline.manifest import RunManifest
-from nlp_shap.pipeline.reanalyze import reanalyze_sync
-from nlp_shap.plugins import default_registry
-from nlp_shap.runtime.archive import CoalitionRecordDraft, RunArchive
+from mllm_shap import ExplainConfig, PluginGroup, PluginRegistry
+from mllm_shap.domain.estimands import Estimand
+from mllm_shap.errors import ReanalyzeMismatchError
+from mllm_shap.masking.codec import MaskCodec
+from mllm_shap.pipeline.manifest import RunManifest
+from mllm_shap.pipeline.reanalyze import reanalyze_sync
+from mllm_shap.plugins import default_registry
+from mllm_shap.runtime.archive import CoalitionRecordDraft, RunArchive
 from tests.pipeline._doubles import WordCountValue
 
 # (mask, generated text); the word count of the text is the coalition payoff.

@@ -1,6 +1,6 @@
 """Tests for coalition weight formulas used by estimand aggregators.
 
-@see [[src/nlp_shap/estimation/estimands/_weights.py]]
+@see [[src/mllm_shap/estimation/estimands/_weights.py]]
 """
 
 import logging
@@ -9,13 +9,13 @@ from collections.abc import Callable
 
 import pytest
 
-from nlp_shap.estimation.estimands._weights import (
+from mllm_shap.estimation.estimands._weights import (
     aggregate_from_marginals,
     banzhaf_weight,
     shapley_weight,
 )
-from nlp_shap.estimation.estimands.banzhaf import BanzhafAggregator
-from nlp_shap.estimation.estimands.shapley import ShapleyAggregator
+from mllm_shap.estimation.estimands.banzhaf import BanzhafAggregator
+from mllm_shap.estimation.estimands.shapley import ShapleyAggregator
 
 GAME: dict[tuple[bool, bool, bool], float] = {
     (False, False, False): 0.0,

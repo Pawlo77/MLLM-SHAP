@@ -1,19 +1,19 @@
 Command line
 ============
 
-Installing ``nlp-shap`` adds an ``nlp-shap`` command for explaining prompts
+Installing ``mllm-shap`` adds an ``mllm-shap`` command for explaining prompts
 without writing Python. It reads the same YAML configuration as
-:class:`~nlp_shap.ExplainRunner` (see :doc:`config`) and a snapshot in JSON:
+:class:`~mllm_shap.ExplainRunner` (see :doc:`config`) and a snapshot in JSON:
 
 .. code-block:: bash
 
-   nlp-shap config --example > config.yaml     # commented YAML skeleton
-   nlp-shap config --check config.yaml         # validate a configuration
-   nlp-shap explain --config config.yaml --snapshot snapshot.json --out result.json
-   nlp-shap explain --config config.yaml --snapshot snapshot.json \
+   mllm-shap config --example > config.yaml     # commented YAML skeleton
+   mllm-shap config --check config.yaml         # validate a configuration
+   mllm-shap explain --config config.yaml --snapshot snapshot.json --out result.json
+   mllm-shap explain --config config.yaml --snapshot snapshot.json \
        --render token_bar --png result.png
-   nlp-shap reanalyze --config config.yaml --archive runs/<run_id>
-   nlp-shap plugins                            # registered plugins per group
+   mllm-shap reanalyze --config config.yaml --archive runs/<run_id>
+   mllm-shap plugins                            # registered plugins per group
 
 Add ``--log-level info`` (``debug``, ``info``, ``warning`` or ``error``, any case)
 before the command to see the pipeline's stage events on stderr (see
@@ -22,7 +22,7 @@ configuration, snapshot or archive, or an input file that cannot be read, ``3``
 the backend is unavailable (a missing extra, an unreachable server or a refused
 connection). Any other error is a bug and propagates with its traceback.
 
-The snippets below call :func:`nlp_shap.cli.main` with the same arguments, which
+The snippets below call :func:`mllm_shap.cli.main` with the same arguments, which
 is what the command runs. They share one working directory.
 
 Snapshot JSON
@@ -34,14 +34,14 @@ single-line ``"speaker"`` name for conversations where several people share a
 role. The snapshot id is derived from the content (the speaker included), so the
 same file always maps to the same run; a snapshot built with its own id carries
 it as a top-level ``"snapshot_id"`` key.
-:meth:`~nlp_shap.ConversationSnapshot.to_json` and
-:meth:`~nlp_shap.ConversationSnapshot.from_json` write and read this format:
+:meth:`~mllm_shap.ConversationSnapshot.to_json` and
+:meth:`~mllm_shap.ConversationSnapshot.from_json` write and read this format:
 
 .. code-block:: python
 
    from pathlib import Path
 
-   from nlp_shap import ConversationSnapshot, Message, Role, Turn
+   from mllm_shap import ConversationSnapshot, Message, Role, Turn
 
    snapshot = ConversationSnapshot.from_turns((
        Turn(
@@ -60,7 +60,7 @@ it as a top-level ``"snapshot_id"`` key.
 Explain
 -------
 
-``nlp-shap config --example`` prints a skeleton that runs as is with the mock
+``mllm-shap config --example`` prints a skeleton that runs as is with the mock
 backend; change ``backend`` to point at a real model. ``explain`` writes the
 result JSON to ``--out`` (or standard output). Its keys come in a fixed order:
 ``values``, ``labels`` (one entry per player with its text, character span,
@@ -72,7 +72,7 @@ speaker and display label),
 
    import json
 
-   from nlp_shap.cli import EXAMPLE_CONFIG, main
+   from mllm_shap.cli import EXAMPLE_CONFIG, main
 
    Path("config.yaml").write_text(EXAMPLE_CONFIG, encoding="utf-8")
    code = main([

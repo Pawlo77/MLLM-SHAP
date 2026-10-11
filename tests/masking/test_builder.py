@@ -1,15 +1,15 @@
 """Tests for masked snapshot views and structural sharing.
 
-@see [[src/nlp_shap/masking/builder.py]]
+@see [[src/mllm_shap/masking/builder.py]]
 """
 
 import random
 
-from nlp_shap.domain.coalition import CoalitionMask
-from nlp_shap.domain.conversation import ConversationSnapshot
-from nlp_shap.masking.builder import MaskBuilder
-from nlp_shap.masking.partitions import TokenPartitioner
-from nlp_shap.masking.policies import DeletePolicy
+from mllm_shap.domain.coalition import CoalitionMask
+from mllm_shap.domain.conversation import ConversationSnapshot
+from mllm_shap.masking.builder import MaskBuilder
+from mllm_shap.masking.partitions import TokenPartitioner
+from mllm_shap.masking.policies import DeletePolicy
 
 
 def test_masked_views_share_base_snapshot_id(

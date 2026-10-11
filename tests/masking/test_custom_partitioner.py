@@ -7,15 +7,15 @@ import re
 
 import pytest
 
-from nlp_shap import ExplainConfig, ExplainRunner, PluginGroup
-from nlp_shap.domain.coalition import CoalitionMask
-from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
-from nlp_shap.domain.enums import Role
-from nlp_shap.domain.players import PlayerSet, PlayerSpan
-from nlp_shap.masking.partitions import TokenPartitioner
-from nlp_shap.masking.policies import DeletePolicy, NeutralPolicy, PadPolicy
-from nlp_shap.plugins import default_registry
-from nlp_shap.viz.labels import token_labels
+from mllm_shap import ExplainConfig, ExplainRunner, PluginGroup
+from mllm_shap.domain.coalition import CoalitionMask
+from mllm_shap.domain.conversation import ConversationSnapshot, Message, Turn
+from mllm_shap.domain.enums import Role
+from mllm_shap.domain.players import PlayerSet, PlayerSpan
+from mllm_shap.masking.partitions import TokenPartitioner
+from mllm_shap.masking.policies import DeletePolicy, NeutralPolicy, PadPolicy
+from mllm_shap.plugins import default_registry
+from mllm_shap.viz.labels import token_labels
 
 
 class PairPartitioner:

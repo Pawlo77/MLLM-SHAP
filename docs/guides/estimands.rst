@@ -1,7 +1,7 @@
 Using estimand aggregators
 ==========================
 
-The :mod:`nlp_shap.estimation.estimands` package provides **estimand aggregators**
+The :mod:`mllm_shap.estimation.estimands` package provides **estimand aggregators**
 that turn coalition masks and payoffs :math:`v(S)` into per-player attributions.
 Each aggregator reports which estimand it implements, and every run records that
 label, so Banzhaf output is never reported as Shapley. The majority-game example
@@ -15,7 +15,7 @@ Inspect the weight each estimand gives a marginal contribution
 
 .. code-block:: python
 
-   from nlp_shap import BanzhafAggregator, ShapleyAggregator
+   from mllm_shap import BanzhafAggregator, ShapleyAggregator
 
    shapley = ShapleyAggregator()
    banzhaf = BanzhafAggregator()
@@ -41,7 +41,7 @@ are used either way. The result and the manifest carry the label:
 
 .. code-block:: python
 
-   from nlp_shap import (
+   from mllm_shap import (
        ConversationSnapshot,
        ExplainConfig,
        ExplainRunner,
@@ -72,7 +72,7 @@ are used either way. The result and the manifest carry the label:
 
 .. guide-result:: estimands_run_label
 
-Wire values for JSON manifests use :data:`~nlp_shap.domain.estimands.EstimandWire`
+Wire values for JSON manifests use :data:`~mllm_shap.domain.estimands.EstimandWire`
 (``"shapley"`` | ``"banzhaf"``).
 
 Partial samples

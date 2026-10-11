@@ -1,13 +1,13 @@
 """Scenario catalogue, feature selection and model pins, without a model.
 
-@see [[src/nlp_shap/pipeline/config.py]]
+@see [[src/mllm_shap/pipeline/config.py]]
 """
 
 import re
 
 import pytest
 
-from nlp_shap import ExplainConfig
+from mllm_shap import ExplainConfig
 from tests.practical._harness import (
     MODELS,
     SCENARIOS,
@@ -102,7 +102,7 @@ def test_require_weights_checks_only_the_files_the_backend_loads(
             raise hub.errors.LocalEntryNotFoundError(msg)
         return "/cache"
 
-    monkeypatch.delenv("NLP_SHAP_PRACTICAL_DOWNLOAD", raising=False)
+    monkeypatch.delenv("MLLM_SHAP_PRACTICAL_DOWNLOAD", raising=False)
     monkeypatch.setattr(hub, "snapshot_download", snapshot_download)
     require_weights(MODELS["deep"])
     assert calls == [list(WEIGHT_FILES)]

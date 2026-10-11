@@ -6,20 +6,20 @@ tags: [architecture, domain]
 created: 2026-10-07
 updated: 2026-10-10
 related-code:
-  - "[[src/nlp_shap/domain/__init__.py]]"
-  - "[[src/nlp_shap/domain/coalition.py]]"
-  - "[[src/nlp_shap/domain/config.py]]"
-  - "[[src/nlp_shap/domain/conversation.py]]"
-  - "[[src/nlp_shap/domain/enums.py]]"
-  - "[[src/nlp_shap/domain/estimands.py]]"
-  - "[[src/nlp_shap/domain/game.py]]"
-  - "[[src/nlp_shap/domain/generation.py]]"
-  - "[[src/nlp_shap/domain/players.py]]"
+  - "[[src/mllm_shap/domain/__init__.py]]"
+  - "[[src/mllm_shap/domain/coalition.py]]"
+  - "[[src/mllm_shap/domain/config.py]]"
+  - "[[src/mllm_shap/domain/conversation.py]]"
+  - "[[src/mllm_shap/domain/enums.py]]"
+  - "[[src/mllm_shap/domain/estimands.py]]"
+  - "[[src/mllm_shap/domain/game.py]]"
+  - "[[src/mllm_shap/domain/generation.py]]"
+  - "[[src/mllm_shap/domain/players.py]]"
 ---
 
 # domain
 
-Part of [[nlp-shap]].
+Part of [[mllm-shap]].
 
 ## Responsibility
 
@@ -36,7 +36,7 @@ Part of [[nlp-shap]].
 - `PlayerSpan(message_index, start, end, text, speaker=None, label=None, samples=None)` with `display_label`; `samples` is the `[start, end)` sample range of an audio player ([[Player span]]); `PlayerSet(player_ids, spans=())` with `num_players`.
 - `CoalitionMask(present)`: `from_sequence`, `coalition_size()`, `validate_against(player_set)` ([[masking]]).
 - `GenerationRecord`: `text`, `text_token_rows`, `audio_token_rows`, `logprobs` (`None` when the backend returned none), `embedding`, `contextual_embedding`.
-- `domain/config.py`: `GenerationConfig(max_new_tokens=128, temperature=0.0, top_k=1, compute_embeddings=False)`, `DedupConfig(enabled="auto")`, `KvCacheConfig(enabled=False, max_entries=8)`; also importable from `nlp_shap.pipeline.config`.
+- `domain/config.py`: `GenerationConfig(max_new_tokens=128, temperature=0.0, top_k=1, compute_embeddings=False)`, `DedupConfig(enabled="auto")`, `KvCacheConfig(enabled=False, max_entries=8)`; also importable from `mllm_shap.pipeline.config`.
 - `Estimand` (`shapley`, `banzhaf`), `EstimandWire`, `estimand_to_wire` ([[estimation|Estimand]]); `Role` (`user`, `assistant`, `system`); `EmbeddingMode` (`static`, `contextual`); `CooperativeGame(player_set)`.
 
 ## Data flow

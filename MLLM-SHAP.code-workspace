@@ -1,0 +1,20 @@
+{
+  // Multi-root workspace: MLLM-SHAP plus the legacy MLLM-Shap-legacy sibling.
+  // Layout and clone commands: CONTRIBUTING.md, section "Agent setup".
+  "folders": [
+    {
+      "name": "MLLM-SHAP",
+      "path": "."
+    },
+    {
+      "name": "MLLM-Shap-legacy",
+      "path": "../MLLM-Shap-legacy"
+    }
+  ],
+  "settings": {
+    "python.defaultInterpreterPath": "${workspaceFolder:MLLM-SHAP}/.venv/bin/python",
+    "files.exclude": {
+      "**/__pycache__": true
+    }
+  }
+}

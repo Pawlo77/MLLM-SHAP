@@ -5,53 +5,53 @@
 smoke: [estimator.exact, conversation.multi_turn, archive.reanalyze]
 
 paths:
-  src/nlp_shap/__init__.py: none
-  src/nlp_shap/_logging.py: none
-  src/nlp_shap/errors.py: none
-  src/nlp_shap/protocols/*: none
-  src/nlp_shap/cli.py: [cli.explain, cli.reanalyze]
+  src/mllm_shap/__init__.py: none
+  src/mllm_shap/_logging.py: none
+  src/mllm_shap/errors.py: none
+  src/mllm_shap/protocols/*: none
+  src/mllm_shap/cli.py: [cli.explain, cli.reanalyze]
 
-  src/nlp_shap/backends/__init__.py: none
-  src/nlp_shap/backends/mock/*: none
-  src/nlp_shap/backends/_chat.py:
+  src/mllm_shap/backends/__init__.py: none
+  src/mllm_shap/backends/mock/*: none
+  src/mllm_shap/backends/_chat.py:
     [conversation.multi_user, conversation.system_prompt, conversation.audio, backend.api]
-  src/nlp_shap/backends/api/*: [backend.api]
-  src/nlp_shap/backends/lmstudio/*: [backend.lmstudio]
-  src/nlp_shap/backends/transformers/*: [backend.transformers, backend.transformers.kv_cache, value.logprob]
-  src/nlp_shap/backends/transformers/embeddings.py: [value.embedding_*]
+  src/mllm_shap/backends/api/*: [backend.api]
+  src/mllm_shap/backends/lmstudio/*: [backend.lmstudio]
+  src/mllm_shap/backends/transformers/*: [backend.transformers, backend.transformers.kv_cache, value.logprob]
+  src/mllm_shap/backends/transformers/embeddings.py: [value.embedding_*]
 
-  src/nlp_shap/alignment/*: [alignment.sgpa]
-  src/nlp_shap/alignment/partitions.py: [alignment.sgpa, partition.sgpa_segments]
+  src/mllm_shap/alignment/*: [alignment.sgpa]
+  src/mllm_shap/alignment/partitions.py: [alignment.sgpa, partition.sgpa_segments]
 
-  src/nlp_shap/domain/*: smoke
-  src/nlp_shap/domain/conversation.py: [conversation.*]
-  src/nlp_shap/domain/players.py: [partition.*, viz.render]
+  src/mllm_shap/domain/*: smoke
+  src/mllm_shap/domain/conversation.py: [conversation.*]
+  src/mllm_shap/domain/players.py: [partition.*, viz.render]
 
-  src/nlp_shap/estimation/__init__.py: none
-  src/nlp_shap/estimation/_shared.py: [estimator.*]
-  src/nlp_shap/estimation/exact.py: [estimator.exact]
-  src/nlp_shap/estimation/monte_carlo.py: [estimator.mc, estimand.banzhaf]
-  src/nlp_shap/estimation/complementary.py: [estimator.complementary]
-  src/nlp_shap/estimation/neyman.py: [estimator.neyman_cc]
-  src/nlp_shap/estimation/estimands/*: [estimator.exact, estimand.banzhaf]
-  src/nlp_shap/estimation/normalizers.py: [value.normalizers]
+  src/mllm_shap/estimation/__init__.py: none
+  src/mllm_shap/estimation/_shared.py: [estimator.*]
+  src/mllm_shap/estimation/exact.py: [estimator.exact]
+  src/mllm_shap/estimation/monte_carlo.py: [estimator.mc, estimand.banzhaf]
+  src/mllm_shap/estimation/complementary.py: [estimator.complementary]
+  src/mllm_shap/estimation/neyman.py: [estimator.neyman_cc]
+  src/mllm_shap/estimation/estimands/*: [estimator.exact, estimand.banzhaf]
+  src/mllm_shap/estimation/normalizers.py: [value.normalizers]
 
-  src/nlp_shap/masking/*: smoke
-  src/nlp_shap/masking/policies.py: [masking.*, partition.sgpa_segments]
-  src/nlp_shap/masking/audio.py: [partition.sgpa_segments]
-  src/nlp_shap/masking/tokens.py: [masking.*, partition.tokens]
-  src/nlp_shap/masking/partitions.py: [partition.*, conversation.multi_turn]
+  src/mllm_shap/masking/*: smoke
+  src/mllm_shap/masking/policies.py: [masking.*, partition.sgpa_segments]
+  src/mllm_shap/masking/audio.py: [partition.sgpa_segments]
+  src/mllm_shap/masking/tokens.py: [masking.*, partition.tokens]
+  src/mllm_shap/masking/partitions.py: [partition.*, conversation.multi_turn]
 
-  src/nlp_shap/pipeline/*: smoke
-  src/nlp_shap/pipeline/reanalyze.py: [archive.reanalyze, cli.reanalyze, value.normalizers]
-  src/nlp_shap/pipeline/result.py: [cli.explain, viz.render]
-  src/nlp_shap/pipeline/manifest.py: [cli.reanalyze]
+  src/mllm_shap/pipeline/*: smoke
+  src/mllm_shap/pipeline/reanalyze.py: [archive.reanalyze, cli.reanalyze, value.normalizers]
+  src/mllm_shap/pipeline/result.py: [cli.explain, viz.render]
+  src/mllm_shap/pipeline/manifest.py: [cli.reanalyze]
 
-  src/nlp_shap/plugins/*: smoke
-  src/nlp_shap/runtime/*: smoke
-  src/nlp_shap/runtime/kv_cache.py: [backend.transformers.kv_cache]
-  src/nlp_shap/runtime/scheduler.py: [backend.lmstudio]
+  src/mllm_shap/plugins/*: smoke
+  src/mllm_shap/runtime/*: smoke
+  src/mllm_shap/runtime/kv_cache.py: [backend.transformers.kv_cache]
+  src/mllm_shap/runtime/scheduler.py: [backend.lmstudio]
 
-  src/nlp_shap/value/*: [value.*]
-  src/nlp_shap/viz/*: [viz.render]
-  src/nlp_shap/viz/audio.py: [alignment.sgpa]
+  src/mllm_shap/value/*: [value.*]
+  src/mllm_shap/viz/*: [viz.render]
+  src/mllm_shap/viz/audio.py: [alignment.sgpa]

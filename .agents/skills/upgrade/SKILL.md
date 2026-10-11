@@ -53,10 +53,10 @@ in the PR body. Notes change only through skill `notes`; `make check` must still
 ## Weekly cadence
 
 The maintainer schedules it once: a **local** scheduled task of the Claude desktop app
-(id `nlp-shap-upgrade`, cron `0 8 * * 1`, working directory this repository, prompt
-`Run /upgrade in the nlp-shap repository.`). In Claude Code ask: "Create a local scheduled
-task nlp-shap-upgrade, cron 0 8 * * 1, in this repository, prompt: Run /upgrade in the
-nlp-shap repository." Creating it changes standing configuration, so only on the
+(id `mllm-shap-upgrade`, cron `0 8 * * 1`, working directory this repository, prompt
+`Run /upgrade in the mllm-shap repository.`). In Claude Code ask: "Create a local scheduled
+task mllm-shap-upgrade, cron 0 8 * * 1, in this repository, prompt: Run /upgrade in the
+mllm-shap repository." Creating it changes standing configuration, so only on the
 maintainer's request.
 
 Between runs, skill `ship` step 1 runs `make upgrade-check` and reports outdated items

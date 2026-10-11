@@ -1,6 +1,6 @@
-"""Tests for nlp_shap logging bootstrap.
+"""Tests for mllm_shap logging bootstrap.
 
-@see [[src/nlp_shap/_logging.py]]
+@see [[src/mllm_shap/_logging.py]]
 """
 
 import json
@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from nlp_shap._logging import (
+from mllm_shap._logging import (
     ENV_LOGGING_CONFIG,
     bootstrap_logging,
     configure_logging,
@@ -21,8 +21,8 @@ from nlp_shap._logging import (
 @pytest.fixture
 def reset_bootstrap(monkeypatch: pytest.MonkeyPatch) -> None:
     """Reset bootstrap state and logging handlers between tests."""
-    monkeypatch.setattr("nlp_shap._logging._bootstrapped", False)
-    for name in ("nlp_shap", "nlp_shap.tests"):
+    monkeypatch.setattr("mllm_shap._logging._bootstrapped", False)
+    for name in ("mllm_shap", "mllm_shap.tests"):
         package_logger = logging.getLogger(name)
         package_logger.handlers.clear()
         package_logger.setLevel(logging.NOTSET)
@@ -35,7 +35,7 @@ def test_find_logging_config_from_env(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """NLP_SHAP_LOGGING_CONFIG selects an explicit TOML file."""
+    """MLLM_SHAP_LOGGING_CONFIG selects an explicit TOML file."""
     config_path = tmp_path / "custom.toml"
     config_path.write_text("[tool.logging]\nversion = 1\n", encoding="utf-8")
     monkeypatch.setenv(ENV_LOGGING_CONFIG, str(config_path))
@@ -74,7 +74,7 @@ def test_bootstrap_applies_toml_config(
             formatter = "standard"
             stream = "ext://sys.stderr"
 
-            [tool.logging.loggers.nlp_shap]
+            [tool.logging.loggers.mllm_shap]
             level = "INFO"
             handlers = ["console"]
             propagate = false
@@ -85,7 +85,7 @@ def test_bootstrap_applies_toml_config(
     monkeypatch.setenv(ENV_LOGGING_CONFIG, str(config_path))
     bootstrap_logging()
 
-    package_logger = logging.getLogger("nlp_shap")
+    package_logger = logging.getLogger("mllm_shap")
     assert package_logger.level == logging.INFO
     assert any(
         isinstance(handler, logging.StreamHandler)
@@ -102,7 +102,7 @@ def test_bootstrap_uses_null_handler_without_config(
     monkeypatch.chdir(tmp_path)
     bootstrap_logging()
 
-    package_logger = logging.getLogger("nlp_shap")
+    package_logger = logging.getLogger("mllm_shap")
     assert len(package_logger.handlers) == 1
     assert isinstance(package_logger.handlers[0], logging.NullHandler)
 
@@ -118,7 +118,7 @@ def test_bootstrap_uses_null_handler_without_logging_section(
     monkeypatch.setenv(ENV_LOGGING_CONFIG, str(config_path))
     bootstrap_logging()
 
-    package_logger = logging.getLogger("nlp_shap")
+    package_logger = logging.getLogger("mllm_shap")
     assert len(package_logger.handlers) == 1
     assert isinstance(package_logger.handlers[0], logging.NullHandler)
 
@@ -145,7 +145,7 @@ def test_bootstrap_is_idempotent(
             formatter = "standard"
             stream = "ext://sys.stderr"
 
-            [tool.logging.loggers.nlp_shap]
+            [tool.logging.loggers.mllm_shap]
             level = "WARNING"
             handlers = ["console"]
             propagate = false
@@ -155,11 +155,11 @@ def test_bootstrap_is_idempotent(
     )
     monkeypatch.setenv(ENV_LOGGING_CONFIG, str(config_path))
     bootstrap_logging()
-    handler_count = len(logging.getLogger("nlp_shap").handlers)
+    handler_count = len(logging.getLogger("mllm_shap").handlers)
 
     bootstrap_logging()
 
-    assert len(logging.getLogger("nlp_shap").handlers) == handler_count
+    assert len(logging.getLogger("mllm_shap").handlers) == handler_count
 
 
 def test_import_does_not_read_pyproject(
@@ -170,7 +170,7 @@ def test_import_does_not_read_pyproject(
     monkeypatch.chdir(Path(__file__).resolve().parents[1])
     bootstrap_logging()
 
-    package_logger = logging.getLogger("nlp_shap")
+    package_logger = logging.getLogger("mllm_shap")
     assert [type(handler) for handler in package_logger.handlers] == [
         logging.NullHandler
     ]
@@ -184,7 +184,7 @@ def test_configure_logging_reads_pyproject(
     monkeypatch.chdir(Path(__file__).resolve().parents[1])
     configure_logging()
 
-    package_logger = logging.getLogger("nlp_shap")
+    package_logger = logging.getLogger("mllm_shap")
     assert package_logger.level == logging.WARNING
     assert any(
         isinstance(handler, logging.StreamHandler)
@@ -199,10 +199,10 @@ def test_configure_logging_level_installs_stderr_handler(
 ) -> None:
     """configure_logging(level=...) shows INFO events without any TOML file."""
     assert configure_logging(level="INFO") is None
-    logging.getLogger("nlp_shap.pipeline").info("stage %s", "done")
+    logging.getLogger("mllm_shap.pipeline").info("stage %s", "done")
 
-    assert "INFO [nlp_shap.pipeline] stage done" in capsys.readouterr().err
-    assert len(logging.getLogger("nlp_shap").handlers) == 1
+    assert "INFO [mllm_shap.pipeline] stage done" in capsys.readouterr().err
+    assert len(logging.getLogger("mllm_shap").handlers) == 1
 
 
 def test_configure_logging_json_lines(
@@ -211,11 +211,11 @@ def test_configure_logging_json_lines(
 ) -> None:
     """json=True emits one parseable JSON object per record."""
     configure_logging(level=logging.DEBUG, json=True)
-    logging.getLogger("nlp_shap.runtime").debug("cache %d", 3)
+    logging.getLogger("mllm_shap.runtime").debug("cache %d", 3)
 
     record = json.loads(capsys.readouterr().err.strip().splitlines()[-1])
     assert record["level"] == "DEBUG"
-    assert record["logger"] == "nlp_shap.runtime"
+    assert record["logger"] == "mllm_shap.runtime"
     assert record["message"] == "cache 3"
 
 
@@ -227,7 +227,7 @@ def test_configure_logging_level_overrides_toml(
     root = Path(__file__).resolve().parents[1]
     configure_logging(root / "pyproject.toml", level="DEBUG")
 
-    assert logging.getLogger("nlp_shap").level == logging.DEBUG
+    assert logging.getLogger("mllm_shap").level == logging.DEBUG
 
 
 def test_example_logging_config_applies(reset_bootstrap: None) -> None:
@@ -235,7 +235,7 @@ def test_example_logging_config_applies(reset_bootstrap: None) -> None:
     path = Path(__file__).resolve().parents[1] / "config" / "logging.example.toml"
 
     assert configure_logging(path) == path
-    assert logging.getLogger("nlp_shap").level == logging.INFO
+    assert logging.getLogger("mllm_shap").level == logging.INFO
 
 
 def test_configure_logging_rejects_json_with_config_path(
@@ -251,4 +251,4 @@ def test_configure_logging_stderr_handler_does_not_propagate(
     reset_bootstrap: None,
 ) -> None:
     configure_logging(level="INFO")
-    assert logging.getLogger("nlp_shap").propagate is False
+    assert logging.getLogger("mllm_shap").propagate is False

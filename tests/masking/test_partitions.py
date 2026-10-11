@@ -1,16 +1,16 @@
 """Tests for the token and message partition plugins.
 
-@see [[src/nlp_shap/masking/partitions.py]]
+@see [[src/mllm_shap/masking/partitions.py]]
 """
 
 import pytest
 
-from nlp_shap import ExplainConfig, ExplainRunner, PluginGroup
-from nlp_shap.domain.coalition import CoalitionMask
-from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
-from nlp_shap.domain.enums import Role
-from nlp_shap.masking.partitions import MessagePartitioner, TokenPartitioner
-from nlp_shap.plugins import PluginContext, default_registry
+from mllm_shap import ExplainConfig, ExplainRunner, PluginGroup
+from mllm_shap.domain.coalition import CoalitionMask
+from mllm_shap.domain.conversation import ConversationSnapshot, Message, Turn
+from mllm_shap.domain.enums import Role
+from mllm_shap.masking.partitions import MessagePartitioner, TokenPartitioner
+from mllm_shap.plugins import PluginContext, default_registry
 
 
 def test_token_partitioner_splits_whitespace_tokens(

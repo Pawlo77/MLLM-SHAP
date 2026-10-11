@@ -1,21 +1,21 @@
 Domain types
 ============
 
-.. automodule:: nlp_shap.domain
+.. automodule:: mllm_shap.domain
    :no-members:
 
-.. automodule:: nlp_shap.domain.enums
+.. automodule:: mllm_shap.domain.enums
 
-.. automodule:: nlp_shap.domain.conversation
+.. automodule:: mllm_shap.domain.conversation
 
-.. automodule:: nlp_shap.domain.players
+.. automodule:: mllm_shap.domain.players
 
-.. automodule:: nlp_shap.domain.coalition
+.. automodule:: mllm_shap.domain.coalition
 
-.. automodule:: nlp_shap.domain.game
+.. automodule:: mllm_shap.domain.game
 
-.. automodule:: nlp_shap.domain.generation
+.. automodule:: mllm_shap.domain.generation
 
-.. automodule:: nlp_shap.domain.estimands
+.. automodule:: mllm_shap.domain.estimands
 
-.. automodule:: nlp_shap.domain.config
+.. automodule:: mllm_shap.domain.config

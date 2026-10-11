@@ -11,8 +11,8 @@ Partition tokens
 
 .. code-block:: python
 
-   from nlp_shap import ConversationSnapshot, Message, Role, Turn
-   from nlp_shap.masking import TokenPartitioner
+   from mllm_shap import ConversationSnapshot, Message, Role, Turn
+   from mllm_shap.masking import TokenPartitioner
 
    turn = Turn(messages=(Message(role=Role.USER, text="Who are you?"),))
    snapshot = ConversationSnapshot(turns=(turn,), snapshot_id="demo-snap")
@@ -28,14 +28,14 @@ stable across runs and appear in the run manifest in mask-bit order.
 Render a coalition
 ------------------
 
-A :class:`~nlp_shap.CoalitionMask` marks which players are present. The
-:class:`~nlp_shap.masking.MaskBuilder` pairs it with the snapshot (a cheap view
+A :class:`~mllm_shap.CoalitionMask` marks which players are present. The
+:class:`~mllm_shap.masking.MaskBuilder` pairs it with the snapshot (a cheap view
 that shares the snapshot) and renders the prompt the backend receives:
 
 .. code-block:: python
 
-   from nlp_shap import CoalitionMask
-   from nlp_shap.masking import DeletePolicy, MaskBuilder
+   from mllm_shap import CoalitionMask
+   from mllm_shap.masking import DeletePolicy, MaskBuilder
 
    mask = CoalitionMask.from_sequence((True, False, True))
    builder = MaskBuilder(DeletePolicy())
@@ -57,7 +57,7 @@ audio: ``delete`` cuts absent samples, ``pad`` and ``neutral`` silence them.
 
 .. code-block:: python
 
-   from nlp_shap.masking import NeutralPolicy, PadPolicy
+   from mllm_shap.masking import NeutralPolicy, PadPolicy
 
    for policy in (PadPolicy(), NeutralPolicy()):
        builder = MaskBuilder(policy)
@@ -78,7 +78,7 @@ Message players
 ---------------
 
 ``explanation.players: messages``
-(:class:`~nlp_shap.masking.MessagePartitioner`) makes each non-empty message one
+(:class:`~mllm_shap.masking.MessagePartitioner`) makes each non-empty message one
 player whose span is the whole message text. Its label reads
 ``"<role>[/<speaker>] <n>: "`` plus the first 30 characters, with ``n`` the
 message's 1-based position. ``delete`` empties an absent message, ``pad`` and
@@ -87,9 +87,9 @@ keeps the messages of other roles, such as the system prompt, always present:
 
 .. code-block:: python
 
-   from nlp_shap import ExplainConfig
-   from nlp_shap.masking import MessagePartitioner
-   from nlp_shap.plugins import PluginContext
+   from mllm_shap import ExplainConfig
+   from mllm_shap.masking import MessagePartitioner
+   from mllm_shap.plugins import PluginContext
 
    chat = ConversationSnapshot.from_turns((
        Turn(
@@ -124,13 +124,13 @@ Resolve plugins from config
 ---------------------------
 
 Built-in plugins register the ``tokens`` and ``messages`` partitions and the ``delete`` / ``pad`` /
-``neutral`` absence policies. :class:`~nlp_shap.ExplainRunner` resolves them from
+``neutral`` absence policies. :class:`~mllm_shap.ExplainRunner` resolves them from
 ``explanation.players`` and ``explanation.absence_policy``:
 
 .. code-block:: python
 
-   from nlp_shap import ExplainConfig, PluginGroup, PluginRegistry
-   from nlp_shap.plugins import PluginContext, register_builtin_plugins
+   from mllm_shap import ExplainConfig, PluginGroup, PluginRegistry
+   from mllm_shap.plugins import PluginContext, register_builtin_plugins
 
    registry = PluginRegistry()
    register_builtin_plugins(registry)

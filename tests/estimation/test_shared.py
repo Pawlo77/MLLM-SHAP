@@ -1,6 +1,6 @@
 """Tests for shared approximate-estimator utilities.
 
-@see [[src/nlp_shap/estimation/_shared.py]]
+@see [[src/mllm_shap/estimation/_shared.py]]
 """
 
 from collections.abc import Callable
@@ -8,8 +8,8 @@ from collections.abc import Callable
 import numpy as np
 import pytest
 
-from nlp_shap.domain.coalition import CoalitionMask
-from nlp_shap.estimation._shared import (
+from mllm_shap.domain.coalition import CoalitionMask
+from mllm_shap.estimation._shared import (
     aggregate_complementary_shapley,
     budget_fraction,
     build_c_matrix_from_pairs,
@@ -22,7 +22,7 @@ from nlp_shap.estimation._shared import (
     present_to_mask_int,
     random_present,
 )
-from nlp_shap.estimation.estimands._weights import aggregate_shapley_exact
+from mllm_shap.estimation.estimands._weights import aggregate_shapley_exact
 from tests.estimation._games import full_table
 
 

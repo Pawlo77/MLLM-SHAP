@@ -1,6 +1,6 @@
 """Micro-benchmarks for archive persistence.
 
-@see [[src/nlp_shap/runtime/archive.py]]
+@see [[src/mllm_shap/runtime/archive.py]]
 """
 
 import itertools
@@ -9,10 +9,10 @@ from pathlib import Path
 import pytest
 from pytest_benchmark.fixture import BenchmarkFixture
 
-from nlp_shap.domain.estimands import Estimand
-from nlp_shap.masking.codec import MaskCodec
-from nlp_shap.pipeline.manifest import RunManifest
-from nlp_shap.runtime.archive import CoalitionRecordDraft, RunArchive
+from mllm_shap.domain.estimands import Estimand
+from mllm_shap.masking.codec import MaskCodec
+from mllm_shap.pipeline.manifest import RunManifest
+from mllm_shap.runtime.archive import CoalitionRecordDraft, RunArchive
 
 _MANIFEST = RunManifest(estimand=Estimand.SHAPLEY, run_id="bench-archive")
 _PACKED = MaskCodec.pack((True, False, True, False))

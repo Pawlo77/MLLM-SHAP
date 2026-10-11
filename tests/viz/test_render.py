@@ -1,6 +1,6 @@
 """Tests for attribution renderer plugins.
 
-@see [[src/nlp_shap/viz/render.py]]
+@see [[src/mllm_shap/viz/render.py]]
 """
 
 import logging
@@ -9,16 +9,16 @@ from itertools import combinations
 
 import pytest
 
-from nlp_shap import ExplainConfig, ExplainRunner
-from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
-from nlp_shap.domain.enums import Role
-from nlp_shap.domain.estimands import Estimand
-from nlp_shap.masking.partitions import TokenPartitioner
-from nlp_shap.plugins import PluginGroup, PluginRegistry
-from nlp_shap.viz import render_attribution, render_attribution_html
-from nlp_shap.viz.colors import diverging_rgba
-from nlp_shap.viz.token_bar import TokenBarRenderer
-from nlp_shap.viz.token_text import TokenTextRenderer
+from mllm_shap import ExplainConfig, ExplainRunner
+from mllm_shap.domain.conversation import ConversationSnapshot, Message, Turn
+from mllm_shap.domain.enums import Role
+from mllm_shap.domain.estimands import Estimand
+from mllm_shap.masking.partitions import TokenPartitioner
+from mllm_shap.plugins import PluginGroup, PluginRegistry
+from mllm_shap.viz import render_attribution, render_attribution_html
+from mllm_shap.viz.colors import diverging_rgba
+from mllm_shap.viz.token_bar import TokenBarRenderer
+from mllm_shap.viz.token_text import TokenTextRenderer
 
 pytest.importorskip("matplotlib")
 

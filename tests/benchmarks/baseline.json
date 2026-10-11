@@ -33,7 +33,7 @@
         "time": "2026-09-19T14:09:37+02:00",
         "author_time": "2026-09-19T14:09:37+02:00",
         "dirty": true,
-        "project": "nlp-shap",
+        "project": "mllm-shap",
         "branch": "chore/audit-remediation"
     },
     "benchmarks": [

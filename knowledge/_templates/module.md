@@ -6,12 +6,12 @@ tags: [architecture, <% tp.file.title %>]
 created: <% tp.date.now("YYYY-MM-DD") %>
 updated: <% tp.date.now("YYYY-MM-DD") %>
 related-code:
-  - "<% '[' + '[src/nlp_shap/' + tp.file.title + '/__init__.py]' + ']' %>"
+  - "<% '[' + '[src/mllm_shap/' + tp.file.title + '/__init__.py]' + ']' %>"
 ---
 
 # <% tp.file.title %>
 
-Part of [[nlp-shap]].
+Part of [[mllm-shap]].
 
 ## Responsibility
 

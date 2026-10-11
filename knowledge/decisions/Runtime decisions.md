@@ -6,13 +6,13 @@ created: 2026-10-07
 updated: 2026-10-08
 tags: [decisions, runtime]
 related-code:
-  - "[[src/nlp_shap/pipeline/config.py]]"
-  - "[[src/nlp_shap/runtime/kv_cache.py]]"
+  - "[[src/mllm_shap/pipeline/config.py]]"
+  - "[[src/mllm_shap/runtime/kv_cache.py]]"
 ---
 
 # Runtime decisions
 
-Part of [[nlp-shap]]; architecture: [[runtime]]. Concept: [[Prefix hash]].
+Part of [[mllm-shap]]; architecture: [[runtime]]. Concept: [[Prefix hash]].
 
 ## 2026-10-07 — KV cache off by default
 

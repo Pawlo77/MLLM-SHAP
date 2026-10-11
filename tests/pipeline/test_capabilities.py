@@ -13,30 +13,30 @@ from typing import ClassVar
 
 import pytest
 
-from nlp_shap import ExplainConfig, ExplainRunner, PluginGroup, PluginRegistry
-from nlp_shap.backends.mock import MockBackend
-from nlp_shap.domain.config import GenerationConfig
-from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
-from nlp_shap.domain.enums import Role
-from nlp_shap.domain.generation import GenerationRecord
-from nlp_shap.errors import (
+from mllm_shap import ExplainConfig, ExplainRunner, PluginGroup, PluginRegistry
+from mllm_shap.backends.mock import MockBackend
+from mllm_shap.domain.config import GenerationConfig
+from mllm_shap.domain.conversation import ConversationSnapshot, Message, Turn
+from mllm_shap.domain.enums import Role
+from mllm_shap.domain.generation import GenerationRecord
+from mllm_shap.errors import (
     ConfigError,
     LogprobsUnavailableError,
     ReanalyzeMismatchError,
 )
-from nlp_shap.pipeline.manifest import RunManifest, parse_manifest
-from nlp_shap.plugins import register_builtin_plugins
-from nlp_shap.protocols import (
+from mllm_shap.pipeline.manifest import RunManifest, parse_manifest
+from mllm_shap.plugins import register_builtin_plugins
+from mllm_shap.protocols import (
     FittableValueFunction,
     RequiresEmbeddings,
     SupportsAclose,
     SupportsKvCache,
     SupportsLogprobs,
 )
-from nlp_shap.protocols.backend import GenerationResult
-from nlp_shap.value.embedding import CosineEmbeddingValue, EuclideanEmbeddingValue
-from nlp_shap.value.generation_records import generation_record_from_text
-from nlp_shap.value.tfidf import TfIdfCosineValue
+from mllm_shap.protocols.backend import GenerationResult
+from mllm_shap.value.embedding import CosineEmbeddingValue, EuclideanEmbeddingValue
+from mllm_shap.value.generation_records import generation_record_from_text
+from mllm_shap.value.tfidf import TfIdfCosineValue
 
 
 class CorpusLengthValue:
@@ -317,7 +317,7 @@ def test_reanalyze_warns_or_refuses_for_backend_embedding_runs(
     assert first.manifest is not None
     assert first.manifest.embedding_source == "backend"
 
-    with caplog.at_level(logging.WARNING, logger="nlp_shap"):
+    with caplog.at_level(logging.WARNING, logger="mllm_shap"):
         runner.reanalyze(tmp_path / first.run_id)
     assert "hash embeddings" in caplog.text
     with pytest.raises(ReanalyzeMismatchError, match="'embedding'"):

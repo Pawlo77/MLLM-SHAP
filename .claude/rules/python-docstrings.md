@@ -1,13 +1,13 @@
 ---
 paths:
-  - "src/nlp_shap/**/*.py"
+  - "src/mllm_shap/**/*.py"
 ---
 
 <!-- Generated from .cursor/rules/python-docstrings.mdc by scripts/sync_rules.py; do not edit. -->
 
 # Python docstrings (Google style)
 
-Use [Google-style](https://google.github.io/styleguide/pyguide.html#383-functions-and-methods) docstrings in `src/nlp_shap`. Types live in annotations; **do not repeat them** in `Args`/`Returns`.
+Use [Google-style](https://google.github.io/styleguide/pyguide.html#383-functions-and-methods) docstrings in `src/mllm_shap`. Types live in annotations; **do not repeat them** in `Args`/`Returns`.
 
 | Surface | Rule |
 |---------|------|
@@ -25,7 +25,7 @@ Use [Google-style](https://google.github.io/styleguide/pyguide.html#383-function
 After the one-line module summary and a blank line, package modules carry
 `@domain <subpackage>`, `@see [[knowledge/architecture/<subpackage>]]` and, when a test file
 covers the module, `@tested-by [[tests/<path>.py]]`. Top-level modules use `@domain core`.
-Test files carry `@see [[src/nlp_shap/<path>.py]]` in their module docstring.
+Test files carry `@see [[src/mllm_shap/<path>.py]]` in their module docstring.
 `make vault-check` (`check_vault.py --strict-tags`) lists missing tags.
 
 ```python

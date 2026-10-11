@@ -5,9 +5,9 @@ domain: plugins
 tags: [concept]
 created: 2026-10-08
 related-code:
-  - "[[src/nlp_shap/plugins/options.py]]"
-  - "[[src/nlp_shap/protocols/plugin.py]]"
-  - "[[src/nlp_shap/plugins/context.py]]"
+  - "[[src/mllm_shap/plugins/options.py]]"
+  - "[[src/mllm_shap/protocols/plugin.py]]"
+  - "[[src/mllm_shap/plugins/context.py]]"
 ---
 
 # Plugin options

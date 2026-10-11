@@ -11,4 +11,4 @@ alwaysApply: true
 - New behaviour needs tests first (`tdd.mdc`); no tests of the obvious.
 - No new markdown files unless requested.
 - If two approaches work, pick the simpler one that matches the repository.
-- From MLLM-Shap (`../MLLM-Shap/mllm_shap/src/mllm_shap/`), port only the slice the task needs.
+- From MLLM-Shap-legacy (`../MLLM-Shap-legacy/mllm_shap/src/mllm_shap/`), port only the slice the task needs.

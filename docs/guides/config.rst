@@ -1,7 +1,7 @@
 Configuration
 =============
 
-``nlp-shap`` uses one :class:`~nlp_shap.ExplainConfig` schema with three
+``mllm-shap`` uses one :class:`~mllm_shap.ExplainConfig` schema with three
 top-level sections: ``backend`` (which model), ``generation`` (how it generates)
 and ``explanation`` (what is explained and how). Every section rejects unknown
 keys, so a typo fails validation instead of being ignored.
@@ -62,14 +62,14 @@ both:
 Load and save
 -------------
 
-:func:`~nlp_shap.explain_config_from_yaml` validates YAML text and
-:func:`~nlp_shap.explain_config_to_yaml` writes every key back, defaults included:
+:func:`~mllm_shap.explain_config_from_yaml` validates YAML text and
+:func:`~mllm_shap.explain_config_to_yaml` writes every key back, defaults included:
 
 .. code-block:: python
 
    from pathlib import Path
 
-   from nlp_shap import ExplainConfig, explain_config_from_yaml, explain_config_to_yaml
+   from mllm_shap import ExplainConfig, explain_config_from_yaml, explain_config_to_yaml
 
    Path("config.yaml").write_text(
        "backend:\n"
@@ -99,19 +99,19 @@ Generated from the pydantic models, so it always matches the installed version.
 ``backend``
 ~~~~~~~~~~~
 
-.. config-table:: nlp_shap.pipeline.config.BackendConfig
+.. config-table:: mllm_shap.pipeline.config.BackendConfig
    :prefix: backend
 
 ``generation``
 ~~~~~~~~~~~~~~
 
-.. config-table:: nlp_shap.pipeline.config.GenerationConfig
+.. config-table:: mllm_shap.pipeline.config.GenerationConfig
    :prefix: generation
 
 ``explanation``
 ~~~~~~~~~~~~~~~
 
-.. config-table:: nlp_shap.pipeline.config.ExplanationConfig
+.. config-table:: mllm_shap.pipeline.config.ExplanationConfig
    :prefix: explanation
 
 Plugin options
@@ -122,12 +122,12 @@ by ``<group>/<name>`` (groups: ``estimators``, ``estimands``, ``value_fns``,
 ``normalizers``, ``backends``, ``partitions``, ``absence_policies``,
 ``renderers``) or by the bare plugin name when no other plugin of the run shares
 it. The registry hands them to the plugin as
-:attr:`PluginContext.options <nlp_shap.plugins.context.PluginContext.options>`;
+:attr:`PluginContext.options <mllm_shap.plugins.context.PluginContext.options>`;
 see :doc:`extending` for a plugin that reads them. Built-in plugins with options
 are ``absence_policies/pad`` (``placeholder``), ``absence_policies/neutral``
 (``fill_char``) and ``normalizers/power_shift`` (``power``); the others accept
 none. Before a run starts, a key naming no plugin of the run, an unknown option
-or a value of the wrong type raises :exc:`~nlp_shap.errors.ConfigError` naming
+or a value of the wrong type raises :exc:`~mllm_shap.errors.ConfigError` naming
 the group, plugin and key.
 
 .. code-block:: yaml
@@ -148,7 +148,7 @@ policy, value function, seed or model therefore writes to a new directory.
 
 Re-running the same configuration on the same snapshot targets the same
 directory. With ``on_exists: error`` (the default) the run raises
-:exc:`~nlp_shap.errors.ArchiveExistsError` instead of appending to the old
+:exc:`~mllm_shap.errors.ArchiveExistsError` instead of appending to the old
 archive; ``on_exists: overwrite`` replaces it. Set ``path: ""`` to skip
 archiving entirely.
 
@@ -157,11 +157,11 @@ Example configurations
 
 The repository ships one configuration per local backend in ``config/``
 (`dev_api.yaml
-<https://github.com/Pawlo77/nlp-shap/blob/main/config/dev_api.yaml>`_,
+<https://github.com/Pawlo77/MLLM-SHAP/blob/main/config/dev_api.yaml>`_,
 `dev_lmstudio.yaml
-<https://github.com/Pawlo77/nlp-shap/blob/main/config/dev_lmstudio.yaml>`_,
+<https://github.com/Pawlo77/MLLM-SHAP/blob/main/config/dev_lmstudio.yaml>`_,
 `dev_transformers.yaml
-<https://github.com/Pawlo77/nlp-shap/blob/main/config/dev_transformers.yaml>`_);
+<https://github.com/Pawlo77/MLLM-SHAP/blob/main/config/dev_transformers.yaml>`_);
 :doc:`backends` explains each backend's keys.
 
 Further reading
@@ -171,4 +171,4 @@ Further reading
 - :doc:`choosing_an_estimator` — ``estimator`` and ``budget.fraction``
 - :doc:`masking` — ``players`` and ``absence_policy``
 - :doc:`runtime` — ``archive``, ``dedup`` and ``max_inflight``
-- :doc:`migrating_from_mllm_shap` — mapping from MLLM-Shap settings
+- :doc:`migrating_from_mllm_shap` — mapping from legacy MLLM-Shap settings

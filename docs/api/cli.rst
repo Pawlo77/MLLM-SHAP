@@ -1,4 +1,4 @@
 Command line
 ============
 
-.. automodule:: nlp_shap.cli
+.. automodule:: mllm_shap.cli

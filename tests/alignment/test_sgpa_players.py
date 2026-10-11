@@ -1,6 +1,6 @@
 """Audio players from SGPA segments, rendered by every absence policy.
 
-@see [[src/nlp_shap/alignment/partitions.py]]
+@see [[src/mllm_shap/alignment/partitions.py]]
 """
 
 import numpy as np
@@ -9,25 +9,25 @@ import pytest
 pytest.importorskip("librosa")
 pytest.importorskip("soundfile")
 
-from nlp_shap import ExplainConfig, ExplainRunner, PluginGroup
-from nlp_shap.alignment.io import decode_audio
-from nlp_shap.alignment.partitions import SgpaSegmentPartitioner
-from nlp_shap.alignment.sgpa import SpectrogramGuidedAligner
-from nlp_shap.domain.coalition import CoalitionMask
-from nlp_shap.domain.conversation import (
+from mllm_shap import ExplainConfig, ExplainRunner, PluginGroup
+from mllm_shap.alignment.io import decode_audio
+from mllm_shap.alignment.partitions import SgpaSegmentPartitioner
+from mllm_shap.alignment.sgpa import SpectrogramGuidedAligner
+from mllm_shap.domain.coalition import CoalitionMask
+from mllm_shap.domain.conversation import (
     AudioPart,
     ConversationSnapshot,
     Message,
     TextPart,
     Turn,
 )
-from nlp_shap.domain.enums import Role
-from nlp_shap.masking.policies import (
+from mllm_shap.domain.enums import Role
+from mllm_shap.masking.policies import (
     DeletePolicy,
     NeutralPolicy,
     PadPolicy,
 )
-from nlp_shap.plugins import default_registry
+from mllm_shap.plugins import default_registry
 from tests.alignment._fakes import FRAME, FRAMES, RATE, FakeCtc, speech
 
 
@@ -128,7 +128,7 @@ def test_explain_runs_with_audio_players_end_to_end() -> None:
 
 def test_options_reach_the_default_aligner() -> None:
     """``plugin_options.sgpa_segments`` configures the Wav2Vec2 model lazily."""
-    from nlp_shap.alignment.partitions import SgpaOptions
+    from mllm_shap.alignment.partitions import SgpaOptions
 
     options = SgpaOptions(model_id="m", revision="r", device="cpu", flux_weight=0.5)
     assert (options.model_id, options.revision, options.flux_weight) == ("m", "r", 0.5)

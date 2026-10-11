@@ -1,4 +1,4 @@
-"""Shared fixtures for the nlp_shap test suite.
+"""Shared fixtures for the mllm_shap test suite.
 
 @see [[tests/AGENTS.md]]
 """
@@ -7,10 +7,10 @@ from dataclasses import dataclass, field
 
 import pytest
 
-from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
-from nlp_shap.domain.enums import Role
-from nlp_shap.domain.estimands import Estimand
-from nlp_shap.pipeline.manifest import RunManifest
+from mllm_shap.domain.conversation import ConversationSnapshot, Message, Turn
+from mllm_shap.domain.enums import Role
+from mllm_shap.domain.estimands import Estimand
+from mllm_shap.pipeline.manifest import RunManifest
 
 
 @pytest.fixture

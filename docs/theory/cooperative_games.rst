@@ -1,7 +1,7 @@
 Cooperative games
 =================
 
-``nlp-shap`` explains model behaviour by treating input units (tokens, segments,
+``mllm-shap`` explains model behaviour by treating input units (tokens, segments,
 or other **players**) as participants in a **cooperative game**. Cooperative game
 theory studies how a total payoff :math:`v(N)` should be distributed among
 players when they can form coalitions. In explainability, the payoff comes from
@@ -68,25 +68,25 @@ function is typically neither additive nor symmetric across tokens. Honest
 **estimand labelling** and archived coalition records become essential for audit
 and reproduction.
 
-Mapping to ``nlp-shap`` types
------------------------------
+Mapping to ``mllm-shap`` types
+------------------------------
 
-+---------------------------+--------------------------------------------------+
-| Game-theoretic object     | ``nlp-shap`` type                                |
-+===========================+==================================================+
-| Player set :math:`N`      | :class:`~nlp_shap.PlayerSet`                     |
-+---------------------------+--------------------------------------------------+
-| Coalition :math:`S`       | :class:`~nlp_shap.CoalitionMask`                 |
-+---------------------------+--------------------------------------------------+
-| Conversation under study  | :class:`~nlp_shap.ConversationSnapshot`          |
-+---------------------------+--------------------------------------------------+
-| Game :math:`(N, v)`       | :class:`~nlp_shap.CooperativeGame` (+ payoffs)   |
-+---------------------------+--------------------------------------------------+
-| Aggregated attributions   | :class:`~nlp_shap.pipeline.result.ExplainResult` |
-+---------------------------+--------------------------------------------------+
++---------------------------+---------------------------------------------------+
+| Game-theoretic object     | ``mllm-shap`` type                                |
++===========================+===================================================+
+| Player set :math:`N`      | :class:`~mllm_shap.PlayerSet`                     |
++---------------------------+---------------------------------------------------+
+| Coalition :math:`S`       | :class:`~mllm_shap.CoalitionMask`                 |
++---------------------------+---------------------------------------------------+
+| Conversation under study  | :class:`~mllm_shap.ConversationSnapshot`          |
++---------------------------+---------------------------------------------------+
+| Game :math:`(N, v)`       | :class:`~mllm_shap.CooperativeGame` (+ payoffs)   |
++---------------------------+---------------------------------------------------+
+| Aggregated attributions   | :class:`~mllm_shap.pipeline.result.ExplainResult` |
++---------------------------+---------------------------------------------------+
 
-The :class:`~nlp_shap.estimation.estimands.shapley.ShapleyAggregator` and
-:class:`~nlp_shap.estimation.estimands.banzhaf.BanzhafAggregator` classes
+The :class:`~mllm_shap.estimation.estimands.shapley.ShapleyAggregator` and
+:class:`~mllm_shap.estimation.estimands.banzhaf.BanzhafAggregator` classes
 aggregate precomputed coalition masks and payoffs :math:`v(S)`; they do not run
 model inference themselves.
 

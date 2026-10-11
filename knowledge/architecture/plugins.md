@@ -6,18 +6,18 @@ tags: [architecture, plugins]
 created: 2026-10-07
 updated: 2026-10-10
 related-code:
-  - "[[src/nlp_shap/plugins/__init__.py]]"
-  - "[[src/nlp_shap/plugins/backends.py]]"
-  - "[[src/nlp_shap/plugins/builtin.py]]"
-  - "[[src/nlp_shap/plugins/context.py]]"
-  - "[[src/nlp_shap/plugins/groups.py]]"
-  - "[[src/nlp_shap/plugins/options.py]]"
-  - "[[src/nlp_shap/plugins/registry.py]]"
+  - "[[src/mllm_shap/plugins/__init__.py]]"
+  - "[[src/mllm_shap/plugins/backends.py]]"
+  - "[[src/mllm_shap/plugins/builtin.py]]"
+  - "[[src/mllm_shap/plugins/context.py]]"
+  - "[[src/mllm_shap/plugins/groups.py]]"
+  - "[[src/mllm_shap/plugins/options.py]]"
+  - "[[src/mllm_shap/plugins/registry.py]]"
 ---
 
 # plugins
 
-Part of [[nlp-shap]]. Registered plugins: [[Plugins]].
+Part of [[mllm-shap]]. Registered plugins: [[Plugins]].
 
 ## Responsibility
 
@@ -25,7 +25,7 @@ Part of [[nlp-shap]]. Registered plugins: [[Plugins]].
 
 ## Public surface
 
-- `PluginGroup`: eight entry-point groups (`nlp_shap.estimators`, `estimands`, `value_fns`, `normalizers`, `backends`, `partitions`, `absence_policies`, `renderers`).
+- `PluginGroup`: eight entry-point groups (`mllm_shap.estimators`, `estimands`, `value_fns`, `normalizers`, `backends`, `partitions`, `absence_policies`, `renderers`).
 - `PluginContext(config, options, registry)`: `option(key, default)` returns the option or the default, accepts an integer for a float default, raises `ConfigError` on another type. Plugin classes take it as their first constructor argument.
 - `PluginFactory = Callable[[PluginContext], object]`.
 - `PluginRegistry`: `register(group, name, factory, replace=False)` (raises `PluginConflictError` for a duplicate), `resolve(group, name, context)` (selects and validates the plugin's options, then calls the factory with a context narrowed to them), `resolve_factory` (`PluginNotFoundError`), `resolve_type`, `names(group)`, `load_entry_points(group)` (skips names already registered without importing them; wraps import failures in `PluginLoadError`).

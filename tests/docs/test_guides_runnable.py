@@ -11,7 +11,7 @@ import pytest
 import render_guide_outputs as renderer
 import yaml
 
-from nlp_shap import ExplainConfig, explain_config_from_yaml
+from mllm_shap import ExplainConfig, explain_config_from_yaml
 
 ROOT = Path(__file__).resolve().parents[2]
 OUTPUTS = ROOT / "docs" / "_static" / "guide_outputs"

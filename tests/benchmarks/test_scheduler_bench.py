@@ -1,6 +1,6 @@
 """Benchmarks for the coalition scheduler.
 
-@see [[src/nlp_shap/runtime/scheduler.py]]
+@see [[src/mllm_shap/runtime/scheduler.py]]
 """
 
 import asyncio
@@ -10,15 +10,15 @@ from collections.abc import Iterator
 import pytest
 from pytest_benchmark.fixture import BenchmarkFixture
 
-from nlp_shap.domain.config import GenerationConfig
-from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
-from nlp_shap.domain.enums import Role
-from nlp_shap.runtime.scheduler import (
+from mllm_shap.domain.config import GenerationConfig
+from mllm_shap.domain.conversation import ConversationSnapshot, Message, Turn
+from mllm_shap.domain.enums import Role
+from mllm_shap.runtime.scheduler import (
     CoalitionJob,
     InferenceScheduler,
     SchedulerMetrics,
 )
-from nlp_shap.runtime.store import HotResultStore
+from mllm_shap.runtime.store import HotResultStore
 
 _SNAPSHOT = ConversationSnapshot.from_turns((
     Turn(messages=(Message(role=Role.USER, text="bench prompt"),)),

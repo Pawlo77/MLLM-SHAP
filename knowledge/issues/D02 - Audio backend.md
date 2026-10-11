@@ -10,10 +10,10 @@ updated: 2026-10-08
 fixed_in: ""
 tags: [issue, deferred, audio]
 related-code:
-  - "[[src/nlp_shap/domain/conversation.py]]"
-  - "[[src/nlp_shap/backends/transformers/chat.py]]"
-  - "[[src/nlp_shap/masking/policies.py]]"
-  - "[[src/nlp_shap/viz/labels.py]]"
+  - "[[src/mllm_shap/domain/conversation.py]]"
+  - "[[src/mllm_shap/backends/transformers/chat.py]]"
+  - "[[src/mllm_shap/masking/policies.py]]"
+  - "[[src/mllm_shap/viz/labels.py]]"
 ---
 
 # D02 - Audio backend

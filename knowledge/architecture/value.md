@@ -6,18 +6,18 @@ tags: [architecture, value]
 created: 2026-10-07
 updated: 2026-10-09
 related-code:
-  - "[[src/nlp_shap/value/__init__.py]]"
-  - "[[src/nlp_shap/value/_metrics.py]]"
-  - "[[src/nlp_shap/value/_token_hash.py]]"
-  - "[[src/nlp_shap/value/embedding.py]]"
-  - "[[src/nlp_shap/value/generation_records.py]]"
-  - "[[src/nlp_shap/value/logprob.py]]"
-  - "[[src/nlp_shap/value/tfidf.py]]"
+  - "[[src/mllm_shap/value/__init__.py]]"
+  - "[[src/mllm_shap/value/_metrics.py]]"
+  - "[[src/mllm_shap/value/_token_hash.py]]"
+  - "[[src/mllm_shap/value/embedding.py]]"
+  - "[[src/mllm_shap/value/generation_records.py]]"
+  - "[[src/mllm_shap/value/logprob.py]]"
+  - "[[src/mllm_shap/value/tfidf.py]]"
 ---
 
 # value
 
-Part of [[nlp-shap]].
+Part of [[mllm-shap]].
 
 ## Responsibility
 

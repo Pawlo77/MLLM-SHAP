@@ -46,7 +46,7 @@ def scratch_repo(tmp: Path) -> Path:
     for f in HOOKS.glob("*.sh"):
         shutil.copy2(f, repo / "scripts" / "hooks" / f.name)
     (repo / "pyproject.toml").write_text(
-        '[project]\nname = "nlp-shap"\nversion = "9.8.7"\n', encoding="utf-8"
+        '[project]\nname = "mllm-shap"\nversion = "9.8.7"\n', encoding="utf-8"
     )
     git(repo, "init", "-q", "-b", "main")
     git(repo, "add", "-A")

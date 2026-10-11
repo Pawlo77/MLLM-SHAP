@@ -1,4 +1,4 @@
-# Development config for a local LM Studio (extra: nlp-shap[lmstudio]).
+# Development config for a local LM Studio (extra: mllm-shap[lmstudio]).
 # Start LM Studio, then run the `lms`-marked tests: uv run pytest -m lms tests/
 backend:
   kind: lmstudio

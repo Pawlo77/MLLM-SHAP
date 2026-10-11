@@ -1,6 +1,6 @@
-"""The ``nlp-shap`` command line, run in a subprocess with the mock backend.
+"""The ``mllm-shap`` command line, run in a subprocess with the mock backend.
 
-@see [[src/nlp_shap/cli.py]]
+@see [[src/mllm_shap/cli.py]]
 """
 
 import json
@@ -12,15 +12,15 @@ from pathlib import Path
 
 import pytest
 
-from nlp_shap.cli import EXAMPLE_CONFIG, main
-from nlp_shap.pipeline.config import explain_config_from_yaml
+from mllm_shap.cli import EXAMPLE_CONFIG, main
+from mllm_shap.pipeline.config import explain_config_from_yaml
 
 _SNAPSHOT = {"turns": [{"messages": [{"role": "user", "text": "Why is the sky blue"}]}]}
 
 
 def _cli(*args: str, cwd: Path) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
-        [sys.executable, "-m", "nlp_shap.cli", *args],
+        [sys.executable, "-m", "mllm_shap.cli", *args],
         cwd=cwd,
         capture_output=True,
         text=True,
@@ -125,10 +125,10 @@ def test_cli_plugins_lists_every_group(tmp_path: Path) -> None:
     completed = _cli("plugins", cwd=tmp_path)
 
     assert completed.returncode == 0
-    assert "nlp_shap.estimators: complementary, exact, mc, neyman_cc" in (
+    assert "mllm_shap.estimators: complementary, exact, mc, neyman_cc" in (
         completed.stdout
     )
-    assert "nlp_shap.backends: api, lmstudio, mock, transformers" in completed.stdout
+    assert "mllm_shap.backends: api, lmstudio, mock, transformers" in completed.stdout
 
 
 def test_cli_config_example_and_check(tmp_path: Path) -> None:
@@ -199,7 +199,7 @@ def test_main_in_process_explain_render_and_errors(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     """main() maps validation errors to 2 and renders charts in-process."""
-    package_logger = logging.getLogger("nlp_shap")
+    package_logger = logging.getLogger("mllm_shap")
     monkeypatch.setattr(package_logger, "handlers", list(package_logger.handlers))
     monkeypatch.setattr(package_logger, "level", package_logger.level)
     monkeypatch.setattr(package_logger, "propagate", package_logger.propagate)
@@ -240,7 +240,7 @@ def test_main_rejects_unknown_log_level(capsys: pytest.CaptureFixture[str]) -> N
 def test_main_accepts_upper_case_log_level(monkeypatch: pytest.MonkeyPatch) -> None:
     levels: list[str] = []
     monkeypatch.setattr(
-        "nlp_shap.cli.configure_logging", lambda level: levels.append(level)
+        "mllm_shap.cli.configure_logging", lambda level: levels.append(level)
     )
     assert main(["--log-level", "INFO", "plugins"]) == 0
     assert levels == ["INFO"]
@@ -257,7 +257,7 @@ def test_main_maps_connection_errors_to_exit_3(
         msg = "connection refused"
         raise ConnectionRefusedError(msg)
 
-    monkeypatch.setattr("nlp_shap.cli.ExplainRunner.explain_sync", refuse)
+    monkeypatch.setattr("mllm_shap.cli.ExplainRunner.explain_sync", refuse)
     code = main([
         "explain",
         "--config",
@@ -276,7 +276,7 @@ def test_main_lets_unexpected_errors_propagate(
         msg = "bug"
         raise ValueError(msg)
 
-    monkeypatch.setattr("nlp_shap.cli.default_registry", broken)
+    monkeypatch.setattr("mllm_shap.cli.default_registry", broken)
     with pytest.raises(ValueError, match="bug"):
         main(["plugins"])
 
@@ -415,7 +415,7 @@ def test_cli_reanalyze_strict_refuses_backend_embedding_runs(
     config["explanation"]["value_fn"] = "embedding_cosine"
     config_path.write_text(json.dumps(config), encoding="utf-8")
 
-    with caplog.at_level(logging.WARNING, logger="nlp_shap"):
+    with caplog.at_level(logging.WARNING, logger="mllm_shap"):
         assert _reanalyze(tmp_path, archive) == 0
     assert "hash embeddings" in caplog.text
     capsys.readouterr()

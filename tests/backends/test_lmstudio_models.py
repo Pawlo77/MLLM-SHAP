@@ -1,18 +1,18 @@
 """Unit tests for LM Studio model resolution and download helpers.
 
-@see [[src/nlp_shap/backends/lmstudio/models.py]]
+@see [[src/mllm_shap/backends/lmstudio/models.py]]
 """
 
 from types import SimpleNamespace
 
 import pytest
 
-from nlp_shap.backends.lmstudio.models import (
+from mllm_shap.backends.lmstudio.models import (
     match_downloaded_model_key,
     pick_download_option,
     pick_search_result,
 )
-from nlp_shap.errors import BackendUnavailableError
+from mllm_shap.errors import BackendUnavailableError
 
 
 def test_match_downloaded_model_key_finds_normalized_match() -> None:

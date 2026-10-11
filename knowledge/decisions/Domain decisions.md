@@ -6,14 +6,14 @@ created: 2026-10-08
 updated: 2026-10-08
 tags: [decisions, domain]
 related-code:
-  - "[[src/nlp_shap/domain/conversation.py]]"
-  - "[[src/nlp_shap/domain/players.py]]"
-  - "[[src/nlp_shap/backends/_chat.py]]"
+  - "[[src/mllm_shap/domain/conversation.py]]"
+  - "[[src/mllm_shap/domain/players.py]]"
+  - "[[src/mllm_shap/backends/_chat.py]]"
 ---
 
 # Domain decisions
 
-Part of [[nlp-shap]]; architecture: [[domain]]. Related: [[backends]], [[Message]].
+Part of [[mllm-shap]]; architecture: [[domain]]. Related: [[backends]], [[Message]].
 
 ## 2026-10-08 — Speaker rendered into the message content
 

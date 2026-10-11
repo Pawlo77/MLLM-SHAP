@@ -1,15 +1,15 @@
 Approximate estimation
 ======================
 
-When :math:`n` players make exact enumeration infeasible, ``nlp-shap`` approximates
+When :math:`n` players make exact enumeration infeasible, ``mllm-shap`` approximates
 Shapley-style attributions by sampling coalitions. Three built-in estimators trade
 budget for accuracy:
 
-- :class:`~nlp_shap.estimation.monte_carlo.MonteCarloEstimator` — uniform random
+- :class:`~mllm_shap.estimation.monte_carlo.MonteCarloEstimator` — uniform random
   coalitions; attributions come from estimand plugins (Shapley or Banzhaf).
-- :class:`~nlp_shap.estimation.complementary.ComplementaryEstimator` — symmetric
+- :class:`~mllm_shap.estimation.complementary.ComplementaryEstimator` — symmetric
   pairs :math:`(S, N\setminus S)` with complementary-contribution (CC) aggregation.
-- :class:`~nlp_shap.estimation.neyman.NeymanEstimator` — two-phase CC sampling with
+- :class:`~mllm_shap.estimation.neyman.NeymanEstimator` — two-phase CC sampling with
   Neyman allocation over coalition sizes.
 
 Budget model
@@ -32,7 +32,7 @@ Every estimator evaluates the empty coalition :math:`\emptyset` and the grand
 coalition :math:`N`. Complementary and Neyman samplers yield the pair
 :math:`(N, \emptyset)` first, then all :math:`n` singleton pairs
 :math:`(\{i\}, N\setminus\{i\})`, so their budget never drops below :math:`2 + 2n`
-masks (or :math:`2^n`). For Monte Carlo, :class:`~nlp_shap.ExplainRunner` adds
+masks (or :math:`2^n`). For Monte Carlo, :class:`~mllm_shap.ExplainRunner` adds
 whichever boundary coalition the random draws missed. :math:`v(N)` is scored from
 the base generation, so it costs no extra backend call.
 
@@ -173,11 +173,11 @@ begins, and then behaves like complementary sampling with structured draws. On t
 ``budget.fraction=0.1`` over 200 seeds; that is an observation, not a guarantee.
 
 Because allocation depends on phase-one payoffs, Neyman requires a two-step API:
-:meth:`~nlp_shap.estimation.neyman.NeymanEstimator.sample_masks` (phase one),
-:meth:`~nlp_shap.estimation.neyman.NeymanEstimator.begin_allocation`, then
-:meth:`~nlp_shap.estimation.neyman.NeymanEstimator.sample_allocation_masks`.
-:class:`~nlp_shap.ExplainRunner` runs both phases: any estimator that implements
-:class:`~nlp_shap.protocols.estimator.TwoPhaseEstimator` gets its phase-one
+:meth:`~mllm_shap.estimation.neyman.NeymanEstimator.sample_masks` (phase one),
+:meth:`~mllm_shap.estimation.neyman.NeymanEstimator.begin_allocation`, then
+:meth:`~mllm_shap.estimation.neyman.NeymanEstimator.sample_allocation_masks`.
+:class:`~mllm_shap.ExplainRunner` runs both phases: any estimator that implements
+:class:`~mllm_shap.protocols.estimator.TwoPhaseEstimator` gets its phase-one
 payoffs and a second scheduling pass for the allocated masks.
 
 .. _theory-choosing-a-budget:
@@ -191,14 +191,14 @@ interactions and computes the exact Shapley values from all 256 coalitions. It
 reports each estimator's mean relative L1 error
 :math:`\sum_i |\hat\phi_i - \phi_i| / \sum_i |\phi_i|` over five seeds as the
 budget fraction grows, adding the boundary coalitions as
-:class:`~nlp_shap.ExplainRunner` does.
+:class:`~mllm_shap.ExplainRunner` does.
 
 .. code-block:: python
 
    import matplotlib.pyplot as plt
    import numpy as np
 
-   from nlp_shap import (
+   from mllm_shap import (
        CoalitionMask,
        ComplementaryEstimator,
        ExactEstimator,

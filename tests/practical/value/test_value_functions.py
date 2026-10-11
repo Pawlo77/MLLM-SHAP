@@ -1,6 +1,6 @@
 """Value functions and normalizers on real generations.
 
-@see [[src/nlp_shap/value/logprob.py]]
+@see [[src/mllm_shap/value/logprob.py]]
 """
 
 import math

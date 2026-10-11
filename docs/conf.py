@@ -1,4 +1,4 @@
-"""Sphinx configuration for nlp-shap."""
+"""Sphinx configuration for mllm-shap."""
 
 import sys
 import tomllib
@@ -83,7 +83,7 @@ nitpicky = True
 nitpick_ignore: list[tuple[str, str]] = [
     # Type variable of ``PluginContext.option[T]``; type variables have no page.
     ("py:class", "T"),
-    # matplotlib types imported under TYPE_CHECKING in nlp_shap.viz; the string
+    # matplotlib types imported under TYPE_CHECKING in mllm_shap.viz; the string
     # annotations carry no module, so intersphinx cannot resolve them.
     ("py:class", "Figure"),
     ("py:class", "Axes"),
@@ -101,7 +101,7 @@ nitpick_ignore: list[tuple[str, str]] = [
     ("py:class", "annotated_types.Le"),
     # Private base of the built-in estimators; its methods are documented on each
     # estimator through ``:inherited-members:`` in ``api/estimation.rst``.
-    ("py:class", "nlp_shap.estimation._shared._SnapshotEstimator"),
+    ("py:class", "mllm_shap.estimation._shared._SnapshotEstimator"),
 ]
 nitpick_ignore_regex: list[tuple[str, str]] = [
     # Numeric bounds of the same pydantic constraints (``0.0``, ``1.0``).
@@ -119,10 +119,10 @@ linkcheck_ignore = [
     # Files in this repository are linked on ``main``; a branch that adds a file
     # would fail until it merges, and github.com rate-limits (HTTP 429) the
     # dozens of blob links. tests/docs checks that the linked files exist.
-    r"https://github\.com/Pawlo77/nlp-shap/(blob|tree)/main/.*",
+    r"https://github\.com/Pawlo77/MLLM-SHAP/(blob|tree)/main/.*",
     # Linked from CONTRIBUTING.md; GitHub Discussions is not enabled on the
     # repository yet (404 until it is).
-    r"https://github\.com/Pawlo77/nlp-shap/discussions",
+    r"https://github\.com/Pawlo77/MLLM-SHAP/discussions",
 ]
 linkcheck_timeout = 30
 linkcheck_retries = 2
@@ -141,25 +141,25 @@ html_theme_options = {
         "color-brand-primary": "#60a5fa",
         "color-brand-content": "#93c5fd",
     },
-    "source_repository": "https://github.com/Pawlo77/nlp-shap/",
+    "source_repository": "https://github.com/Pawlo77/MLLM-SHAP/",
     "source_branch": "main",
     "source_directory": "docs/",
     "footer_icons": [
         {
             "name": "GitHub",
-            "url": "https://github.com/Pawlo77/nlp-shap",
+            "url": "https://github.com/Pawlo77/MLLM-SHAP",
             "html": _footer_icon("github.svg"),
             "class": "",
         },
         {
             "name": "PyPI",
-            "url": "https://pypi.org/project/nlp-shap/",
+            "url": "https://pypi.org/project/mllm-shap/",
             "html": _footer_icon("pypi.svg"),
             "class": "",
         },
         {
             "name": "Issues",
-            "url": "https://github.com/Pawlo77/nlp-shap/issues",
+            "url": "https://github.com/Pawlo77/MLLM-SHAP/issues",
             "html": _footer_icon("issues.svg"),
             "class": "",
         },

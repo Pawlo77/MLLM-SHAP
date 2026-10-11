@@ -1,4 +1,4 @@
-# nlp-shap development reference
+# mllm-shap development reference
 
 Load only when the task needs detail beyond `SKILL.md`.
 
@@ -17,7 +17,7 @@ User-facing `docs/` and `examples/`: **shipped API only** — no phases or rewri
 
 ## Notebook checklist
 
-- Cell 1 = all imports (stdlib/third-party then `nlp_shap`)
+- Cell 1 = all imports (stdlib/third-party then `mllm_shap`)
 - Full public usability scope for the feature; no stubs
 - Dual-audience section commentary (technical + business)
 - `make notebooks` before commit, after a `src/` change to a public workflow and before a release PR (outputs stored)
@@ -36,14 +36,14 @@ User-facing `docs/` and `examples/`: **shipped API only** — no phases or rewri
 
 ## Plugin / entry points
 
-New estimator, estimand, backend, value_fn, normalizer, partition, absence_policy, or renderer → register in `pyproject.toml` `[project.entry-points."nlp_shap.*"]` and exercise via `PluginRegistry`. See rule `plugins.mdc` and skill `plugin`.
+New estimator, estimand, backend, value_fn, normalizer, partition, absence_policy, or renderer → register in `pyproject.toml` `[project.entry-points."mllm_shap.*"]` and exercise via `PluginRegistry`. See rule `plugins.mdc` and skill `plugin`.
 
 ## Sibling repos
 
-Clone as siblings of `nlp-shap/` (`CONTRIBUTING.md`, "Agent setup"; workspace file `nlp-shap.code-workspace`):
+Clone as siblings of `mllm-shap/` (`CONTRIBUTING.md`, "Agent setup"; workspace file `MLLM-SHAP.code-workspace`):
 
-| Repo | Clone URL | Path from `nlp-shap/` |
+| Repo | Clone URL | Path from `MLLM-SHAP/` |
 |------|-----------|------------------------|
-| Legacy MLLM-Shap | `https://github.com/Pawlo77/MLLM-Shap.git` | `../MLLM-Shap/mllm_shap/src/mllm_shap/` |
+| Legacy MLLM-Shap-legacy | `https://github.com/Pawlo77/MLLM-Shap-legacy.git` | `../MLLM-Shap-legacy/mllm_shap/src/mllm_shap/` |
 
-Open `<parent>/nlp-shap/nlp-shap.code-workspace` after cloning.
+Open `<parent>/MLLM-SHAP/MLLM-SHAP.code-workspace` after cloning.

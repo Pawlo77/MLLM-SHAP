@@ -1,6 +1,6 @@
 """Real Wav2Vec2 alignment of a recorded sentence.
 
-@see [[src/nlp_shap/alignment/sgpa.py]]
+@see [[src/mllm_shap/alignment/sgpa.py]]
 """
 
 import itertools
@@ -9,7 +9,7 @@ from typing import Any
 
 import pytest
 
-from nlp_shap import AudioPart
+from mllm_shap import AudioPart
 from tests.practical._harness import MODELS, Scenario, require_weights, scenario_cases
 
 ROOT = Path(__file__).parents[2]
@@ -22,7 +22,7 @@ def test_words_get_ordered_contiguous_confident_segments(
     """Every word is aligned, in order, without gaps, inside the clip."""
     pytest.importorskip("librosa")
     pytest.importorskip("transformers")
-    from nlp_shap.alignment import SpectrogramGuidedAligner, Wav2Vec2Ctc
+    from mllm_shap.alignment import SpectrogramGuidedAligner, Wav2Vec2Ctc
 
     spec = MODELS["alignment"]
     require_weights(spec)

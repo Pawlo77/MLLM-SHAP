@@ -6,16 +6,16 @@ created: 2026-10-08
 updated: 2026-10-08
 tags: [decisions, value]
 related-code:
-  - "[[src/nlp_shap/value/generation_records.py]]"
-  - "[[src/nlp_shap/value/logprob.py]]"
-  - "[[src/nlp_shap/backends/mock/backend.py]]"
-  - "[[src/nlp_shap/pipeline/orchestrator.py]]"
-  - "[[src/nlp_shap/pipeline/reanalyze.py]]"
+  - "[[src/mllm_shap/value/generation_records.py]]"
+  - "[[src/mllm_shap/value/logprob.py]]"
+  - "[[src/mllm_shap/backends/mock/backend.py]]"
+  - "[[src/mllm_shap/pipeline/orchestrator.py]]"
+  - "[[src/mllm_shap/pipeline/reanalyze.py]]"
 ---
 
 # Value decisions
 
-Part of [[nlp-shap]]; architecture: [[value]]. Related: [[backends]], [[pipeline]], [[Reanalyze]].
+Part of [[mllm-shap]]; architecture: [[value]]. Related: [[backends]], [[pipeline]], [[Reanalyze]].
 
 ## 2026-10-08 — Logprob value is the coalition's own mean token logprob
 
@@ -31,4 +31,4 @@ Decision: `contextual_embedding = hash_embedding(text + "\0")` and `embedding = 
 
 Why: `generation_record_from_text(text, context_id)` salted `contextual_embedding` with `context_id`. The mock, LM Studio and application programming interface (API) backends passed the rendered coalition snapshot's id; the orchestrator and `reanalyze` passed the explained snapshot's id. So a contextual run scored vectors `reanalyze` cannot rebuild and was recorded as `embedding_source: backend` ([[Fixed issues|C15]]).
 
-Consequences: Mock, LM Studio and API runs give identical `explain` and `reanalyze` values in both embedding modes and record `embedding_source: hash` (test `test_reanalyze_matches_explain_embedding_values` in [[tests/pipeline/test_runner_e2e.py]]). Their contextual-mode values change; static-mode values do not. On the four-token C15 repro (`nlp-shap explain` and `nlp-shap reanalyze`, run on 2026-10-08) both give `[-0.227, 0.243, 0.474, 0.494]` and `--strict` exits 0. In hash mode the contextual vector no longer differs between snapshots producing the same text and differs from the static one only by the separator. Third-party backends passing `context_id` keep working with a warning. Rejected: salting with the explained snapshot id in the backends (the backend protocol never sees it; adding it changes every backend's signature); rebuilding contextual vectors in `reanalyze` (archives store the snapshot id, not its text); documenting the mismatch (`--strict` would refuse every contextual run of the continuous integration backend).
+Consequences: Mock, LM Studio and API runs give identical `explain` and `reanalyze` values in both embedding modes and record `embedding_source: hash` (test `test_reanalyze_matches_explain_embedding_values` in [[tests/pipeline/test_runner_e2e.py]]). Their contextual-mode values change; static-mode values do not. On the four-token C15 repro (`mllm-shap explain` and `mllm-shap reanalyze`, run on 2026-10-08) both give `[-0.227, 0.243, 0.474, 0.494]` and `--strict` exits 0. In hash mode the contextual vector no longer differs between snapshots producing the same text and differs from the static one only by the separator. Third-party backends passing `context_id` keep working with a warning. Rejected: salting with the explained snapshot id in the backends (the backend protocol never sees it; adding it changes every backend's signature); rebuilding contextual vectors in `reanalyze` (archives store the snapshot id, not its text); documenting the mismatch (`--strict` would refuse every contextual run of the continuous integration backend).

@@ -1,14 +1,14 @@
 """Direct tests for whitespace token spans and span rendering.
 
-@see [[src/nlp_shap/masking/tokens.py]]
+@see [[src/mllm_shap/masking/tokens.py]]
 """
 
 import pytest
 
-from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
-from nlp_shap.domain.enums import Role
-from nlp_shap.domain.players import PlayerSpan
-from nlp_shap.masking.tokens import render_spans, token_spans
+from mllm_shap.domain.conversation import ConversationSnapshot, Message, Turn
+from mllm_shap.domain.enums import Role
+from mllm_shap.domain.players import PlayerSpan
+from mllm_shap.masking.tokens import render_spans, token_spans
 
 
 def _snapshot(*texts: str) -> ConversationSnapshot:

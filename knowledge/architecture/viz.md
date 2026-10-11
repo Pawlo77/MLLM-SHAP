@@ -6,19 +6,19 @@ tags: [architecture, viz]
 created: 2026-10-07
 updated: 2026-10-10
 related-code:
-  - "[[src/nlp_shap/viz/__init__.py]]"
-  - "[[src/nlp_shap/viz/audio.py]]"
-  - "[[src/nlp_shap/viz/colors.py]]"
-  - "[[src/nlp_shap/viz/labels.py]]"
-  - "[[src/nlp_shap/viz/render.py]]"
-  - "[[src/nlp_shap/viz/style.py]]"
-  - "[[src/nlp_shap/viz/token_bar.py]]"
-  - "[[src/nlp_shap/viz/token_text.py]]"
+  - "[[src/mllm_shap/viz/__init__.py]]"
+  - "[[src/mllm_shap/viz/audio.py]]"
+  - "[[src/mllm_shap/viz/colors.py]]"
+  - "[[src/mllm_shap/viz/labels.py]]"
+  - "[[src/mllm_shap/viz/render.py]]"
+  - "[[src/mllm_shap/viz/style.py]]"
+  - "[[src/mllm_shap/viz/token_bar.py]]"
+  - "[[src/mllm_shap/viz/token_text.py]]"
 ---
 
 # viz
 
-Part of [[nlp-shap]].
+Part of [[mllm-shap]].
 
 ## Responsibility
 
@@ -37,7 +37,7 @@ Part of [[nlp-shap]].
 ## Data flow
 
 - In: `ExplainRunOutput` from the [[pipeline]] (its `player_set` holds the explained players), the snapshot.
-- Out: figure or HTML string; matplotlib, seaborn and IPython are imported lazily (`viz` extra); `nlp_shap/__init__.py` exposes the three helpers lazily.
+- Out: figure or HTML string; matplotlib, seaborn and IPython are imported lazily (`viz` extra); `mllm_shap/__init__.py` exposes the three helpers lazily.
 
 ## Invariants
 

@@ -1,6 +1,6 @@
 """Multi-turn, multi-user, system-prompt and audio conversations.
 
-@see [[src/nlp_shap/masking/partitions.py]]
+@see [[src/mllm_shap/masking/partitions.py]]
 """
 
 import asyncio
@@ -8,18 +8,18 @@ from typing import Any
 
 import pytest
 
-from nlp_shap.domain.config import GenerationConfig
-from nlp_shap.domain.conversation import (
+from mllm_shap.domain.config import GenerationConfig
+from mllm_shap.domain.conversation import (
     AudioPart,
     ConversationSnapshot,
     Message,
     TextPart,
     Turn,
 )
-from nlp_shap.domain.enums import Role
-from nlp_shap.pipeline.config import BackendConfig, ExplainConfig
-from nlp_shap.plugins import PluginContext, PluginGroup
-from nlp_shap.plugins.builtin import BUILTIN_PLUGINS
+from mllm_shap.domain.enums import Role
+from mllm_shap.pipeline.config import BackendConfig, ExplainConfig
+from mllm_shap.plugins import PluginContext, PluginGroup
+from mllm_shap.plugins.builtin import BUILTIN_PLUGINS
 from tests.practical._harness import (
     PracticalModel,
     Scenario,

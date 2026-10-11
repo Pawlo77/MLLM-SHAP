@@ -3,7 +3,7 @@ Business and compliance applications
 
 Shapley-style explainability connects cooperative game theory to decisions that
 organizations must justify, audit, and defend. This page outlines common
-deployment contexts for ``nlp-shap``-style attribution — where honest **estimand
+deployment contexts for ``mllm-shap``-style attribution — where honest **estimand
 labelling**, archived coalition records, and reproducible configs matter as much
 as the numeric scores.
 
@@ -40,8 +40,8 @@ Transparency and consumer protection
 When individuals receive solely automated decisions with legal or similar
 significant effects, organizations may need *meaningful information* about the
 logic involved. Coalition-based NLP explainability does not replace legal
-counsel, but labelled :class:`~nlp_shap.pipeline.result.ExplainResult` objects
-and :class:`~nlp_shap.pipeline.manifest.RunManifest` metadata provide a technical
+counsel, but labelled :class:`~mllm_shap.pipeline.result.ExplainResult` objects
+and :class:`~mllm_shap.pipeline.manifest.RunManifest` metadata provide a technical
 audit trail: which estimand was reported, which run produced it, and which config
 governed masking and scoring.
 
@@ -76,8 +76,8 @@ noise from attribution dashboards shown to human moderators.
 **Internal copilots and document workflows.**
 Legal, HR, and finance copilots process sensitive documents. Run archives with
 typed manifests support internal audit: each archive keeps the full
-:class:`~nlp_shap.ExplainConfig`, the estimand label, the base generation and every
-coalition output, and :meth:`~nlp_shap.ExplainRunner.reanalyze` recomputes payoffs
+:class:`~mllm_shap.ExplainConfig`, the estimand label, the base generation and every
+coalition output, and :meth:`~mllm_shap.ExplainRunner.reanalyze` recomputes payoffs
 and attributions from them without calling the model again.
 
 Model risk management
@@ -88,9 +88,9 @@ institutions to validate models, document assumptions, and monitor drift.
 Explainability is part of the model risk toolkit — not a substitute for
 validation, but a required artifact for many NLP deployments.
 
-Practices that align with ``nlp-shap`` design:
+Practices that align with ``mllm-shap`` design:
 
-- **Versioned configs** via :class:`~nlp_shap.ExplainConfig` and YAML archives
+- **Versioned configs** via :class:`~mllm_shap.ExplainConfig` and YAML archives
 - **Explicit estimands** so validation reports state whether Shapley or Banzhaf
   was used
 - **Separation of concerns** — estimators sample coalitions; estimand aggregators

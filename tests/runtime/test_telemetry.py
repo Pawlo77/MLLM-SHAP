@@ -1,9 +1,9 @@
 """Tests for explain pipeline telemetry.
 
-@see [[src/nlp_shap/runtime/telemetry.py]]
+@see [[src/mllm_shap/runtime/telemetry.py]]
 """
 
-from nlp_shap.runtime.telemetry import InMemoryObservabilitySink
+from mllm_shap.runtime.telemetry import InMemoryObservabilitySink
 
 
 def test_in_memory_observability_sink_records_span_durations() -> None:

@@ -1,4 +1,4 @@
-"""Smoke tests for the nlp_shap package.
+"""Smoke tests for the mllm_shap package.
 
 @see [[knowledge/architecture/core]]
 """
@@ -6,12 +6,12 @@
 from importlib.metadata import version
 from pathlib import Path
 
-import nlp_shap
+import mllm_shap
 
 
 def test_version_is_defined() -> None:
     """Package exposes the installed distribution version."""
-    assert nlp_shap.__version__ == version("nlp-shap")
+    assert mllm_shap.__version__ == version("mllm-shap")
 
 
 def test_examples_scaffold_exists() -> None:

@@ -1,7 +1,7 @@
 ---
 paths:
   - "docs/**"
-  - "src/nlp_shap/__init__.py"
+  - "src/mllm_shap/__init__.py"
 ---
 
 <!-- Generated from .cursor/rules/docs.mdc by scripts/sync_rules.py; do not edit. -->
@@ -19,7 +19,7 @@ Ship documentation with every release that adds **public API**, **algorithms**, 
 
 Update `docs/` (and run `make docs`) when you add or materially change:
 
-- Public exports in `nlp_shap.__init__` or subpackage `__all__`
+- Public exports in `mllm_shap.__init__` or subpackage `__all__`
 - Estimators, estimands, value functions, backends, or pipeline entry points
 - Theory-heavy algorithms (Shapley variants, sampling, masking, alignment)
 

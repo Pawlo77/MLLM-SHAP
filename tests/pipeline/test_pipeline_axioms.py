@@ -1,18 +1,18 @@
 """Shapley axioms verified through the public explain pipeline.
 
-@see [[src/nlp_shap/pipeline/__init__.py]]
+@see [[src/mllm_shap/pipeline/__init__.py]]
 """
 
 import pytest
 
-from nlp_shap import ExplainConfig, ExplainRunner, PluginGroup, PluginRegistry
-from nlp_shap.domain.config import GenerationConfig
-from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
-from nlp_shap.domain.enums import Role
-from nlp_shap.domain.generation import GenerationRecord
-from nlp_shap.estimation.estimands._weights import aggregate_shapley_exact
-from nlp_shap.plugins import default_registry
-from nlp_shap.protocols.backend import GenerationResult
+from mllm_shap import ExplainConfig, ExplainRunner, PluginGroup, PluginRegistry
+from mllm_shap.domain.config import GenerationConfig
+from mllm_shap.domain.conversation import ConversationSnapshot, Message, Turn
+from mllm_shap.domain.enums import Role
+from mllm_shap.domain.generation import GenerationRecord
+from mllm_shap.estimation.estimands._weights import aggregate_shapley_exact
+from mllm_shap.plugins import default_registry
+from mllm_shap.protocols.backend import GenerationResult
 from tests.estimation._games import full_table
 
 

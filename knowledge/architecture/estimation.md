@@ -6,22 +6,22 @@ tags: [architecture, estimation]
 created: 2026-10-07
 updated: 2026-10-09
 related-code:
-  - "[[src/nlp_shap/estimation/__init__.py]]"
-  - "[[src/nlp_shap/estimation/_shared.py]]"
-  - "[[src/nlp_shap/estimation/complementary.py]]"
-  - "[[src/nlp_shap/estimation/estimands/__init__.py]]"
-  - "[[src/nlp_shap/estimation/estimands/_weights.py]]"
-  - "[[src/nlp_shap/estimation/estimands/banzhaf.py]]"
-  - "[[src/nlp_shap/estimation/estimands/shapley.py]]"
-  - "[[src/nlp_shap/estimation/exact.py]]"
-  - "[[src/nlp_shap/estimation/monte_carlo.py]]"
-  - "[[src/nlp_shap/estimation/neyman.py]]"
-  - "[[src/nlp_shap/estimation/normalizers.py]]"
+  - "[[src/mllm_shap/estimation/__init__.py]]"
+  - "[[src/mllm_shap/estimation/_shared.py]]"
+  - "[[src/mllm_shap/estimation/complementary.py]]"
+  - "[[src/mllm_shap/estimation/estimands/__init__.py]]"
+  - "[[src/mllm_shap/estimation/estimands/_weights.py]]"
+  - "[[src/mllm_shap/estimation/estimands/banzhaf.py]]"
+  - "[[src/mllm_shap/estimation/estimands/shapley.py]]"
+  - "[[src/mllm_shap/estimation/exact.py]]"
+  - "[[src/mllm_shap/estimation/monte_carlo.py]]"
+  - "[[src/mllm_shap/estimation/neyman.py]]"
+  - "[[src/mllm_shap/estimation/normalizers.py]]"
 ---
 
 # estimation
 
-Part of [[nlp-shap]].
+Part of [[mllm-shap]].
 
 ## Responsibility
 

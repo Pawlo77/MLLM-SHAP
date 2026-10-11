@@ -34,17 +34,17 @@ from check_vault import (
 
 ROOT = Path(__file__).resolve().parent.parent
 GENERATED = Path("knowledge") / "generated"
-PACKAGE = Path("src") / "nlp_shap"
+PACKAGE = Path("src") / "mllm_shap"
 
 CONFIG_KEYS = {
-    "nlp_shap.estimators": "explanation.estimator",
-    "nlp_shap.estimands": "explanation.estimand",
-    "nlp_shap.value_fns": "explanation.value_fn",
-    "nlp_shap.normalizers": "explanation.normalizer",
-    "nlp_shap.backends": "backend.kind",
-    "nlp_shap.partitions": "explanation.players",
-    "nlp_shap.absence_policies": "explanation.absence_policy",
-    "nlp_shap.renderers": "render_attribution(renderer=...)",
+    "mllm_shap.estimators": "explanation.estimator",
+    "mllm_shap.estimands": "explanation.estimand",
+    "mllm_shap.value_fns": "explanation.value_fn",
+    "mllm_shap.normalizers": "explanation.normalizer",
+    "mllm_shap.backends": "backend.kind",
+    "mllm_shap.partitions": "explanation.players",
+    "mllm_shap.absence_policies": "explanation.absence_policy",
+    "mllm_shap.renderers": "render_attribution(renderer=...)",
 }
 """Configuration key that selects a plugin from each entry-point group."""
 
@@ -138,7 +138,7 @@ def first_line(doc: str | None) -> str:
 
 
 def module_file(root: Path, dotted: str) -> Path | None:
-    """Return the file of an absolute ``nlp_shap`` module path."""
+    """Return the file of an absolute ``mllm_shap`` module path."""
     base = root / "src" / Path(*dotted.split("."))
     for candidate in (base.with_suffix(".py"), base / "__init__.py"):
         if candidate.is_file():
@@ -264,7 +264,7 @@ def build_modules(root: Path) -> str:
             ])
             + " |"
         )
-    body = header("Modules", "the module docstrings in `src/nlp_shap`")
+    body = header("Modules", "the module docstrings in `src/mllm_shap`")
     body += (
         "| Module | Summary | Domain | See | Lines | Architecture note |\n"
         "|---|---|---|---|---|---|\n" + "\n".join(rows) + "\n\n"
@@ -334,7 +334,7 @@ def build_plugins(root: Path) -> str:
     keys: set[tuple[str, str]] = set(builtin)
     targets: dict[tuple[str, str], str] = {}
     for group, items in entry_points.items():
-        if not group.startswith("nlp_shap."):
+        if not group.startswith("mllm_shap."):
             continue
         for name, target in items.items():
             keys.add((group, name))
@@ -437,7 +437,7 @@ def build_config_keys(root: Path) -> str:
     body += (
         "Keys of `ExplainConfig` as written in YAML "
         "(`explain_config_from_yaml`); defined in "
-        "[[src/nlp_shap/pipeline/config.py]].\n\n"
+        "[[src/mllm_shap/pipeline/config.py]].\n\n"
         "| Key | Type | Default | Description |\n|---|---|---|---|\n"
         + "\n".join(rows)
         + "\n"
@@ -475,7 +475,7 @@ def build_public_api(root: Path) -> str:
         summary = first_line(docstring_of(found[1])) if found else ""
         link = f"[[{source}]]" if source else ""
         rows.append(f"| `{name}` | {link} | {cell(summary)} |")
-    body = header("Public API", "`nlp_shap.__all__`")
+    body = header("Public API", "`mllm_shap.__all__`")
     body += "| Name | Defined in | Summary |\n|---|---|---|\n" + "\n".join(rows) + "\n"
     return body
 
@@ -797,9 +797,9 @@ def build_jit_paths(root: Path, vault: Vault) -> dict[Path, str]:
             body += ["", f"## {heading}", ""]
             body += [plain_links(line, vault) for line in lines]
         if package == "core":
-            match = "src/nlp_shap/[^/]+[.]py$"
+            match = "src/mllm_shap/[^/]+[.]py$"
         else:
-            match = f"src/nlp_shap/{package}/"
+            match = f"src/mllm_shap/{package}/"
         meta = {
             "title": quoted(f"{package} package (architecture note)"),
             "description": quoted(
@@ -992,9 +992,9 @@ def jit_orphans(root: Path, built: dict[Path, str]) -> list[Path]:
 
 
 IMPORT_FROM = re.compile(
-    r"^\s*from\s+(\.+[\w.]*|nlp_shap[\w.]*)\s+import\s", re.MULTILINE
+    r"^\s*from\s+(\.+[\w.]*|mllm_shap[\w.]*)\s+import\s", re.MULTILINE
 )
-IMPORT_PLAIN = re.compile(r"^\s*import\s+(nlp_shap[\w.]*)", re.MULTILINE)
+IMPORT_PLAIN = re.compile(r"^\s*import\s+(mllm_shap[\w.]*)", re.MULTILINE)
 
 
 def graph(root: Path) -> tuple[set[str], set[tuple[str, str, str]]]:

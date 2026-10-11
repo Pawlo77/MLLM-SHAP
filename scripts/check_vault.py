@@ -1,4 +1,4 @@
-"""Consistency checks for the nlp-shap Obsidian vault (repository root).
+"""Consistency checks for the mllm-shap Obsidian vault (repository root).
 
 Usage:
     python scripts/check_vault.py [--quiet] [--strict] [--strict-tags] [--root DIR]
@@ -534,7 +534,7 @@ def check_plans(vault: Vault) -> list[Finding]:
 
 def code_files(root: Path) -> list[Path]:
     """Return package and test Python files checked for links and tags."""
-    return sorted((root / "src" / "nlp_shap").rglob("*.py")) + sorted(
+    return sorted((root / "src" / "mllm_shap").rglob("*.py")) + sorted(
         (root / "tests").rglob("*.py")
     )
 
@@ -542,7 +542,7 @@ def code_files(root: Path) -> list[Path]:
 def check_code(vault: Vault, files: list[Path]) -> list[Finding]:
     """Return broken-link and traceability-tag findings for Python files."""
     findings: list[Finding] = []
-    package = vault.root / "src" / "nlp_shap"
+    package = vault.root / "src" / "mllm_shap"
     for path in files:
         rel = vault.rel(path)
         text = comments_and_docstrings(path)
@@ -586,9 +586,9 @@ def _git(root: Path, *args: str) -> str | None:
 
 
 def architecture_note_for(root: Path, changed: str) -> Path | None:
-    """Return the architecture note path for a changed ``src/nlp_shap`` file."""
+    """Return the architecture note path for a changed ``src/mllm_shap`` file."""
     parts = Path(changed).parts
-    if len(parts) < 3 or parts[:2] != ("src", "nlp_shap"):
+    if len(parts) < 3 or parts[:2] != ("src", "mllm_shap"):
         return None
     package = parts[2] if len(parts) > 3 else "core"
     return root / "knowledge" / "architecture" / f"{package}.md"
