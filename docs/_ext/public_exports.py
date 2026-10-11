@@ -1,13 +1,13 @@
 """Sphinx extension: the public-exports table and re-export cross-references.
 
-``.. public-exports::`` imports :mod:`nlp_shap` (or the module given as argument),
+``.. public-exports::`` imports :mod:`mllm_shap` (or the module given as argument),
 walks its ``__all__`` and emits a table with one row per exported name: a
 cross-reference to the object's canonical location and the first line of its
 docstring. Dunder names such as ``__version__`` are skipped.
 
 The extension also resolves references written against a re-export, for example
-``:class:`~nlp_shap.ExplainRunner``` or ``:class:`nlp_shap.runtime.RunArchive```,
-to the module that defines the object (``nlp_shap.pipeline.runner.ExplainRunner``),
+``:class:`~mllm_shap.ExplainRunner``` or ``:class:`mllm_shap.runtime.RunArchive```,
+to the module that defines the object (``mllm_shap.pipeline.runner.ExplainRunner``),
 so guides can use the short public paths under ``nitpicky``.
 """
 
@@ -25,7 +25,7 @@ from sphinx.environment import BuildEnvironment
 from sphinx.util.docutils import SphinxDirective
 from sphinx.util.typing import ExtensionMetadata
 
-PACKAGE = "nlp_shap"
+PACKAGE = "mllm_shap"
 
 
 @dataclass(frozen=True)
@@ -65,7 +65,7 @@ def first_doc_line(obj: object) -> str:
 def canonical_target(obj: object, fallback: str) -> str:
     """Return ``module.qualname`` where ``obj`` is defined, else ``fallback``.
 
-    Objects defined in a private module (``nlp_shap._logging``) are documented
+    Objects defined in a private module (``mllm_shap._logging``) are documented
     under their public path, so ``fallback`` is returned for them.
     """
     module = getattr(obj, "__module__", None)
@@ -162,9 +162,9 @@ def _module_prefix(parts: list[str]) -> tuple[ModuleType, int] | None:
 
 
 def canonical_reference(target: str) -> str | None:
-    """Map a ``nlp_shap`` re-export path to the defining module's path.
+    """Map a ``mllm_shap`` re-export path to the defining module's path.
 
-    Returns ``None`` when ``target`` is not under :mod:`nlp_shap`, cannot be
+    Returns ``None`` when ``target`` is not under :mod:`mllm_shap`, cannot be
     imported, or already names the defining module.
     """
     parts = target.split(".")

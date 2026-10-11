@@ -1,7 +1,7 @@
 ### Task 1.2: Stratified marginal aggregation for partial samples (fixes C5)
 
 **Files:**
-- Modify: `src/nlp_shap/estimation/estimands/_weights.py:97-158`
+- Modify: `src/mllm_shap/estimation/estimands/_weights.py:97-158`
 - Modify: `tests/estimation/test_axioms.py` (append)
 
 **Interfaces:**
@@ -14,7 +14,7 @@ Design: for player i and coalition size k (i ∉ S, |S| = k), the Shapley value 
 Append to `tests/estimation/test_axioms.py`:
 
 ```python
-from nlp_shap.estimation.estimands._weights import (
+from mllm_shap.estimation.estimands._weights import (
     aggregate_from_marginals,
     banzhaf_weight,
     shapley_weight,
@@ -55,7 +55,7 @@ Expected: FAIL, `test_partial_sample_additive_game_is_unbiased` values below coe
 
 - [ ] **Step 3: Replace `aggregate_from_marginals`**
 
-Replace lines 97–158 of `src/nlp_shap/estimation/estimands/_weights.py` with:
+Replace lines 97–158 of `src/mllm_shap/estimation/estimands/_weights.py` with:
 
 ```python
 def aggregate_from_marginals(
@@ -151,6 +151,6 @@ Expected: all pass. If `tests/estimation/test_monte_carlo.py::test_mc_converges_
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/nlp_shap/estimation/estimands/_weights.py tests/estimation/test_axioms.py
+git add src/mllm_shap/estimation/estimands/_weights.py tests/estimation/test_axioms.py
 git commit -m "fix: make partial-sample marginal aggregation a stratified mean"
 ```

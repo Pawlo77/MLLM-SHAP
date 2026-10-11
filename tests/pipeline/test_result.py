@@ -1,12 +1,12 @@
 """Tests for explain pipeline result types.
 
-@see [[src/nlp_shap/pipeline/result.py]]
+@see [[src/mllm_shap/pipeline/result.py]]
 """
 
 import pytest
 
-from nlp_shap.domain.estimands import Estimand
-from nlp_shap.pipeline.result import ExplainResult
+from mllm_shap.domain.estimands import Estimand
+from mllm_shap.pipeline.result import ExplainResult
 
 
 def test_explain_result_requires_estimand() -> None:

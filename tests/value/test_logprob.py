@@ -1,14 +1,14 @@
 """Tests for the logprob value function.
 
-@see [[src/nlp_shap/value/logprob.py]]
+@see [[src/mllm_shap/value/logprob.py]]
 """
 
 import pytest
 
-from nlp_shap.domain.generation import GenerationRecord
-from nlp_shap.errors import BackendUnavailableError, LogprobsUnavailableError
-from nlp_shap.protocols import RequiresLogprobs
-from nlp_shap.value.logprob import LogprobValue
+from mllm_shap.domain.generation import GenerationRecord
+from mllm_shap.errors import BackendUnavailableError, LogprobsUnavailableError
+from mllm_shap.protocols import RequiresLogprobs
+from mllm_shap.value.logprob import LogprobValue
 
 _BASE = GenerationRecord(text="base", logprobs=(-5.0,))
 

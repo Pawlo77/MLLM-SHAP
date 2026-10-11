@@ -64,8 +64,8 @@ def test_repo_link_check_flags_missing_files(tmp_path: Path) -> None:
     """Links to files of this repository on ``main`` must exist locally."""
     page = tmp_path / "page.rst"
     page.write_text(
-        "`ok <https://github.com/Pawlo77/nlp-shap/blob/main/README.md>`_\n"
-        "`gone <https://github.com/Pawlo77/nlp-shap/blob/main/nope.md>`_\n",
+        "`ok <https://github.com/Pawlo77/MLLM-SHAP/blob/main/README.md>`_\n"
+        "`gone <https://github.com/Pawlo77/MLLM-SHAP/blob/main/nope.md>`_\n",
         encoding="utf-8",
     )
     findings = check_docs.check_repo_links([page])

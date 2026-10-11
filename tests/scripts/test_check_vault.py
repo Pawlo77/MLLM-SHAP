@@ -131,7 +131,7 @@ VIOLATIONS = [
     (
         "code link",
         _replace(
-            "src/nlp_shap/estimation/exact.py",
+            "src/mllm_shap/estimation/exact.py",
             '"""Enumerate coalitions."""',
             '"""Enumerate coalitions, see [[Missing note]]."""',
         ),
@@ -152,7 +152,7 @@ VIOLATIONS = [
     ),
     (
         "stray templater file",
-        _add("src/nlp_shap/<% tp.file.title %>/__init__.py.md", ""),
+        _add("src/mllm_shap/<% tp.file.title %>/__init__.py.md", ""),
         "stray file created by Obsidian",
     ),
     (
@@ -201,7 +201,7 @@ def test_each_rule_reports_one_violation(
 
 
 def test_missing_tags_warn_until_strict(checker: ModuleType, clean_vault: Path) -> None:
-    _replace("src/nlp_shap/estimation/exact.py", "@domain estimation\n", "")(
+    _replace("src/mllm_shap/estimation/exact.py", "@domain estimation\n", "")(
         clean_vault
     )
     assert _errors(checker, clean_vault) == []
@@ -243,7 +243,7 @@ def test_stale_architecture_note_warns_then_fails_strict(
     _git(clean_vault, "add", ".")
     _git(clean_vault, "commit", "-q", "-m", "base")
     _git(clean_vault, "update-ref", "refs/remotes/origin/main", "HEAD")
-    exact = clean_vault / "src/nlp_shap/estimation/exact.py"
+    exact = clean_vault / "src/mllm_shap/estimation/exact.py"
     exact.write_text(exact.read_text(encoding="utf-8") + "# change\n")
     _git(clean_vault, "commit", "-q", "-am", "change")
     warnings = _warnings(checker, clean_vault)

@@ -1,15 +1,15 @@
 API reference
 =============
 
-``nlp-shap`` exposes a small, typed public surface. Import the symbols below
-from :mod:`nlp_shap`; the module pages document every class and function where it
+``mllm-shap`` exposes a small, typed public surface. Import the symbols below
+from :mod:`mllm_shap`; the module pages document every class and function where it
 is defined.
 
 Public exports
 --------------
 
-The table is generated from ``nlp_shap.__all__`` at build time, so it always lists
-what ``from nlp_shap import ...`` accepts.
+The table is generated from ``mllm_shap.__all__`` at build time, so it always lists
+what ``from mllm_shap import ...`` accepts.
 
 .. public-exports::
 
@@ -36,12 +36,12 @@ Modules
 Package-level objects
 ---------------------
 
-.. automodule:: nlp_shap
+.. automodule:: mllm_shap
    :no-members:
 
-.. autofunction:: nlp_shap.configure_logging
+.. autofunction:: mllm_shap.configure_logging
 
-.. py:data:: nlp_shap.__version__
+.. py:data:: mllm_shap.__version__
    :type: str
 
    Installed package version, read from the distribution metadata

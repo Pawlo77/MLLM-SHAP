@@ -1,18 +1,18 @@
 """Benchmarks for estimator aggregation on the coalition table.
 
-@see [[src/nlp_shap/estimation/estimands/_weights.py]]
+@see [[src/mllm_shap/estimation/estimands/_weights.py]]
 """
 
 import numpy as np
 import pytest
 from pytest_benchmark.fixture import BenchmarkFixture
 
-from nlp_shap.domain.coalition import CoalitionMask
-from nlp_shap.domain.players import PlayerSet
-from nlp_shap.estimation.complementary import ComplementaryEstimator
-from nlp_shap.estimation.estimands import ShapleyAggregator
-from nlp_shap.estimation.exact import ExactEstimator
-from nlp_shap.estimation.monte_carlo import MonteCarloEstimator
+from mllm_shap.domain.coalition import CoalitionMask
+from mllm_shap.domain.players import PlayerSet
+from mllm_shap.estimation.complementary import ComplementaryEstimator
+from mllm_shap.estimation.estimands import ShapleyAggregator
+from mllm_shap.estimation.exact import ExactEstimator
+from mllm_shap.estimation.monte_carlo import MonteCarloEstimator
 
 _NUM_PLAYERS = 12
 _PLAYERS = PlayerSet(player_ids=tuple(f"p{index}" for index in range(_NUM_PLAYERS)))

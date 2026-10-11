@@ -1,9 +1,9 @@
 ---
 paths:
-  - "src/nlp_shap/estimation/**"
-  - "src/nlp_shap/runtime/**"
-  - "src/nlp_shap/masking/**"
-  - "src/nlp_shap/pipeline/**"
+  - "src/mllm_shap/estimation/**"
+  - "src/mllm_shap/runtime/**"
+  - "src/mllm_shap/masking/**"
+  - "src/mllm_shap/pipeline/**"
   - "tests/benchmarks/**"
 ---
 

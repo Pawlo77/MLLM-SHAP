@@ -4,7 +4,7 @@ from collections.abc import Mapping
 
 import numpy as np
 
-from nlp_shap.alignment.io import encode_wav
+from mllm_shap.alignment.io import encode_wav
 
 RATE = 8000
 FRAME = 400  # samples per CTC frame (50 ms)

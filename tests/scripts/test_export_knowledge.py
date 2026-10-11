@@ -45,7 +45,7 @@ def test_export_rewrites_obsidian_syntax(exporter: ModuleType, tmp_path: Path) -
     assert page.startswith("# How it works\n")
     assert "> **Warning:** Careful" in page
     assert "[Coalition](../concepts/coalition.md)" in page
-    assert "https://github.com/Pawlo77/nlp-shap/blob/main/src/demo.py" in page
+    assert "https://github.com/Pawlo77/MLLM-SHAP/blob/main/src/demo.py" in page
     assert "knowledge/issues/C01%20-%20Bug.md" in page
     assert "A subset." in page
     assert "```text" in page

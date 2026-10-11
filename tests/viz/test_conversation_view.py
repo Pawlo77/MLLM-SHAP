@@ -1,6 +1,6 @@
 """Conversation view: messages under role headers, players coloured in place.
 
-@see [[src/nlp_shap/viz/conversation.py]]
+@see [[src/mllm_shap/viz/conversation.py]]
 """
 
 import dataclasses
@@ -9,7 +9,7 @@ import pytest
 
 pytest.importorskip("matplotlib")
 
-from nlp_shap import (
+from mllm_shap import (
     ConversationSnapshot,
     ExplainConfig,
     ExplainRunner,
@@ -18,7 +18,7 @@ from nlp_shap import (
     Role,
     Turn,
 )
-from nlp_shap.viz import plot_conversation, render_conversation_html
+from mllm_shap.viz import plot_conversation, render_conversation_html
 
 THREAD = ConversationSnapshot.from_turns((
     Turn(messages=(Message(role=Role.SYSTEM, text="Answer briefly."),)),
@@ -52,7 +52,7 @@ def test_html_shows_every_message_with_only_players_coloured() -> None:
         assert text in html
     assert "user/Alice 2" in html
     assert "assistant 3" in html
-    assert html.count("nlp-shap-player") == len(output.player_set.spans) == 3
+    assert html.count("mllm-shap-player") == len(output.player_set.spans) == 3
     assert "+0.100" in html
     assert "-0.200" in html
 
@@ -75,7 +75,7 @@ def test_message_players_colour_whole_messages() -> None:
     output = _explain("messages")
     assert output.player_set is not None
     html = render_conversation_html(output, THREAD, output.player_set)
-    assert html.count("nlp-shap-player") == 4
+    assert html.count("mllm-shap-player") == 4
 
 
 def test_values_must_match_the_players() -> None:
@@ -92,12 +92,12 @@ def test_audio_messages_get_a_waveform_strip_on_the_same_colour_scale() -> None:
     """Typed and spoken players share one scale; the spoken ones also on the audio."""
     pytest.importorskip("librosa")
     pytest.importorskip("soundfile")
-    from nlp_shap import AudioPart, PluginGroup, TextPart
-    from nlp_shap.alignment.partitions import SgpaSegmentPartitioner
-    from nlp_shap.alignment.sgpa import SpectrogramGuidedAligner
-    from nlp_shap.plugins import default_registry
-    from nlp_shap.plugins.context import PluginContext
-    from nlp_shap.viz.colors import token_background_rgba
+    from mllm_shap import AudioPart, PluginGroup, TextPart
+    from mllm_shap.alignment.partitions import SgpaSegmentPartitioner
+    from mllm_shap.alignment.sgpa import SpectrogramGuidedAligner
+    from mllm_shap.plugins import default_registry
+    from mllm_shap.plugins.context import PluginContext
+    from mllm_shap.viz.colors import token_background_rgba
     from tests.alignment._fakes import RATE, FakeCtc, speech
 
     snapshot = ConversationSnapshot.from_turns((

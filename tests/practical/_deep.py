@@ -14,12 +14,12 @@ from typing import Any, ClassVar
 
 from pydantic import Field
 
-from nlp_shap.backends._chat import snapshot_to_chat_messages
-from nlp_shap.domain.conversation import ConversationSnapshot
-from nlp_shap.domain.players import PlayerSet
-from nlp_shap.masking.tokens import token_spans
-from nlp_shap.plugins import PluginContext, PluginGroup, default_registry
-from nlp_shap.protocols.plugin import PluginOptions
+from mllm_shap.backends._chat import snapshot_to_chat_messages
+from mllm_shap.domain.conversation import ConversationSnapshot
+from mllm_shap.domain.players import PlayerSet
+from mllm_shap.masking.tokens import token_spans
+from mllm_shap.plugins import PluginContext, PluginGroup, default_registry
+from mllm_shap.protocols.plugin import PluginOptions
 
 from ._cache import cache_key
 from ._harness import HERE, RUN_INFO, PracticalModel, Scenario, labels

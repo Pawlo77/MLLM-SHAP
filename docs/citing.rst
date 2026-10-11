@@ -1,8 +1,8 @@
-Citing nlp-shap
-===============
+Citing mllm-shap
+================
 
-If you use ``nlp-shap`` in research, please cite the software. The repository's
-`CITATION.cff <https://github.com/Pawlo77/nlp-shap/blob/main/CITATION.cff>`_ is
+If you use ``mllm-shap`` in research, please cite the software. The repository's
+`CITATION.cff <https://github.com/Pawlo77/MLLM-SHAP/blob/main/CITATION.cff>`_ is
 the source of truth; GitHub's "Cite this repository" button renders it as APA or
 BibTeX.
 
@@ -11,17 +11,17 @@ BibTeX
 
 .. code-block:: bibtex
 
-   @software{pozorski_nlp_shap,
+   @software{pozorski_mllm_shap,
      author  = {Pozorski, Paweł},
-     title   = {nlp-shap: Shapley-value explainability for conversational
+     title   = {mllm-shap: Shapley-value explainability for conversational
                 language models},
-     url     = {https://github.com/Pawlo77/nlp-shap},
+     url     = {https://github.com/Pawlo77/MLLM-SHAP},
      license = {Apache-2.0},
      note    = {Python package, version as used in your work}
    }
 
 Add the ``version`` field with the release you used
-(``python -c "import nlp_shap; print(nlp_shap.__version__)"``) and record the run
+(``python -c "import mllm_shap; print(mllm_shap.__version__)"``) and record the run
 manifest of each reported result, which pins the estimand, estimator, value
 function and model.
 

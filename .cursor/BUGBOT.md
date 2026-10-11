@@ -1,7 +1,7 @@
 # Review rules
 
-You review pull requests for nlp-shap, an open-source library for Shapley-value explanations of
-conversational language models: estimators and estimand aggregators (`src/nlp_shap/estimation/`),
+You review pull requests for mllm-shap, an open-source library for Shapley-value explanations of
+conversational language models: estimators and estimand aggregators (`src/mllm_shap/estimation/`),
 masking, an async runtime and archive, the explain pipeline, plugin backends, Sphinx docs,
 example notebooks, and an Obsidian knowledge vault (`knowledge/`). Cite `AGENTS.md`, a
 `.cursor/rules/*.mdc` file or the skill `review` checklist when you flag a rule.
@@ -37,10 +37,10 @@ zizmor, the vault check) and pytest on Python 3.12–3.14; do not restate what t
 
 | Path | Bar |
 |------|-----|
-| `src/nlp_shap/estimation/**` | Highest. Every change runs the axiom tests (`tests/estimation/test_axioms.py`, `tests/pipeline/test_pipeline_axioms.py`); no estimator or estimand name switches inside an aggregator; no `2^n` materialisation outside the exact estimator |
-| `src/nlp_shap/pipeline/**` | Manifest fields and archive schema version bumped when the config or columns change; `archive.on_exists` honoured; errors propagate from the scheduler |
-| `src/nlp_shap/backends/**` | Heavy dependencies only through optional extras; capabilities through protocols, not `getattr`; a benchmark and a minimal notebook for a new backend |
-| `src/nlp_shap/**` (other) | Relative imports; mypy strict; Google docstrings; the architecture note `knowledge/architecture/<pkg>.md` updated in the same PR |
+| `src/mllm_shap/estimation/**` | Highest. Every change runs the axiom tests (`tests/estimation/test_axioms.py`, `tests/pipeline/test_pipeline_axioms.py`); no estimator or estimand name switches inside an aggregator; no `2^n` materialisation outside the exact estimator |
+| `src/mllm_shap/pipeline/**` | Manifest fields and archive schema version bumped when the config or columns change; `archive.on_exists` honoured; errors propagate from the scheduler |
+| `src/mllm_shap/backends/**` | Heavy dependencies only through optional extras; capabilities through protocols, not `getattr`; a benchmark and a minimal notebook for a new backend |
+| `src/mllm_shap/**` (other) | Relative imports; mypy strict; Google docstrings; the architecture note `knowledge/architecture/<pkg>.md` updated in the same PR |
 | `tests/**` | Tests assert values, not shapes; known-truth games for estimators; no loosened tolerances without a reason |
 | `docs/**`, `knowledge/**` | Match the code; no phase numbers in `docs/`; no secrets, hostnames or personal data; generated notes (`generated: true`) never edited by hand |
 | `.github/**` | Minimal `permissions`, `persist-credentials: false`, actions pinned by SHA or exact tag, no untrusted input interpolated into `run:` |

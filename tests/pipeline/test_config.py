@@ -1,6 +1,6 @@
 """Tests for ExplainConfig YAML round-trip.
 
-@see [[src/nlp_shap/pipeline/config.py]]
+@see [[src/mllm_shap/pipeline/config.py]]
 """
 
 from pathlib import Path
@@ -8,10 +8,10 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from nlp_shap.domain.enums import EmbeddingMode
-from nlp_shap.domain.estimands import Estimand
-from nlp_shap.errors import ConfigError
-from nlp_shap.pipeline.config import (
+from mllm_shap.domain.enums import EmbeddingMode
+from mllm_shap.domain.estimands import Estimand
+from mllm_shap.errors import ConfigError
+from mllm_shap.pipeline.config import (
     BackendConfig,
     NeymanConfig,
     explain_config_from_yaml,
@@ -50,7 +50,7 @@ def test_explain_config_rejects_unknown_fields() -> None:
 
 
 def test_kv_cache_defaults_off_with_bounded_entries() -> None:
-    from nlp_shap.pipeline.config import KvCacheConfig
+    from mllm_shap.pipeline.config import KvCacheConfig
 
     assert KvCacheConfig().enabled is False
     assert KvCacheConfig().max_entries == 8

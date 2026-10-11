@@ -57,7 +57,7 @@ All vendored agents:
 
 - `model: inherit` added to the agent37 agents (their frontmatter has none; the roster test
   requires it).
-- One paragraph of nlp-shap context added after the opening paragraph (where the docs, vault,
+- One paragraph of mllm-shap context added after the opening paragraph (where the docs, vault,
   manifest or conventions live). The method, rules and report format are unchanged unless listed.
 
 Per agent:

@@ -47,13 +47,13 @@ CI, or "Needs maintainer review") and carries no AI attribution (`pr-title.yaml`
 1. Wait for Copilot (poll every 60 s, 15 min at most):
    `gh pr view <n> --json reviews --jq '[.reviews[] | select(.author.login | startswith("copilot"))] | length'`;
    and for CI: `gh pr checks <n> --watch --fail-level error`.
-2. Unresolved threads: `gh api graphql -f query='query($o:String!,$r:String!,$n:Int!){repository(owner:$o,name:$r){pullRequest(number:$n){reviewThreads(first:100){nodes{id isResolved path line comments(first:10){nodes{id author{login} body}}}}}}}' -F o=Pawlo77 -F r=nlp-shap -F n=<n>`.
+2. Unresolved threads: `gh api graphql -f query='query($o:String!,$r:String!,$n:Int!){repository(owner:$o,name:$r){pullRequest(number:$n){reviewThreads(first:100){nodes{id isResolved path line comments(first:10){nodes{id author{login} body}}}}}}}' -F o=Pawlo77 -F r=mllm-shap -F n=<n>`.
 3. Per thread: fix with skill `development` (tests first) or decide not to; `make check`;
    commit (`fix:`/`docs:`/`chore:` as fits); re-run `pr_policy.py --write-marker --pr <n>`
    and stop if the kind became review; push; reply
-   (`gh api -X POST repos/Pawlo77/nlp-shap/pulls/<n>/comments/<id>/replies -f body=…`);
+   (`gh api -X POST repos/Pawlo77/MLLM-SHAP/pulls/<n>/comments/<id>/replies -f body=…`);
    resolve (`resolveReviewThread` mutation); re-request
-   (`gh api -X POST repos/Pawlo77/nlp-shap/pulls/<n>/requested_reviewers -f 'reviewers[]=copilot-pull-request-reviewer[bot]'`).
+   (`gh api -X POST repos/Pawlo77/MLLM-SHAP/pulls/<n>/requested_reviewers -f 'reviewers[]=copilot-pull-request-reviewer[bot]'`).
    A declined thread gets the reason, stays unresolved and forces the review outcome.
 4. Success: no unresolved Copilot thread and CI green; a Copilot review that only
    reports its quota limit counts as done. Red CI: fix in a follow-up commit (skill `ci`).

@@ -1,11 +1,11 @@
 """Tests for numpy similarity metrics.
 
-@see [[src/nlp_shap/value/_metrics.py]]
+@see [[src/mllm_shap/value/_metrics.py]]
 """
 
 import numpy as np
 
-from nlp_shap.value._metrics import cosine_similarity, euclidean_similarity
+from mllm_shap.value._metrics import cosine_similarity, euclidean_similarity
 
 
 def test_cosine_similarity_identical_vectors() -> None:

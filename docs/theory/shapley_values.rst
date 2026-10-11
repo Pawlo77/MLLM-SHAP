@@ -34,7 +34,7 @@ For coalition size :math:`k = |S|` (excluding :math:`i`), the weight is:
 
    w_{\mathrm{Shapley}}(k, n) = \frac{k!\,(n-k-1)!}{n!}
 
-Implemented in :class:`~nlp_shap.estimation.estimands.shapley.ShapleyAggregator`.
+Implemented in :class:`~mllm_shap.estimation.estimands.shapley.ShapleyAggregator`.
 
 The four axioms
 ---------------
@@ -53,7 +53,7 @@ so that :math:`v(\emptyset) = 0`:
 
    \sum_{i \in N} \phi_i(v) = v(N)
 
-Payoffs in ``nlp-shap`` are similarities to the base generation, so the empty
+Payoffs in ``mllm-shap`` are similarities to the base generation, so the empty
 prompt usually scores above zero. The library therefore uses the convention
 
 .. math::
@@ -64,8 +64,8 @@ which is the axiom applied to the normalized game
 :math:`v'(S) = v(S) - v(\emptyset)`: subtracting a constant from every payoff
 leaves every marginal contribution, and hence every Shapley value, unchanged.
 Each result reports both terms as
-:attr:`~nlp_shap.ExplainResult.grand_value` (:math:`v(N)`) and
-:attr:`~nlp_shap.ExplainResult.base_value` (:math:`v(\emptyset)`).
+:attr:`~mllm_shap.ExplainResult.grand_value` (:math:`v(N)`) and
+:attr:`~mllm_shap.ExplainResult.base_value` (:math:`v(\emptyset)`).
 
 **Explainability reading:** attributions sum to the change in model utility
 between the full prompt and the fully masked prompt. On the full coalition table
@@ -137,14 +137,14 @@ only feature subset :math:`S` is observed. Under **local accuracy** (attribution
 sum to the prediction difference from a baseline) and **missingness** (absent
 features do not contribute), the Shapley value yields the SHAP explanation.
 
-Important distinction for ``nlp-shap``:
+Important distinction for ``mllm-shap``:
 
 - **SHAP** names a family of explanation methods tied to Shapley allocations.
 - An **estimand** is the quantity your pipeline actually estimates. Averaging
   the marginal contributions of sampled coalitions uniformly targets the
   **Banzhaf index**; averaging them within each coalition size first and then
   across sizes (a size-stratified mean) targets the **Shapley value**. The
-  ``nlp-shap`` aggregators do the latter for Shapley and the former for Banzhaf
+  ``mllm-shap`` aggregators do the latter for Shapley and the former for Banzhaf
   — see :doc:`estimands` and :doc:`approximation`.
 
 When Shapley values are appropriate

@@ -5,8 +5,8 @@ domain: domain
 tags: [concept]
 created: 2026-10-08
 related-code:
-  - "[[src/nlp_shap/domain/players.py]]"
-  - "[[src/nlp_shap/masking/tokens.py]]"
+  - "[[src/mllm_shap/domain/players.py]]"
+  - "[[src/mllm_shap/masking/tokens.py]]"
 ---
 
 # Player span

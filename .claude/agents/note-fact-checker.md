@@ -1,6 +1,6 @@
 ---
 name: note-fact-checker
-description: Read-only check of one nlp-shap vault note against its related code or paper (symbols and signatures, issue repro, paper claims); reports OK or each mismatch. Use after writing or editing a note under knowledge/, or when a note's accuracy is in doubt.
+description: Read-only check of one mllm-shap vault note against its related code or paper (symbols and signatures, issue repro, paper claims); reports OK or each mismatch. Use after writing or editing a note under knowledge/, or when a note's accuracy is in doubt.
 tools: Read, Grep, Glob, Bash, WebFetch
 model: haiku
 ---

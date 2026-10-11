@@ -23,7 +23,7 @@ from check_vault import Vault
 
 ROOT = Path(__file__).resolve().parent.parent
 FOLDERS = ("handbook", "architecture", "decisions", "concepts")
-REPOSITORY = "https://github.com/Pawlo77/nlp-shap/blob/main"
+REPOSITORY = "https://github.com/Pawlo77/MLLM-SHAP/blob/main"
 LINK = re.compile(r"(!?)\[\[([^\]|#\\]*)(#[^\]|\\]*)?(?:\\?\|([^\]]*))?\]\]")
 CALLOUT = re.compile(r"^(\s*>\s*)\[!(\w+)\][+-]?\s*(.*)$")
 FENCE = re.compile(r"^\s*```(\w*)")

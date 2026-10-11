@@ -1,4 +1,4 @@
-# Contributing to nlp-shap
+# Contributing to mllm-shap
 
 ## Security
 
@@ -20,14 +20,14 @@ Open an issue before a larger change to agree on its scope and design.
 Prerequisites: Python 3.12 or newer and [uv](https://docs.astral.sh/uv/) (the project pins a minimum uv version in `pyproject.toml`; run `uv self update` if uv complains).
 
 ```bash
-git clone https://github.com/Pawlo77/nlp-shap.git
-cd nlp-shap
+git clone https://github.com/Pawlo77/MLLM-SHAP.git
+cd MLLM-SHAP
 make install
 ```
 
 `make install` installs Python 3.12, syncs all dependency groups and extras into `.venv` and installs the [prek](https://github.com/j178/prek) hooks (pre-commit, commit-msg, pre-push). The pre-push hook runs `make agent-check`, the same checks CI runs. Change dependencies with `uv add` and `uv lock`, never `pip install`; a new runtime dependency needs a justification in `pyproject.toml`.
 
-Jupyter kernel: `make kernel` (`nlp-shap (uv)`).
+Jupyter kernel: `make kernel` (`mllm-shap (uv)`).
 
 ## Quality gates
 
@@ -58,11 +58,11 @@ Pytest markers select tests that need extra resources and are excluded from `mak
 | `quick` (default) | `Qwen/Qwen2.5-1.5B-Instruct` 3.1 GB, `SmolLM2-360M-Instruct` 0.7 GB | under 4 GB | 130 s / 70 s |
 | `deep` (`deep.*`, before a release) | `Qwen/Qwen2.5-3B-Instruct` 6.2 GB | 7.4 GB | 28 min / 4 min |
 
-- `NLP_SHAP_PRACTICAL_DOWNLOAD=1`: download missing weights.
-- `NLP_SHAP_PRACTICAL_CPU=1`: run without a GPU (slow).
-- `NLP_SHAP_PRACTICAL_LMS_MODEL`: a downloaded LM Studio model key (`make practical` default `qwen2-500m-instruct`).
-- `NLP_SHAP_PRACTICAL_API_HOST` (default `http://localhost:1234/v1`) and `NLP_SHAP_PRACTICAL_API_MODEL`; a remote host needs `NLP_SHAP_PRACTICAL_REMOTE=1`.
-- `NLP_SHAP_PRACTICAL_JUDGE=lmstudio:<key>`: the quick tier's judge runs in LM Studio, for example `qwen2.5-7b-instruct` 4-bit (4.7 GB).
+- `MLLM_SHAP_PRACTICAL_DOWNLOAD=1`: download missing weights.
+- `MLLM_SHAP_PRACTICAL_CPU=1`: run without a GPU (slow).
+- `MLLM_SHAP_PRACTICAL_LMS_MODEL`: a downloaded LM Studio model key (`make practical` default `qwen2-500m-instruct`).
+- `MLLM_SHAP_PRACTICAL_API_HOST` (default `http://localhost:1234/v1`) and `MLLM_SHAP_PRACTICAL_API_MODEL`; a remote host needs `MLLM_SHAP_PRACTICAL_REMOTE=1`.
+- `MLLM_SHAP_PRACTICAL_JUDGE=lmstudio:<key>`: the quick tier's judge runs in LM Studio, for example `qwen2.5-7b-instruct` 4-bit (4.7 GB).
 
 Code rules live in `.cursor/rules/python-*.mdc`; write tests first for new behaviour and bug fixes.
 
@@ -70,16 +70,16 @@ Code rules live in `.cursor/rules/python-*.mdc`; write tests first for new behav
 
 | Path | Role |
 |------|------|
-| `src/nlp_shap/domain/` | Cooperative-game types: players, coalitions, conversation snapshots, estimands. |
-| `src/nlp_shap/protocols/` | Protocol contracts that plugins implement. |
-| `src/nlp_shap/masking/` | Partitioning, absence policies, mask building and coalition codecs. |
-| `src/nlp_shap/estimation/` | Estimators (exact, Monte Carlo, complementary, Neyman), estimands and normalizers. |
-| `src/nlp_shap/value/` | Value functions that score coalition outputs. |
-| `src/nlp_shap/backends/` | Model inference backends (mock, LM Studio, transformers, HTTP API). |
-| `src/nlp_shap/runtime/` | Run archive, deduplication, caches, scheduler and metrics. |
-| `src/nlp_shap/pipeline/` | Configuration, orchestration, runner and result objects. |
-| `src/nlp_shap/plugins/` | Plugin registry and entry-point discovery. |
-| `src/nlp_shap/viz/` | Token attribution renderers. |
+| `src/mllm_shap/domain/` | Cooperative-game types: players, coalitions, conversation snapshots, estimands. |
+| `src/mllm_shap/protocols/` | Protocol contracts that plugins implement. |
+| `src/mllm_shap/masking/` | Partitioning, absence policies, mask building and coalition codecs. |
+| `src/mllm_shap/estimation/` | Estimators (exact, Monte Carlo, complementary, Neyman), estimands and normalizers. |
+| `src/mllm_shap/value/` | Value functions that score coalition outputs. |
+| `src/mllm_shap/backends/` | Model inference backends (mock, LM Studio, transformers, HTTP API). |
+| `src/mllm_shap/runtime/` | Run archive, deduplication, caches, scheduler and metrics. |
+| `src/mllm_shap/pipeline/` | Configuration, orchestration, runner and result objects. |
+| `src/mllm_shap/plugins/` | Plugin registry and entry-point discovery. |
+| `src/mllm_shap/viz/` | Token attribution renderers. |
 | `tests/` | Unit, integration and benchmark tests, mirroring the package layout. |
 | `docs/` | Sphinx documentation (guides, theory, API reference, release notes). |
 | `examples/` | Executed Jupyter notebooks. |
@@ -119,14 +119,14 @@ Delivery runs through skill `ship`: routine changes (`scripts/pr_policy.py`) mer
 
 ### Sibling repositories
 
-One sibling repository is not vendored here: `MLLM-Shap` (the legacy implementation that skill `port-legacy` ports from). Clone it next to this repository under one parent directory:
+One sibling repository is not vendored here: `MLLM-Shap-legacy` (the legacy implementation that skill `port-legacy` ports from). Clone it next to this repository under one parent directory:
 
 ```bash
 mkdir -p <parent> && cd <parent>
-for r in nlp-shap MLLM-Shap; do git clone https://github.com/Pawlo77/$r.git; done
+for r in MLLM-SHAP MLLM-Shap-legacy; do git clone https://github.com/Pawlo77/$r.git; done
 ```
 
-Then open `<parent>/nlp-shap/nlp-shap.code-workspace` (File, Open Workspace from File). Paths in that file are relative to `nlp-shap/` (`../MLLM-Shap`).
+Then open `<parent>/MLLM-SHAP/MLLM-SHAP.code-workspace` (File, Open Workspace from File). Paths in that file are relative to `MLLM-SHAP/` (`../MLLM-Shap-legacy`).
 
 ### Tool matrix
 
@@ -160,7 +160,7 @@ Install lines per tool:
 
 ### Literature hosts
 
-Claude Code fetches from Semantic Scholar, arXiv and Crossref (plus `doi.org` redirects) without a prompt, so `paper-scout` and the literature watch run unattended. The accepted risk is exfiltration: an injected prompt could put file contents into a query string sent to those hosts. The Read deny list (secrets, keys, credential files, every `.cursorignore` entry) limits what could leak; the shell guard does not inspect network commands. Report a way around these limits as a vulnerability (section Security).
+Claude Code fetches from Semantic Scholar, arXiv and Crossref (plus `doi.org` redirects) without a prompt, so `paper-scout` runs unattended. The accepted risk is exfiltration: an injected prompt could put file contents into a query string sent to those hosts. The Read deny list (secrets, keys, credential files, every `.cursorignore` entry) limits what could leak; the shell guard does not inspect network commands. Report a way around these limits as a vulnerability (section Security).
 
 ### Codex
 
@@ -172,4 +172,4 @@ Copy `.env.example` to `.env` (git-ignored) and fill in only the variables you n
 
 ## Questions
 
-Open a GitHub [issue](https://github.com/Pawlo77/nlp-shap/issues) for usage questions, ideas, bugs and concrete feature requests. Documentation: <https://pawlo77.github.io/nlp-shap/>.
+Open a GitHub [issue](https://github.com/Pawlo77/MLLM-SHAP/issues) for usage questions, ideas, bugs and concrete feature requests. Documentation: <https://pawlo77.github.io/MLLM-SHAP/>.

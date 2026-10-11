@@ -23,7 +23,7 @@ def builder(script: Callable[[str], ModuleType]) -> ModuleType:
 def repo_copy(tmp_path: Path) -> Path:
     """Copy the files the builder reads into a temporary root."""
     root = tmp_path / "repo"
-    shutil.copytree(REPO / "src" / "nlp_shap", root / "src" / "nlp_shap")
+    shutil.copytree(REPO / "src" / "mllm_shap", root / "src" / "mllm_shap")
     shutil.copytree(
         REPO / "knowledge",
         root / "knowledge",
@@ -128,11 +128,11 @@ def test_graph_neighbors_lists_imports(
     builder: ModuleType, capsys: pytest.CaptureFixture[str]
 ) -> None:
     status = builder.main(
-        ["--graph", "--neighbors", "src/nlp_shap/estimation/exact.py"], root=REPO
+        ["--graph", "--neighbors", "src/mllm_shap/estimation/exact.py"], root=REPO
     )
     assert status == 0
     output = capsys.readouterr().out
-    assert "src/nlp_shap/domain/coalition.py" in output
+    assert "src/mllm_shap/domain/coalition.py" in output
 
 
 def test_decisions_table_lists_log_sections(

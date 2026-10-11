@@ -1,6 +1,6 @@
 """Tests for run archive persistence.
 
-@see [[src/nlp_shap/runtime/archive.py]]
+@see [[src/mllm_shap/runtime/archive.py]]
 """
 
 import dataclasses
@@ -10,16 +10,16 @@ from pathlib import Path
 
 import pytest
 
-from nlp_shap.domain.estimands import Estimand
-from nlp_shap.errors import (
+from mllm_shap.domain.estimands import Estimand
+from mllm_shap.errors import (
     ArchiveCorruptError,
     ArchiveExistsError,
     ArchiveNotFoundError,
     ManifestVersionError,
 )
-from nlp_shap.masking.codec import MaskCodec
-from nlp_shap.pipeline.manifest import RunManifest, parse_manifest
-from nlp_shap.runtime.archive import CoalitionRecordDraft, RunArchive
+from mllm_shap.masking.codec import MaskCodec
+from mllm_shap.pipeline.manifest import RunManifest, parse_manifest
+from mllm_shap.runtime.archive import CoalitionRecordDraft, RunArchive
 
 
 def test_run_archive_round_trips_records(

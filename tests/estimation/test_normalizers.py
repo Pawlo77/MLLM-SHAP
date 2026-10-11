@@ -1,12 +1,12 @@
 """Tests for attribution normalizers.
 
-@see [[src/nlp_shap/estimation/normalizers.py]]
+@see [[src/mllm_shap/estimation/normalizers.py]]
 """
 
 import numpy as np
 import pytest
 
-from nlp_shap.estimation.normalizers import (
+from mllm_shap.estimation.normalizers import (
     AbsSumNormalizer,
     IdentityNormalizer,
     MinMaxNormalizer,

@@ -9,7 +9,7 @@ updated: 2026-10-08
 
 # Debugging a wrong attribution
 
-Part of [[nlp-shap]]. Background: [[How a run works]], `docs/theory/shapley_values.rst`.
+Part of [[mllm-shap]]. Background: [[How a run works]], `docs/theory/shapley_values.rst`.
 
 ## 1. Check efficiency
 
@@ -26,7 +26,7 @@ Part of [[nlp-shap]]. Background: [[How a run works]], `docs/theory/shapley_valu
 - Each run with an archive path writes `runs/<run_id>/` ([[Run archive]]).
 - `sqlite3 runs/<run_id>/archive.sqlite "select count(*), count(distinct coalition_key) from coalition_records"`: more rows than keys means an appended re-run ([[Fixed issues|C02]]).
 - `cat runs/<run_id>/base_generation.txt` shows the base generation; `sqlite3 runs/<run_id>/archive.sqlite "select generation_text from coalition_records"` shows what the model produced per coalition (the text is stored in the SQLite row).
-- `manifest.json` names the estimand, the estimator and the full configuration ([[Manifest]]); `nlp-shap reanalyze` reproduces a run from it.
+- `manifest.json` names the estimand, the estimator and the full configuration ([[Manifest]]); `mllm-shap reanalyze` reproduces a run from it.
 
 ## 4. Compare estimators on one archive
 

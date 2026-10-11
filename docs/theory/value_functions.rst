@@ -31,7 +31,7 @@ Utility families
        given its prompt :math:`x_S`
 
 :doc:`../guides/migrating_from_mllm_shap` maps these to the U1–U4 labels of
-MLLM-Shap.
+legacy MLLM-Shap.
 
 Frozen TF-IDF
 ~~~~~~~~~~~~~
@@ -43,7 +43,7 @@ those weights, so payoffs within one run are on one scale.
 Normalizers
 -----------
 
-Applied **after** :class:`~nlp_shap.estimation.estimands.shapley.ShapleyAggregator`
+Applied **after** :class:`~mllm_shap.estimation.estimands.shapley.ShapleyAggregator`
 (or Banzhaf) aggregation:
 
 * **Identity** — raw attributions

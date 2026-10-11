@@ -1,8 +1,8 @@
 Audio alignment
 ===============
 
-:class:`~nlp_shap.alignment.SpectrogramGuidedAligner` turns a transcript and the
-speech that says it into one :class:`~nlp_shap.alignment.AudioSegment` per token.
+:class:`~mllm_shap.alignment.SpectrogramGuidedAligner` turns a transcript and the
+speech that says it into one :class:`~mllm_shap.alignment.AudioSegment` per token.
 Segments are the unit an audio explanation masks, so a cut must not split a sound:
 the aligner places each boundary at the quietest, steadiest point near the gap
 between two words.
@@ -12,7 +12,7 @@ Install
 
 .. code-block:: bash
 
-   pip install "nlp-shap[audio,transformers]"
+   pip install "mllm-shap[audio,transformers]"
 
 The ``audio`` extra decodes audio (``soundfile``) and refines boundaries
 (``librosa``); the ``transformers`` extra runs the default Wav2Vec2 model.
@@ -24,8 +24,8 @@ Align a transcript
 
    from pathlib import Path
 
-   from nlp_shap import AudioPart
-   from nlp_shap.alignment import SpectrogramGuidedAligner, Wav2Vec2Ctc
+   from mllm_shap import AudioPart
+   from mllm_shap.alignment import SpectrogramGuidedAligner, Wav2Vec2Ctc
 
    model = Wav2Vec2Ctc("facebook/wav2vec2-base-960h", revision="main", device="cpu")
    aligner = SpectrogramGuidedAligner(model)
@@ -65,7 +65,7 @@ With ``energy_weight=0, flux_weight=1`` the cuts follow spectral change instead
 of energy: a few move by 10 to 40 ms, and only 1 of the 9 boundaries lands on a
 quiet point instead of 7.
 
-:func:`~nlp_shap.viz.plot_audio_segments` (``viz`` extra) draws the waveform with
+:func:`~mllm_shap.viz.plot_audio_segments` (``viz`` extra) draws the waveform with
 each segment, the rough CTC edges (``ctc_start_time``, ``ctc_end_time``) and the
 arrows to the refined boundaries, over the RMS energy whose dips the cuts land in;
 ``values`` colours the segments like attribution renderers do.
@@ -77,17 +77,17 @@ Audio players
 -------------
 
 ``explanation.players: sgpa_segments``
-(:class:`~nlp_shap.SgpaSegmentPartitioner`) makes each spoken word a player. A
-message qualifies when it holds an :class:`~nlp_shap.AudioPart` and its transcript
+(:class:`~mllm_shap.SgpaSegmentPartitioner`) makes each spoken word a player. A
+message qualifies when it holds an :class:`~mllm_shap.AudioPart` and its transcript
 as text; other messages add no players. Each player's
-:class:`~nlp_shap.PlayerSpan` covers the word in the transcript and, in
+:class:`~mllm_shap.PlayerSpan` covers the word in the transcript and, in
 ``samples``, its stretch of audio, so the absence policies mask both: ``delete``
 cuts the absent samples, ``pad`` and ``neutral`` replace them with silence of the
 same length.
 
 .. code-block:: python
 
-   from nlp_shap import ExplainConfig, Message, Role, TextPart
+   from mllm_shap import ExplainConfig, Message, Role, TextPart
 
    spoken = Message(role=Role.USER, content=(TextPart("I had that curiosity"), audio))
    config = ExplainConfig.model_validate({
@@ -114,7 +114,7 @@ Other CTC models
 ----------------
 
 Any object with ``sample_rate``, ``blank_id``, ``vocab`` and
-``log_probs(waveform)`` satisfies :class:`~nlp_shap.alignment.CtcModel`, for
+``log_probs(waveform)`` satisfies :class:`~mllm_shap.alignment.CtcModel`, for
 example another Wav2Vec2 checkpoint for a different language, or a fixed matrix
 in tests. Pin ``revision`` to a commit hash for reproducible segments.
 

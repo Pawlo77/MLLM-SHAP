@@ -16,16 +16,16 @@ import pytest
 def test_base_wheel_import_has_no_torch() -> None:
     """Isolated wheel install does not include torch."""
     root = Path(__file__).resolve().parents[1]
-    wheels = sorted(root.glob("dist/nlp_shap-*.whl"))
+    wheels = sorted(root.glob("dist/mllm_shap-*.whl"))
     if not wheels:
         subprocess.run(["uv", "build"], cwd=root, check=True)
-        wheels = sorted(root.glob("dist/nlp_shap-*.whl"))
+        wheels = sorted(root.glob("dist/mllm_shap-*.whl"))
     wheel = wheels[-1]
     script = (
         "import importlib.util; "
-        "import nlp_shap; "
+        "import mllm_shap; "
         "assert importlib.util.find_spec('torch') is None; "
-        "print(nlp_shap.__version__)"
+        "print(mllm_shap.__version__)"
     )
     completed = subprocess.run(
         [

@@ -1,15 +1,15 @@
 """Backend construction from the plugin context.
 
-@see [[src/nlp_shap/plugins/backends.py]]
+@see [[src/mllm_shap/plugins/backends.py]]
 """
 
 import pytest
 
-from nlp_shap import ExplainConfig, PluginContext, PluginGroup
-from nlp_shap.backends.mock import MockBackend
-from nlp_shap.errors import PluginNotFoundError
-from nlp_shap.plugins import default_registry
-from nlp_shap.plugins.backends import instantiate_backend
+from mllm_shap import ExplainConfig, PluginContext, PluginGroup
+from mllm_shap.backends.mock import MockBackend
+from mllm_shap.errors import PluginNotFoundError
+from mllm_shap.plugins import default_registry
+from mllm_shap.plugins.backends import instantiate_backend
 
 
 def _context(kind: str, model_id: str = "stub") -> PluginContext:

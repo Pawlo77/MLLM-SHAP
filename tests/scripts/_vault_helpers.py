@@ -14,8 +14,8 @@ PYPROJECT = """\
 name = "demo"
 authors = [{ name = "Maintainer", email = "maintainer@example.org" }]
 
-[project.entry-points."nlp_shap.estimators"]
-exact = "nlp_shap.estimation.exact:ExactEstimator"
+[project.entry-points."mllm_shap.estimators"]
+exact = "mllm_shap.estimation.exact:ExactEstimator"
 """
 
 

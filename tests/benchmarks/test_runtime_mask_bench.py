@@ -1,12 +1,12 @@
 """Micro-benchmarks for mask pack and unpack throughput.
 
-@see [[src/nlp_shap/masking/codec.py]]
+@see [[src/mllm_shap/masking/codec.py]]
 """
 
 import pytest
 from pytest_benchmark.fixture import BenchmarkFixture
 
-from nlp_shap.masking.codec import MaskCodec
+from mllm_shap.masking.codec import MaskCodec
 
 _MASKS = [tuple(bit == "1" for bit in format(index, "08b")) for index in range(256)]
 

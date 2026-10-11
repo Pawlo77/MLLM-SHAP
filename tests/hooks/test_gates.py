@@ -56,9 +56,9 @@ def run(
 ) -> subprocess.CompletedProcess[str]:
     """Run ``scripts/hooks/<script>`` of the scratch repo ``cwd`` with ``payload``."""
     env = {**os.environ, **(extra_env or {})}
-    env.pop("NLP_SHAP_TEST_GATE", None)
-    if extra_env and "NLP_SHAP_TEST_GATE" in extra_env:
-        env["NLP_SHAP_TEST_GATE"] = extra_env["NLP_SHAP_TEST_GATE"]
+    env.pop("MLLM_SHAP_TEST_GATE", None)
+    if extra_env and "MLLM_SHAP_TEST_GATE" in extra_env:
+        env["MLLM_SHAP_TEST_GATE"] = extra_env["MLLM_SHAP_TEST_GATE"]
     return subprocess.run(
         ["bash", str(cwd / "scripts" / "hooks" / script)],
         input=json.dumps(payload),
@@ -314,7 +314,7 @@ def test_stop_gate_bounded_and_safe(repo: Path, tmp_path: Path, case: str) -> No
     if case == "no_remember":
         shutil.rmtree(repo / ".remember")
     elif case == "disabled":
-        env["NLP_SHAP_TEST_GATE"] = "off"
+        env["MLLM_SHAP_TEST_GATE"] = "off"
     else:
         tools = tmp_path / "tools"
         tools.mkdir()

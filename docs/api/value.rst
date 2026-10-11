@@ -1,13 +1,13 @@
 Value functions
 ===============
 
-.. automodule:: nlp_shap.value
+.. automodule:: mllm_shap.value
    :no-members:
 
-.. automodule:: nlp_shap.value.tfidf
+.. automodule:: mllm_shap.value.tfidf
 
-.. automodule:: nlp_shap.value.embedding
+.. automodule:: mllm_shap.value.embedding
 
-.. automodule:: nlp_shap.value.logprob
+.. automodule:: mllm_shap.value.logprob
 
-.. automodule:: nlp_shap.value.generation_records
+.. automodule:: mllm_shap.value.generation_records

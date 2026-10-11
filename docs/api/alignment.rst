@@ -1,15 +1,15 @@
 Alignment
 =========
 
-.. automodule:: nlp_shap.alignment
+.. automodule:: mllm_shap.alignment
    :no-members:
 
-.. automodule:: nlp_shap.alignment.sgpa
+.. automodule:: mllm_shap.alignment.sgpa
 
-.. automodule:: nlp_shap.alignment.partitions
+.. automodule:: mllm_shap.alignment.partitions
 
-.. automodule:: nlp_shap.alignment.segments
+.. automodule:: mllm_shap.alignment.segments
 
-.. automodule:: nlp_shap.alignment.ctc
+.. automodule:: mllm_shap.alignment.ctc
 
-.. automodule:: nlp_shap.alignment.io
+.. automodule:: mllm_shap.alignment.io

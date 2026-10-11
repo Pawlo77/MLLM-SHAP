@@ -1,7 +1,7 @@
 How a run works
 ===============
 
-:class:`~nlp_shap.ExplainRunner` wires partitioning, masking, generation, scoring
+:class:`~mllm_shap.ExplainRunner` wires partitioning, masking, generation, scoring
 and aggregation into one call. This page follows a run from the snapshot to the
 attributions and explains the counters, the archive and the hooks you can attach.
 
@@ -10,7 +10,7 @@ Quick start
 
 .. code-block:: python
 
-   from nlp_shap import (
+   from mllm_shap import (
        ConversationSnapshot,
        ExplainConfig,
        ExplainRunner,
@@ -44,7 +44,7 @@ The eight stages
 ----------------
 
 1. **Partition.** The ``explanation.players`` plugin splits the snapshot into a
-   :class:`~nlp_shap.PlayerSet`; with ``tokens`` every whitespace token of every
+   :class:`~mllm_shap.PlayerSet`; with ``tokens`` every whitespace token of every
    message is one player.
 2. **Resolve plugins.** The registry builds the estimator, estimand aggregator,
    value function, normalizer, absence policy and backend named in the config.
@@ -58,7 +58,7 @@ The eight stages
 5. **Render and key.** The absence policy turns each mask into a masked snapshot
    (``delete``, ``pad`` or ``neutral``). Each coalition gets a deduplication key
    and, for backends with a prefix cache, a prefix hash used to group jobs.
-6. **Generate.** :class:`~nlp_shap.runtime.InferenceScheduler` runs the coalition
+6. **Generate.** :class:`~mllm_shap.runtime.InferenceScheduler` runs the coalition
    prompts with at most ``max_inflight`` concurrent backend calls. The grand
    coalition is served from the base generation; repeated coalitions are served
    from the hot store or skipped by deduplication. Each output is appended to the
@@ -70,7 +70,7 @@ The eight stages
    phase-two coalitions, and stages 5 to 7 run again for those.
 8. **Aggregate.** The estimator turns masks and payoffs into attributions with
    the estimand aggregator, the normalizer rescales them for display, and the run
-   returns an :class:`~nlp_shap.ExplainRunOutput`.
+   returns an :class:`~mllm_shap.ExplainRunOutput`.
 
 Run output
 ----------
@@ -82,16 +82,16 @@ Run output
    * - Field
      - Meaning
    * - ``result``
-     - :class:`~nlp_shap.ExplainResult`: ``estimand``, per-player ``values``,
+     - :class:`~mllm_shap.ExplainResult`: ``estimand``, per-player ``values``,
        ``base_value`` (:math:`v(\emptyset)`) and ``grand_value`` (:math:`v(N)`)
    * - ``metrics``
-     - :class:`~nlp_shap.runtime.scheduler.SchedulerMetrics` counters (below)
+     - :class:`~mllm_shap.runtime.scheduler.SchedulerMetrics` counters (below)
    * - ``run_id``
      - Snapshot id prefix plus a digest of the configuration and model id
    * - ``manifest``
-     - :class:`~nlp_shap.RunManifest` written to the archive
+     - :class:`~mllm_shap.RunManifest` written to the archive
    * - ``perf``
-     - :class:`~nlp_shap.runtime.metrics.PerfSummary` wall-clock split between
+     - :class:`~mllm_shap.runtime.metrics.PerfSummary` wall-clock split between
        generation, scoring and aggregation
 
 The scheduler counters answer "how many model calls did this cost":
@@ -122,7 +122,7 @@ Archives and reanalysis
 
 With ``explanation.archive.path`` set (default ``./runs/{run_id}``) every run
 writes a directory holding ``manifest.json``, the base generation and the
-coalition outputs in ``archive.sqlite``. :meth:`~nlp_shap.ExplainRunner.reanalyze`
+coalition outputs in ``archive.sqlite``. :meth:`~mllm_shap.ExplainRunner.reanalyze`
 reads such a directory and re-scores the stored outputs without calling the
 model, for example with a different normalizer:
 
@@ -158,7 +158,7 @@ model, for example with a different normalizer:
 .. guide-result:: pipeline_reanalyze
 
 ``reanalyze`` re-aggregates with the archived estimator and raises
-:exc:`~nlp_shap.errors.ReanalyzeMismatchError` when the runner's estimator,
+:exc:`~mllm_shap.errors.ReanalyzeMismatchError` when the runner's estimator,
 absence policy or players differ from the archived run. See :doc:`runtime` for
 the archive format and the ``on_exists`` policy.
 
@@ -171,7 +171,7 @@ omitted:
 
 .. code-block:: python
 
-   from nlp_shap.runtime.telemetry import InMemoryObservabilitySink
+   from mllm_shap.runtime.telemetry import InMemoryObservabilitySink
 
    class PrintProgress:
        def on_coalitions_planned(self, total: int) -> None:
@@ -191,8 +191,8 @@ omitted:
 ``explain`` and ``explain_sync``
 --------------------------------
 
-:meth:`~nlp_shap.ExplainRunner.explain` is a coroutine;
-:meth:`~nlp_shap.ExplainRunner.explain_sync` runs it on a fresh event loop. Inside
+:meth:`~mllm_shap.ExplainRunner.explain` is a coroutine;
+:meth:`~mllm_shap.ExplainRunner.explain_sync` runs it on a fresh event loop. Inside
 an event loop that is already running (Jupyter notebooks, async web handlers)
 ``explain_sync`` raises :exc:`RuntimeError`; await the coroutine there instead:
 
@@ -209,7 +209,7 @@ many prompts, pass ``backend=`` to the runner and close it yourself:
 
 .. code-block:: python
 
-   from nlp_shap.backends.mock import MockBackend
+   from mllm_shap.backends.mock import MockBackend
 
    runner = ExplainRunner(config, backend=MockBackend(model_id="stub"))
    prompts = ("hello world", "goodbye world")

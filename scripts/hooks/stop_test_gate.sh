@@ -15,11 +15,11 @@
 # passes quietly. Older results always re-run; continuations (stop_hook_active) are gated
 # too. A timeout is reported and never blocks.
 # session_start.sh clears this session's state and state older than a day.
-# Exits 0 silently when jq, make or .remember/ is missing; NLP_SHAP_TEST_GATE=off disables it.
+# Exits 0 silently when jq, make or .remember/ is missing; MLLM_SHAP_TEST_GATE=off disables it.
 source "$(dirname "$0")/lib.sh"
 command -v jq >/dev/null 2>&1 || exit 0
 source "$(dirname "$0")/gate_lib.sh"
-[ "${NLP_SHAP_TEST_GATE:-on}" = off ] && quiet_exit
+[ "${MLLM_SHAP_TEST_GATE:-on}" = off ] && quiet_exit
 cd "$ROOT" || exit 0
 [ -d .remember ] || quiet_exit
 state=".remember/tmp"

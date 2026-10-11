@@ -1,6 +1,6 @@
 # Examples agents
 
-- Cell 1 = all imports (stdlib/third-party, then `nlp_shap`)
+- Cell 1 = all imports (stdlib/third-party, then `mllm_shap`)
 - Full public usability scope; no stubs
 - Catalog in `examples/README.md` (file list) and `docs/examples.rst` (descriptions)
 - Notebooks only: no `.py` pairs under `examples/`; edit the `.ipynb` directly

@@ -1,6 +1,6 @@
 """Tests for Neyman complementary allocation.
 
-@see [[src/nlp_shap/estimation/neyman.py]]
+@see [[src/mllm_shap/estimation/neyman.py]]
 """
 
 from collections.abc import Callable
@@ -8,10 +8,10 @@ from collections.abc import Callable
 import numpy as np
 import pytest
 
-from nlp_shap.domain.coalition import CoalitionMask
-from nlp_shap.domain.players import PlayerSet
-from nlp_shap.estimation._shared import compute_complementary_num_splits
-from nlp_shap.estimation.neyman import NeymanEstimator
+from mllm_shap.domain.coalition import CoalitionMask
+from mllm_shap.domain.players import PlayerSet
+from mllm_shap.estimation._shared import compute_complementary_num_splits
+from mllm_shap.estimation.neyman import NeymanEstimator
 
 
 def _additive_payoffs(

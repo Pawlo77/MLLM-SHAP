@@ -8,15 +8,15 @@ from pathlib import Path
 
 import pytest
 
-from nlp_shap.backends._chat import snapshot_has_audio
-from nlp_shap.domain.conversation import (
+from mllm_shap.backends._chat import snapshot_has_audio
+from mllm_shap.domain.conversation import (
     AudioPart,
     ConversationSnapshot,
     Message,
     TextPart,
     Turn,
 )
-from nlp_shap.domain.enums import Role
+from mllm_shap.domain.enums import Role
 
 
 def _snapshot(*messages: Message) -> ConversationSnapshot:

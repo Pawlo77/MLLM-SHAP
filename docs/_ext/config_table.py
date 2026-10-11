@@ -1,6 +1,6 @@
 """Sphinx extension: configuration reference tables from the pydantic models.
 
-``.. config-table:: nlp_shap.pipeline.config.ExplanationConfig`` imports the model
+``.. config-table:: mllm_shap.pipeline.config.ExplanationConfig`` imports the model
 and emits one row per field (nested models are expanded into dotted keys) with the
 YAML key, the type, the default and the field's attribute docstring. Options:
 

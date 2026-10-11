@@ -5,7 +5,7 @@ description: >-
   when skill ship finds a version bump.
 ---
 
-# nlp-shap release
+# mllm-shap release
 
 The agent picks the bump and tags after the merge; the `Publish` workflow
 (`.github/workflows/publish.yaml`, tags `v*.*.*`) uploads to PyPI by trusted publishing
@@ -49,12 +49,12 @@ runs `/release` on `main` (or `/ship --after-merge`).
 2. Tag and push:
 
    ```bash
-   git tag -a vX.Y.Z -m "nlp-shap vX.Y.Z"
+   git tag -a vX.Y.Z -m "mllm-shap vX.Y.Z"
    git push origin vX.Y.Z
    ```
 
 3. `gh run list --workflow Publish --limit 3`, then `gh run watch <run-id> --exit-status`.
-4. `pip index versions nlp-shap` lists `X.Y.Z` (PyPI can lag a minute; retry first) and
+4. `pip index versions mllm-shap` lists `X.Y.Z` (PyPI can lag a minute; retry first) and
    `gh release view vX.Y.Z` shows the notes and artifacts.
 5. On failure fix forward: a new branch with the fix, shipped and released as the next
    patch. Never delete, move or reuse a tag.

@@ -1,15 +1,15 @@
 """Tests for the deterministic mock backend.
 
-@see [[src/nlp_shap/backends/mock/__init__.py]]
+@see [[src/mllm_shap/backends/mock/__init__.py]]
 """
 
 import asyncio
 
-from nlp_shap.backends._chat import snapshot_to_chat_messages
-from nlp_shap.backends.mock import MockBackend
-from nlp_shap.domain.config import GenerationConfig
-from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
-from nlp_shap.domain.enums import Role
+from mllm_shap.backends._chat import snapshot_to_chat_messages
+from mllm_shap.backends.mock import MockBackend
+from mllm_shap.domain.config import GenerationConfig
+from mllm_shap.domain.conversation import ConversationSnapshot, Message, Turn
+from mllm_shap.domain.enums import Role
 
 
 def _snapshot(text: str) -> ConversationSnapshot:

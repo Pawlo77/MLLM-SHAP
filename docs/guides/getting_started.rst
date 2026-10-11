@@ -11,14 +11,14 @@ Install from PyPI (Python 3.12 or newer):
 
 .. code-block:: bash
 
-   pip install nlp-shap
+   pip install mllm-shap
 
 From a local clone (development uses `uv <https://docs.astral.sh/uv/>`_):
 
 .. code-block:: bash
 
-   git clone https://github.com/Pawlo77/nlp-shap
-   cd nlp-shap
+   git clone https://github.com/Pawlo77/MLLM-SHAP
+   cd MLLM-SHAP
    make install
 
 Your first aggregation
@@ -31,7 +31,7 @@ The estimand aggregators take boolean **coalition masks** and aligned payoffs
 
    from itertools import product
 
-   from nlp_shap import BanzhafAggregator, ShapleyAggregator
+   from mllm_shap import BanzhafAggregator, ShapleyAggregator
 
    num_players = 3
    masks = [tuple(bits) for bits in product([False, True], repeat=num_players)]
@@ -55,15 +55,15 @@ Explain a short prompt
 ----------------------
 
 For end-to-end token attributions, build a
-:class:`~nlp_shap.ConversationSnapshot`, validate an
-:class:`~nlp_shap.ExplainConfig`, and call :class:`~nlp_shap.ExplainRunner`.
+:class:`~mllm_shap.ConversationSnapshot`, validate an
+:class:`~mllm_shap.ExplainConfig`, and call :class:`~mllm_shap.ExplainRunner`.
 The ``mock`` backend needs no model, GPU or optional extra:
 
 .. code-block:: python
 
    import math
 
-   from nlp_shap import (
+   from mllm_shap import (
        ConversationSnapshot,
        ExplainConfig,
        ExplainRunner,
@@ -106,7 +106,7 @@ attribution looks wrong.
 
 Without ``archive.path: ""`` the run is archived under ``./runs/{run_id}``, and
 re-running the same configuration on the same snapshot raises
-:exc:`~nlp_shap.errors.ArchiveExistsError` unless
+:exc:`~mllm_shap.errors.ArchiveExistsError` unless
 ``explanation.archive.on_exists`` is ``overwrite``. See :doc:`config`.
 
 Which estimator?
@@ -120,12 +120,12 @@ and :doc:`approximation` the code.
 Label results for archives
 --------------------------
 
-Every run carries a :class:`~nlp_shap.RunManifest` that records the estimand,
+Every run carries a :class:`~mllm_shap.RunManifest` that records the estimand,
 estimator, value function and players. It round-trips through JSON:
 
 .. code-block:: python
 
-   from nlp_shap import parse_manifest
+   from mllm_shap import parse_manifest
 
    restored = parse_manifest(output.manifest.to_dict())
    print("schema_version:", restored.schema_version)
@@ -138,11 +138,11 @@ estimator, value function and players. It round-trips through JSON:
 Logging
 -------
 
-Importing ``nlp_shap`` leaves your logging configuration alone. Call
-``nlp_shap.configure_logging(level="INFO")`` to see the pipeline's stage events
+Importing ``mllm_shap`` leaves your logging configuration alone. Call
+``mllm_shap.configure_logging(level="INFO")`` to see the pipeline's stage events
 (run start, base generation, scheduled coalitions and run duration) on stderr,
-``nlp_shap.configure_logging()`` to apply the ``[tool.logging]`` section of the
-nearest ``pyproject.toml`` (or pass a path), or set ``NLP_SHAP_LOGGING_CONFIG``.
+``mllm_shap.configure_logging()`` to apply the ``[tool.logging]`` section of the
+nearest ``pyproject.toml`` (or pass a path), or set ``MLLM_SHAP_LOGGING_CONFIG``.
 :doc:`runtime` lists the events.
 
 Next steps

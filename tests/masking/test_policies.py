@@ -1,13 +1,13 @@
 """Tests for absence-policy rendering.
 
-@see [[src/nlp_shap/masking/policies.py]]
+@see [[src/mllm_shap/masking/policies.py]]
 """
 
-from nlp_shap.domain.coalition import CoalitionMask
-from nlp_shap.domain.conversation import ConversationSnapshot
-from nlp_shap.masking.builder import MaskBuilder
-from nlp_shap.masking.partitions import TokenPartitioner
-from nlp_shap.masking.policies import DeletePolicy, NeutralPolicy, PadPolicy
+from mllm_shap.domain.coalition import CoalitionMask
+from mllm_shap.domain.conversation import ConversationSnapshot
+from mllm_shap.masking.builder import MaskBuilder
+from mllm_shap.masking.partitions import TokenPartitioner
+from mllm_shap.masking.policies import DeletePolicy, NeutralPolicy, PadPolicy
 
 
 def test_delete_policy_removes_absent_tokens(

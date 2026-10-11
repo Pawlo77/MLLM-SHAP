@@ -9,7 +9,7 @@ updated: <% tp.date.now("YYYY-MM-DD") %>
 
 # <% tp.file.title %>
 
-Part of [[nlp-shap]].
+Part of [[mllm-shap]].
 
 ## Steps
 

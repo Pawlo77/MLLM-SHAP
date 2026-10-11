@@ -2,7 +2,7 @@
 
 Usage: ``python scripts/pr_policy.py [--base B] [--json] [--write-marker] [--pr N]``.
 
-Routine: only ``ROUTINE_TYPES`` commits, nothing under ``src/nlp_shap/``, ``[project]``
+Routine: only ``ROUTINE_TYPES`` commits, nothing under ``src/mllm_shap/``, ``[project]``
 changes limited to :func:`_project_review`, within ``MAX_LINES``/``MAX_FILES`` (without
 ``GENERATED``), no ``PROTECTED`` file. ``--write-marker`` stores the result for
 ``scripts/hooks/merge_gate.sh``; ``--bump`` prints :func:`suggest_bump`. Stdlib only.
@@ -52,7 +52,7 @@ PROTECTED = frozenset({
 })
 """Security-relevant files: a change to any of them always gets a human merge."""
 
-PACKAGE = "src/nlp_shap/"
+PACKAGE = "src/mllm_shap/"
 """Library source; any change under it needs the maintainer's review."""
 
 PROJECT_KEYS = ("version", "dependencies", "optional-dependencies")

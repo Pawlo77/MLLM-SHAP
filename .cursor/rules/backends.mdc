@@ -1,6 +1,6 @@
 ---
 description: Backend extras, markers, and CI constraints
-globs: src/nlp_shap/backends/**,tests/backends/**,config/**
+globs: src/mllm_shap/backends/**,tests/backends/**,config/**
 alwaysApply: false
 ---
 

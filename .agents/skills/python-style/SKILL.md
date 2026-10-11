@@ -5,7 +5,7 @@ description: >-
   reviewing Python in src/, tests/, scripts/ or examples/.
 ---
 
-# nlp-shap Python style
+# mllm-shap Python style
 
 Read the rules that apply; they are the single source:
 

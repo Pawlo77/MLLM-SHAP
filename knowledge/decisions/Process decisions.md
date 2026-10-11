@@ -16,7 +16,7 @@ related-code:
 
 # Process decisions
 
-Part of [[nlp-shap]]; handbook: [[Onboarding]].
+Part of [[mllm-shap]]; handbook: [[Onboarding]].
 
 ## 2026-10-09 — AI attribution stripped
 

@@ -6,20 +6,20 @@ created: 2026-10-07
 updated: 2026-10-08
 tags: [papers]
 related-code:
-  - "[[src/nlp_shap/estimation/estimands/shapley.py]]"
-  - "[[src/nlp_shap/estimation/estimands/banzhaf.py]]"
-  - "[[src/nlp_shap/estimation/estimands/_weights.py]]"
-  - "[[src/nlp_shap/estimation/monte_carlo.py]]"
-  - "[[src/nlp_shap/estimation/complementary.py]]"
-  - "[[src/nlp_shap/estimation/neyman.py]]"
-  - "[[src/nlp_shap/estimation/_shared.py]]"
-  - "[[src/nlp_shap/masking/partitions.py]]"
-  - "[[src/nlp_shap/value/tfidf.py]]"
+  - "[[src/mllm_shap/estimation/estimands/shapley.py]]"
+  - "[[src/mllm_shap/estimation/estimands/banzhaf.py]]"
+  - "[[src/mllm_shap/estimation/estimands/_weights.py]]"
+  - "[[src/mllm_shap/estimation/monte_carlo.py]]"
+  - "[[src/mllm_shap/estimation/complementary.py]]"
+  - "[[src/mllm_shap/estimation/neyman.py]]"
+  - "[[src/mllm_shap/estimation/_shared.py]]"
+  - "[[src/mllm_shap/masking/partitions.py]]"
+  - "[[src/mllm_shap/value/tfidf.py]]"
 ---
 
 # Papers
 
-Part of [[nlp-shap]]. Papers the library and its theory pages cite, by first author; digital object identifier (DOI) or arXiv links only, never PDFs.
+Part of [[mllm-shap]]. Papers the library and its theory pages cite, by first author; digital object identifier (DOI) or arXiv links only, never PDFs.
 
 ## Banzhaf 1965 — Weighted voting doesn't work
 
@@ -33,7 +33,7 @@ Used by: [[estimation]], `docs/theory/estimands.rst`.
 
 Citation: Javier Castro, Daniel Gómez, Juan Tejada, "Polynomial calculation of the Shapley value based on sampling", *Computers & Operations Research* 36(5), 2009, [doi:10.1016/j.cor.2008.04.004](https://doi.org/10.1016/j.cor.2008.04.004).
 
-Claim: Partial-sample estimates must be consistent, converging to the exact value as samples grow; nlp-shap samples coalitions, not the paper's player orderings.
+Claim: Partial-sample estimates must be consistent, converging to the exact value as samples grow; mllm-shap samples coalitions, not the paper's player orderings.
 
 Used by: [[Estimation decisions#2026-10-07 — Stratified mean for partial samples|stratified mean]], `docs/theory/approximation.rst`.
 
@@ -41,7 +41,7 @@ Used by: [[Estimation decisions#2026-10-07 — Stratified mean for partial sampl
 
 Citation: Pradeep Dubey, Lloyd S. Shapley, "Mathematical properties of the Banzhaf power index", *Mathematics of Operations Research* 4(2), 1979, [doi:10.1287/moor.4.2.99](https://doi.org/10.1287/moor.4.2.99).
 
-Claim: Banzhaf is the expected marginal contribution when every other player joins with probability one half and is not efficient, so nlp-shap keeps it a separate estimand never compared with Shapley as the same quantity.
+Claim: Banzhaf is the expected marginal contribution when every other player joins with probability one half and is not efficient, so mllm-shap keeps it a separate estimand never compared with Shapley as the same quantity.
 
 Used by: [[estimation]], `docs/theory/estimands.rst`.
 
@@ -49,7 +49,7 @@ Used by: [[estimation]], `docs/theory/estimands.rst`.
 
 Citation: Kawin Ethayarajh, Dan Jurafsky, "Attention flows are Shapley value explanations", *ACL-IJCNLP 2021 (short papers)*, [arXiv:2105.14652](https://arxiv.org/abs/2105.14652).
 
-Claim: Attention flow is a Shapley value of a max-flow game while raw attention is not, which supports prompt tokens as players and output-based value functions; nlp-shap reads no model internals.
+Claim: Attention flow is a Shapley value of a max-flow game while raw attention is not, which supports prompt tokens as players and output-based value functions; mllm-shap reads no model internals.
 
 Used by: [[domain]], `docs/theory/estimands.rst`.
 

@@ -4,31 +4,31 @@ type: module
 domain: backends
 tags: [architecture, backends]
 created: 2026-10-07
-updated: 2026-10-10
+updated: 2026-10-11
 related-code:
-  - "[[src/nlp_shap/backends/__init__.py]]"
-  - "[[src/nlp_shap/backends/_chat.py]]"
-  - "[[src/nlp_shap/backends/api/__init__.py]]"
-  - "[[src/nlp_shap/backends/api/backend.py]]"
-  - "[[src/nlp_shap/backends/api/payload.py]]"
-  - "[[src/nlp_shap/backends/lmstudio/__init__.py]]"
-  - "[[src/nlp_shap/backends/lmstudio/backend.py]]"
-  - "[[src/nlp_shap/backends/lmstudio/chat.py]]"
-  - "[[src/nlp_shap/backends/lmstudio/models.py]]"
-  - "[[src/nlp_shap/backends/lmstudio/options.py]]"
-  - "[[src/nlp_shap/backends/mock/__init__.py]]"
-  - "[[src/nlp_shap/backends/mock/backend.py]]"
-  - "[[src/nlp_shap/backends/transformers/__init__.py]]"
-  - "[[src/nlp_shap/backends/transformers/_torch.py]]"
-  - "[[src/nlp_shap/backends/transformers/chat.py]]"
-  - "[[src/nlp_shap/backends/transformers/embeddings.py]]"
-  - "[[src/nlp_shap/backends/transformers/options.py]]"
-  - "[[src/nlp_shap/backends/transformers/text.py]]"
+  - "[[src/mllm_shap/backends/__init__.py]]"
+  - "[[src/mllm_shap/backends/_chat.py]]"
+  - "[[src/mllm_shap/backends/api/__init__.py]]"
+  - "[[src/mllm_shap/backends/api/backend.py]]"
+  - "[[src/mllm_shap/backends/api/payload.py]]"
+  - "[[src/mllm_shap/backends/lmstudio/__init__.py]]"
+  - "[[src/mllm_shap/backends/lmstudio/backend.py]]"
+  - "[[src/mllm_shap/backends/lmstudio/chat.py]]"
+  - "[[src/mllm_shap/backends/lmstudio/models.py]]"
+  - "[[src/mllm_shap/backends/lmstudio/options.py]]"
+  - "[[src/mllm_shap/backends/mock/__init__.py]]"
+  - "[[src/mllm_shap/backends/mock/backend.py]]"
+  - "[[src/mllm_shap/backends/transformers/__init__.py]]"
+  - "[[src/mllm_shap/backends/transformers/_torch.py]]"
+  - "[[src/mllm_shap/backends/transformers/chat.py]]"
+  - "[[src/mllm_shap/backends/transformers/embeddings.py]]"
+  - "[[src/mllm_shap/backends/transformers/options.py]]"
+  - "[[src/mllm_shap/backends/transformers/text.py]]"
 ---
 
 # backends
 
-Part of [[nlp-shap]].
+Part of [[mllm-shap]].
 
 ## Responsibility
 
@@ -43,7 +43,7 @@ Part of [[nlp-shap]].
   - Sends `"logprobs": true`; `extract_logprobs` reads `choices[0].logprobs.content[*].logprob`, else `None`. `returns_logprobs` is true (`SupportsLogprobs`).
   - Caches temperature-0 records (text and logprobs) in an LRU of `RESPONSE_CACHE_SIZE` (1024).
   - `backend.api_host` is required (`ConfigError` without it; no environment or localhost fallback).
-  - Bearer key `NLP_SHAP_API_KEY` for any host; `OPENAI_API_KEY` only for `OPENAI_API_HOST` (`api.openai.com`), so an OpenAI key never reaches another server.
+  - Bearer key `MLLM_SHAP_API_KEY` for any host; `OPENAI_API_KEY` only for `OPENAI_API_HOST` (`api.openai.com`), so an OpenAI key never reaches another server.
 - `LmStudioBackend` (`lmstudio`): local LM Studio server through the `lmstudio` SDK.
   - `LmStudioOptions` (`hub_search`, `quantization`, `auto_download`, `serialize_generate`) come from `backend.options` (`parse_lmstudio_options`; unknown keys raise `ConfigError`).
   - `match_downloaded_model_key` matches exactly, then by the prefix of the last path segment, then by substring, and raises on ambiguity.

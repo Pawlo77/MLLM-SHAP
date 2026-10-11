@@ -11,7 +11,7 @@ commits). Run it after the `title` workflow is on `main`, or merges wait for a c
 never reports.
 
 ```bash
-gh api -X PUT repos/Pawlo77/nlp-shap/branches/main/protection --input - <<'JSON'
+gh api -X PUT repos/Pawlo77/MLLM-SHAP/branches/main/protection --input - <<'JSON'
 {
   "required_status_checks": {
     "strict": false,
@@ -35,17 +35,17 @@ gh api -X PUT repos/Pawlo77/nlp-shap/branches/main/protection --input - <<'JSON'
   "required_conversation_resolution": true
 }
 JSON
-gh api repos/Pawlo77/nlp-shap/branches/main/protection --jq '.required_status_checks.checks[].context'
+gh api repos/Pawlo77/MLLM-SHAP/branches/main/protection --jq '.required_status_checks.checks[].context'
 ```
 
 ## Other settings
 
 ```bash
-gh api -X PATCH repos/Pawlo77/nlp-shap -F delete_branch_on_merge=true -F has_wiki=false \
+gh api -X PATCH repos/Pawlo77/MLLM-SHAP -F delete_branch_on_merge=true -F has_wiki=false \
   -F allow_squash_merge=false -F allow_rebase_merge=false -F allow_auto_merge=true
-gh api -X PUT repos/Pawlo77/nlp-shap/pages -f build_type=workflow
-gh api -X PUT repos/Pawlo77/nlp-shap/vulnerability-alerts
-gh api -X PATCH repos/Pawlo77/nlp-shap --input - <<'JSON'
+gh api -X PUT repos/Pawlo77/MLLM-SHAP/pages -f build_type=workflow
+gh api -X PUT repos/Pawlo77/MLLM-SHAP/vulnerability-alerts
+gh api -X PATCH repos/Pawlo77/MLLM-SHAP --input - <<'JSON'
 {"security_and_analysis": {"secret_scanning": {"status": "enabled"},
  "secret_scanning_push_protection": {"status": "enabled"}}}
 JSON

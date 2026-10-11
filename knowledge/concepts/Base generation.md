@@ -5,8 +5,8 @@ domain: pipeline
 tags: [concept]
 created: 2026-10-07
 related-code:
-  - "[[src/nlp_shap/pipeline/orchestrator.py]]"
-  - "[[src/nlp_shap/runtime/archive.py]]"
+  - "[[src/mllm_shap/pipeline/orchestrator.py]]"
+  - "[[src/mllm_shap/runtime/archive.py]]"
 ---
 
 # Base generation

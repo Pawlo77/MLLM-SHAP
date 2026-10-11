@@ -6,14 +6,14 @@ created: 2026-10-07
 updated: 2026-10-09
 tags: [decisions, backends]
 related-code:
-  - "[[src/nlp_shap/protocols/value.py]]"
-  - "[[src/nlp_shap/pipeline/orchestrator.py]]"
-  - "[[src/nlp_shap/backends/transformers/text.py]]"
+  - "[[src/mllm_shap/protocols/value.py]]"
+  - "[[src/mllm_shap/pipeline/orchestrator.py]]"
+  - "[[src/mllm_shap/backends/transformers/text.py]]"
 ---
 
 # Backends decisions
 
-Part of [[nlp-shap]]; architecture: [[backends]]. Related: [[value]], [[Capability protocol]].
+Part of [[mllm-shap]]; architecture: [[backends]]. Related: [[value]], [[Capability protocol]].
 
 ## 2026-10-09 — Half-precision prefix cache warns instead of promising equality
 

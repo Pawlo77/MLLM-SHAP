@@ -3,7 +3,7 @@
 The 1024-coalition reference is computed once (generation cache and
 ``results/reference-<hash>.json``); every sampled run reuses its generations.
 
-@see [[src/nlp_shap/estimation/neyman.py]]
+@see [[src/mllm_shap/estimation/neyman.py]]
 """
 
 import statistics

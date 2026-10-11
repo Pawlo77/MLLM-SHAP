@@ -1,7 +1,7 @@
 Using the exact estimator
 =========================
 
-:class:`~nlp_shap.estimation.exact.ExactEstimator` lazily enumerates every
+:class:`~mllm_shap.estimation.exact.ExactEstimator` lazily enumerates every
 coalition mask, including the empty and grand coalitions, and delegates
 attribution to a registered estimand plugin.
 
@@ -12,7 +12,7 @@ Quick start
 
    from itertools import product
 
-   from nlp_shap import (
+   from mllm_shap import (
        BanzhafAggregator,
        CoalitionMask,
        ExactEstimator,
@@ -65,7 +65,7 @@ needed:
 
 .. code-block:: python
 
-   from nlp_shap import ExactEstimator
+   from mllm_shap import ExactEstimator
 
    for index, mask_int in enumerate(ExactEstimator.iter_mask_ints(3)):
        present = ExactEstimator.mask_int_to_present(mask_int, 3)
@@ -82,7 +82,7 @@ Exact enumeration requires a full budget fraction:
 
 .. code-block:: python
 
-   from nlp_shap import ExactEstimator, PlayerSet
+   from mllm_shap import ExactEstimator, PlayerSet
 
    player_set = PlayerSet(player_ids=("p0",))
    try:
@@ -101,13 +101,13 @@ Plugin resolution
 -----------------
 
 The pipeline builds the estimator through the plugin registry. Every plugin
-factory receives a :class:`~nlp_shap.plugins.context.PluginContext` holding the
+factory receives a :class:`~mllm_shap.plugins.context.PluginContext` holding the
 run configuration:
 
 .. code-block:: python
 
-   from nlp_shap import ExplainConfig, PluginContext, PluginGroup, PluginRegistry
-   from nlp_shap.plugins import register_builtin_plugins
+   from mllm_shap import ExplainConfig, PluginContext, PluginGroup, PluginRegistry
+   from mllm_shap.plugins import register_builtin_plugins
 
    registry = PluginRegistry()
    register_builtin_plugins(registry)
@@ -134,7 +134,7 @@ second backend call:
 
 .. code-block:: python
 
-   from nlp_shap import (
+   from mllm_shap import (
        ConversationSnapshot,
        ExplainConfig,
        ExplainRunner,

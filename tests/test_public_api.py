@@ -11,18 +11,18 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-import nlp_shap
-from nlp_shap import errors
-from nlp_shap.pipeline.config import ExplainConfig
-from nlp_shap.plugins import BUILTIN_PLUGINS
+import mllm_shap
+from mllm_shap import errors
+from mllm_shap.pipeline.config import ExplainConfig
+from mllm_shap.plugins import BUILTIN_PLUGINS
 
-SRC = Path(__file__).resolve().parents[1] / "src" / "nlp_shap"
+SRC = Path(__file__).resolve().parents[1] / "src" / "mllm_shap"
 
 
 def test_every_builtin_plugin_class_is_exported() -> None:
     for factories in BUILTIN_PLUGINS.values():
         for factory in factories.values():
-            assert getattr(nlp_shap, factory.__name__) is factory
+            assert getattr(mllm_shap, factory.__name__) is factory
 
 
 @pytest.mark.parametrize(
@@ -42,9 +42,9 @@ def test_every_builtin_plugin_class_is_exported() -> None:
     ],
 )
 def test_named_exports(name: str) -> None:
-    assert name in nlp_shap.__all__
-    assert getattr(nlp_shap, name) is not None
-    assert name in dir(nlp_shap)
+    assert name in mllm_shap.__all__
+    assert getattr(mllm_shap, name) is not None
+    assert name in dir(mllm_shap)
 
 
 def test_all_errors_are_exported_and_share_a_root() -> None:
@@ -55,8 +55,8 @@ def test_all_errors_are_exported_and_share_a_root() -> None:
     ]
     assert len(error_types) == 13
     for error_type in error_types:
-        assert issubclass(error_type, errors.NlpShapError)
-        assert getattr(nlp_shap, error_type.__name__) is error_type
+        assert issubclass(error_type, errors.MllmShapError)
+        assert getattr(mllm_shap, error_type.__name__) is error_type
     assert issubclass(errors.PluginNotFoundError, LookupError)
     assert issubclass(errors.ConfigError, ValueError)
     assert issubclass(errors.BackendUnavailableError, RuntimeError)
@@ -85,11 +85,11 @@ def test_runtime_and_domain_do_not_import_the_pipeline() -> None:
 @pytest.mark.parametrize(
     "module",
     [
-        "nlp_shap.runtime",
-        "nlp_shap.backends.api",
-        "nlp_shap.plugins",
-        "nlp_shap.viz.token_text",
-        "nlp_shap.masking.policies",
+        "mllm_shap.runtime",
+        "mllm_shap.backends.api",
+        "mllm_shap.plugins",
+        "mllm_shap.viz.token_text",
+        "mllm_shap.masking.policies",
     ],
 )
 def test_submodules_import_in_a_fresh_interpreter(module: str) -> None:

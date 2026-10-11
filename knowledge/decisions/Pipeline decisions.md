@@ -6,18 +6,18 @@ created: 2026-10-07
 updated: 2026-10-08
 tags: [decisions, pipeline]
 related-code:
-  - "[[src/nlp_shap/pipeline/config.py]]"
-  - "[[src/nlp_shap/pipeline/manifest.py]]"
-  - "[[src/nlp_shap/pipeline/orchestrator.py]]"
-  - "[[src/nlp_shap/pipeline/reanalyze.py]]"
-  - "[[src/nlp_shap/pipeline/runner.py]]"
-  - "[[src/nlp_shap/estimation/_shared.py]]"
-  - "[[src/nlp_shap/runtime/archive.py]]"
+  - "[[src/mllm_shap/pipeline/config.py]]"
+  - "[[src/mllm_shap/pipeline/manifest.py]]"
+  - "[[src/mllm_shap/pipeline/orchestrator.py]]"
+  - "[[src/mllm_shap/pipeline/reanalyze.py]]"
+  - "[[src/mllm_shap/pipeline/runner.py]]"
+  - "[[src/mllm_shap/estimation/_shared.py]]"
+  - "[[src/mllm_shap/runtime/archive.py]]"
 ---
 
 # Pipeline decisions
 
-Part of [[nlp-shap]]; architecture: [[pipeline]]. Concepts: [[Manifest]], [[Run id]], [[Run archive]].
+Part of [[mllm-shap]]; architecture: [[pipeline]]. Concepts: [[Manifest]], [[Run id]], [[Run archive]].
 
 ## 2026-10-08 — Absolute budget passed to samplers as an exact fraction
 
@@ -37,7 +37,7 @@ Consequences: Re-running a configuration into the same path fails loudly instead
 
 ## 2026-10-07 — Manifest schema version 2
 
-Decision: `MANIFEST_SCHEMA_VERSION = 2`. The payload records `schema_version`, `nlp_shap_version`, `run_id`, `snapshot_id`, `estimand`, `estimator`, `value_fn`, `normalizer`, `absence_policy`, `players`, `backend_kind`, `model_id`, `player_ids` and the full configuration. The archive database sets `PRAGMA user_version = 2` and indexes `coalition_key`. `parse_manifest` and `RunArchive.load` raise `ManifestVersionError` for any other version. `reanalyze` resolves the archived estimator, raises `ReanalyzeMismatchError` when the configuration names another estimator, absence policy or partition, and aggregates through `estimator.estimate_attributions`.
+Decision: `MANIFEST_SCHEMA_VERSION = 2`. The payload records `schema_version`, `mllm_shap_version`, `run_id`, `snapshot_id`, `estimand`, `estimator`, `value_fn`, `normalizer`, `absence_policy`, `players`, `backend_kind`, `model_id`, `player_ids` and the full configuration. The archive database sets `PRAGMA user_version = 2` and indexes `coalition_key`. `parse_manifest` and `RunArchive.load` raise `ManifestVersionError` for any other version. `reanalyze` resolves the archived estimator, raises `ReanalyzeMismatchError` when the configuration names another estimator, absence policy or partition, and aggregates through `estimator.estimate_attributions`.
 
 Why: The manifest held only `estimand` and `run_id` and SQLite had no `user_version`, so [[Reanalyze]] could not tell which estimator or configuration wrote an archive and always used the marginal aggregator.
 

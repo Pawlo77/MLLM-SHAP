@@ -1,5 +1,5 @@
 # Development config for the in-process Hugging Face backend
-# (extra: nlp-shap[transformers]). Tiny random model, CPU friendly; it exercises
+# (extra: mllm-shap[transformers]). Tiny random model, CPU friendly; it exercises
 # the prefix KV cache. Run the `gpu`-marked tests: uv run pytest -m gpu tests/
 backend:
   kind: transformers

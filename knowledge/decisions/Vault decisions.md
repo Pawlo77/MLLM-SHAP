@@ -13,7 +13,7 @@ related-code:
 
 # Vault decisions
 
-Part of [[nlp-shap]]; rules: [[knowledge/README|Vault rules]].
+Part of [[mllm-shap]]; rules: [[knowledge/README|Vault rules]].
 
 ## 2026-10-08 — One log per domain and one papers file
 
@@ -33,8 +33,8 @@ Consequences: An agent could work in a red vault but not make it worse unnoticed
 
 ## 2026-10-07 — Repository root as Obsidian vault
 
-Decision: The repository root is the Obsidian vault `nlp-shap`: notes in `knowledge/`, plus `plans/` and `.remember/*.md`. `.obsidian/` settings are committed; workspace state and plugin code are git-ignored. `scripts/build_knowledge.py` rebuilds generated notes from the package; `scripts/check_vault.py` checks links, frontmatter, isolation, abbreviations, secrets and traceability tags in prek and CI. Handbook, architecture, decision and concept notes are exported into the Sphinx site (`docs/handbook/`).
+Decision: The repository root is the Obsidian vault `mllm-shap`: notes in `knowledge/`, plus `plans/` and `.remember/*.md`. `.obsidian/` settings are committed; workspace state and plugin code are git-ignored. `scripts/build_knowledge.py` rebuilds generated notes from the package; `scripts/check_vault.py` checks links, frontmatter, isolation, abbreviations, secrets and traceability tags in prek and CI. Handbook, architecture, decision and concept notes are exported into the Sphinx site (`docs/handbook/`).
 
 Why: Design knowledge lived in chat logs and the audit report. The attribution research vault showed that a repository-rooted vault lets the Code Graph plugin draw code, tests and notes as one graph.
 
-Consequences: Every change under `src/nlp_shap/<pkg>/` updates `knowledge/architecture/<pkg>.md`, which reviewers check. No PDFs are committed; papers link to digital object identifiers (DOIs) or arXiv. Rejected: a separate notes repository, which drifts from the code and is invisible to agents here.
+Consequences: Every change under `src/mllm_shap/<pkg>/` updates `knowledge/architecture/<pkg>.md`, which reviewers check. No PDFs are committed; papers link to digital object identifiers (DOIs) or arXiv. Rejected: a separate notes repository, which drifts from the code and is invisible to agents here.

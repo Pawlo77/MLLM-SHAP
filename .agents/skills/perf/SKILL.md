@@ -5,7 +5,7 @@ description: >-
   when asked about speed, memory or regressions, or on /bench.
 ---
 
-# nlp-shap performance
+# mllm-shap performance
 
 Rules: `.cursor/rules/performance.mdc` (design defaults, end-of-task review) and
 `.cursor/rules/benchmarks.mdc` (when a benchmark is required). Benchmarks are local
@@ -13,7 +13,7 @@ only; they are not part of `make check` or CI on pull requests.
 
 ## When a benchmark is required
 
-- A new backend under `src/nlp_shap/backends/`.
+- A new backend under `src/mllm_shap/backends/`.
 - A change to a hot path: enumeration and sampling (`estimation/`), mask building and
   codecs (`masking/`), scheduling, dedup, caches and archive writes (`runtime/`), or the
   orchestrator loop (`pipeline/`).

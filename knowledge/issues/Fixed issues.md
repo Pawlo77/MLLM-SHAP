@@ -11,7 +11,7 @@ tags: [issue, fixed]
 
 # Fixed issues
 
-Part of [[nlp-shap]]. Fixed bugs, one row each; open and deferred issues keep their own notes ([[Open issues]]). Release dates: [[Release history]].
+Part of [[mllm-shap]]. Fixed bugs, one row each; open and deferred issues keep their own notes ([[Open issues]]). Release dates: [[Release history]].
 
 | ID | Title | Package | Cause | Fixed in | Pinned by |
 |---|---|---|---|---|---|

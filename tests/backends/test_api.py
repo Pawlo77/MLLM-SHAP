@@ -1,6 +1,6 @@
 """Contract tests for the OpenAI-compatible API backend.
 
-@see [[src/nlp_shap/backends/api/__init__.py]]
+@see [[src/mllm_shap/backends/api/__init__.py]]
 """
 
 import asyncio
@@ -9,20 +9,20 @@ import json
 import httpx
 import pytest
 
-from nlp_shap.backends.api import ApiBackend
-from nlp_shap.backends.api import payload as api_payload
-from nlp_shap.domain.config import GenerationConfig
-from nlp_shap.domain.conversation import (
+from mllm_shap.backends.api import ApiBackend
+from mllm_shap.backends.api import payload as api_payload
+from mllm_shap.domain.config import GenerationConfig
+from mllm_shap.domain.conversation import (
     AudioPart,
     ConversationSnapshot,
     Message,
     Turn,
 )
-from nlp_shap.domain.enums import Role
-from nlp_shap.domain.generation import GenerationRecord
-from nlp_shap.errors import BackendUnavailableError
-from nlp_shap.pipeline.config import BackendConfig
-from nlp_shap.protocols import SupportsLogprobs
+from mllm_shap.domain.enums import Role
+from mllm_shap.domain.generation import GenerationRecord
+from mllm_shap.errors import BackendUnavailableError
+from mllm_shap.pipeline.config import BackendConfig
+from mllm_shap.protocols import SupportsLogprobs
 from tests.backends._context import backend_context
 
 
@@ -234,7 +234,7 @@ def test_api_backend_raises_when_httpx_extra_missing(
         msg = "httpx package is required for the API backend extra"
         raise BackendUnavailableError(msg)
 
-    monkeypatch.setattr("nlp_shap.backends.api.backend._import_httpx", fail_import)
+    monkeypatch.setattr("mllm_shap.backends.api.backend._import_httpx", fail_import)
     backend = ApiBackend(
         backend_context(
             BackendConfig(kind="api", model_id="remote-model", api_host="http://mock")
@@ -262,7 +262,7 @@ def sleeps(monkeypatch: pytest.MonkeyPatch) -> list[float]:
     async def fake_sleep(delay: float) -> None:
         delays.append(delay)
 
-    monkeypatch.setattr("nlp_shap.backends.api.backend.asyncio.sleep", fake_sleep)
+    monkeypatch.setattr("mllm_shap.backends.api.backend.asyncio.sleep", fake_sleep)
     return delays
 
 
@@ -353,7 +353,7 @@ def test_api_backend_rejects_non_json_body() -> None:
 def test_api_backend_response_cache_is_bounded(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setattr("nlp_shap.backends.api.backend.RESPONSE_CACHE_SIZE", 2)
+    monkeypatch.setattr("mllm_shap.backends.api.backend.RESPONSE_CACHE_SIZE", 2)
     backend = _api_backend(lambda request: _success_response("x"))
 
     async def run() -> None:
@@ -374,12 +374,12 @@ def test_api_backend_response_cache_is_bounded(
         ("https://api.openai.com/v1", {"OPENAI_API_KEY": "sk-openai"}, "sk-openai"),
         (
             "https://api.openai.com/v1",
-            {"OPENAI_API_KEY": "sk-openai", "NLP_SHAP_API_KEY": "own"},
+            {"OPENAI_API_KEY": "sk-openai", "MLLM_SHAP_API_KEY": "own"},
             "own",
         ),
         (
             "https://example.test/v1",
-            {"OPENAI_API_KEY": "sk-openai", "NLP_SHAP_API_KEY": "own"},
+            {"OPENAI_API_KEY": "sk-openai", "MLLM_SHAP_API_KEY": "own"},
             "own",
         ),
         ("https://api.openai.com.evil.test/v1", {"OPENAI_API_KEY": "sk"}, None),
@@ -391,9 +391,9 @@ def test_api_backend_sends_openai_key_only_to_openai(
     env: dict[str, str],
     expected: str | None,
 ) -> None:
-    """``NLP_SHAP_API_KEY`` wins; ``OPENAI_API_KEY`` goes to api.openai.com only."""
+    """``MLLM_SHAP_API_KEY`` wins; ``OPENAI_API_KEY`` goes to api.openai.com only."""
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
-    monkeypatch.delenv("NLP_SHAP_API_KEY", raising=False)
+    monkeypatch.delenv("MLLM_SHAP_API_KEY", raising=False)
     for name, value in env.items():
         monkeypatch.setenv(name, value)
     seen: list[str | None] = []

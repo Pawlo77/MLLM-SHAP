@@ -5,17 +5,17 @@ cell targets, the round-robin cursor, the stratum-variance estimate and the
 water-filling allocation, and the error contracts. A pinned seeded run covers
 the order in which the steps are combined.
 
-@see [[src/nlp_shap/estimation/neyman.py]]
+@see [[src/mllm_shap/estimation/neyman.py]]
 """
 
 import numpy as np
 import pytest
 
-from nlp_shap.domain.players import PlayerSet
-from nlp_shap.estimation._shared import present_to_mask_int
-from nlp_shap.estimation.neyman import NeymanEstimator, _NeymanStep
-from nlp_shap.pipeline.config import BackendConfig, ExplainConfig
-from nlp_shap.plugins import PluginContext
+from mllm_shap.domain.players import PlayerSet
+from mllm_shap.estimation._shared import present_to_mask_int
+from mllm_shap.estimation.neyman import NeymanEstimator, _NeymanStep
+from mllm_shap.pipeline.config import BackendConfig, ExplainConfig
+from mllm_shap.plugins import PluginContext
 
 
 def _players(num_players: int) -> PlayerSet:

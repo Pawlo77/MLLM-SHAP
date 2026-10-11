@@ -1,11 +1,11 @@
 """Tests for conversation domain enums.
 
-@see [[src/nlp_shap/domain/enums.py]]
+@see [[src/mllm_shap/domain/enums.py]]
 """
 
 import pytest
 
-from nlp_shap.domain.enums import EmbeddingMode, Role
+from mllm_shap.domain.enums import EmbeddingMode, Role
 
 
 def test_role_wire_values_are_stable() -> None:

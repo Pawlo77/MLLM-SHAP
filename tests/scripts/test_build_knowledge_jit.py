@@ -26,7 +26,7 @@ def builder(script: Callable[[str], ModuleType]) -> ModuleType:
 def vault_copy(tmp_path: Path) -> Path:
     """Copy the files the builder reads into a temporary root."""
     root = tmp_path / "repo"
-    shutil.copytree(REPO / "src" / "nlp_shap", root / "src" / "nlp_shap")
+    shutil.copytree(REPO / "src" / "mllm_shap", root / "src" / "mllm_shap")
     shutil.copytree(
         REPO / "knowledge",
         root / "knowledge",
@@ -62,7 +62,7 @@ def test_paths_entry_per_architecture_note(
         notes
     )
     meta, body = split(built[layer / "runtime.md"])
-    assert meta["match"] == "src/nlp_shap/runtime/"
+    assert meta["match"] == "src/mllm_shap/runtime/"
     assert meta["title"] == "runtime package (architecture note)"
     assert isinstance(meta["description"], str)
     assert "[[" not in meta["description"]
@@ -75,9 +75,9 @@ def test_paths_entry_per_architecture_note(
     assert "(`knowledge/issues/Fixed issues.md`)" in text
     assert len(body) <= builder.JIT_MAX_LINES
     core, _ = split(built[layer / "core.md"])
-    assert core["match"] == "src/nlp_shap/[^/]+[.]py$"
-    assert re.search(str(core["match"]), "/abs/src/nlp_shap/errors.py")
-    assert not re.search(str(core["match"]), "src/nlp_shap/runtime/store.py")
+    assert core["match"] == "src/mllm_shap/[^/]+[.]py$"
+    assert re.search(str(core["match"]), "/abs/src/mllm_shap/errors.py")
+    assert not re.search(str(core["match"]), "src/mllm_shap/runtime/store.py")
 
 
 def test_vocabulary_entry_keys_term_and_aliases(
@@ -213,7 +213,7 @@ def test_layer_indexes_follow_plugin_format(
         position = 2 if dimension == "tools" else 1
         assert {row.split("\t")[position] for row in rows} <= entries
     paths = built[base / "paths" / builder.JIT_LAYER / "00-index.tsv"]
-    assert "src/nlp_shap/runtime/\truntime.md" in paths.splitlines()
+    assert "src/mllm_shap/runtime/\truntime.md" in paths.splitlines()
     vocabulary = built[base / "vocabulary" / builder.JIT_LAYER / "00-index.tsv"]
     assert "prefix hash\tprefix-hash.md\t" in vocabulary.splitlines()
 

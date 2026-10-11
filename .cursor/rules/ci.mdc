@@ -1,5 +1,5 @@
 ---
-description: GitHub Actions workflow conventions for nlp-shap
+description: GitHub Actions workflow conventions for mllm-shap
 globs: .github/**
 alwaysApply: false
 ---

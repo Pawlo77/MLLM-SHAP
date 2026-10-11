@@ -13,7 +13,7 @@ from tests.hooks._hookrun import CLAUDE, CURSOR, HAVE_TOOLS, run_hook, scratch_r
 pytestmark = pytest.mark.skipif(not HAVE_TOOLS, reason="needs bash and jq")
 
 HANDOFF = "Handoff marker: next run Phase 6."
-IDENTITY = "Identity marker: engineering partner on nlp-shap."
+IDENTITY = "Identity marker: engineering partner on mllm-shap."
 
 
 def _repo_with_memory(tmp_path: Path) -> Path:
@@ -39,7 +39,7 @@ def test_cursor_gets_state_and_memory(tmp_path: Path) -> None:
     """Cursor context carries version, handoff, identity and memory tails."""
     repo = _repo_with_memory(tmp_path)
     ctx = json.loads(_start(repo, CURSOR))["additional_context"]
-    assert "nlp-shap 9.8.7" in ctx
+    assert "mllm-shap 9.8.7" in ctx
     assert "make check" in ctx
     assert HANDOFF in ctx
     assert IDENTITY in ctx
@@ -88,8 +88,8 @@ def test_claude_gets_plain_text_without_memory(tmp_path: Path) -> None:
     is neither inlined memory nor a pointer line, and no hooks summary."""
     repo = _repo_with_memory(tmp_path)
     out = _start(repo, CLAUDE)
-    assert out.startswith("## nlp-shap session state")
-    assert "nlp-shap 9.8.7" in out
+    assert out.startswith("## mllm-shap session state")
+    assert "mllm-shap 9.8.7" in out
     assert "make check (filtered pytest + prek-all + vault-check)" in out
     assert HANDOFF not in out
     assert "- memory:" not in out

@@ -13,7 +13,7 @@ from pathlib import Path
 from sphinx.application import Sphinx
 from sphinx.util.typing import ExtensionMetadata
 
-REPOSITORY_BLOB = "https://github.com/Pawlo77/nlp-shap/blob/main/"
+REPOSITORY_BLOB = "https://github.com/Pawlo77/MLLM-SHAP/blob/main/"
 ROOT = Path(__file__).resolve().parents[2]
 _LINK = re.compile(r"\]\((?P<target>[^)\s#][^)\s]*)\)")
 
