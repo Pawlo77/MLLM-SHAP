@@ -4,7 +4,7 @@ type: module
 domain: masking
 tags: [architecture, masking]
 created: 2026-10-07
-updated: 2026-10-10
+updated: 2026-10-11
 related-code:
   - "[[src/nlp_shap/masking/__init__.py]]"
   - "[[src/nlp_shap/masking/audio.py]]"

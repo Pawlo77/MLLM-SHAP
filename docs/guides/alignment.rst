@@ -61,12 +61,9 @@ How it works
    boundaries; each lands in a dip of the RMS energy (bottom). Between
    "curiosity" and "beside" the speech never goes quiet, so that boundary stays.
 
-.. figure:: /_static/notebook_figures/alignment_flux_only.png
-   :alt: The same sentence aligned with flux_weight 1 and energy_weight 0.
-
-   ``energy_weight=0, flux_weight=1``: cuts follow spectral change instead of
-   energy, and fewer of them land on quiet points (1 of 9 boundaries refined
-   instead of 7).
+With ``energy_weight=0, flux_weight=1`` the cuts follow spectral change instead
+of energy: a few move by 10 to 40 ms, and only 1 of the 9 boundaries lands on a
+quiet point instead of 7.
 
 :func:`~nlp_shap.viz.plot_audio_segments` (``viz`` extra) draws the waveform with
 each segment, the rough CTC edges (``ctc_start_time``, ``ctc_end_time``) and the
