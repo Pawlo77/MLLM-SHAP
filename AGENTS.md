@@ -22,7 +22,7 @@ Optional, not part of `make check`: `make tests-all`, `make bench`, `make practi
   session). Files, code, commits, PR bodies and subagent reports stay normal prose.
 - Delivery goes through skill `ship` after `make check`: it commits, pushes, opens the PR,
   gets Copilot's review and addresses it; routine changes (`scripts/pr_policy.py`) merge
-  by themselves, everything else stops before the merge with the PR link. Outside `ship` and `release`,
+  by themselves, everything else stops before the merge with the PR link. It watches CI to green and keeps `main` merged in. Outside `ship` and `release`,
   no commit, push, tag or PR; never draft or WIP PRs, force pushes, amends or pushes to
   `main` (rule `git-commits`; enforced by each tool's permission settings and prek).
 - Upgrades and releases go through skills `upgrade`, `release` and `ship`.
