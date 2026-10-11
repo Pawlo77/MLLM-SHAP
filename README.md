@@ -99,7 +99,7 @@ Full documentation: **[pawlo77.github.io/MLLM-SHAP](https://pawlo77.github.io/ML
 
 - Runnable notebooks: [`examples/`](examples/README.md), also embedded in the [docs](https://pawlo77.github.io/MLLM-SHAP/examples.html).
 - Architecture notes, decisions, known issues and papers: the Obsidian vault in [`knowledge/`](knowledge/mllm-shap.md).
-- Development setup, checks and pull requests: [`CONTRIBUTING.md`](CONTRIBUTING.md); coding-agent rules: [`AGENTS.md`](AGENTS.md).
+- Development setup, checks and pull requests: [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## Citing
 
