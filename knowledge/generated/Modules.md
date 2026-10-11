@@ -113,7 +113,7 @@ tags: [generated]
 | [[src/mllm_shap/viz/__init__.py]] | Token attribution visualization plugins. | viz | [[knowledge/architecture/viz]] | 44 | [[viz]] |
 | [[src/mllm_shap/viz/audio.py]] | Figure of aligned audio segments: waveform, refined boundaries and energy. | viz | [[knowledge/architecture/viz]] | 134 | [[viz]] |
 | [[src/mllm_shap/viz/colors.py]] | SHAP-inspired diverging colors for signed attributions. | viz | [[knowledge/architecture/viz]] | 65 | [[viz]] |
-| [[src/mllm_shap/viz/conversation.py]] | Conversation view: each message under its role, players coloured in place. | viz | [[knowledge/architecture/viz]] | 282 | [[viz]] |
+| [[src/mllm_shap/viz/conversation.py]] | Conversation view: each message under its role, players coloured in place. | viz | [[knowledge/architecture/viz]] | 283 | [[viz]] |
 | [[src/mllm_shap/viz/labels.py]] | Token label helpers for attribution renderers. | viz | [[knowledge/architecture/viz]] | 45 | [[viz]] |
 | [[src/mllm_shap/viz/render.py]] | Public helpers for attribution visualization. | viz | [[knowledge/architecture/viz]] | 104 | [[viz]] |
 | [[src/mllm_shap/viz/style.py]] | Seaborn-backed styling for attribution figures. | viz | [[knowledge/architecture/viz]] | 95 | [[viz]] |
