@@ -377,8 +377,9 @@ scheduler with 1 000 jobs, TF-IDF scoring and an end-to-end mock run.
    make bench              # run them and write .pytest_benchmark/benchmark.json
    make bench-regression   # fail when a median is >25% slower than baseline.json
 
-``tests/benchmarks/baseline.json`` is recorded on the maintainer's machine (named
-in ``tests/benchmarks/AGENTS.md``), so compare against it on comparable hardware.
+``tests/benchmarks/baseline.json`` was recorded on 2026-10-07 on an Apple M4 Pro
+(14 cores, 48 GB RAM), macOS 26.7 (Darwin 25.6.0), CPython 3.12.12. Compare against
+it only on comparable hardware; on another machine record a local baseline first.
 ``make check`` does not run benchmarks; a weekly CI workflow runs ``make bench``
 and keeps the report as an artifact. Run ``make bench-regression`` before changing
 hot paths in ``runtime/``, ``masking/`` or ``estimation/``.
