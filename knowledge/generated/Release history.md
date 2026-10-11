@@ -12,7 +12,7 @@ tags: [generated]
 
 | Version | Date | Added | Changed | Fixed | Other |
 |---|---|---|---|---|---|
-| Unreleased |  | 0 | 0 | 0 | 0 |
+| Unreleased |  | 1 | 0 | 0 | 0 |
 | 0.3.1 | 2026-10-11 | 0 | 0 | 1 | 0 |
 | 0.3.0 | 2026-10-11 | 3 | 2 | 0 | 0 |
 | 0.2.1 | 2026-10-10 | 3 | 0 | 0 | 0 |
