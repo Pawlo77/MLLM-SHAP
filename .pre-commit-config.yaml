@@ -120,9 +120,9 @@ repos:
 
       - id: skills-ref
         name: skills follow the Agent Skills spec
-        entry: uv run pytest -q -p no:cacheprovider tests/skills/test_skill_frontmatter.py
+        entry: uv run pytest -q -p no:cacheprovider tests/test_skill_frontmatter.py
         language: system
-        files: ^(\.agents/skills/|\.claude/agents/|tests/skills/)
+        files: ^(\.agents/skills/|\.claude/agents/|tests/test_skill_frontmatter\.py)
         pass_filenames: false
 
       - id: mypy
