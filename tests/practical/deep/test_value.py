@@ -33,7 +33,7 @@ def _day_prompts(answer: str, day: str) -> list[str]:
 def test_swapped_fact_keeps_its_role(
     scenario: Scenario, deep_model: PracticalModel, practical_record: dict[str, Any]
 ) -> None:
-    """The swapped token's sign and rank-1 status agree across the pair."""
+    """The swapped token keeps its sign and moves at most one rank across the pair."""
     days, token = scenario.expect["swap"], scenario.expect["token"]
     pair = (scenario, _swapped(scenario, *days))
     rows: dict[str, dict[str, list[Any]]] = {}
@@ -43,7 +43,7 @@ def test_swapped_fact_keeps_its_role(
         rows[explanation.get("value_fn", "tfidf_cosine")] = {
             "values": [[round(v, 4) for v in run] for run in runs],
             "sign": [math.copysign(1.0, run[token]) for run in runs],
-            "rank1": [top_by_magnitude(run, 1)[0] == token for run in runs],
+            "rank": [top_by_magnitude(run, len(run)).index(token) + 1 for run in runs],
         }
     answers = [deep_model.answer(s) for s in pair]
     verdicts = [
@@ -57,5 +57,6 @@ def test_swapped_fact_keeps_its_role(
 
     for name, row in rows.items():
         assert row["sign"][0] == row["sign"][1], (name, row)
-        assert row["rank1"][0] == row["rank1"][1], (name, row)
+        shift = abs(row["rank"][0] - row["rank"][1])
+        assert shift <= scenario.expect["max_rank_shift"], (name, row)
     assert all(verdict.outcome != "fail" for verdict in verdicts), verdicts

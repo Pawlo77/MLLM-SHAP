@@ -51,18 +51,19 @@ Pytest markers select tests that need extra resources and are excluded from `mak
 
 ### Practical tests
 
-`make practical TIER=<quick|deep|all> FEATURE=<id|glob|all>` runs `tests/practical/scenarios.yaml` in float16 on MPS or CUDA. Pins live in `tests/practical/models.yaml`, results in `tests/practical/results/latest.json`.
+`make practical TIER=<quick|deep|all> FEATURE=<id|glob|all>` runs `tests/practical/scenarios.yaml` (quick: MPS or CUDA; deep: LM Studio). Pins live in `tests/practical/models.yaml`, results in `tests/practical/results/latest.json`.
 
 | Tier | Models | Memory | Cold / warm (M4 Pro) |
 |------|--------|--------|----------------------|
 | `quick` (default) | `Qwen/Qwen2.5-1.5B-Instruct` 3.1 GB, `SmolLM2-360M-Instruct` 0.7 GB | under 4 GB | 130 s / 70 s |
-| `deep` (`deep.*`, before a release) | `Qwen/Qwen2.5-3B-Instruct` 6.2 GB | 7.4 GB | 28 min / 4 min |
+| `deep` (`deep.*`, before a release) | LM Studio `qwen2.5-3b-instruct`, judge `gemma-3-4b-it`; `deep.runtime.kv_cache` loads `Qwen/Qwen2.5-3B-Instruct` 6.2 GB | 7.4 GB | 13 min / 4 min |
 
+- Deep tier: `lms server start` (no server or key: skip); keep LM Studio idle otherwise. `MLLM_SHAP_PRACTICAL_DEEP_MODEL` and `_DEEP_JUDGE`: other keys.
 - `MLLM_SHAP_PRACTICAL_DOWNLOAD=1`: download missing weights.
 - `MLLM_SHAP_PRACTICAL_CPU=1`: run without a GPU (slow).
-- `MLLM_SHAP_PRACTICAL_LMS_MODEL`: a downloaded LM Studio model key (`make practical` default `qwen2-500m-instruct`).
+- `MLLM_SHAP_PRACTICAL_LMS_MODEL`: LM Studio key (`make practical` default `qwen2-500m-instruct`).
 - `MLLM_SHAP_PRACTICAL_API_HOST` (default `http://localhost:1234/v1`) and `MLLM_SHAP_PRACTICAL_API_MODEL`; a remote host needs `MLLM_SHAP_PRACTICAL_REMOTE=1`.
-- `MLLM_SHAP_PRACTICAL_JUDGE=lmstudio:<key>`: the quick tier's judge runs in LM Studio, for example `qwen2.5-7b-instruct` 4-bit (4.7 GB).
+- `MLLM_SHAP_PRACTICAL_JUDGE=lmstudio:<key>`: the quick tier's judge runs in LM Studio.
 
 Code rules live in `.cursor/rules/python-*.mdc`; write tests first for new behaviour and bug fixes.
 

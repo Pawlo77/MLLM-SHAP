@@ -40,7 +40,7 @@ Part of [[mllm-shap]].
 - `MockBackend` (`mock`): deterministic text from a SHA-256 of the snapshot id, each message's `message_chat_text`, model id and generation parameters; at most 16 four-character tokens; used in continuous integration (CI).
 - `ApiBackend` (`api`): OpenAI-compatible application programming interface (API) `/chat/completions` over `httpx`, with `Timeout(backend.timeout_s)` and at most `max_inflight` connections.
   - Retries `RETRYABLE_STATUS` (408, 429, 500, 502, 503, 504) and transport errors up to `backend.max_retries` with exponential backoff, honouring `Retry-After` up to `timeout_s`. Non-JSON responses raise `BackendUnavailableError`.
-  - Sends `"logprobs": true`; `extract_logprobs` reads `choices[0].logprobs.content[*].logprob`, else `None`. `returns_logprobs` is true (`SupportsLogprobs`).
+  - Sends `"logprobs": true`; `extract_logprobs` reads `choices[0].logprobs.content[*].logprob`, else `None`; an empty reply gets `()` (LM Studio sends `null`), which `logprob` scores 0. `returns_logprobs` is true (`SupportsLogprobs`).
   - Caches temperature-0 records (text and logprobs) in an LRU of `RESPONSE_CACHE_SIZE` (1024).
   - `backend.api_host` is required (`ConfigError` without it; no environment or localhost fallback).
   - Bearer key `MLLM_SHAP_API_KEY` for any host; `OPENAI_API_KEY` only for `OPENAI_API_HOST` (`api.openai.com`), so an OpenAI key never reaches another server.
@@ -72,7 +72,7 @@ Part of [[mllm-shap]].
 
 ## Known issues
 
-- None open. Fixed: C06, C08, C15, D04, D05 ([[Fixed issues]]).
+- None open. Fixed: C06, C08, C15, D04, D05, D07 ([[Fixed issues]]).
 
 ## Tests
 

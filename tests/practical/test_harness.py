@@ -9,10 +9,12 @@ import pytest
 
 from mllm_shap import ExplainConfig
 from tests.practical._harness import (
+    LMS_HOST,
     MODELS,
     SCENARIOS,
     WEIGHT_FILES,
     feature_selected,
+    require_lmstudio,
     require_weights,
     tier_selected,
 )
@@ -66,19 +68,41 @@ def test_tier_selection(spec: str, feature: str, selected: bool) -> None:
 
 
 def test_models_are_pinned_small_and_typed() -> None:
-    """Chat tiers load in float16 (quick < 4 GB, deep < 8 GB); the CTC model in
-    float32 under 1 GB. Every model pins a commit sha."""
-    assert set(MODELS) == {"default", "fast", "deep", "alignment"}
+    """In-process tiers pin a commit sha: chat tiers float16 (quick < 4 GB, deep_hf
+    < 8 GB), the CTC model float32 under 1 GB. The deep tier is an LM Studio key."""
+    assert set(MODELS) == {
+        "default",
+        "fast",
+        "deep",
+        "deep_judge",
+        "deep_hf",
+        "alignment",
+    }
+    assert MODELS["deep"].kind == "api"
     for name, spec in MODELS.items():
+        if spec.kind == "api":
+            continue
         assert re.fullmatch(r"[0-9a-f]{40}", spec.revision)
         assert spec.dtype == ("float32" if name == "alignment" else "float16")
-        assert spec.size_gb < {"deep": 8.0, "alignment": 1.0}.get(name, 4.0)
+        assert spec.size_gb < {"deep_hf": 8.0, "alignment": 1.0}.get(name, 4.0)
 
 
-def test_deep_scenarios_use_the_deep_model() -> None:
-    """Every ``deep.*`` scenario runs on the deep tier's model and no other does."""
+def test_deep_scenarios_use_the_deep_tiers() -> None:
+    """Every ``deep.*`` scenario runs on LM Studio, except the in-process KV cache."""
     for sid, scenario in SCENARIOS.items():
-        assert (scenario.tier == "deep") is sid.startswith("deep.")
+        expected = {"deep.runtime.kv_cache": "deep_hf"}.get(sid, "deep")
+        if sid.startswith("deep."):
+            assert scenario.tier == expected
+        else:
+            assert not scenario.tier.startswith("deep")
+
+
+def test_deep_backend_is_the_lmstudio_server() -> None:
+    """The deep tier posts to LM Studio's OpenAI-compatible server by model key."""
+    config = SCENARIOS["deep.estimator.reference"].config(MODELS["deep"])
+    assert config.backend.kind == "api"
+    assert config.backend.api_host == LMS_HOST
+    assert config.backend.model_id == MODELS["deep"].model_id
 
 
 def test_null_in_a_variant_deletes_the_key() -> None:
@@ -104,5 +128,20 @@ def test_require_weights_checks_only_the_files_the_backend_loads(
 
     monkeypatch.delenv("MLLM_SHAP_PRACTICAL_DOWNLOAD", raising=False)
     monkeypatch.setattr(hub, "snapshot_download", snapshot_download)
-    require_weights(MODELS["deep"])
+    require_weights(MODELS["deep_hf"])
     assert calls == [list(WEIGHT_FILES)]
+
+
+def test_deep_tier_skips_when_lmstudio_is_not_serving(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """No server on the port is a skip with the fix, not an error."""
+    httpx = pytest.importorskip("httpx")
+
+    def refuse(*args: object, **kwargs: object) -> None:
+        msg = "connection refused"
+        raise httpx.ConnectError(msg)
+
+    monkeypatch.setattr(httpx, "get", refuse)
+    with pytest.raises(pytest.skip.Exception, match="lms server start"):
+        require_lmstudio(MODELS["deep"])
