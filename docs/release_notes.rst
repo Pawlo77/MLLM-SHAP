@@ -17,6 +17,26 @@ Changed
   ``mllm_shap.``, and the base error is ``MllmShapError``. The old
   ``nlp-shap`` package is archived.
 
+Added
+~~~~~
+
+- ``players: tokens`` takes the plugin option ``roles`` (like ``messages``): only
+  the words of the listed roles become players, other messages stay present.
+- :func:`~mllm_shap.viz.plot_conversation` and
+  :func:`~mllm_shap.viz.render_conversation_html` draw a conversation message by
+  message under role and speaker headers, with token or message players shaded in
+  place and text that is no player in grey. Messages with audio players get a
+  waveform strip shaded on the same colour scale.
+- The ``sgpa_segments`` option ``text_roles`` also makes the words of typed
+  messages of those roles players, so typed and spoken words share one run.
+
+Changed
+~~~~~~~
+
+- :func:`~mllm_shap.viz.plot_audio_segments` with ``values`` lightens every second
+  segment and keeps fills translucent, so neighbouring words stay distinct (equal
+  values no longer merge into one block) and the waveform shows through.
+
 .. _release-0-2-1:
 
 0.2.1 (2026-10-10)
@@ -347,7 +367,7 @@ Documentation
 
 - New "How a run works" page (stages, scheduler counters, archives,
   ``reanalyze``, progress and telemetry, ``explain`` vs ``explain_sync``),
-  "Choosing an estimator", and "Coming from legacy MLLM-Shap" guides; citing and
+  "Choosing an estimator", and "Coming from MLLM-Shap-legacy" guides; citing and
   contributing pages.
 - Configuration reference and the public-exports table are generated from the
   installed package; every runnable guide snippet is executed on each docs

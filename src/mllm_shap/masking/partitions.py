@@ -5,11 +5,12 @@
 @tested-by [[tests/masking/test_partitions.py]]
 """
 
-from typing import TYPE_CHECKING, ClassVar, Final, Literal
+from typing import TYPE_CHECKING, ClassVar, Final
 
 from pydantic import Field
 
 from ..domain.conversation import ConversationSnapshot, Message
+from ..domain.enums import RoleName
 from ..domain.players import PlayerSet, PlayerSpan
 from ..protocols.plugin import PluginOptions
 from .tokens import token_spans
@@ -18,15 +19,34 @@ if TYPE_CHECKING:
     from ..plugins.context import PluginContext
 
 
+class RolesOptions(PluginOptions):
+    """Options of the ``tokens`` and ``messages`` partitions."""
+
+    roles: list[RoleName] = Field(default=["user", "assistant", "system"])
+    """Roles whose text becomes players; other messages are always present."""
+
+
+MessagesOptions = RolesOptions
+"""Options of the ``messages`` partition (same fields as ``tokens``)."""
+
+
+def _roles(context: "PluginContext | None") -> frozenset[str]:
+    roles = RolesOptions().roles
+    if context is not None:
+        roles = context.option("roles", roles)
+    return frozenset(roles)
+
+
 class TokenPartitioner:
     """Partition a snapshot into whitespace-delimited text tokens."""
 
-    options_model: ClassVar[type[PluginOptions]] = PluginOptions
-    """Accepts no ``explanation.plugin_options``."""
+    options_model: ClassVar[type[PluginOptions]] = RolesOptions
+    """Options accepted from ``explanation.plugin_options``."""
 
     def __init__(self, context: "PluginContext | None" = None) -> None:
-        """Accept the plugin context; this plugin reads no settings from it."""
-        _ = context
+        """Read option ``roles`` from ``context``; every role by default."""
+        self.roles = _roles(context)
+        """Roles whose tokens become players."""
 
     @property
     def name(self) -> str:
@@ -34,8 +54,17 @@ class TokenPartitioner:
         return "tokens"
 
     def partition(self, snapshot: ConversationSnapshot) -> PlayerSet:
-        """Derive ordered token players and their spans from the snapshot text."""
-        pairs = token_spans(snapshot)
+        """Derive ordered token players and their spans from the snapshot text.
+
+        Tokens of messages whose role is not in :attr:`roles` are no players and
+        stay present in every coalition; player ids do not depend on the filter.
+        """
+        messages = snapshot.messages()
+        pairs = tuple(
+            (player_id, span)
+            for player_id, span in token_spans(snapshot)
+            if messages[span.message_index].role.value in self.roles
+        )
         if not pairs:
             msg = "snapshot must contain at least one explainable token"
             raise ValueError(msg)
@@ -48,29 +77,16 @@ class TokenPartitioner:
 LABEL_PREVIEW_CHARS: Final[int] = 30
 """Characters of the message text shown in a message player's label."""
 
-RoleName = Literal["user", "assistant", "system"]
-"""Message role accepted by :class:`MessagesOptions`."""
-
-
-class MessagesOptions(PluginOptions):
-    """Options of the ``messages`` partition."""
-
-    roles: list[RoleName] = Field(default=["user", "assistant", "system"])
-    """Roles whose messages become players; other messages are always present."""
-
 
 class MessagePartitioner:
     """Partition a snapshot into one player per non-empty message."""
 
-    options_model: ClassVar[type[PluginOptions]] = MessagesOptions
+    options_model: ClassVar[type[PluginOptions]] = RolesOptions
     """Options accepted from ``explanation.plugin_options``."""
 
     def __init__(self, context: "PluginContext | None" = None) -> None:
         """Read option ``roles`` from ``context``; every role by default."""
-        roles = MessagesOptions().roles
-        if context is not None:
-            roles = context.option("roles", roles)
-        self.roles = frozenset(roles)
+        self.roles = _roles(context)
         """Roles whose messages become players."""
 
     @property

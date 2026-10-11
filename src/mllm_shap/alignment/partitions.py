@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, ClassVar
 from pydantic import Field
 
 from ..domain.conversation import AudioPart, ConversationSnapshot, Message
+from ..domain.enums import RoleName
 from ..domain.players import PlayerSet, PlayerSpan
 from ..protocols.plugin import PluginOptions
 from .sgpa import DEFAULT_MODEL, SpectrogramGuidedAligner, Wav2Vec2Ctc
@@ -39,6 +40,10 @@ class SgpaOptions(PluginOptions):
     flux_weight: float = Field(default=0.2, ge=0.0)
     """Weight of spectral flux in the boundary cost."""
 
+    text_roles: list[RoleName] = Field(default_factory=list)
+    """Roles whose text-only messages also give one player per word, so typed and
+    spoken words are explained in one run; none by default."""
+
 
 class SgpaSegmentPartitioner:
     """Make each spellable word of every audio message's transcript a player.
@@ -46,7 +51,8 @@ class SgpaSegmentPartitioner:
     A message qualifies when it has an :class:`~mllm_shap.AudioPart` and text: the
     text is the transcript the audio is aligned to. Each player's span covers the
     word in the text and, through ``samples``, its stretch of audio, so absence
-    policies mask both. Other messages contribute no players.
+    policies mask both. Text-only messages give word players when their role is in
+    ``text_roles`` and no players otherwise.
     """
 
     options_model: ClassVar[type[PluginOptions]] = SgpaOptions
@@ -96,7 +102,17 @@ class SgpaSegmentPartitioner:
     ) -> list[tuple[int, PlayerSpan]]:
         audio = next((p for p in message.content if isinstance(p, AudioPart)), None)
         if audio is None:
-            return []
+            if message.role.value not in self._options.text_roles:
+                return []
+            return [
+                (
+                    index,
+                    PlayerSpan(
+                        message_index, w.start(), w.end(), w.group(), message.speaker
+                    ),
+                )
+                for index, w in enumerate(_TOKEN_RE.finditer(message.text))
+            ]
         words = list(_TOKEN_RE.finditer(message.text))
         if not words:
             msg = "an audio message needs its transcript as text for sgpa_segments"

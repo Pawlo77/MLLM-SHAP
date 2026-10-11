@@ -134,3 +134,27 @@ def test_options_reach_the_default_aligner() -> None:
     assert (options.model_id, options.revision, options.flux_weight) == ("m", "r", 0.5)
     with pytest.raises(ValueError, match="greater than or equal"):
         SgpaOptions(energy_weight=-1.0)
+
+
+def test_text_roles_add_word_players_of_text_messages() -> None:
+    """Typed and spoken words are players of one run; only spoken ones have samples."""
+    from mllm_shap.plugins.context import PluginContext
+
+    config = ExplainConfig.model_validate({
+        "backend": {"kind": "mock", "model_id": "stub"},
+        "explanation": {"players": "sgpa_segments"},
+    })
+    context = PluginContext(config=config, options={"text_roles": ["user"]})
+    snapshot = _snapshot()
+    players = SgpaSegmentPartitioner(
+        context, aligner=SpectrogramGuidedAligner(FakeCtc())
+    ).partition(snapshot)
+    sid = snapshot.snapshot_id
+    assert [span.text for span in players.spans] == ["What", "was", "said?", "ab", "c"]
+    assert [span.samples is None for span in players.spans] == [True] * 3 + [False] * 2
+    assert players.player_ids[:3] == (f"{sid}:0:0:0", f"{sid}:0:0:1", f"{sid}:0:0:2")
+
+
+def test_text_roles_default_to_audio_players_only() -> None:
+    players = _partitioner().partition(_snapshot())
+    assert all(span.samples is not None for span in players.spans)

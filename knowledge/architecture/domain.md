@@ -37,7 +37,7 @@ Part of [[mllm-shap]].
 - `CoalitionMask(present)`: `from_sequence`, `coalition_size()`, `validate_against(player_set)` ([[masking]]).
 - `GenerationRecord`: `text`, `text_token_rows`, `audio_token_rows`, `logprobs` (`None` when the backend returned none), `embedding`, `contextual_embedding`.
 - `domain/config.py`: `GenerationConfig(max_new_tokens=128, temperature=0.0, top_k=1, compute_embeddings=False)`, `DedupConfig(enabled="auto")`, `KvCacheConfig(enabled=False, max_entries=8)`; also importable from `mllm_shap.pipeline.config`.
-- `Estimand` (`shapley`, `banzhaf`), `EstimandWire`, `estimand_to_wire` ([[estimation|Estimand]]); `Role` (`user`, `assistant`, `system`); `EmbeddingMode` (`static`, `contextual`); `CooperativeGame(player_set)`.
+- `Estimand` (`shapley`, `banzhaf`), `EstimandWire`, `estimand_to_wire` ([[estimation|Estimand]]); `Role` (`user`, `assistant`, `system`) and `RoleName`, the same values as a `Literal` for plugin options (`roles`, `text_roles`); `EmbeddingMode` (`static`, `contextual`); `CooperativeGame(player_set)`.
 
 ## Data flow
 
