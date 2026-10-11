@@ -150,12 +150,10 @@ scenarios:
     tier: audio
     turns:
       - [{role: user, text: "I had that curiosity beside me at this moment"}]
-    # Eager attention: Granite's projector fails under SDPA on Apple MPS. 64 of 512
-    # coalitions (complementary) keep the run near 70 s on an M4 Pro; measured
-    # efficiency gap 0.15 (all nine values 0.04 to 0.18), so the test checks the
-    # values, not efficiency.
+    # 64 of 512 coalitions (complementary) keep the run near 70 s on an M4 Pro;
+    # measured efficiency gap 0.15 (all nine values 0.04 to 0.18), so the test
+    # checks the values, not efficiency.
     overrides:
-      backend: {options: {attn_implementation: eager}}
       explanation:
         estimator: complementary
         budget: {fraction: 0.125}

@@ -14,6 +14,7 @@ audio:  # audio language model of conversation.audio (transformers processor pat
   model_id: ibm-granite/granite-speech-3.3-2b
   revision: 4ac2f02f413c6169ae8c0ccc217115a366e552d7
   dtype: bfloat16
+  attn_implementation: eager  # Granite's projector fails under SDPA on Apple MPS
   size_gb: 5.9
 alignment:  # CTC model of alignment.sgpa (not a chat model; float32 on CPU)
   model_id: facebook/wav2vec2-base-960h

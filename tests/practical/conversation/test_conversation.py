@@ -12,7 +12,6 @@ import pytest
 
 from mllm_shap import ExplainRunner
 from mllm_shap.backends.lmstudio import LmStudioBackend
-from mllm_shap.backends.transformers.text import TransformersTextBackend
 from mllm_shap.domain.config import GenerationConfig
 from mllm_shap.domain.conversation import (
     AudioPart,
@@ -118,32 +117,30 @@ def test_lmstudio_refuses_audio_by_default(scenario: Scenario) -> None:
 
 @pytest.mark.parametrize("scenario", scenario_cases("conversation.audio"))
 def test_audio_model_hears_the_recording_and_explains_its_words(
-    scenario: Scenario, practical_record: dict[str, Any]
+    scenario: Scenario,
+    audio_model: PracticalModel,
+    practical_record: dict[str, Any],
 ) -> None:
     """Granite Speech transcribes the clip from audio alone; spoken words get values."""
     pytest.importorskip("librosa")
     pytest.importorskip("torchaudio")
-    require_weights(MODELS[scenario.tier])
     require_weights(MODELS["alignment"])
     config = scenario.config(MODELS[scenario.tier])
     audio = AudioPart(ROOT / scenario.expect["audio"], sample_rate=16_000)
     ask = Message(role=Role.USER, content=(audio, TextPart(scenario.expect["ask"])))
-    backend = TransformersTextBackend(PluginContext(config=config))
-    try:
-        heard = asyncio.run(
-            backend.generate(
-                ConversationSnapshot.from_turns((Turn(messages=(ask,)),)),
-                config.generation.model_copy(
-                    update={"max_new_tokens": scenario.expect["heard_tokens"]}
-                ),
-            )
+    backend = audio_model.backend
+    heard = asyncio.run(
+        backend.generate(
+            ConversationSnapshot.from_turns((Turn(messages=(ask,)),)),
+            config.generation.model_copy(
+                update={"max_new_tokens": scenario.expect["heard_tokens"]}
+            ),
         )
-        transcript = scenario.snapshot.messages()[0].text
-        spoken = Message(role=Role.USER, content=(TextPart(transcript), audio))
-        snapshot = ConversationSnapshot.from_turns((Turn(messages=(spoken,)),))
-        output = ExplainRunner(config, backend=backend).explain_sync(snapshot)
-    finally:
-        asyncio.run(backend.aclose())
+    )
+    transcript = scenario.snapshot.messages()[0].text
+    spoken = Message(role=Role.USER, content=(TextPart(transcript), audio))
+    snapshot = ConversationSnapshot.from_turns((Turn(messages=(spoken,)),))
+    output = ExplainRunner(config, backend=backend).explain_sync(snapshot)
     result = output.result
     gap = sum(result.values) - (result.grand_value - result.base_value)
     practical_record["properties"] = {"heard": heard.text, "efficiency_gap": gap}
