@@ -54,7 +54,7 @@ skill `release` for the version bump, tag and publish.
 | 16 | v0.2.0 | SGPA alignment (Wav2Vec2; done) |
 | 17 | v0.2.1 | audio players `sgpa_segments` (done) |
 | 18 | v0.4.0 | mock audio backend `mock_audio` (done) |
-| 19 | v0.5.0 | audio input: transformers processor, `api` `input_audio`, `lmstudio` transcript (done) |
+| 19 | v0.4.1 | audio input: transformers processor, `api` `input_audio`, `lmstudio` transcript (done) |
 | 20 | next minor | audio E2E pipeline on any audio backend |
 | 21 | later | audio value fns + SGPA Audio smoke |
 

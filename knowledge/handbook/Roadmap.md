@@ -31,7 +31,7 @@ One phase, one tag, one publish (skill `rewrite`). Pull request (PR) 4 was porte
 | 16 | v0.2.0 | Spectrogram-Guided Phonetic Alignment ([[SGPA]]) with Wav2Vec2 (done) |
 | 17 | v0.2.1 | audio players (`sgpa_segments`) and audio absence rendering (done) |
 | 18 | 0.4.0 | mock audio backend (`mock_audio`, done) |
-| 19 | 0.5.0 | audio input for transformers audio models, the application programming interface (API) backend and LM Studio (done) |
+| 19 | 0.4.1 | audio input for transformers audio models, the application programming interface (API) backend and LM Studio (done) |
 | 20 | next | audio end-to-end pipeline on any audio backend |
 | 21 | later | audio value functions and SGPA audio smoke test |
 
