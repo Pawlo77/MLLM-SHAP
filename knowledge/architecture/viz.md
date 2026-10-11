@@ -9,6 +9,7 @@ related-code:
   - "[[src/mllm_shap/viz/__init__.py]]"
   - "[[src/mllm_shap/viz/audio.py]]"
   - "[[src/mllm_shap/viz/colors.py]]"
+  - "[[src/mllm_shap/viz/conversation.py]]"
   - "[[src/mllm_shap/viz/labels.py]]"
   - "[[src/mllm_shap/viz/render.py]]"
   - "[[src/mllm_shap/viz/style.py]]"
@@ -31,7 +32,9 @@ Part of [[mllm-shap]].
 - `TokenTextRenderer` (`token_text`, also `to_html`), `TokenBarRenderer` (`token_bar`); both take a `PluginContext`.
 - `token_labels(snapshot, player_set)`: each span's `display_label` (the partitioner's label, else the text with a `"<speaker>: "` prefix) from `PlayerSet.spans`; raises without spans or when spans do not match the snapshot.
 - `check_attribution(labels, values)`: the `ValueError` both renderers raise for unequal lengths or an empty attribution.
-- `plot_audio_segments(audio, segments, values=None)`: a two-panel figure of [[alignment]] segments, with the waveform, segment shading (by `values` on the diverging scale when given), refined boundaries, dashed CTC edges with arrows to where refinement moved them, and the RMS energy below; not a renderer plugin, since it draws audio, not a player attribution table.
+- `plot_audio_segments(audio, segments, values=None)`: a two-panel figure of [[alignment]] segments, with the waveform, segment shading (by `values` on the diverging scale when given, at most 55 % opaque, every second segment lightened), refined boundaries, dashed CTC edges with arrows to where refinement moved them, and the RMS energy below; not a renderer plugin, since it draws audio, not a player attribution table.
+- `plot_conversation(output, snapshot, player_set, title=None)` and `render_conversation_html(...)`: the conversation message by message under `"<role>[/<speaker>] <n>"` headers, players shaded in place, text that is no player grey.
+- `plot_conversation` adds a waveform strip per message with audio players, on the same colour scale; it reuses the `token_text` layout and colours.
 - `colors.py` (red-blue diverging scale), `style.py` (seaborn theme).
 
 ## Data flow
@@ -55,4 +58,5 @@ Part of [[mllm-shap]].
 
 - [[tests/viz/test_render.py]]
 - [[tests/viz/test_labels.py]]
+- [[tests/viz/test_conversation_view.py]]
 - [[tests/viz/test_audio.py]]

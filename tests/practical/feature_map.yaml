@@ -54,4 +54,5 @@ paths:
 
   src/mllm_shap/value/*: [value.*]
   src/mllm_shap/viz/*: [viz.render]
+  src/mllm_shap/viz/conversation.py: [viz.render, conversation.multi_user]
   src/mllm_shap/viz/audio.py: [alignment.sgpa]

@@ -12,6 +12,8 @@ Visualization
 
 .. automodule:: mllm_shap.viz.audio
 
+.. automodule:: mllm_shap.viz.conversation
+
 .. automodule:: mllm_shap.viz.colors
 
 .. automodule:: mllm_shap.viz.labels

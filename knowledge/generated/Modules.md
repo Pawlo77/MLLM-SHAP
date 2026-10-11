@@ -17,7 +17,7 @@ tags: [generated]
 | [[src/mllm_shap/alignment/__init__.py]] | Spectrogram-guided alignment of transcript tokens to speech (``audio`` extra). | alignment | [[knowledge/architecture/alignment]] | 18 | [[alignment]] |
 | [[src/mllm_shap/alignment/ctc.py]] | CTC forced alignment (Viterbi over the blank-extended target sequence). | alignment | [[knowledge/architecture/alignment]] | 82 | [[alignment]] |
 | [[src/mllm_shap/alignment/io.py]] | Encoded audio bytes to mono float waveforms and back. | alignment | [[knowledge/architecture/alignment]] | 63 | [[alignment]] |
-| [[src/mllm_shap/alignment/partitions.py]] | The ``sgpa_segments`` partition: one player per spoken word of an audio message. | alignment | [[knowledge/architecture/alignment]] | 127 | [[alignment]] |
+| [[src/mllm_shap/alignment/partitions.py]] | The ``sgpa_segments`` partition: one player per spoken word of an audio message. | alignment | [[knowledge/architecture/alignment]] | 143 | [[alignment]] |
 | [[src/mllm_shap/alignment/segments.py]] | Transcript tokens aligned to audio time ranges. | alignment | [[knowledge/architecture/alignment]] | 66 | [[alignment]] |
 | [[src/mllm_shap/alignment/sgpa.py]] | Spectrogram-guided alignment of transcript tokens to speech (SGPA). | alignment | [[knowledge/architecture/alignment]] | 279 | [[alignment]] |
 | [[src/mllm_shap/backends/__init__.py]] | Backend plugin implementations. | backends | [[knowledge/architecture/backends]] | 9 | [[backends]] |
@@ -43,7 +43,7 @@ tags: [generated]
 | [[src/mllm_shap/domain/coalition.py]] | Coalition masks over explainability players. | domain | [[knowledge/architecture/domain]] | 45 | [[domain]] |
 | [[src/mllm_shap/domain/config.py]] | Generation and runtime settings shared by backends, runtime and pipeline. | domain | [[knowledge/architecture/domain]] | 52 | [[domain]] |
 | [[src/mllm_shap/domain/conversation.py]] | Immutable conversation snapshots without backend or IO. | domain | [[knowledge/architecture/domain]] | 320 | [[domain]] |
-| [[src/mllm_shap/domain/enums.py]] | Conversation and explanation enumerations for the text MVP. | domain | [[knowledge/architecture/domain]] | 31 | [[domain]] |
+| [[src/mllm_shap/domain/enums.py]] | Conversation and explanation enumerations for the text MVP. | domain | [[knowledge/architecture/domain]] | 36 | [[domain]] |
 | [[src/mllm_shap/domain/estimands.py]] | Estimand labels for attribution outputs and archive manifests. | domain | [[knowledge/architecture/domain]] | 34 | [[domain]] |
 | [[src/mllm_shap/domain/game.py]] | Cooperative-game domain types. | domain | [[knowledge/architecture/domain]] | 18 | [[domain]] |
 | [[src/mllm_shap/domain/generation.py]] | Generation payloads scored by value functions. | domain | [[knowledge/architecture/domain]] | 31 | [[domain]] |
@@ -64,7 +64,7 @@ tags: [generated]
 | [[src/mllm_shap/masking/audio.py]] | Render audio players: cut or silence the sample ranges of absent players. | masking | [[knowledge/architecture/masking]] | 53 | [[masking]] |
 | [[src/mllm_shap/masking/builder.py]] | View-based masked snapshots with structural sharing. | masking | [[knowledge/architecture/masking]] | 83 | [[masking]] |
 | [[src/mllm_shap/masking/codec.py]] | Packed bitset encoding and stable hashing for coalition masks. | masking | [[knowledge/architecture/masking]] | 66 | [[masking]] |
-| [[src/mllm_shap/masking/partitions.py]] | Player partition plugins: whitespace tokens and whole messages. | masking | [[knowledge/architecture/masking]] | 117 | [[masking]] |
+| [[src/mllm_shap/masking/partitions.py]] | Player partition plugins: whitespace tokens and whole messages. | masking | [[knowledge/architecture/masking]] | 133 | [[masking]] |
 | [[src/mllm_shap/masking/policies.py]] | Absence policies for rendering masked conversation snapshots. | masking | [[knowledge/architecture/masking]] | 162 | [[masking]] |
 | [[src/mllm_shap/masking/space.py]] | Mask-space utilities for explainable feature indexing. | masking | [[knowledge/architecture/masking]] | 61 | [[masking]] |
 | [[src/mllm_shap/masking/tokens.py]] | Whitespace token spans and span-based snapshot rendering. | masking | [[knowledge/architecture/masking]] | 124 | [[masking]] |
@@ -110,9 +110,10 @@ tags: [generated]
 | [[src/mllm_shap/value/generation_records.py]] | Build generation records from generated text for value-function scoring. | value | [[knowledge/architecture/value]] | 64 | [[value]] |
 | [[src/mllm_shap/value/logprob.py]] | Logprob-based value function. | value | [[knowledge/architecture/value]] | 61 | [[value]] |
 | [[src/mllm_shap/value/tfidf.py]] | Frozen-corpus TF-IDF cosine value function. | value | [[knowledge/architecture/value]] | 101 | [[value]] |
-| [[src/mllm_shap/viz/__init__.py]] | Token attribution visualization plugins. | viz | [[knowledge/architecture/viz]] | 37 | [[viz]] |
-| [[src/mllm_shap/viz/audio.py]] | Figure of aligned audio segments: waveform, refined boundaries and energy. | viz | [[knowledge/architecture/viz]] | 122 | [[viz]] |
+| [[src/mllm_shap/viz/__init__.py]] | Token attribution visualization plugins. | viz | [[knowledge/architecture/viz]] | 44 | [[viz]] |
+| [[src/mllm_shap/viz/audio.py]] | Figure of aligned audio segments: waveform, refined boundaries and energy. | viz | [[knowledge/architecture/viz]] | 134 | [[viz]] |
 | [[src/mllm_shap/viz/colors.py]] | SHAP-inspired diverging colors for signed attributions. | viz | [[knowledge/architecture/viz]] | 65 | [[viz]] |
+| [[src/mllm_shap/viz/conversation.py]] | Conversation view: each message under its role, players coloured in place. | viz | [[knowledge/architecture/viz]] | 282 | [[viz]] |
 | [[src/mllm_shap/viz/labels.py]] | Token label helpers for attribution renderers. | viz | [[knowledge/architecture/viz]] | 45 | [[viz]] |
 | [[src/mllm_shap/viz/render.py]] | Public helpers for attribution visualization. | viz | [[knowledge/architecture/viz]] | 104 | [[viz]] |
 | [[src/mllm_shap/viz/style.py]] | Seaborn-backed styling for attribution figures. | viz | [[knowledge/architecture/viz]] | 95 | [[viz]] |

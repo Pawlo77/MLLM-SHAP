@@ -55,3 +55,11 @@ def test_values_colour_segments_by_sign() -> None:
 def test_values_must_match_the_segments() -> None:
     with pytest.raises(ValueError, match="one value per segment"):
         plot_audio_segments(AUDIO, _segments(), values=[1.0])
+
+
+def test_neighbours_differ_even_with_equal_values() -> None:
+    """Alternate segments are lightened, and fills stay translucent."""
+    figure = plot_audio_segments(AUDIO, _segments(), values=[0.5, 0.5])
+    first, second = (p for p in figure.axes[0].patches if p.get_label() == "segment")
+    assert first.get_facecolor() != second.get_facecolor()
+    assert max(first.get_facecolor()[3], second.get_facecolor()[3]) <= 0.55
