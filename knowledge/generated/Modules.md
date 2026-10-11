@@ -12,7 +12,7 @@ tags: [generated]
 
 | Module | Summary | Domain | See | Lines | Architecture note |
 |---|---|---|---|---|---|
-| [[src/mllm_shap/__init__.py]] | Shapley-value attributions for conversational language models. | core | [[knowledge/architecture/core]] | 183 | [[core]] |
+| [[src/mllm_shap/__init__.py]] | Shapley-value attributions for conversational language models. | core | [[knowledge/architecture/core]] | 184 | [[core]] |
 | [[src/mllm_shap/_logging.py]] | Central logging bootstrap for mllm_shap. | core | [[knowledge/architecture/core]] | 149 | [[core]] |
 | [[src/mllm_shap/alignment/__init__.py]] | Spectrogram-guided alignment of transcript tokens to speech (``audio`` extra). | alignment | [[knowledge/architecture/alignment]] | 18 | [[alignment]] |
 | [[src/mllm_shap/alignment/ctc.py]] | CTC forced alignment (Viterbi over the blank-extended target sequence). | alignment | [[knowledge/architecture/alignment]] | 82 | [[alignment]] |
@@ -30,7 +30,8 @@ tags: [generated]
 | [[src/mllm_shap/backends/lmstudio/chat.py]] | Convert conversation snapshots to LM Studio chat contexts. | backends | [[knowledge/architecture/backends]] | 42 | [[backends]] |
 | [[src/mllm_shap/backends/lmstudio/models.py]] | Resolve and download LM Studio models through the ``lmstudio`` SDK. | backends | [[knowledge/architecture/backends]] | 185 | [[backends]] |
 | [[src/mllm_shap/backends/lmstudio/options.py]] | Settings of the LM Studio backend read from ``BackendConfig.options``. | backends | [[knowledge/architecture/backends]] | 43 | [[backends]] |
-| [[src/mllm_shap/backends/mock/__init__.py]] | Mock backend exports. | backends | [[knowledge/architecture/backends]] | 10 | [[backends]] |
+| [[src/mllm_shap/backends/mock/__init__.py]] | Mock backend exports. | backends | [[knowledge/architecture/backends]] | 12 | [[backends]] |
+| [[src/mllm_shap/backends/mock/audio.py]] | Deterministic mock backend that hears the voiced runs of audio parts. | backends | [[knowledge/architecture/backends]] | 81 | [[backends]] |
 | [[src/mllm_shap/backends/mock/backend.py]] | Deterministic mock backend for CI-safe E2E tests. | backends | [[knowledge/architecture/backends]] | 73 | [[backends]] |
 | [[src/mllm_shap/backends/transformers/__init__.py]] | Hugging Face transformers text backend. | backends | [[knowledge/architecture/backends]] | 9 | [[backends]] |
 | [[src/mllm_shap/backends/transformers/_torch.py]] | Lazy import of the optional ``torch`` dependency. | backends | [[knowledge/architecture/backends]] | 21 | [[backends]] |
@@ -78,7 +79,7 @@ tags: [generated]
 | [[src/mllm_shap/pipeline/runner.py]] | Public explain pipeline entry point. | pipeline | [[knowledge/architecture/pipeline]] | 268 | [[pipeline]] |
 | [[src/mllm_shap/plugins/__init__.py]] | Plugin registry exports. | plugins | [[knowledge/architecture/plugins]] | 22 | [[plugins]] |
 | [[src/mllm_shap/plugins/backends.py]] | Backend plugin construction helpers. | plugins | [[knowledge/architecture/plugins]] | 22 | [[plugins]] |
-| [[src/mllm_shap/plugins/builtin.py]] | Built-in plugin registration and the default registry. | plugins | [[knowledge/architecture/plugins]] | 100 | [[plugins]] |
+| [[src/mllm_shap/plugins/builtin.py]] | Built-in plugin registration and the default registry. | plugins | [[knowledge/architecture/plugins]] | 101 | [[plugins]] |
 | [[src/mllm_shap/plugins/context.py]] | Context handed to every plugin factory. | plugins | [[knowledge/architecture/plugins]] | 59 | [[plugins]] |
 | [[src/mllm_shap/plugins/groups.py]] | Plugin group identifiers for entry-point loading. | plugins | [[knowledge/architecture/plugins]] | 36 | [[plugins]] |
 | [[src/mllm_shap/plugins/options.py]] | Lookup and validation of ``explanation.plugin_options``. | plugins | [[knowledge/architecture/plugins]] | 143 | [[plugins]] |

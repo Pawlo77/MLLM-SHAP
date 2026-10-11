@@ -47,7 +47,7 @@ Part of [[mllm-shap]]. Concept: [[SGPA]]. Decisions: [[Alignment decisions]].
 
 ## Known issues
 
-- No backend generates from audio yet ([[D02 - Audio backend]]); runs score the masked transcripts.
+- No model backend generates from audio yet ([[D02 - Audio backend]]); only `mock_audio` ([[backends]]) hears the masked audio.
 - [[D06 - SGPA paper not in the papers list]]: the method's paper is under review, so it has no [[Papers]] section yet.
 
 ## Tests
@@ -56,4 +56,4 @@ Part of [[mllm-shap]]. Concept: [[SGPA]]. Decisions: [[Alignment decisions]].
 - [[tests/alignment/test_io.py]]
 - [[tests/alignment/test_segments.py]]
 - [[tests/alignment/test_sgpa.py]]
-- [[tests/alignment/test_sgpa_players.py]]
+- [[tests/alignment/test_sgpa_players.py]] (also `mock_audio` end to end)
