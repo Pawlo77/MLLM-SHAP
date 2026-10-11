@@ -3,7 +3,7 @@
 Unit-level checks live next to their modules (domain imports, scheduler, archive,
 API backend); this file keeps what only the full pipeline can show.
 
-@see [[src/nlp_shap/pipeline/runner.py]]
+@see [[src/mllm_shap/pipeline/runner.py]]
 """
 
 import importlib
@@ -11,10 +11,10 @@ from pathlib import Path
 
 import pytest
 
-import nlp_shap
-from nlp_shap import ExplainConfig, ExplainRunner
-from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
-from nlp_shap.domain.enums import Role
+import mllm_shap
+from mllm_shap import ExplainConfig, ExplainRunner
+from mllm_shap.domain.conversation import ConversationSnapshot, Message, Turn
+from mllm_shap.domain.enums import Role
 
 
 def _snapshot() -> ConversationSnapshot:
@@ -37,9 +37,9 @@ def _config(archive_path: str = "") -> ExplainConfig:
 
 
 def test_every_public_export_resolves() -> None:
-    """Each name in ``nlp_shap.__all__`` imports, lazy viz exports included."""
-    module = importlib.import_module("nlp_shap")
-    missing = [name for name in nlp_shap.__all__ if not hasattr(module, name)]
+    """Each name in ``mllm_shap.__all__`` imports, lazy viz exports included."""
+    module = importlib.import_module("mllm_shap")
+    missing = [name for name in mllm_shap.__all__ if not hasattr(module, name)]
     assert missing == []
 
 

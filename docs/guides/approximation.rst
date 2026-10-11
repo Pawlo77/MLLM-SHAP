@@ -18,7 +18,7 @@ Shapley values are the weights, plus half the bonus for ``p0`` and ``p1``:
 
 .. code-block:: python
 
-   from nlp_shap import (
+   from mllm_shap import (
        CoalitionMask,
        ComplementaryEstimator,
        ExactEstimator,
@@ -68,7 +68,7 @@ Monte Carlo
 
 .. guide-result:: approximation_monte_carlo
 
-The same masks aggregated with :class:`~nlp_shap.BanzhafAggregator` give the
+The same masks aggregated with :class:`~mllm_shap.BanzhafAggregator` give the
 Banzhaf estimate instead; Monte Carlo is the only built-in sampler that supports
 both estimands.
 
@@ -127,14 +127,14 @@ Neyman allocation needs phase-one payoffs before drawing phase-two masks:
 
 .. guide-result:: approximation_neyman
 
-:class:`~nlp_shap.ExplainRunner` runs both phases for you when
+:class:`~mllm_shap.ExplainRunner` runs both phases for you when
 ``explanation.estimator`` is ``neyman_cc``; the phase-one size comes from the
 ``neyman`` config section.
 
 Configuration
 -------------
 
-Set the estimator and budget in :class:`~nlp_shap.ExplainConfig`:
+Set the estimator and budget in :class:`~mllm_shap.ExplainConfig`:
 
 .. code-block:: yaml
 
@@ -158,13 +158,13 @@ larger). :doc:`config` lists every key.
 Plugin resolution
 -----------------
 
-Estimators are registered under the ``nlp_shap.estimators`` entry-point group;
+Estimators are registered under the ``mllm_shap.estimators`` entry-point group;
 the names are the values ``explanation.estimator`` accepts:
 
 .. code-block:: python
 
-   from nlp_shap import PluginGroup, PluginRegistry
-   from nlp_shap.plugins import register_builtin_plugins
+   from mllm_shap import PluginGroup, PluginRegistry
+   from mllm_shap.plugins import register_builtin_plugins
 
    registry = PluginRegistry()
    register_builtin_plugins(registry)

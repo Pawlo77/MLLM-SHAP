@@ -1,19 +1,19 @@
 Pipeline
 ========
 
-.. automodule:: nlp_shap.pipeline
+.. automodule:: mllm_shap.pipeline
    :no-members:
 
-.. automodule:: nlp_shap.pipeline.config
+.. automodule:: mllm_shap.pipeline.config
 
-.. automodule:: nlp_shap.pipeline.runner
+.. automodule:: mllm_shap.pipeline.runner
 
-.. automodule:: nlp_shap.pipeline.result
+.. automodule:: mllm_shap.pipeline.result
 
-.. automodule:: nlp_shap.pipeline.manifest
+.. automodule:: mllm_shap.pipeline.manifest
 
-.. automodule:: nlp_shap.pipeline.reanalyze
+.. automodule:: mllm_shap.pipeline.reanalyze
 
-.. automodule:: nlp_shap.pipeline.orchestrator
+.. automodule:: mllm_shap.pipeline.orchestrator
 
-.. automodule:: nlp_shap.pipeline.context
+.. automodule:: mllm_shap.pipeline.context

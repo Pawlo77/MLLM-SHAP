@@ -9,8 +9,13 @@ from pathlib import Path
 
 def test_domain_modules_do_not_import_backends() -> None:
     """Domain code must not depend on torch or backend packages."""
-    domain_root = Path(__file__).resolve().parents[2] / "src" / "nlp_shap" / "domain"
-    forbidden_roots = {"torch", "transformers", "nlp_shap.backends", "nlp_shap.plugins"}
+    domain_root = Path(__file__).resolve().parents[2] / "src" / "mllm_shap" / "domain"
+    forbidden_roots = {
+        "torch",
+        "transformers",
+        "mllm_shap.backends",
+        "mllm_shap.plugins",
+    }
     violations: list[str] = []
 
     for path in sorted(domain_root.glob("*.py")):

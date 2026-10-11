@@ -51,10 +51,10 @@ jobs:
         run: uv build
 
       - name: Smoke test (wheel)
-        run: uv run --isolated --no-project --with dist/*.whl python -c "import nlp_shap; print(nlp_shap.__version__)"
+        run: uv run --isolated --no-project --with dist/*.whl python -c "import mllm_shap; print(mllm_shap.__version__)"
 
       - name: Smoke test (source distribution)
-        run: uv run --isolated --no-project --with dist/*.tar.gz python -c "import nlp_shap; print(nlp_shap.__version__)"
+        run: uv run --isolated --no-project --with dist/*.tar.gz python -c "import mllm_shap; print(mllm_shap.__version__)"
 
       - name: Publish
         run: uv publish
@@ -91,5 +91,5 @@ jobs:
       - name: Create GitHub Release
         run: >-
           gh release create "${GITHUB_REF_NAME}" --generate-notes --verify-tag
-          --notes "Full release notes: https://pawlo77.github.io/nlp-shap/release_notes.html"
+          --notes "Full release notes: https://pawlo77.github.io/MLLM-SHAP/release_notes.html"
           dist/*

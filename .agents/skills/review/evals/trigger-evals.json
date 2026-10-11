@@ -1,6 +1,6 @@
 [
   {
-    "query": "review this diff before I commit it: I changed the complementary-pair weights in src/nlp_shap/estimation/estimands/_weights.py and touched the orchestrator dedup, git diff main...HEAD has everything",
+    "query": "review this diff before I commit it: I changed the complementary-pair weights in src/mllm_shap/estimation/estimands/_weights.py and touched the orchestrator dedup, git diff main...HEAD has everything",
     "should_trigger": true
   },
   {

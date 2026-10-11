@@ -1,12 +1,12 @@
 """Micro-benchmarks for prefix cache lookups.
 
-@see [[src/nlp_shap/runtime/kv_cache.py]]
+@see [[src/mllm_shap/runtime/kv_cache.py]]
 """
 
 import pytest
 from pytest_benchmark.fixture import BenchmarkFixture
 
-from nlp_shap.runtime.kv_cache import PrefixCacheManager
+from mllm_shap.runtime.kv_cache import PrefixCacheManager
 
 _PREFIXES = [tuple(range(length)) for length in range(4, 20)]
 

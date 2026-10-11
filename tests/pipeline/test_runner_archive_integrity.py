@@ -1,6 +1,6 @@
 """Partial archives, streaming jobs and the player limit.
 
-@see [[src/nlp_shap/pipeline/runner.py]]
+@see [[src/mllm_shap/pipeline/runner.py]]
 """
 
 import sqlite3
@@ -8,19 +8,19 @@ from pathlib import Path
 
 import pytest
 
-from nlp_shap import ExplainConfig, ExplainRunner, PluginGroup
-from nlp_shap.backends.mock import MockBackend
-from nlp_shap.domain.config import GenerationConfig
-from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
-from nlp_shap.domain.enums import Role
-from nlp_shap.domain.estimands import Estimand
-from nlp_shap.domain.generation import GenerationRecord
-from nlp_shap.errors import ArchiveIncompleteError, ConfigError
-from nlp_shap.masking.codec import MaskCodec
-from nlp_shap.pipeline.manifest import RunManifest
-from nlp_shap.plugins import default_registry
-from nlp_shap.runtime.archive import CoalitionRecordDraft, RunArchive
-from nlp_shap.runtime.scheduler import InferenceScheduler
+from mllm_shap import ExplainConfig, ExplainRunner, PluginGroup
+from mllm_shap.backends.mock import MockBackend
+from mllm_shap.domain.config import GenerationConfig
+from mllm_shap.domain.conversation import ConversationSnapshot, Message, Turn
+from mllm_shap.domain.enums import Role
+from mllm_shap.domain.estimands import Estimand
+from mllm_shap.domain.generation import GenerationRecord
+from mllm_shap.errors import ArchiveIncompleteError, ConfigError
+from mllm_shap.masking.codec import MaskCodec
+from mllm_shap.pipeline.manifest import RunManifest
+from mllm_shap.plugins import default_registry
+from mllm_shap.runtime.archive import CoalitionRecordDraft, RunArchive
+from mllm_shap.runtime.scheduler import InferenceScheduler
 
 
 class FailingBackend(MockBackend):

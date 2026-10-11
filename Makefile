@@ -15,8 +15,8 @@ install: ## Set up the development environment
 	uv run prek install --hook-type pre-commit --hook-type commit-msg --hook-type pre-push
 	@echo "prek hooks installed (pre-commit, commit-msg, pre-push). Re-run after cloning."
 
-kernel: ## Register .venv as the Jupyter kernel "nlp-shap (uv)"
-	uv run python -m ipykernel install --user --name nlp-shap --display-name "nlp-shap (uv)"
+kernel: ## Register .venv as the Jupyter kernel "mllm-shap (uv)"
+	uv run python -m ipykernel install --user --name mllm-shap --display-name "mllm-shap (uv)"
 
 upgrade-check: ## List outdated packages, hooks, action pins, uv and Obsidian plugins
 	uv run python scripts/upgrade.py --check
@@ -41,8 +41,8 @@ tests: ## Unit tests (skip lms/gpu/bench/slow/practical)
 FEATURE ?= all
 TIER ?= quick
 # LM Studio key for the backend.lmstudio and backend.api scenarios (environment wins).
-NLP_SHAP_PRACTICAL_LMS_MODEL ?= qwen2-500m-instruct
-export NLP_SHAP_PRACTICAL_LMS_MODEL
+MLLM_SHAP_PRACTICAL_LMS_MODEL ?= qwen2-500m-instruct
+export MLLM_SHAP_PRACTICAL_LMS_MODEL
 
 practical: ## Practical tests on real models (GPU); TIER=quick|deep|all FEATURE=<id|glob|all>
 	uv run pytest tests/practical -m practical --tier='$(TIER)' --feature='$(FEATURE)' -rs
@@ -59,7 +59,7 @@ check: ## Filtered tests, all quality hooks and the vault check
 	$(MAKE) vault-check
 
 coverage: ## Run tests with coverage report (fails under 85%, see pyproject)
-	uv run pytest --cov=./src/nlp_shap --cov-report=term-missing -m "not lms and not gpu and not bench and not slow and not practical" tests/
+	uv run pytest --cov=./src/mllm_shap --cov-report=term-missing -m "not lms and not gpu and not bench and not slow and not practical" tests/
 
 bench: ## Run benchmarks; JSON report in .pytest_benchmark/benchmark.json
 	uv run pytest tests/benchmarks/ $(BENCH_ARGS) --benchmark-json=.pytest_benchmark/benchmark.json

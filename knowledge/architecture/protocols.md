@@ -4,24 +4,24 @@ type: module
 domain: protocols
 tags: [architecture, protocols]
 created: 2026-10-07
-updated: 2026-10-09
+updated: 2026-10-11
 related-code:
-  - "[[src/nlp_shap/protocols/__init__.py]]"
-  - "[[src/nlp_shap/protocols/backend.py]]"
-  - "[[src/nlp_shap/protocols/embedding.py]]"
-  - "[[src/nlp_shap/protocols/estimand.py]]"
-  - "[[src/nlp_shap/protocols/estimator.py]]"
-  - "[[src/nlp_shap/protocols/masking.py]]"
-  - "[[src/nlp_shap/protocols/normalizer.py]]"
-  - "[[src/nlp_shap/protocols/partition.py]]"
-  - "[[src/nlp_shap/protocols/plugin.py]]"
-  - "[[src/nlp_shap/protocols/renderer.py]]"
-  - "[[src/nlp_shap/protocols/value.py]]"
+  - "[[src/mllm_shap/protocols/__init__.py]]"
+  - "[[src/mllm_shap/protocols/backend.py]]"
+  - "[[src/mllm_shap/protocols/embedding.py]]"
+  - "[[src/mllm_shap/protocols/estimand.py]]"
+  - "[[src/mllm_shap/protocols/estimator.py]]"
+  - "[[src/mllm_shap/protocols/masking.py]]"
+  - "[[src/mllm_shap/protocols/normalizer.py]]"
+  - "[[src/mllm_shap/protocols/partition.py]]"
+  - "[[src/mllm_shap/protocols/plugin.py]]"
+  - "[[src/mllm_shap/protocols/renderer.py]]"
+  - "[[src/mllm_shap/protocols/value.py]]"
 ---
 
 # protocols
 
-Part of [[nlp-shap]].
+Part of [[mllm-shap]].
 
 ## Responsibility
 

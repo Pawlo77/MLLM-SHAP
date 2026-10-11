@@ -1,20 +1,20 @@
 """End-to-end explain pipeline tests with the mock backend.
 
-@see [[src/nlp_shap/pipeline/runner.py]]
+@see [[src/mllm_shap/pipeline/runner.py]]
 """
 
 from pathlib import Path
 
 import pytest
 
-from nlp_shap import ExplainConfig, ExplainRunner
-from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
-from nlp_shap.domain.enums import Role
-from nlp_shap.domain.estimands import Estimand
-from nlp_shap.errors import ArchiveExistsError, ConfigError, ReanalyzeMismatchError
-from nlp_shap.estimation.exact import ExactEstimator
-from nlp_shap.runtime import BASE_GENERATION_FILE, InMemoryObservabilitySink
-from nlp_shap.runtime.archive import RunArchive
+from mllm_shap import ExplainConfig, ExplainRunner
+from mllm_shap.domain.conversation import ConversationSnapshot, Message, Turn
+from mllm_shap.domain.enums import Role
+from mllm_shap.domain.estimands import Estimand
+from mllm_shap.errors import ArchiveExistsError, ConfigError, ReanalyzeMismatchError
+from mllm_shap.estimation.exact import ExactEstimator
+from mllm_shap.runtime import BASE_GENERATION_FILE, InMemoryObservabilitySink
+from mllm_shap.runtime.archive import RunArchive
 
 
 def _three_token_snapshot() -> ConversationSnapshot:

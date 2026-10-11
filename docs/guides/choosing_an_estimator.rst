@@ -52,7 +52,7 @@ Runs whose budget plans more than :math:`2^{\text{max\_players}}` coalitions
 (``budget.fraction`` times :math:`2^n`, or ``budget.evaluations``; every
 full-table run on more than
 ``explanation.max_players`` players, default 24) are refused with
-:exc:`~nlp_shap.errors.ConfigError` before any model call, whatever the
+:exc:`~mllm_shap.errors.ConfigError` before any model call, whatever the
 estimator; lower the fraction, use coarser players, or raise the limit
 deliberately.
 
@@ -69,7 +69,7 @@ snippet counts the coalitions each estimator requests at a 10 % budget:
 
 .. code-block:: python
 
-   from nlp_shap import (
+   from mllm_shap import (
        ComplementaryEstimator,
        ExactEstimator,
        MonteCarloEstimator,

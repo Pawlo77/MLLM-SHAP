@@ -1,19 +1,19 @@
 """Tests for prefix-cache helpers.
 
-@see [[src/nlp_shap/runtime/kv_cache.py]]
+@see [[src/mllm_shap/runtime/kv_cache.py]]
 """
 
-from nlp_shap.domain.coalition import CoalitionMask
-from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
-from nlp_shap.domain.enums import Role
-from nlp_shap.masking.partitions import TokenPartitioner
-from nlp_shap.runtime.kv_cache import (
+from mllm_shap.domain.coalition import CoalitionMask
+from mllm_shap.domain.conversation import ConversationSnapshot, Message, Turn
+from mllm_shap.domain.enums import Role
+from mllm_shap.masking.partitions import TokenPartitioner
+from mllm_shap.runtime.kv_cache import (
     CroppableCache,
     PrefixCacheManager,
     build_snapshot_prefix_hash,
     group_jobs_for_prefix_cache,
 )
-from nlp_shap.runtime.scheduler import CoalitionJob
+from mllm_shap.runtime.scheduler import CoalitionJob
 
 
 def test_build_snapshot_prefix_hash_ignores_final_player() -> None:

@@ -37,7 +37,7 @@ RESULTS_DIR = Path(__file__).parent / "results"
 """Git-ignored folder of the results files."""
 
 CPU_SKIP = (
-    "practical tests need a GPU; set NLP_SHAP_PRACTICAL_CPU=1 to run anyway (slow)"
+    "practical tests need a GPU; set MLLM_SHAP_PRACTICAL_CPU=1 to run anyway (slow)"
 )
 
 
@@ -83,14 +83,14 @@ def _feature(item: pytest.Item) -> str:
 
 @pytest.fixture(scope="session")
 def practical_device() -> str:
-    """Return ``cuda`` or ``mps``; skip on CPU unless NLP_SHAP_PRACTICAL_CPU=1."""
+    """Return ``cuda`` or ``mps``; skip on CPU unless MLLM_SHAP_PRACTICAL_CPU=1."""
     torch = pytest.importorskip("torch")
     pytest.importorskip("transformers")
     if torch.cuda.is_available():
         device = "cuda"
     elif torch.backends.mps.is_available():
         device = "mps"
-    elif os.environ.get("NLP_SHAP_PRACTICAL_CPU") == "1":
+    elif os.environ.get("MLLM_SHAP_PRACTICAL_CPU") == "1":
         device = "cpu"
     else:
         pytest.skip(CPU_SKIP)

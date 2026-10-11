@@ -24,14 +24,14 @@ functions are independent of the estimand (Shapley or Banzhaf) and the estimator
        returns them
 
 :doc:`migrating_from_mllm_shap` maps these to the U1–U4 utility labels used by
-MLLM-Shap.
+legacy MLLM-Shap.
 
 TF-IDF cosine
 -------------
 
 .. code-block:: python
 
-   from nlp_shap import GenerationRecord, TfIdfCosineValue
+   from mllm_shap import GenerationRecord, TfIdfCosineValue
 
    base = GenerationRecord(
        text="hello world",
@@ -49,17 +49,17 @@ TF-IDF cosine
 
 .. guide-result:: value_tfidf
 
-The pipeline calls :meth:`~nlp_shap.value.tfidf.TfIdfCosineValue.fit` once on
+The pipeline calls :meth:`~mllm_shap.value.tfidf.TfIdfCosineValue.fit` once on
 every output of the run, so all coalitions are scored with the same IDF weights,
-and :meth:`~nlp_shap.ExplainRunner.reanalyze` refits on the archived outputs.
+and :meth:`~mllm_shap.ExplainRunner.reanalyze` refits on the archived outputs.
 
 Embedding similarity
 --------------------
 
 .. code-block:: python
 
-   from nlp_shap import CosineEmbeddingValue, GenerationRecord
-   from nlp_shap.domain.enums import EmbeddingMode
+   from mllm_shap import CosineEmbeddingValue, GenerationRecord
+   from mllm_shap.domain.enums import EmbeddingMode
 
    base = GenerationRecord(text="base", embedding=(1.0, 0.0))
    candidate = GenerationRecord(text="candidate", embedding=(0.9, 0.1))
@@ -72,7 +72,7 @@ Embedding similarity
 
 In a run the mode comes from ``explanation.embedding_mode`` (``static`` or
 ``contextual``): the registry builds the value function with a
-:class:`~nlp_shap.plugins.context.PluginContext` and the plugin reads the setting
+:class:`~mllm_shap.plugins.context.PluginContext` and the plugin reads the setting
 from it, so the YAML below is all you need:
 
 .. code-block:: yaml
@@ -82,13 +82,13 @@ from it, so the YAML below is all you need:
      embedding_mode: contextual
 
 Where the vectors come from depends on the backend. The embedding value functions
-declare ``needs_embeddings`` (:class:`~nlp_shap.protocols.value.RequiresEmbeddings`),
+declare ``needs_embeddings`` (:class:`~mllm_shap.protocols.value.RequiresEmbeddings`),
 so the pipeline asks the backend for model embeddings
 (``GenerationConfig.compute_embeddings``): the transformers backend returns the
 mean of the output tokens' input embeddings (``static``) and of the last hidden
 state (``contextual``), and ``explain`` scores those. Backends without embeddings
 (mock, LM Studio, HTTP API) give deterministic hash vectors of the generated text,
-which only make sense for tests. :meth:`~nlp_shap.ExplainRunner.reanalyze` always
+which only make sense for tests. :meth:`~mllm_shap.ExplainRunner.reanalyze` always
 scores the hash vectors, because archives store the generated text only, so for a
 transformers run its embedding values differ from those of ``explain``.
 
@@ -100,7 +100,7 @@ Logprob utility
 
 .. code-block:: python
 
-   from nlp_shap import GenerationRecord, LogprobValue
+   from mllm_shap import GenerationRecord, LogprobValue
 
    candidate = GenerationRecord(text="answer", logprobs=(-0.1, -0.2, -0.3))
    utility = LogprobValue().score(candidate, candidate)
@@ -113,13 +113,13 @@ for coalition ``S``, so it lies in ``(-inf, 0]`` and an empty generation scores 
 It measures how confident the model is in its own answer; the base generation is
 not read, and ``v(N)`` is the base generation's own mean.
 
-:class:`~nlp_shap.value.logprob.LogprobValue` declares ``needs_logprobs``
-(:class:`~nlp_shap.protocols.value.RequiresLogprobs`). A run with a backend that is
-not :class:`~nlp_shap.protocols.backend.SupportsLogprobs` (``mock``, ``lmstudio``)
-raises :exc:`~nlp_shap.errors.ConfigError` before any generation. A record that
+:class:`~mllm_shap.value.logprob.LogprobValue` declares ``needs_logprobs``
+(:class:`~mllm_shap.protocols.value.RequiresLogprobs`). A run with a backend that is
+not :class:`~mllm_shap.protocols.backend.SupportsLogprobs` (``mock``, ``lmstudio``)
+raises :exc:`~mllm_shap.errors.ConfigError` before any generation. A record that
 still arrives without logprobs (an HTTP server that ignores the request) raises
-:exc:`~nlp_shap.errors.LogprobsUnavailableError`. Archives store logprobs per
-coalition, and :meth:`~nlp_shap.ExplainRunner.reanalyze` refuses ``logprob`` on
+:exc:`~mllm_shap.errors.LogprobsUnavailableError`. Archives store logprobs per
+coalition, and :meth:`~mllm_shap.ExplainRunner.reanalyze` refuses ``logprob`` on
 an archive whose rows have none. Backend support: :doc:`backends`.
 
 Attribution normalizers
@@ -131,7 +131,7 @@ across normalizers, and efficiency only holds for ``identity``.
 
 .. code-block:: python
 
-   from nlp_shap import MinMaxNormalizer
+   from mllm_shap import MinMaxNormalizer
 
    raw = [1.0, -2.0, 3.0]
    displayed = MinMaxNormalizer().normalize(raw)

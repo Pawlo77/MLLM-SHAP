@@ -1,6 +1,6 @@
 """Deep tier: a 10-turn, three-speaker thread and a per-speaker fact question.
 
-@see [[src/nlp_shap/masking/partitions.py]]
+@see [[src/mllm_shap/masking/partitions.py]]
 """
 
 from collections.abc import Sequence

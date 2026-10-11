@@ -1,13 +1,13 @@
 """Tests for embedding-based value functions.
 
-@see [[src/nlp_shap/value/embedding.py]]
+@see [[src/mllm_shap/value/embedding.py]]
 """
 
 import pytest
 
-from nlp_shap.domain.enums import EmbeddingMode
-from nlp_shap.domain.generation import GenerationRecord
-from nlp_shap.value.embedding import CosineEmbeddingValue, EuclideanEmbeddingValue
+from mllm_shap.domain.enums import EmbeddingMode
+from mllm_shap.domain.generation import GenerationRecord
+from mllm_shap.value.embedding import CosineEmbeddingValue, EuclideanEmbeddingValue
 
 
 def _record(

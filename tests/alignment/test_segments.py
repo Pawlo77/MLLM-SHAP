@@ -1,11 +1,11 @@
 """Aligned audio segment records.
 
-@see [[src/nlp_shap/alignment/segments.py]]
+@see [[src/mllm_shap/alignment/segments.py]]
 """
 
 import pytest
 
-from nlp_shap.alignment.segments import AudioSegment
+from mllm_shap.alignment.segments import AudioSegment
 
 
 def _segment(**changes: object) -> AudioSegment:

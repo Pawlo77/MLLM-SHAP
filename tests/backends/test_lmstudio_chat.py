@@ -1,11 +1,11 @@
 """Tests for LM Studio chat conversion helpers.
 
-@see [[src/nlp_shap/backends/lmstudio/chat.py]]
+@see [[src/mllm_shap/backends/lmstudio/chat.py]]
 """
 
-from nlp_shap.backends.lmstudio.chat import snapshot_to_chat
-from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
-from nlp_shap.domain.enums import Role
+from mllm_shap.backends.lmstudio.chat import snapshot_to_chat
+from mllm_shap.domain.conversation import ConversationSnapshot, Message, Turn
+from mllm_shap.domain.enums import Role
 
 
 class _FakeChat:

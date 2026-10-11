@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Scaffold a new nlp_shap plugin: stub module, entry point, failing test."""
+"""Scaffold a new mllm_shap plugin: stub module, entry point, failing test."""
 
 import argparse
 import re
@@ -34,7 +34,7 @@ def main() -> int:
     parser.add_argument(
         "group",
         choices=sorted(_GROUPS),
-        help="entry-point group under nlp_shap.*",
+        help="entry-point group under mllm_shap.*",
     )
     parser.add_argument("name", help="plugin id / module stem (snake_case)")
     parser.add_argument(
@@ -52,15 +52,15 @@ def main() -> int:
     stem = _snake(args.name)
     class_name = args.class_name or f"{_pascal(stem)}{_GROUPS[args.group][1]}"
     pkg_rel, _ = _GROUPS[args.group]
-    src_dir = _ROOT / "src" / "nlp_shap" / Path(pkg_rel)
+    src_dir = _ROOT / "src" / "mllm_shap" / Path(pkg_rel)
 
     if args.group == "backends":
         src_dir = src_dir / stem
         module_file = src_dir / "backend.py"
-        entry_target = f"nlp_shap.backends.{stem}:{class_name}"
+        entry_target = f"mllm_shap.backends.{stem}:{class_name}"
     else:
         module_file = src_dir / f"{stem}.py"
-        dotted = f"nlp_shap.{pkg_rel.replace('/', '.')}.{stem}"
+        dotted = f"mllm_shap.{pkg_rel.replace('/', '.')}.{stem}"
         entry_target = f"{dotted}:{class_name}"
 
     test_dir = _ROOT / "tests" / Path(pkg_rel)
@@ -83,7 +83,7 @@ def main() -> int:
     module_rel = module_file.relative_to(_ROOT).as_posix()
     test_rel = test_file.relative_to(_ROOT).as_posix()
     # Relative import of PluginContext from the module's package (one dot per level).
-    depth = len(module_file.relative_to(_ROOT / "src" / "nlp_shap").parts) - 1
+    depth = len(module_file.relative_to(_ROOT / "src" / "mllm_shap").parts) - 1
     context_import = f"{'.' * (depth + 1)}plugins.context"
     kind = "backend" if args.group == "backends" else "plugin"
 
@@ -123,9 +123,9 @@ def main() -> int:
         group_member = args.group.upper()
         imports = "".join(
             sorted([
-                "from nlp_shap.pipeline.config import BackendConfig, ExplainConfig\n",
+                "from mllm_shap.pipeline.config import BackendConfig, ExplainConfig\n",
                 (
-                    "from nlp_shap.plugins import PluginContext, PluginGroup, "
+                    "from mllm_shap.plugins import PluginContext, PluginGroup, "
                     "PluginRegistry\n"
                 ),
                 f"from {import_path} import {class_name}\n",
@@ -153,7 +153,7 @@ def main() -> int:
             encoding="utf-8",
         )
 
-    ep_header = f'[project.entry-points."nlp_shap.{args.group}"]'
+    ep_header = f'[project.entry-points."mllm_shap.{args.group}"]'
     text = pyproject.read_text(encoding="utf-8")
     if ep_header not in text:
         print(f"error: missing entry-point group {ep_header}", file=sys.stderr)
@@ -174,7 +174,7 @@ def main() -> int:
 
     print(
         "next: implement Protocol methods, add the class to BUILTIN_PLUGINS in "
-        "src/nlp_shap/plugins/builtin.py, replace the failing test, make check"
+        "src/mllm_shap/plugins/builtin.py, replace the failing test, make check"
     )
     print("docs/notebook if user-facing — see examples.mdc / docs.mdc")
     return 0

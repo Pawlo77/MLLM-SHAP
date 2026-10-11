@@ -42,18 +42,18 @@ def clean_vault(tmp_path: Path) -> Path:
     write(root, "pyproject.toml", PYPROJECT)
     write(
         root,
-        "src/nlp_shap/__init__.py",
+        "src/mllm_shap/__init__.py",
         '"""Demo package.\n\n@domain core\n@see [[knowledge/architecture/core]]\n"""\n',
     )
     write(
         root,
-        "src/nlp_shap/estimation/__init__.py",
+        "src/mllm_shap/estimation/__init__.py",
         '"""Estimation.\n\n@domain estimation\n'
         '@see [[knowledge/architecture/estimation]]\n"""\n',
     )
     write(
         root,
-        "src/nlp_shap/estimation/exact.py",
+        "src/mllm_shap/estimation/exact.py",
         '"""Exact estimator.\n\n@domain estimation\n'
         "@see [[knowledge/architecture/estimation]]\n"
         '@tested-by [[tests/demo/test_exact.py]]\n"""\n\n\n'
@@ -62,7 +62,7 @@ def clean_vault(tmp_path: Path) -> Path:
     write(
         root,
         "tests/demo/test_exact.py",
-        '"""Tests.\n\n@see [[src/nlp_shap/estimation/exact.py]]\n"""\n',
+        '"""Tests.\n\n@see [[src/mllm_shap/estimation/exact.py]]\n"""\n',
     )
     write(
         root,
@@ -76,7 +76,7 @@ def clean_vault(tmp_path: Path) -> Path:
             "[[Papers#Shapley 1953 — Demo|Shapley 1953]] · [[plans/2026-10-07-demo]]\n",
         ),
     )
-    related = 'related-code:\n  - "[[src/nlp_shap/estimation/exact.py]]"\n'
+    related = 'related-code:\n  - "[[src/mllm_shap/estimation/exact.py]]"\n'
     write(
         root,
         "knowledge/architecture/estimation.md",

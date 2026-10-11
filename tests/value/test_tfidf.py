@@ -1,6 +1,6 @@
 """Tests for TF-IDF cosine value function.
 
-@see [[src/nlp_shap/value/tfidf.py]]
+@see [[src/mllm_shap/value/tfidf.py]]
 """
 
 import math
@@ -9,9 +9,9 @@ import numpy as np
 import pytest
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-from nlp_shap.domain.generation import GenerationRecord
-from nlp_shap.value._token_hash import TokenHasher
-from nlp_shap.value.tfidf import TfIdfCosineValue
+from mllm_shap.domain.generation import GenerationRecord
+from mllm_shap.value._token_hash import TokenHasher
+from mllm_shap.value.tfidf import TfIdfCosineValue
 
 
 def _record(

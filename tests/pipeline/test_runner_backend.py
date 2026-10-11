@@ -1,16 +1,16 @@
 """Backend injection and event-loop guard of ExplainRunner.
 
-@see [[src/nlp_shap/pipeline/runner.py]]
+@see [[src/mllm_shap/pipeline/runner.py]]
 """
 
 import asyncio
 
 import pytest
 
-from nlp_shap import ExplainConfig, ExplainRunner
-from nlp_shap.backends.mock import MockBackend
-from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
-from nlp_shap.domain.enums import Role
+from mllm_shap import ExplainConfig, ExplainRunner
+from mllm_shap.backends.mock import MockBackend
+from mllm_shap.domain.conversation import ConversationSnapshot, Message, Turn
+from mllm_shap.domain.enums import Role
 
 
 class ClosableMock(MockBackend):

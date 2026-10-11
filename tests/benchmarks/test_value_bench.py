@@ -1,13 +1,13 @@
 """Benchmark for TF-IDF value-function fitting and scoring.
 
-@see [[src/nlp_shap/value/tfidf.py]]
+@see [[src/mllm_shap/value/tfidf.py]]
 """
 
 import pytest
 from pytest_benchmark.fixture import BenchmarkFixture
 
-from nlp_shap.value.generation_records import generation_record_from_text
-from nlp_shap.value.tfidf import TfIdfCosineValue
+from mllm_shap.value.generation_records import generation_record_from_text
+from mllm_shap.value.tfidf import TfIdfCosineValue
 
 _RECORDS = [
     generation_record_from_text(

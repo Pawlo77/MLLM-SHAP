@@ -1,17 +1,17 @@
 """Tests for transformers chat helpers.
 
-@see [[src/nlp_shap/backends/transformers/chat.py]]
+@see [[src/mllm_shap/backends/transformers/chat.py]]
 """
 
-from nlp_shap.backends._chat import snapshot_has_audio, snapshot_to_chat_messages
-from nlp_shap.backends.transformers.chat import render_prompt
-from nlp_shap.domain.conversation import (
+from mllm_shap.backends._chat import snapshot_has_audio, snapshot_to_chat_messages
+from mllm_shap.backends.transformers.chat import render_prompt
+from mllm_shap.domain.conversation import (
     AudioPart,
     ConversationSnapshot,
     Message,
     Turn,
 )
-from nlp_shap.domain.enums import Role
+from mllm_shap.domain.enums import Role
 
 
 class _TemplateTokenizer:

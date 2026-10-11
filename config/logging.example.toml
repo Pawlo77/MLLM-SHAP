@@ -1,11 +1,11 @@
-# Logging configuration for nlp-shap, read by logging518 (logging.config.dictConfig).
+# Logging configuration for mllm-shap, read by logging518 (logging.config.dictConfig).
 #
-# Use it with:  NLP_SHAP_LOGGING_CONFIG=config/logging.example.toml
-# or in code:   nlp_shap.configure_logging("config/logging.example.toml")
+# Use it with:  MLLM_SHAP_LOGGING_CONFIG=config/logging.example.toml
+# or in code:   mllm_shap.configure_logging("config/logging.example.toml")
 #
 # At INFO the pipeline logs run start, base generation, scheduled coalitions and
 # run duration; DEBUG adds backend retries and plugin loading. For one JSON object
-# per line, call nlp_shap.configure_logging(level="INFO", json=True) instead.
+# per line, call mllm_shap.configure_logging(level="INFO", json=True) instead.
 
 [tool.logging]
 version = 1
@@ -19,7 +19,7 @@ class = "logging.StreamHandler"
 formatter = "standard"
 stream = "ext://sys.stderr"
 
-[tool.logging.loggers.nlp_shap]
+[tool.logging.loggers.mllm_shap]
 level = "INFO"
 handlers = ["console"]
 propagate = false

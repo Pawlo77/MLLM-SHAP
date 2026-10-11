@@ -5,9 +5,9 @@ description: >-
   Templater, obsidian:// URIs, rendering problems, or any edit under .obsidian/.
 ---
 
-# nlp-shap Obsidian vault
+# mllm-shap Obsidian vault
 
-The vault `nlp-shap` is the repository root. Notes live in `knowledge/` (written with
+The vault `mllm-shap` is the repository root. Notes live in `knowledge/` (written with
 skill `notes`), plus `plans/` and `.remember/*.md`. Vault rules for people:
 `knowledge/README.md`. Read [references/syntax.md](references/syntax.md) before
 writing Dataview, Bases, Canvas, Mermaid or Templater.
@@ -58,7 +58,7 @@ before other work:
 ## Links and Code Graph
 
 - Link notes by file name without `.md` (`[[Run archive]]`); link code and other
-  files by vault path with extension (`[[src/nlp_shap/estimation/exact.py]]`); link
+  files by vault path with extension (`[[src/mllm_shap/estimation/exact.py]]`); link
   plans and memory by path without `.md` (`[[plans/README]]`,
   `[[.remember/remember]]`).
 - Inside Markdown tables escape the alias pipe: `[[Note\|text]]`.
@@ -78,6 +78,6 @@ before other work:
 
 ## Showing the user a note
 
-- `open "obsidian://open?vault=nlp-shap&file=knowledge%2Fnlp-shap"` (URL-encoded
-  path; `.md` optional) or `obsidian://search?vault=nlp-shap&query=<text>`.
+- `open "obsidian://open?vault=mllm-shap&file=knowledge%2Fmllm-shap"` (URL-encoded
+  path; `.md` optional) or `obsidian://search?vault=mllm-shap&query=<text>`.
 - Never use URIs to write content.

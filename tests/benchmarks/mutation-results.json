@@ -1,7 +1,7 @@
 {
   "date": "2026-10-08",
   "tool": "mutmut 3.8.0",
-  "scope": "src/nlp_shap/estimation against tests/estimation",
+  "scope": "src/mllm_shap/estimation against tests/estimation",
   "mutants": 1528,
   "killed": 1208,
   "survived": 278,

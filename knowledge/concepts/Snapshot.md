@@ -6,7 +6,7 @@ tags: [concept]
 created: 2026-10-07
 updated: 2026-10-08
 related-code:
-  - "[[src/nlp_shap/domain/conversation.py]]"
+  - "[[src/mllm_shap/domain/conversation.py]]"
 ---
 
 # Snapshot

@@ -1,6 +1,6 @@
 """WAV encoding and decoding to mono float waveforms.
 
-@see [[src/nlp_shap/alignment/io.py]]
+@see [[src/mllm_shap/alignment/io.py]]
 """
 
 import io
@@ -10,7 +10,7 @@ import pytest
 
 sf = pytest.importorskip("soundfile")
 
-from nlp_shap.alignment.io import decode_audio, encode_wav  # noqa: E402
+from mllm_shap.alignment.io import decode_audio, encode_wav  # noqa: E402
 
 
 def _tone(seconds: float = 0.1, rate: int = 8000) -> np.ndarray:
@@ -53,7 +53,7 @@ def test_decode_rejects_undecodable_bytes() -> None:
 
 
 def test_missing_optional_dependency_names_the_extra() -> None:
-    from nlp_shap.alignment.io import require
+    from mllm_shap.alignment.io import require
 
-    with pytest.raises(ImportError, match=r"nlp-shap\[audio\]"):
-        require("nlp_shap_no_such_module")
+    with pytest.raises(ImportError, match=r"mllm-shap\[audio\]"):
+        require("mllm_shap_no_such_module")

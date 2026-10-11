@@ -10,6 +10,6 @@ related-code: []
 
 # <% tp.file.title %>
 
-<% tp.file.cursor() %>One-paragraph definition: what it is, how nlp-shap represents it, why it matters.
+<% tp.file.cursor() %>One-paragraph definition: what it is, how mllm-shap represents it, why it matters.
 
 Package: <% "[" + "[<package architecture note>]" + "]" %>. Paper: <% "[" + "[Papers#<Author year — title>]" + "]" %>.

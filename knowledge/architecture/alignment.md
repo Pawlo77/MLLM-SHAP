@@ -6,17 +6,17 @@ tags: [architecture, alignment]
 created: 2026-10-10
 updated: 2026-10-11
 related-code:
-  - "[[src/nlp_shap/alignment/__init__.py]]"
-  - "[[src/nlp_shap/alignment/ctc.py]]"
-  - "[[src/nlp_shap/alignment/io.py]]"
-  - "[[src/nlp_shap/alignment/partitions.py]]"
-  - "[[src/nlp_shap/alignment/segments.py]]"
-  - "[[src/nlp_shap/alignment/sgpa.py]]"
+  - "[[src/mllm_shap/alignment/__init__.py]]"
+  - "[[src/mllm_shap/alignment/ctc.py]]"
+  - "[[src/mllm_shap/alignment/io.py]]"
+  - "[[src/mllm_shap/alignment/partitions.py]]"
+  - "[[src/mllm_shap/alignment/segments.py]]"
+  - "[[src/mllm_shap/alignment/sgpa.py]]"
 ---
 
 # alignment
 
-Part of [[nlp-shap]]. Concept: [[SGPA]]. Decisions: [[Alignment decisions]].
+Part of [[mllm-shap]]. Concept: [[SGPA]]. Decisions: [[Alignment decisions]].
 
 ## Responsibility
 

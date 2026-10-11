@@ -1,13 +1,13 @@
 """Performance benchmarks for the API backend.
 
-@see [[src/nlp_shap/backends/api/payload.py]]
+@see [[src/mllm_shap/backends/api/payload.py]]
 """
 
 import pytest
 from pytest_benchmark.fixture import BenchmarkFixture
 
-from nlp_shap.backends.api.payload import build_chat_payload, payload_cache_key
-from nlp_shap.domain.config import GenerationConfig
+from mllm_shap.backends.api.payload import build_chat_payload, payload_cache_key
+from mllm_shap.domain.config import GenerationConfig
 
 
 @pytest.mark.bench

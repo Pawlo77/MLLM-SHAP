@@ -5,7 +5,7 @@ description: >-
   or a named rewrite phase.
 ---
 
-# nlp-shap rewrite (audio track)
+# mllm-shap rewrite (audio track)
 
 The text track is done; the audio track (0.2.x) is in progress (check `version` in
 `pyproject.toml`). This skill covers audio and multimodal work only.
@@ -13,17 +13,17 @@ The text track is done; the audio track (0.2.x) is in progress (check `version` 
 ## External references (siblings, not in this repository)
 
 Required layout (clone commands: `CONTRIBUTING.md`, "Agent setup"; workspace file
-`nlp-shap.code-workspace`):
+`MLLM-SHAP.code-workspace`):
 
 ```text
-<parent>/nlp-shap/              # this package
-<parent>/MLLM-Shap/             # git clone https://github.com/Pawlo77/MLLM-Shap.git
+<parent>/MLLM-SHAP/              # this package
+<parent>/MLLM-Shap-legacy/             # git clone https://github.com/Pawlo77/MLLM-Shap-legacy.git
 ```
 
-| What | Path from `nlp-shap/` |
+| What | Path from `MLLM-SHAP/` |
 |------|----------------------|
 | Canonical plan | the private research repository, cloned as `../nlp-shap-research/` (`docs/plans/infrastructure/`); it depends on this package, never the reverse |
-| Legacy reference | `../MLLM-Shap/mllm_shap/src/mllm_shap/`: gather logic, rewrite; never bulk-copy |
+| Legacy reference | `../MLLM-Shap-legacy/mllm_shap/src/mllm_shap/`: gather logic, rewrite; never bulk-copy |
 
 Open the multi-root workspace file before audio-track or port work.
 
@@ -34,7 +34,7 @@ Open the multi-root workspace file before audio-track or port work.
 3. **Dropped:** `shap/hierarchical/*`; do not implement or reference
 4. **Audio track** (Phases 15 to 21; next is Phase 18, `v0.2.2`)
 5. **Deps:** torch / transformers / liquid-audio in extras only
-6. **Imports:** relative inside `src/nlp_shap/`; absolute `from nlp_shap...` in tests and examples
+6. **Imports:** relative inside `src/mllm_shap/`; absolute `from mllm_shap...` in tests and examples
 7. **No `from __future__ import annotations`** unless required (`python-types.mdc`)
 
 ## Current phase gate

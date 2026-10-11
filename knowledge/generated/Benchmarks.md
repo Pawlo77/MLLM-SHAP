@@ -31,4 +31,4 @@ The baseline machine is named in `tests/benchmarks/AGENTS.md`. The latest local 
 
 ## Mutation testing
 
-Last `make mutate` run (2026-10-08, mutmut 3.8.0, src/nlp_shap/estimation against tests/estimation; from `tests/benchmarks/mutation-results.json`): 1528 mutants, 1208 killed, **278 survived**, 26 timeout, 16 without tests. The survivors left after the targeted tests of M01 to M03 ([[Fixed issues]]) are equivalent mutants (dtype defaults, error-message text) or code no input reaches.
+Last `make mutate` run (2026-10-08, mutmut 3.8.0, src/mllm_shap/estimation against tests/estimation; from `tests/benchmarks/mutation-results.json`): 1528 mutants, 1208 killed, **278 survived**, 26 timeout, 16 without tests. The survivors left after the targeted tests of M01 to M03 ([[Fixed issues]]) are equivalent mutants (dtype defaults, error-message text) or code no input reaches.

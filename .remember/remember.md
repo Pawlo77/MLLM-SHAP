@@ -6,7 +6,7 @@ and 17 (`sgpa_segments` audio players and audio absence rendering, 0.2.1, PR 13)
 from the closed PR 4 onto the 0.1.18 message model; Phase 15 was superseded by 0.1.18.
 The repository is public; `main` is protected (`prek`, `tests-passed`, `CodeQL`,
 `title`), merge commits only, auto-merge on for routine PRs; secret scanning on.
-Weekly local tasks: `nlp-shap-upgrade` (Mon 08:00), `nlp-shap-lit-watch` (Mon 09:00).
+Weekly local task: `mllm-shap-upgrade` (Mon 08:00).
 
 ## User-only
 - Copilot code review reports "quota limit"; skill `ship` merges routine PRs without it

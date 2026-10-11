@@ -1,29 +1,29 @@
 """Tests for built-in plugin registration.
 
-@see [[src/nlp_shap/plugins/builtin.py]]
+@see [[src/mllm_shap/plugins/builtin.py]]
 """
 
 import pytest
 
-from nlp_shap.backends.mock import MockBackend
-from nlp_shap.errors import PluginConflictError
-from nlp_shap.estimation.complementary import ComplementaryEstimator
-from nlp_shap.estimation.exact import ExactEstimator
-from nlp_shap.estimation.monte_carlo import MonteCarloEstimator
-from nlp_shap.estimation.neyman import NeymanEstimator
-from nlp_shap.estimation.normalizers import IdentityNormalizer, MinMaxNormalizer
-from nlp_shap.masking.partitions import TokenPartitioner
-from nlp_shap.masking.policies import DeletePolicy, NeutralPolicy, PadPolicy
-from nlp_shap.pipeline.config import ExplainConfig
-from nlp_shap.plugins import (
+from mllm_shap.backends.mock import MockBackend
+from mllm_shap.errors import PluginConflictError
+from mllm_shap.estimation.complementary import ComplementaryEstimator
+from mllm_shap.estimation.exact import ExactEstimator
+from mllm_shap.estimation.monte_carlo import MonteCarloEstimator
+from mllm_shap.estimation.neyman import NeymanEstimator
+from mllm_shap.estimation.normalizers import IdentityNormalizer, MinMaxNormalizer
+from mllm_shap.masking.partitions import TokenPartitioner
+from mllm_shap.masking.policies import DeletePolicy, NeutralPolicy, PadPolicy
+from mllm_shap.pipeline.config import ExplainConfig
+from mllm_shap.plugins import (
     PluginContext,
     PluginGroup,
     PluginRegistry,
     default_registry,
     register_builtin_plugins,
 )
-from nlp_shap.plugins.backends import instantiate_backend
-from nlp_shap.value.tfidf import TfIdfCosineValue
+from mllm_shap.plugins.backends import instantiate_backend
+from mllm_shap.value.tfidf import TfIdfCosineValue
 
 
 def _context(registry: PluginRegistry) -> PluginContext:

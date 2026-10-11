@@ -1,17 +1,17 @@
 Plugins
 =======
 
-.. automodule:: nlp_shap.plugins
+.. automodule:: mllm_shap.plugins
    :no-members:
 
-.. automodule:: nlp_shap.plugins.registry
+.. automodule:: mllm_shap.plugins.registry
 
-.. automodule:: nlp_shap.plugins.context
+.. automodule:: mllm_shap.plugins.context
 
-.. automodule:: nlp_shap.plugins.options
+.. automodule:: mllm_shap.plugins.options
 
-.. automodule:: nlp_shap.plugins.groups
+.. automodule:: mllm_shap.plugins.groups
 
-.. automodule:: nlp_shap.plugins.builtin
+.. automodule:: mllm_shap.plugins.builtin
 
-.. automodule:: nlp_shap.plugins.backends
+.. automodule:: mllm_shap.plugins.backends

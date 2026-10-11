@@ -1,5 +1,5 @@
 {
-  "description": "nlp-shap project hooks for Codex. Same scripts and Claude-shaped JSON as .claude/settings.json; Codex has no TaskCompleted, PostToolUseFailure or FileChanged events.",
+  "description": "mllm-shap project hooks for Codex. Same scripts and Claude-shaped JSON as .claude/settings.json; Codex has no TaskCompleted, PostToolUseFailure or FileChanged events.",
   "hooks": {
     "SessionStart": [
       {

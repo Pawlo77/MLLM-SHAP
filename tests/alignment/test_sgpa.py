@@ -1,6 +1,6 @@
 """Spectrogram-guided alignment with a fake CTC model over synthetic tone bursts.
 
-@see [[src/nlp_shap/alignment/sgpa.py]]
+@see [[src/mllm_shap/alignment/sgpa.py]]
 """
 
 import numpy as np
@@ -9,9 +9,9 @@ import pytest
 pytest.importorskip("librosa")
 pytest.importorskip("soundfile")
 
-from nlp_shap.alignment.io import decode_audio, encode_wav
-from nlp_shap.alignment.sgpa import SpectrogramGuidedAligner
-from nlp_shap.domain.conversation import AudioPart
+from mllm_shap.alignment.io import decode_audio, encode_wav
+from mllm_shap.alignment.sgpa import SpectrogramGuidedAligner
+from mllm_shap.domain.conversation import AudioPart
 from tests.alignment._fakes import FRAME, FRAMES, RATE, FakeCtc, speech
 
 
@@ -60,7 +60,7 @@ def test_boundary_weights_must_be_usable() -> None:
 def test_wav2vec2_log_probs_are_normalised_per_frame() -> None:
     """A tiny random Wav2Vec2 checkpoint loads and yields log-probabilities."""
     pytest.importorskip("transformers")
-    from nlp_shap.alignment.sgpa import Wav2Vec2Ctc
+    from mllm_shap.alignment.sgpa import Wav2Vec2Ctc
 
     model = Wav2Vec2Ctc("hf-internal-testing/tiny-random-wav2vec2", revision="main")
     lp = model.log_probs(np.zeros(model.sample_rate, dtype=np.float32))

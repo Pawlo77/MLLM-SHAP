@@ -3,7 +3,7 @@
 The judge runs one forward pass per prompt and compares the next-token logits of
 YES and NO; the difference is a log-odds margin in nats. Three paraphrases vote:
 two margins of at least ``MARGIN`` decide, anything else is "uncertain". With
-``NLP_SHAP_PRACTICAL_JUDGE=lmstudio:<key>`` the quick tier asks an LM Studio model
+``MLLM_SHAP_PRACTICAL_JUDGE=lmstudio:<key>`` the quick tier asks an LM Studio model
 instead, reading the same margin from its top logprobs.
 """
 
@@ -14,8 +14,8 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any, Literal
 
-from nlp_shap.backends.transformers._torch import import_torch
-from nlp_shap.backends.transformers.text import TransformersTextBackend
+from mllm_shap.backends.transformers._torch import import_torch
+from mllm_shap.backends.transformers.text import TransformersTextBackend
 
 from ._cache import STATS, PracticalCache, cache_key
 

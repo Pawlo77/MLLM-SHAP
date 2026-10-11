@@ -5,8 +5,8 @@ domain: protocols
 tags: [concept]
 created: 2026-10-08
 related-code:
-  - "[[src/nlp_shap/protocols/backend.py]]"
-  - "[[src/nlp_shap/protocols/value.py]]"
+  - "[[src/mllm_shap/protocols/backend.py]]"
+  - "[[src/mllm_shap/protocols/value.py]]"
 ---
 
 # Capability protocol

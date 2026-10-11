@@ -1,12 +1,12 @@
 """Tests for coalition masks.
 
-@see [[src/nlp_shap/domain/coalition.py]]
+@see [[src/mllm_shap/domain/coalition.py]]
 """
 
 import pytest
 
-from nlp_shap.domain.coalition import CoalitionMask
-from nlp_shap.domain.players import PlayerSet
+from mllm_shap.domain.coalition import CoalitionMask
+from mllm_shap.domain.players import PlayerSet
 
 
 def test_coalition_mask_counts_present_players() -> None:

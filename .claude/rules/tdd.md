@@ -1,6 +1,6 @@
 ---
 paths:
-  - "src/nlp_shap/**/*.py"
+  - "src/mllm_shap/**/*.py"
   - "tests/**/*.py"
 ---
 
@@ -11,7 +11,7 @@ paths:
 New behavior or bug fixes: **test first**, then implement.
 
 1. **Red** — write failing test in `tests/` (`test_*.py`, mirror `src/` layout)
-2. **Green** — minimal implementation in `src/nlp_shap/`
+2. **Green** — minimal implementation in `src/mllm_shap/`
 3. **Refactor** — run `make agent-check`; keep green
 4. **Validate** — re-read the diff; run full checks; fix style, coverage, docs, and consistency issues before hand-off
 5. **Performance** — analyze hot paths for time/memory scaling; implement the fastest low-resource correct version (see `performance.mdc`)

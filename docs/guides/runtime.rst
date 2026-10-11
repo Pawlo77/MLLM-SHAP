@@ -1,7 +1,7 @@
 Runtime core
 ============
 
-This guide covers the layer under :class:`~nlp_shap.ExplainRunner`: the run
+This guide covers the layer under :class:`~mllm_shap.ExplainRunner`: the run
 archive, coalition deduplication and the async scheduler. Most users only meet it
 through ``explanation.archive``, ``dedup`` and ``max_inflight``; the snippets show
 the pieces directly. They share one namespace.
@@ -12,13 +12,13 @@ Run archives
 An archived run is a directory with ``manifest.json``, the base generation and
 one row per coalition output in ``archive.sqlite``. Run an explanation with an
 archive path and read the rows back with
-:meth:`~nlp_shap.runtime.archive.RunArchive.load`:
+:meth:`~mllm_shap.runtime.archive.RunArchive.load`:
 
 .. code-block:: python
 
    from pathlib import Path
 
-   from nlp_shap import (
+   from mllm_shap import (
        ConversationSnapshot,
        ExplainConfig,
        ExplainRunner,
@@ -26,7 +26,7 @@ archive path and read the rows back with
        Role,
        Turn,
    )
-   from nlp_shap.runtime import RunArchive
+   from mllm_shap.runtime import RunArchive
 
    snapshot = ConversationSnapshot.from_turns((
        Turn(messages=(Message(role=Role.USER, text="Who are you?"),)),
@@ -51,14 +51,14 @@ archive path and read the rows back with
 .. guide-result:: runtime_archive
 
 Re-running the same configuration on the same snapshot targets the same
-directory. :meth:`~nlp_shap.runtime.archive.RunArchive.open` creates archives and
+directory. :meth:`~mllm_shap.runtime.archive.RunArchive.open` creates archives and
 refuses to append to an existing one, so the second run raises
-:exc:`~nlp_shap.errors.ArchiveExistsError`; ``on_exists: overwrite`` deletes the
+:exc:`~mllm_shap.errors.ArchiveExistsError`; ``on_exists: overwrite`` deletes the
 old rows, manifest and base generation first:
 
 .. code-block:: python
 
-   from nlp_shap.errors import ArchiveExistsError
+   from mllm_shap.errors import ArchiveExistsError
 
    try:
        ExplainRunner(config).explain_sync(snapshot)
@@ -84,20 +84,20 @@ Run manifest
 
 Every archive stores ``manifest.json`` and one SQLite file, ``archive.sqlite``
 (WAL journal), whose rows hold the generated text. The manifest's
-``schema_version`` is :data:`~nlp_shap.runtime.archive.MANIFEST_SCHEMA_VERSION`
+``schema_version`` is :data:`~mllm_shap.runtime.archive.MANIFEST_SCHEMA_VERSION`
 and the database's ``PRAGMA user_version`` is
-:data:`~nlp_shap.runtime.archive.ARCHIVE_SCHEMA_VERSION`.
-:meth:`~nlp_shap.runtime.archive.RunArchive.load` refuses archives with any other
+:data:`~mllm_shap.runtime.archive.ARCHIVE_SCHEMA_VERSION`.
+:meth:`~mllm_shap.runtime.archive.RunArchive.load` refuses archives with any other
 version, such as those written by 0.1.17 or earlier, with
-:exc:`~nlp_shap.errors.ManifestVersionError`; re-run ``explain`` to rebuild them.
-The manifest written by :class:`~nlp_shap.ExplainRunner` records:
+:exc:`~mllm_shap.errors.ManifestVersionError`; re-run ``explain`` to rebuild them.
+The manifest written by :class:`~mllm_shap.ExplainRunner` records:
 
 .. list-table::
    :header-rows: 1
 
    * - Field
      - Meaning
-   * - ``schema_version``, ``nlp_shap_version``
+   * - ``schema_version``, ``mllm_shap_version``
      - Manifest format and the package version that wrote it
    * - ``run_id``, ``snapshot_id``
      - Run identifier and the explained conversation snapshot
@@ -109,21 +109,21 @@ The manifest written by :class:`~nlp_shap.ExplainRunner` records:
    * - ``backend_kind``, ``model_id``
      - Which backend and model generated the coalition outputs
    * - ``config``
-     - Full :class:`~nlp_shap.ExplainConfig` echo
+     - Full :class:`~mllm_shap.ExplainConfig` echo
 
-:meth:`~nlp_shap.ExplainRunner.reanalyze` rescores an archive with the runner's
+:meth:`~mllm_shap.ExplainRunner.reanalyze` rescores an archive with the runner's
 value function and normalizer, re-aggregates with the archived estimator, and
-raises :exc:`~nlp_shap.errors.ReanalyzeMismatchError` when the runner's
+raises :exc:`~mllm_shap.errors.ReanalyzeMismatchError` when the runner's
 estimator, absence policy or partition differs from the archived run. With the
 same value function it reproduces the ``explain`` attributions; :doc:`pipeline`
 has an example.
 
 When every coalition was generated the pipeline marks the archive complete.
-:meth:`~nlp_shap.ExplainRunner.reanalyze` raises
-:exc:`~nlp_shap.errors.ArchiveIncompleteError` for an archive of a run that failed
+:meth:`~mllm_shap.ExplainRunner.reanalyze` raises
+:exc:`~mllm_shap.errors.ArchiveIncompleteError` for an archive of a run that failed
 part-way, one without the grand or empty coalition, a full-budget archive missing
 rows, or an archive whose manifest was not written by
-:class:`~nlp_shap.ExplainRunner`.
+:class:`~mllm_shap.ExplainRunner`.
 
 Build coalition dedup keys
 --------------------------
@@ -134,8 +134,8 @@ auto`` deduplication is on only for deterministic decoding (``temperature`` 0):
 
 .. code-block:: python
 
-   from nlp_shap.pipeline.config import DedupConfig, GenerationConfig
-   from nlp_shap.runtime import build_coalition_key, dedup_enabled
+   from mllm_shap.pipeline.config import DedupConfig, GenerationConfig
+   from mllm_shap.runtime import build_coalition_key, dedup_enabled
 
    generation = GenerationConfig(temperature=0.0)
    key = build_coalition_key(
@@ -153,7 +153,7 @@ auto`` deduplication is on only for deterministic decoding (``temperature`` 0):
 Schedule async coalition jobs
 -----------------------------
 
-:class:`~nlp_shap.runtime.InferenceScheduler` checks the hot store, then the dedup
+:class:`~mllm_shap.runtime.InferenceScheduler` checks the hot store, then the dedup
 registry, and only then calls ``generate`` under a ``max_inflight`` semaphore.
 Nine jobs over three distinct keys cost three calls:
 
@@ -161,8 +161,8 @@ Nine jobs over three distinct keys cost three calls:
 
    import asyncio
 
-   from nlp_shap.masking.codec import MaskCodec
-   from nlp_shap.runtime import (
+   from mllm_shap.masking.codec import MaskCodec
+   from mllm_shap.runtime import (
        CoalitionDedupRegistry,
        CoalitionJob,
        HotResultStore,
@@ -206,14 +206,14 @@ finished count keeps growing.
 Streaming large job sets
 ------------------------
 
-:meth:`~nlp_shap.runtime.scheduler.InferenceScheduler.run_iter` accepts any
+:meth:`~mllm_shap.runtime.scheduler.InferenceScheduler.run_iter` accepts any
 iterable and only creates coroutines as slots free up, so an exact run over many
 players never holds all :math:`2^n` jobs in memory at once:
 
 .. code-block:: python
 
-   from nlp_shap import ExactEstimator
-   from nlp_shap.masking import MaskBuilder, PadPolicy, TokenPartitioner
+   from mllm_shap import ExactEstimator
+   from mllm_shap.masking import MaskBuilder, PadPolicy, TokenPartitioner
 
    players = TokenPartitioner().partition(snapshot)
    builder = MaskBuilder(PadPolicy())
@@ -273,21 +273,21 @@ partially aggregated result:
 Logging
 -------
 
-Importing ``nlp_shap`` leaves the host application's logging alone. Opt in with
-:func:`~nlp_shap.configure_logging`:
+Importing ``mllm_shap`` leaves the host application's logging alone. Opt in with
+:func:`~mllm_shap.configure_logging`:
 
 .. code-block:: python
 
-   import nlp_shap
+   import mllm_shap
 
-   nlp_shap.configure_logging(level="INFO")              # plain lines on stderr
-   nlp_shap.configure_logging(level="INFO", json=True)   # one JSON object per line
-   nlp_shap.configure_logging("config/logging.example.toml")  # a [tool.logging] file
+   mllm_shap.configure_logging(level="INFO")              # plain lines on stderr
+   mllm_shap.configure_logging(level="INFO", json=True)   # one JSON object per line
+   mllm_shap.configure_logging("config/logging.example.toml")  # a [tool.logging] file
 
 Without arguments it applies the ``[tool.logging]`` section of the nearest
-``pyproject.toml``. Setting ``NLP_SHAP_LOGGING_CONFIG`` to a TOML file applies that
+``pyproject.toml``. Setting ``MLLM_SHAP_LOGGING_CONFIG`` to a TOML file applies that
 file on import instead; ``config/logging.example.toml`` in the repository is a
-starting point. At ``INFO`` the logger ``nlp_shap.pipeline.orchestrator`` reports
+starting point. At ``INFO`` the logger ``mllm_shap.pipeline.orchestrator`` reports
 each stage once:
 
 .. list-table::
@@ -306,19 +306,19 @@ each stage once:
      - ``explain run <id> done in <ms> ms (<n> coalitions, <calls> backend calls)``
 
 ``DEBUG`` adds HTTP retries and skipped plugin entry points; LM Studio model
-downloads are logged at ``INFO`` by ``nlp_shap.backends.lmstudio.models``.
+downloads are logged at ``INFO`` by ``mllm_shap.backends.lmstudio.models``.
 
 Telemetry and progress
 ----------------------
 
-:class:`~nlp_shap.runtime.telemetry.InMemoryObservabilitySink` records one
-:class:`~nlp_shap.runtime.telemetry.SpanRecord` (name and duration) per pipeline
-stage, and any :class:`~nlp_shap.runtime.progress.CoalitionProgress` receives the
+:class:`~mllm_shap.runtime.telemetry.InMemoryObservabilitySink` records one
+:class:`~mllm_shap.runtime.telemetry.SpanRecord` (name and duration) per pipeline
+stage, and any :class:`~mllm_shap.runtime.progress.CoalitionProgress` receives the
 coalition counts:
 
 .. code-block:: python
 
-   from nlp_shap import InMemoryObservabilitySink
+   from mllm_shap import InMemoryObservabilitySink
 
 
    class CountingProgress:

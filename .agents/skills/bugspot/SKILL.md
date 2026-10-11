@@ -1,10 +1,10 @@
 ---
 name: bugspot
 description: >-
-  Use when asked to find bugs, spot issues or stress test nlp-shap, or on /bugspot.
+  Use when asked to find bugs, spot issues or stress test mllm-shap, or on /bugspot.
 ---
 
-# nlp-shap bugspot
+# mllm-shap bugspot
 
 ## Probes (run all; each prints PASS/FAIL)
 

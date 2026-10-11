@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="nlp-shap">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="mllm-shap">
   <!--
     Bar lengths from a 5-player additive-game Shapley vector
     [2.0, 0.96, 3.28, 0.72, 2.64] (coefficients 2.5, 1.2, 4.1, 0.9, 3.3).

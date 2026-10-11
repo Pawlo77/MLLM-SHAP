@@ -9,7 +9,7 @@ updated: 2026-10-08
 
 # Roadmap
 
-Part of [[nlp-shap]]. Detailed plans live outside this repository.
+Part of [[mllm-shap]]. Detailed plans live outside this repository.
 
 ## Remediation (2026-10)
 

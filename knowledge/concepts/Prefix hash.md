@@ -6,7 +6,7 @@ tags: [concept]
 created: 2026-10-07
 updated: 2026-10-08
 related-code:
-  - "[[src/nlp_shap/runtime/kv_cache.py]]"
+  - "[[src/mllm_shap/runtime/kv_cache.py]]"
 ---
 
 # Prefix hash

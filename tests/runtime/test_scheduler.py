@@ -1,6 +1,6 @@
 """Tests for async coalition inference scheduling.
 
-@see [[src/nlp_shap/runtime/scheduler.py]]
+@see [[src/mllm_shap/runtime/scheduler.py]]
 """
 
 import asyncio
@@ -10,19 +10,19 @@ from pathlib import Path
 
 import pytest
 
-from nlp_shap.domain.conversation import ConversationSnapshot
-from nlp_shap.domain.generation import GenerationRecord
-from nlp_shap.masking.codec import MaskCodec
-from nlp_shap.pipeline.config import GenerationConfig
-from nlp_shap.runtime.archive import RunArchive
-from nlp_shap.runtime.dedup import CoalitionDedupRegistry, build_coalition_key
-from nlp_shap.runtime.scheduler import (
+from mllm_shap.domain.conversation import ConversationSnapshot
+from mllm_shap.domain.generation import GenerationRecord
+from mllm_shap.masking.codec import MaskCodec
+from mllm_shap.pipeline.config import GenerationConfig
+from mllm_shap.runtime.archive import RunArchive
+from mllm_shap.runtime.dedup import CoalitionDedupRegistry, build_coalition_key
+from mllm_shap.runtime.scheduler import (
     CoalitionJob,
     InferenceScheduler,
     SchedulerMetrics,
     _first_error,
 )
-from nlp_shap.runtime.store import HotResultStore
+from mllm_shap.runtime.store import HotResultStore
 
 
 async def _slow_generate(snapshot: ConversationSnapshot) -> str:

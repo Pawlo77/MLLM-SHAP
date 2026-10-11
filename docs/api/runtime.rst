@@ -1,21 +1,21 @@
 Runtime
 =======
 
-.. automodule:: nlp_shap.runtime
+.. automodule:: mllm_shap.runtime
    :no-members:
 
-.. automodule:: nlp_shap.runtime.archive
+.. automodule:: mllm_shap.runtime.archive
 
-.. automodule:: nlp_shap.runtime.dedup
+.. automodule:: mllm_shap.runtime.dedup
 
-.. automodule:: nlp_shap.runtime.store
+.. automodule:: mllm_shap.runtime.store
 
-.. automodule:: nlp_shap.runtime.scheduler
+.. automodule:: mllm_shap.runtime.scheduler
 
-.. automodule:: nlp_shap.runtime.progress
+.. automodule:: mllm_shap.runtime.progress
 
-.. automodule:: nlp_shap.runtime.metrics
+.. automodule:: mllm_shap.runtime.metrics
 
-.. automodule:: nlp_shap.runtime.telemetry
+.. automodule:: mllm_shap.runtime.telemetry
 
-.. automodule:: nlp_shap.runtime.kv_cache
+.. automodule:: mllm_shap.runtime.kv_cache

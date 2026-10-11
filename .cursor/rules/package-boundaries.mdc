@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Package boundaries
 
-- `src/nlp_shap/` is the library; experiments, papers and GUIs live elsewhere.
-- Inside `src/nlp_shap/` imports are relative; tests and examples use `from nlp_shap...`.
+- `src/mllm_shap/` is the library; experiments, papers and GUIs live elsewhere.
+- Inside `src/mllm_shap/` imports are relative; tests and examples use `from mllm_shap...`.
 - User workflows are notebooks in `examples/` (`examples.mdc`).
 - Add a module only with a real implementation; heavy stacks (torch, transformers) are optional extras.

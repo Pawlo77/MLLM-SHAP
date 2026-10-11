@@ -1,10 +1,10 @@
 """Tests for coalition deduplication keys and registry.
 
-@see [[src/nlp_shap/runtime/dedup.py]]
+@see [[src/mllm_shap/runtime/dedup.py]]
 """
 
-from nlp_shap.pipeline.config import DedupConfig, GenerationConfig
-from nlp_shap.runtime.dedup import (
+from mllm_shap.pipeline.config import DedupConfig, GenerationConfig
+from mllm_shap.runtime.dedup import (
     CoalitionDedupRegistry,
     build_coalition_key,
     dedup_enabled,

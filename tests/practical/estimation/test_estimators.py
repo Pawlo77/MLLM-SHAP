@@ -1,6 +1,6 @@
 """Estimators and estimands on a real model against the exact reference.
 
-@see [[src/nlp_shap/estimation/exact.py]]
+@see [[src/mllm_shap/estimation/exact.py]]
 """
 
 from typing import Any

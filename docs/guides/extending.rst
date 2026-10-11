@@ -1,8 +1,8 @@
-Extending nlp-shap
-==================
+Extending mllm-shap
+===================
 
 Every stage of a run is a plugin looked up by name in a
-:class:`~nlp_shap.PluginRegistry`: the partitioner, absence policy, estimator,
+:class:`~mllm_shap.PluginRegistry`: the partitioner, absence policy, estimator,
 estimand, value function, normalizer, backend and renderer. Third-party packages
 add plugins through entry points; scripts and tests register them directly. This
 page writes one plugin of each common kind and runs it. The snippets share one
@@ -15,27 +15,27 @@ Install only what your deployment needs:
 
 .. code-block:: bash
 
-   pip install nlp-shap                    # core only (no torch)
-   pip install "nlp-shap[transformers]"    # Hugging Face text backend
-   pip install "nlp-shap[lmstudio]"        # LM Studio SDK backend
-   pip install "nlp-shap[api]"             # OpenAI-compatible HTTP backend
-   pip install "nlp-shap[viz]"             # matplotlib token attribution charts
+   pip install mllm-shap                    # core only (no torch)
+   pip install "mllm-shap[transformers]"    # Hugging Face text backend
+   pip install "mllm-shap[lmstudio]"        # LM Studio SDK backend
+   pip install "mllm-shap[api]"             # OpenAI-compatible HTTP backend
+   pip install "mllm-shap[viz]"             # matplotlib token attribution charts
 
 How plugins are built
 ---------------------
 
 A plugin is registered as a **factory**: any callable that takes a
-:class:`~nlp_shap.plugins.context.PluginContext` and returns the plugin. A class
+:class:`~mllm_shap.plugins.context.PluginContext` and returns the plugin. A class
 whose ``__init__`` takes the context is the usual factory. The context carries
 
-- ``config``: the validated :class:`~nlp_shap.ExplainConfig` of the run;
+- ``config``: the validated :class:`~mllm_shap.ExplainConfig` of the run;
 - ``options``: ``explanation.plugin_options["<group>/<name>"]`` or
   ``explanation.plugin_options["<name>"]``, empty when absent;
-  :meth:`~nlp_shap.plugins.context.PluginContext.option` reads one with a typed
+  :meth:`~mllm_shap.plugins.context.PluginContext.option` reads one with a typed
   default. A plugin class that sets ``options_model`` to a
-  :class:`~nlp_shap.protocols.plugin.PluginOptions` subclass gets its options
+  :class:`~mllm_shap.protocols.plugin.PluginOptions` subclass gets its options
   validated first (unknown keys and wrong types raise
-  :exc:`~nlp_shap.errors.ConfigError`); without it the options pass unchecked;
+  :exc:`~mllm_shap.errors.ConfigError`); without it the options pass unchecked;
 - ``registry``: the registry that built the plugin.
 
 A custom value function with options
@@ -47,7 +47,7 @@ comes from ``plugin_options``:
 
 .. code-block:: python
 
-   from nlp_shap import (
+   from mllm_shap import (
        ConversationSnapshot,
        ExplainConfig,
        ExplainRunner,
@@ -57,9 +57,9 @@ comes from ``plugin_options``:
        Role,
        Turn,
    )
-   from nlp_shap.plugins import PluginContext, register_builtin_plugins
-   from nlp_shap.protocols.backend import GenerationResult
-   from nlp_shap.protocols.plugin import PluginOptions
+   from mllm_shap.plugins import PluginContext, register_builtin_plugins
+   from mllm_shap.protocols.backend import GenerationResult
+   from mllm_shap.protocols.plugin import PluginOptions
 
 
    class VocabularyOverlapOptions(PluginOptions):
@@ -108,9 +108,9 @@ comes from ``plugin_options``:
 
 .. guide-result:: extending_value_fn
 
-A value function satisfies :class:`~nlp_shap.protocols.value.ValueFunction`; add
+A value function satisfies :class:`~mllm_shap.protocols.value.ValueFunction`; add
 a ``fit(corpus)`` method
-(:class:`~nlp_shap.protocols.value.FittableValueFunction`) when it needs
+(:class:`~mllm_shap.protocols.value.FittableValueFunction`) when it needs
 statistics over all outputs of the run before scoring, as ``tfidf_cosine`` does.
 
 A custom backend
@@ -118,14 +118,14 @@ A custom backend
 
 A backend needs a ``model_id`` property and an async ``generate(snapshot,
 generation)`` that returns an object with a ``text`` attribute.
-:func:`~nlp_shap.value.generation_records.generation_record_from_text` builds the
+:func:`~mllm_shap.value.generation_records.generation_record_from_text` builds the
 record the built-in value functions expect. This one answers with the prompt's
 words in reverse order:
 
 .. code-block:: python
 
-   from nlp_shap.pipeline.config import GenerationConfig
-   from nlp_shap.value.generation_records import generation_record_from_text
+   from mllm_shap.pipeline.config import GenerationConfig
+   from mllm_shap.value.generation_records import generation_record_from_text
 
 
    class ReverseBackend:
@@ -154,7 +154,7 @@ words in reverse order:
 .. guide-result:: extending_backend
 
 Backends that hold clients or models may also implement ``async aclose()``
-(:class:`~nlp_shap.protocols.backend.SupportsAclose`); the runner calls it after
+(:class:`~mllm_shap.protocols.backend.SupportsAclose`); the runner calls it after
 each run. Settings only your backend understands belong under
 ``backend.options``.
 
@@ -171,8 +171,8 @@ is exactly the occlusion score :math:`v(N) - v(N \setminus \{i\})`:
 
    from collections.abc import Iterator, Sequence
 
-   from nlp_shap import CoalitionMask, PlayerSet
-   from nlp_shap.protocols.estimand import EstimandAggregator
+   from mllm_shap import CoalitionMask, PlayerSet
+   from mllm_shap.protocols.estimand import EstimandAggregator
 
 
    class LeaveOneOutEstimator:
@@ -224,7 +224,7 @@ is exactly the occlusion score :math:`v(N) - v(N \setminus \{i\})`:
 The runner adds the empty coalition, so ``base_value`` is still reported; the
 leave-one-out values are not efficient. Estimators that need payoffs before
 drawing more coalitions implement the two-phase protocol
-:class:`~nlp_shap.protocols.estimator.TwoPhaseEstimator`, as ``neyman_cc`` does.
+:class:`~mllm_shap.protocols.estimator.TwoPhaseEstimator`, as ``neyman_cc`` does.
 
 A custom partitioner
 --------------------
@@ -235,7 +235,7 @@ message:
 
 .. code-block:: python
 
-   from nlp_shap import PlayerSpan
+   from mllm_shap import PlayerSpan
 
 
    class MessagePartitioner:
@@ -271,8 +271,8 @@ message:
 .. guide-result:: extending_partitioner
 
 Register it under :attr:`PluginGroup.PARTITIONS
-<nlp_shap.plugins.groups.PluginGroup.PARTITIONS>`. Each
-:class:`~nlp_shap.domain.players.PlayerSpan` names the message (turns flattened)
+<mllm_shap.plugins.groups.PluginGroup.PARTITIONS>`. Each
+:class:`~mllm_shap.domain.players.PlayerSpan` names the message (turns flattened)
 and the character range the player covers; the built-in absence policies delete,
 pad or blank exactly those ranges and keep all other text, so any partitioner
 works with ``delete``, ``pad`` and ``neutral``.
@@ -300,12 +300,12 @@ Publishing plugins
 ------------------
 
 Register plugins under ``project.entry-points`` in your package's
-``pyproject.toml``; :class:`~nlp_shap.ExplainRunner` loads entry points of every
+``pyproject.toml``; :class:`~mllm_shap.ExplainRunner` loads entry points of every
 group when it builds its default registry:
 
 .. code-block:: toml
 
-   [project.entry-points."nlp_shap.value_fns"]
+   [project.entry-points."mllm_shap.value_fns"]
    vocab_overlap = "my_package.values:VocabularyOverlapValue"
 
 .. list-table::
@@ -314,21 +314,21 @@ group when it builds its default registry:
 
    * - Group
      - Purpose
-   * - ``nlp_shap.estimators``
+   * - ``mllm_shap.estimators``
      - Coalition sampling strategies (``exact``, ``mc``, …)
-   * - ``nlp_shap.estimands``
+   * - ``mllm_shap.estimands``
      - Payoff aggregation (``shapley``, ``banzhaf``)
-   * - ``nlp_shap.value_fns``
+   * - ``mllm_shap.value_fns``
      - Coalition scoring utilities (``tfidf_cosine``, ``logprob``, …)
-   * - ``nlp_shap.normalizers``
+   * - ``mllm_shap.normalizers``
      - Post-aggregation scaling (``identity``, ``min_max``, …)
-   * - ``nlp_shap.partitions``
+   * - ``mllm_shap.partitions``
      - Player definitions (``tokens``, …)
-   * - ``nlp_shap.absence_policies``
+   * - ``mllm_shap.absence_policies``
      - Masked snapshot rendering (``delete``, ``pad``, …)
-   * - ``nlp_shap.backends``
+   * - ``mllm_shap.backends``
      - Model inference connectors (``mock``, ``transformers``, …)
-   * - ``nlp_shap.renderers``
+   * - ``mllm_shap.renderers``
      - Attribution visualization (``token_text``, ``token_bar``)
 
 Names already registered are skipped, so a third-party plugin cannot silently

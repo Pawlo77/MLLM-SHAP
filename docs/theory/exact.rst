@@ -1,7 +1,7 @@
 Exact estimation
 ================
 
-The :class:`~nlp_shap.estimation.exact.ExactEstimator` lazily enumerates every
+The :class:`~mllm_shap.estimation.exact.ExactEstimator` lazily enumerates every
 coalition, from the empty coalition to the grand coalition, and delegates
 attribution to an estimand plugin. Use it as ground truth on tiny player sets
 before trusting approximate samplers.
@@ -15,13 +15,13 @@ For :math:`n` players the estimator evaluates every coalition:
 
    |\mathcal{S}_{\mathrm{exact}}| = 2^n
 
-Inside :class:`~nlp_shap.ExplainRunner` the grand coalition :math:`v(N)` is scored
+Inside :class:`~mllm_shap.ExplainRunner` the grand coalition :math:`v(N)` is scored
 from the base generation (the output for the unmasked prompt), so it is served
 from the result store instead of a second backend call. With :math:`v(\emptyset)` and
 :math:`v(N)` both present, Shapley values satisfy efficiency:
 :math:`\sum_i \phi_i = v(N) - v(\emptyset)`. The run output exposes both
-payoffs as :attr:`~nlp_shap.pipeline.result.ExplainResult.base_value` and
-:attr:`~nlp_shap.pipeline.result.ExplainResult.grand_value`.
+payoffs as :attr:`~mllm_shap.pipeline.result.ExplainResult.base_value` and
+:attr:`~mllm_shap.pipeline.result.ExplainResult.grand_value`.
 
 Complexity grows exponentially in :math:`n`; reserve exact estimation for toy
 models, sanity checks, and estimator validation.
@@ -45,7 +45,7 @@ Legacy parity
 -------------
 
 The implementation matches the Shapley values of ``PreciseShapExplainer`` from
-`MLLM-Shap <https://github.com/Pawlo77/MLLM-Shap>`_ on additive characteristic
+`legacy MLLM-Shap <https://github.com/Pawlo77/MLLM-Shap-legacy>`_ on additive characteristic
 functions; both aggregate the full :math:`2^n` table. See
 :doc:`../guides/migrating_from_mllm_shap` for the other differences.
 
@@ -55,4 +55,4 @@ Further reading
 - Estimand definitions: :doc:`estimands`
 - Cooperative-game foundations: :doc:`cooperative_games`
 - Usage: :doc:`../guides/exact`
-- API: :class:`~nlp_shap.estimation.exact.ExactEstimator`
+- API: :class:`~mllm_shap.estimation.exact.ExactEstimator`

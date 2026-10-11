@@ -4,22 +4,22 @@ type: module
 domain: runtime
 tags: [architecture, runtime]
 created: 2026-10-07
-updated: 2026-10-09
+updated: 2026-10-11
 related-code:
-  - "[[src/nlp_shap/runtime/__init__.py]]"
-  - "[[src/nlp_shap/runtime/archive.py]]"
-  - "[[src/nlp_shap/runtime/dedup.py]]"
-  - "[[src/nlp_shap/runtime/kv_cache.py]]"
-  - "[[src/nlp_shap/runtime/metrics.py]]"
-  - "[[src/nlp_shap/runtime/progress.py]]"
-  - "[[src/nlp_shap/runtime/scheduler.py]]"
-  - "[[src/nlp_shap/runtime/store.py]]"
-  - "[[src/nlp_shap/runtime/telemetry.py]]"
+  - "[[src/mllm_shap/runtime/__init__.py]]"
+  - "[[src/mllm_shap/runtime/archive.py]]"
+  - "[[src/mllm_shap/runtime/dedup.py]]"
+  - "[[src/mllm_shap/runtime/kv_cache.py]]"
+  - "[[src/mllm_shap/runtime/metrics.py]]"
+  - "[[src/mllm_shap/runtime/progress.py]]"
+  - "[[src/mllm_shap/runtime/scheduler.py]]"
+  - "[[src/mllm_shap/runtime/store.py]]"
+  - "[[src/mllm_shap/runtime/telemetry.py]]"
 ---
 
 # runtime
 
-Part of [[nlp-shap]].
+Part of [[mllm-shap]].
 
 ## Responsibility
 

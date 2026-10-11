@@ -1,12 +1,12 @@
 """CTC forced alignment with known paths.
 
-@see [[src/nlp_shap/alignment/ctc.py]]
+@see [[src/mllm_shap/alignment/ctc.py]]
 """
 
 import numpy as np
 import pytest
 
-from nlp_shap.alignment.ctc import forced_align, target_spans
+from mllm_shap.alignment.ctc import forced_align, target_spans
 
 LOW = -20.0
 

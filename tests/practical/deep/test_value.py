@@ -1,6 +1,6 @@
 """Deep tier: every value function follows a swapped fact across a prompt pair.
 
-@see [[src/nlp_shap/value/logprob.py]]
+@see [[src/mllm_shap/value/logprob.py]]
 """
 
 import dataclasses

@@ -46,9 +46,9 @@ Keep this file general; detail lives in skills (`.agents/skills/`) and rules
 
 ## Siblings
 
-| Sibling path (clone next to `nlp-shap/`) | Use |
+| Sibling path (clone next to `MLLM-SHAP/`) | Use |
 |------|-----|
-| `../MLLM-Shap/mllm_shap/src/mllm_shap/` | legacy code to port (skill `port-legacy`) |
+| `../MLLM-Shap-legacy/mllm_shap/src/mllm_shap/` | legacy code to port (skill `port-legacy`) |
 
 ## Memory and context
 
@@ -60,8 +60,8 @@ Keep this file general; detail lives in skills (`.agents/skills/`) and rules
 ## Vault
 
 - The repository root is an Obsidian vault; notes live in `knowledge/` only (entry:
-  `knowledge/nlp-shap.md`).
-- A change under `src/nlp_shap/<pkg>/` updates `knowledge/architecture/<pkg>.md` in the same
+  `knowledge/mllm-shap.md`).
+- A change under `src/mllm_shap/<pkg>/` updates `knowledge/architecture/<pkg>.md` in the same
   change.
 - A design choice appends a section to `knowledge/decisions/<Domain> decisions.md`; a bug
   found or fixed updates `knowledge/issues/`.

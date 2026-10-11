@@ -6,19 +6,19 @@ tags: [architecture, masking]
 created: 2026-10-07
 updated: 2026-10-11
 related-code:
-  - "[[src/nlp_shap/masking/__init__.py]]"
-  - "[[src/nlp_shap/masking/audio.py]]"
-  - "[[src/nlp_shap/masking/builder.py]]"
-  - "[[src/nlp_shap/masking/codec.py]]"
-  - "[[src/nlp_shap/masking/partitions.py]]"
-  - "[[src/nlp_shap/masking/policies.py]]"
-  - "[[src/nlp_shap/masking/space.py]]"
-  - "[[src/nlp_shap/masking/tokens.py]]"
+  - "[[src/mllm_shap/masking/__init__.py]]"
+  - "[[src/mllm_shap/masking/audio.py]]"
+  - "[[src/mllm_shap/masking/builder.py]]"
+  - "[[src/mllm_shap/masking/codec.py]]"
+  - "[[src/mllm_shap/masking/partitions.py]]"
+  - "[[src/mllm_shap/masking/policies.py]]"
+  - "[[src/mllm_shap/masking/space.py]]"
+  - "[[src/mllm_shap/masking/tokens.py]]"
 ---
 
 # masking
 
-Part of [[nlp-shap]].
+Part of [[mllm-shap]].
 
 ## Responsibility
 

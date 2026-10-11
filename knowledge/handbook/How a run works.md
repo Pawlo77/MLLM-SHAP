@@ -6,13 +6,13 @@ tags: [handbook, pipeline]
 created: 2026-10-07
 updated: 2026-10-08
 related-code:
-  - "[[src/nlp_shap/pipeline/runner.py]]"
-  - "[[src/nlp_shap/pipeline/orchestrator.py]]"
+  - "[[src/mllm_shap/pipeline/runner.py]]"
+  - "[[src/mllm_shap/pipeline/orchestrator.py]]"
 ---
 
 # How a run works
 
-Part of [[nlp-shap]]. Code: [[pipeline]]. State: release 0.1.18. The user guide has a longer version for people who do not use the vault.
+Part of [[mllm-shap]]. Code: [[pipeline]]. State: release 0.1.18. The user guide has a longer version for people who do not use the vault.
 
 ```mermaid
 flowchart LR

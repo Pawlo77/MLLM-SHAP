@@ -7,9 +7,9 @@ from itertools import product
 
 import pytest
 
-from nlp_shap.domain.estimands import Estimand
-from nlp_shap.estimation.estimands.banzhaf import BanzhafAggregator
-from nlp_shap.estimation.estimands.shapley import ShapleyAggregator
+from mllm_shap.domain.estimands import Estimand
+from mllm_shap.estimation.estimands.banzhaf import BanzhafAggregator
+from mllm_shap.estimation.estimands.shapley import ShapleyAggregator
 
 
 def _majority_game_payoff(mask: tuple[bool, ...]) -> float:

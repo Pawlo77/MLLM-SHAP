@@ -6,13 +6,13 @@ created: 2026-10-08
 updated: 2026-10-10
 tags: [decisions, masking]
 related-code:
-  - "[[src/nlp_shap/masking/partitions.py]]"
-  - "[[src/nlp_shap/masking/policies.py]]"
+  - "[[src/mllm_shap/masking/partitions.py]]"
+  - "[[src/mllm_shap/masking/policies.py]]"
 ---
 
 # Masking decisions
 
-Part of [[nlp-shap]]; architecture: [[masking]]. Related: [[Player span]].
+Part of [[mllm-shap]]; architecture: [[masking]]. Related: [[Player span]].
 
 
 ## 2026-10-10 — Audio players are sample ranges on the player span

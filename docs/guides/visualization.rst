@@ -2,7 +2,7 @@ Visualization
 =============
 
 Per-token Shapley and Banzhaf attributions are numeric tuples in
-:class:`~nlp_shap.ExplainRunOutput`. Renderer plugins turn those
+:class:`~mllm_shap.ExplainRunOutput`. Renderer plugins turn those
 values into review-ready figures for notebooks, reports, and stakeholder decks.
 
 Renderers
@@ -23,7 +23,7 @@ Install the optional visualization extra:
 
 .. code-block:: bash
 
-   pip install "nlp-shap[viz]"
+   pip install "mllm-shap[viz]"
 
 The renderers follow the `SHAP <https://github.com/shap/shap>`_ palette: warm red
 for positive attributions and cool blue for negative attributions, with soft
@@ -35,7 +35,7 @@ Quick start
 
 .. code-block:: python
 
-   from nlp_shap import render_attribution
+   from mllm_shap import render_attribution
 
    output = ExplainRunner(config).explain_sync(snapshot)
    bar = render_attribution(output, snapshot, output.player_set, renderer="token_bar")
@@ -44,7 +44,7 @@ Quick start
 
 Pass the run's ``output.player_set`` so labels match the players, ``title=`` to
 label a figure and ``registry=`` to use a renderer registered in your own
-:class:`~nlp_shap.PluginRegistry`. The figures below come from
+:class:`~mllm_shap.PluginRegistry`. The figures below come from
 :doc:`../notebooks/attribution_viz`, which explains three inputs with
 ``Qwen/Qwen2.5-1.5B-Instruct`` and ``tfidf_cosine``.
 
@@ -75,9 +75,9 @@ speaker and position; ``title=`` names the figure.
    A five-message support thread: Alice's order and Bob's two messages carry the
    answer, the assistant's greeting and Alice's "used it once" matter less.
 
-:func:`~nlp_shap.viz.plot_conversation` keeps the thread's shape: each message
+:func:`~mllm_shap.viz.plot_conversation` keeps the thread's shape: each message
 under its role, speaker and position, with every player shaded where it stands
-and text that is no player in grey. :func:`~nlp_shap.viz.render_conversation_html`
+and text that is no player in grey. :func:`~mllm_shap.viz.render_conversation_html`
 returns the same view as HTML. It works for message and token players alike.
 
 .. figure:: /_static/notebook_figures/viz_thread_messages.png
@@ -98,7 +98,7 @@ Spoken words
 ------------
 
 For audio players (``players: sgpa_segments``, :doc:`alignment`),
-:func:`~nlp_shap.viz.plot_audio_segments` colours each word's stretch of audio by
+:func:`~mllm_shap.viz.plot_audio_segments` colours each word's stretch of audio by
 its value over the waveform and its energy.
 
 .. figure:: /_static/notebook_figures/viz_audio.png
@@ -109,7 +109,7 @@ its value over the waveform and its energy.
 
 With the ``sgpa_segments`` option ``text_roles: [user]`` the words of typed user
 messages are players too, so typed and spoken words share one run and one colour
-scale. :func:`~nlp_shap.viz.plot_conversation` then adds a waveform strip below
+scale. :func:`~mllm_shap.viz.plot_conversation` then adds a waveform strip below
 each audio message, shaded on the same scale as the text.
 
 .. figure:: /_static/notebook_figures/viz_text_audio.png
@@ -121,13 +121,13 @@ each audio message, shaded on the same scale as the text.
 Jupyter HTML
 ------------
 
-In a notebook, :func:`~nlp_shap.viz.display_attribution_html` shows the colored
-tokens inline without matplotlib, and :func:`~nlp_shap.render_attribution_html`
+In a notebook, :func:`~mllm_shap.viz.display_attribution_html` shows the colored
+tokens inline without matplotlib, and :func:`~mllm_shap.render_attribution_html`
 returns the same fragment as a string for reports:
 
 .. code-block:: python
 
-   from nlp_shap import display_attribution_html, render_attribution_html
+   from mllm_shap import display_attribution_html, render_attribution_html
 
    display_attribution_html(output, snapshot, output.player_set)
    html = render_attribution_html(output, snapshot, output.player_set, title="Refund")

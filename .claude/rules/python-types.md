@@ -1,6 +1,6 @@
 ---
 paths:
-  - "src/nlp_shap/**/*.py"
+  - "src/mllm_shap/**/*.py"
   - "tests/**/*.py"
   - "examples/**/*.ipynb"
 ---
@@ -12,9 +12,9 @@ paths:
 Match tooling in `pyproject.toml` — do not fight ruff or mypy.
 
 - Imports at module top; no inline imports unless circular dependency is documented
-- **Inside `src/nlp_shap/`:** relative imports only (`from .module import X`, `from ..pkg import Y`) — never `from nlp_shap...`
-- **Outside the package** (`tests/`, `examples/`): absolute imports (`from nlp_shap...`)
-- Annotate all public functions, methods, and module-level names in `src/nlp_shap`
+- **Inside `src/mllm_shap/`:** relative imports only (`from .module import X`, `from ..pkg import Y`) — never `from mllm_shap...`
+- **Outside the package** (`tests/`, `examples/`): absolute imports (`from mllm_shap...`)
+- Annotate all public functions, methods, and module-level names in `src/mllm_shap`
 - Prefer `pathlib.Path`, explicit returns, `X | Y` over `Optional`
 - Do not use `from __future__ import annotations` unless required — prefer `typing.Self`, quoted forward refs (`"MyClass"`), or import reordering. Never add it as a default module header.
 - Prefer `TypedDict` for structured dict payloads (manifests, config sections, wire formats) — required keys live in the type, not runtime `if key not in payload` checks

@@ -1,6 +1,6 @@
 """The command line on a real model matches the in-process pipeline.
 
-@see [[src/nlp_shap/cli.py]]
+@see [[src/mllm_shap/cli.py]]
 """
 
 import json
@@ -41,7 +41,7 @@ def test_cli_reanalyze_matches_cli_explain(
     practical_record: dict[str, Any],
     tmp_path: Path,
 ) -> None:
-    """``nlp-shap reanalyze`` re-scores the CLI's archive to the same values."""
+    """``mllm-shap reanalyze`` re-scores the CLI's archive to the same values."""
     payload = cli_explain(scenario, fast_model, tmp_path)
     run_cli(
         "reanalyze",

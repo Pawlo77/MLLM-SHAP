@@ -1,14 +1,14 @@
 """Tests for attribution label helpers.
 
-@see [[src/nlp_shap/viz/labels.py]]
+@see [[src/mllm_shap/viz/labels.py]]
 """
 
 import pytest
 
-from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
-from nlp_shap.domain.enums import Role
-from nlp_shap.masking.partitions import TokenPartitioner
-from nlp_shap.viz.labels import token_labels
+from mllm_shap.domain.conversation import ConversationSnapshot, Message, Turn
+from mllm_shap.domain.enums import Role
+from mllm_shap.masking.partitions import TokenPartitioner
+from mllm_shap.viz.labels import token_labels
 
 
 def _snapshot(text: str) -> ConversationSnapshot:

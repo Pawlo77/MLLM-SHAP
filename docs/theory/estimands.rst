@@ -2,7 +2,7 @@ Estimands: Shapley vs Banzhaf
 ==============================
 
 An **estimand** is the quantity your attribution procedure targets. In
-``nlp-shap``, estimands are explicit types — not implicit behaviour of an
+``mllm-shap``, estimands are explicit types — not implicit behaviour of an
 estimator. Monte Carlo coalition averaging does **not** automatically estimate
 Shapley values; unweighted means over sampled coalitions estimate the **Banzhaf
 index** unless Shapley weights are applied.
@@ -19,7 +19,7 @@ The Shapley value :math:`\phi_i` (definition, axioms and uniqueness:
 
    w_{\mathrm{Shapley}}(k, n) = \frac{k!\,(n-k-1)!}{n!}
 
-Implemented in :class:`~nlp_shap.estimation.estimands.shapley.ShapleyAggregator`.
+Implemented in :class:`~mllm_shap.estimation.estimands.shapley.ShapleyAggregator`.
 
 Banzhaf index (estimand)
 ------------------------
@@ -37,7 +37,7 @@ theory) uses **uniform** weights over coalitions :math:`S \subseteq N \setminus
 Equivalently, :math:`w_{\mathrm{Banzhaf}}(k, n) = 2^{-(n-1)}` for every coalition
 size :math:`k`.
 
-Implemented in :class:`~nlp_shap.estimation.estimands.banzhaf.BanzhafAggregator`.
+Implemented in :class:`~mllm_shap.estimation.estimands.banzhaf.BanzhafAggregator`.
 
 **Interpretation:** :math:`\beta_i` measures the average marginal contribution
 across all coalitions, or — in threshold games — the probability that player
@@ -84,7 +84,7 @@ Choosing an estimand in practice
 - You want uniform coalition averaging without factorial weights.
 - You explicitly study voting-power-style sensitivity.
 
-Regardless of choice, label outputs honestly. ``nlp-shap`` separates estimands
+Regardless of choice, label outputs honestly. ``mllm-shap`` separates estimands
 from estimators so archives and papers never misreport Banzhaf output as Shapley.
 
 Monte Carlo and estimand confusion
@@ -116,17 +116,17 @@ coverage grows, but only the full table guarantees efficiency. See
 :ref:`theory-partial-samples` for the formulas and
 :doc:`../guides/choosing_an_estimator` for budgets.
 
-Labelling in ``nlp-shap``
--------------------------
+Labelling in ``mllm-shap``
+--------------------------
 
-Every :class:`~nlp_shap.pipeline.result.ExplainResult` carries an
-:class:`~nlp_shap.domain.estimands.Estimand` label. Run archives persist the
-same label in :class:`~nlp_shap.RunManifest` so
+Every :class:`~mllm_shap.pipeline.result.ExplainResult` carries an
+:class:`~mllm_shap.domain.estimands.Estimand` label. Run archives persist the
+same label in :class:`~mllm_shap.RunManifest` so
 downstream analysis and compliance reviews can verify which estimand was used.
 
-The :class:`~nlp_shap.protocols.estimand.EstimandAggregator` protocol defines the
+The :class:`~mllm_shap.protocols.estimand.EstimandAggregator` protocol defines the
 aggregation contract; concrete implementations live in
-:mod:`nlp_shap.estimation.estimands`.
+:mod:`mllm_shap.estimation.estimands`.
 
 References
 ----------

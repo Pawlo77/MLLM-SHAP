@@ -52,7 +52,7 @@ jobs:
       - name: Run pytest with coverage
         run: >-
           uv run pytest
-          --cov=./src/nlp_shap
+          --cov=./src/mllm_shap
           --cov-report=xml
           --cov-fail-under=85
           -m "not lms and not gpu and not bench and not slow and not practical"

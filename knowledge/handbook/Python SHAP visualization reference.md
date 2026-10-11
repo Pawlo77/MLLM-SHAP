@@ -9,7 +9,7 @@ updated: 2026-10-10
 
 # Python SHAP visualization reference
 
-Part of [[nlp-shap]]. Module note: [[viz]].
+Part of [[mllm-shap]]. Module note: [[viz]].
 
 Read: `shap` 0.53.0 (tag `v0.53.0`, PyPI latest on 2026-10-10), source `shap/plots/`. SHAP means SHapley Additive exPlanations.
 
@@ -46,7 +46,7 @@ Input is a `shap.Explanation`: `values`, `base_values`, `data`, `feature_names`,
 - Colour and axis limits are shared across rows.
 - `text_to_text` (heatmap and saliency switch) exists in the source, but `text` has its call commented out.
 
-## What nlp-shap has
+## What mllm-shap has
 
 - `token_text`: coloured tokens, matplotlib or HTML fragment.
 - `token_bar`: sorted horizontal bars with value labels.
@@ -70,10 +70,10 @@ Data: `ExplainResult` holds `values`, `base_value`, `grand_value`; spans hold `m
 
 ## Not worth porting
 
-- `image`, `image_to_text`: nlp-shap has no pixel players.
+- `image`, `image_to_text`: mllm-shap has no pixel players.
 - `scatter`, `partial_dependence`, `beeswarm` coloured by feature value: players are tokens without numeric feature values.
 - `monitoring`, `embedding`, `group_difference`: tabular sample populations.
-- `benchmark`: nlp-shap benchmarks live in `make bench`.
+- `benchmark`: mllm-shap benchmarks live in `make bench`.
 - Token clustering tree: partitioners emit flat players, so there is no tree to cut.
 
 ## Sources

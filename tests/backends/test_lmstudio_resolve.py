@@ -1,6 +1,6 @@
 """Async tests for LM Studio model resolution.
 
-@see [[src/nlp_shap/backends/lmstudio/__init__.py]]
+@see [[src/mllm_shap/backends/lmstudio/__init__.py]]
 """
 
 import asyncio
@@ -9,17 +9,17 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from nlp_shap.backends.lmstudio import LmStudioBackend
-from nlp_shap.backends.lmstudio.models import (
+from mllm_shap.backends.lmstudio import LmStudioBackend
+from mllm_shap.backends.lmstudio.models import (
     match_downloaded_model_key,
     resolve_model_key,
 )
-from nlp_shap.backends.lmstudio.options import LmStudioOptions
-from nlp_shap.domain.config import GenerationConfig
-from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
-from nlp_shap.domain.enums import Role
-from nlp_shap.errors import BackendUnavailableError
-from nlp_shap.pipeline.config import BackendConfig
+from mllm_shap.backends.lmstudio.options import LmStudioOptions
+from mllm_shap.domain.config import GenerationConfig
+from mllm_shap.domain.conversation import ConversationSnapshot, Message, Turn
+from mllm_shap.domain.enums import Role
+from mllm_shap.errors import BackendUnavailableError
+from mllm_shap.pipeline.config import BackendConfig
 from tests.backends._context import backend_context
 
 
@@ -143,7 +143,7 @@ def _backend_with_model(
     monkeypatch: pytest.MonkeyPatch, model: _Model
 ) -> tuple[LmStudioBackend, list[int]]:
     monkeypatch.setattr(
-        "nlp_shap.backends.lmstudio.backend._import_lmstudio",
+        "mllm_shap.backends.lmstudio.backend._import_lmstudio",
         lambda: SimpleNamespace(Chat=_Chat),
     )
     backend = LmStudioBackend(

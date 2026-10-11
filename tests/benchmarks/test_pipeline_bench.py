@@ -1,14 +1,14 @@
 """End-to-end benchmark of the explain pipeline with the mock backend.
 
-@see [[src/nlp_shap/pipeline/orchestrator.py]]
+@see [[src/mllm_shap/pipeline/orchestrator.py]]
 """
 
 import pytest
 from pytest_benchmark.fixture import BenchmarkFixture
 
-from nlp_shap import ExplainConfig, ExplainRunner
-from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
-from nlp_shap.domain.enums import Role
+from mllm_shap import ExplainConfig, ExplainRunner
+from mllm_shap.domain.conversation import ConversationSnapshot, Message, Turn
+from mllm_shap.domain.enums import Role
 
 _CONFIG = ExplainConfig.model_validate({
     "backend": {"kind": "mock", "model_id": "mock"},

@@ -1,16 +1,16 @@
 """Absence policies and partitioners on a real model.
 
-@see [[src/nlp_shap/masking/policies.py]]
+@see [[src/mllm_shap/masking/policies.py]]
 """
 
 from typing import Any, cast
 
 import pytest
 
-from nlp_shap.domain.coalition import CoalitionMask
-from nlp_shap.plugins import PluginContext, PluginGroup, default_registry
-from nlp_shap.protocols.masking import AbsencePolicy
-from nlp_shap.protocols.partition import PlayerPartitioner
+from mllm_shap.domain.coalition import CoalitionMask
+from mllm_shap.plugins import PluginContext, PluginGroup, default_registry
+from mllm_shap.protocols.masking import AbsencePolicy
+from mllm_shap.protocols.partition import PlayerPartitioner
 from tests.practical._harness import (
     SCENARIOS,
     PracticalModel,
