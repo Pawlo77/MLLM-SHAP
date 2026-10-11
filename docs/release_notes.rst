@@ -8,6 +8,19 @@ Changes in each published ``mllm-shap`` version. Newest first.
 Unreleased
 ----------
 
+.. _release-0-4-0:
+
+0.4.0 (2026-10-11)
+------------------
+
+Added
+~~~~~
+
+- The ``mock_audio`` backend (:class:`~mllm_shap.backends.mock.audio.MockAudioBackend`)
+  echoes message words and answers one token per voiced run of each audio part,
+  so audio players get attributions in tests and demos without a model. It reads
+  16-bit WAV without the ``audio`` extra.
+
 .. _release-0-3-1:
 
 0.3.1 (2026-10-11)

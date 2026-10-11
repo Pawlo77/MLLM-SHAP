@@ -3,17 +3,26 @@ title: "Backends decisions"
 type: decision-log
 domain: backends
 created: 2026-10-07
-updated: 2026-10-09
+updated: 2026-10-11
 tags: [decisions, backends]
 related-code:
   - "[[src/mllm_shap/protocols/value.py]]"
   - "[[src/mllm_shap/pipeline/orchestrator.py]]"
   - "[[src/mllm_shap/backends/transformers/text.py]]"
+  - "[[src/mllm_shap/backends/mock/audio.py]]"
 ---
 
 # Backends decisions
 
 Part of [[mllm-shap]]; architecture: [[backends]]. Related: [[value]], [[Capability protocol]].
+
+## 2026-10-11 — Audio mock backend answers one token per voiced run
+
+Decision: `MockAudioBackend` is a separate `mock_audio` entry, not a mode of `mock`. It echoes message words and adds one token per voiced run of each `AudioPart`, the SHA-256 of the run's 16-bit samples; 16-bit WAV decodes with the standard library `wave`.
+
+Why: `mock` hashes the whole prompt, so audio players got arbitrary values; continuous integration (CI) must run audio explanations without the `audio` extra ([[D02 - Audio backend]]).
+
+Consequences: silencing or cutting a word's samples drops exactly its token, so audio attributions are checkable. `mock` outputs stay unchanged. Rejected: a flag on `mock` (changes its archived outputs), fixed-length windows (cutting shifts every later window).
 
 ## 2026-10-09 — Half-precision prefix cache warns instead of promising equality
 

@@ -20,6 +20,9 @@ Built-in backends
    * - ``mock``
      - *(core)*
      - Tests, CI and offline demos; no model involved
+   * - ``mock_audio``
+     - *(core)*
+     - Audio runs in tests and demos: answers to what it hears
    * - ``api``
      - ``[api]``
      - Remote or local OpenAI-compatible HTTP servers (OpenAI, vLLM, LM Studio's
@@ -62,7 +65,7 @@ of each generated token:
    * - ``lmstudio``
      - None: the SDK's prediction result carries no logprobs; use ``api`` with
        LM Studio's server instead
-   * - ``mock``
+   * - ``mock``, ``mock_audio``
      - None
 
 Mock
@@ -78,6 +81,13 @@ test the plumbing, not a model.
    backend:
      kind: mock
      model_id: stub
+
+:class:`~mllm_shap.backends.mock.audio.MockAudioBackend` (``mock_audio``) echoes the
+words of each message, then adds one token per voiced run of each audio part: a
+stretch louder than 1% of full scale, split by at least 10 ms of silence. A
+token hashes its run's samples, so silencing or cutting a spoken word drops only
+its token. It reads 16-bit WAV without any extra; other formats need ``[audio]``.
+Notebook: :doc:`/notebooks/mock_audio_backend`.
 
 HTTP API
 --------

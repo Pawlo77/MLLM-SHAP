@@ -131,6 +131,13 @@ open the ``.ipynb`` on GitHub or browse the full catalog in
      - ``[audio]``, ``[transformers]``
      - `GitHub <https://github.com/Pawlo77/MLLM-SHAP/blob/main/examples/audio_alignment.ipynb>`__
 
+   * - :doc:`notebooks/mock_audio_backend`
+     - :class:`~mllm_shap.backends.mock.audio.MockAudioBackend` on a synthesised clip: heard tokens
+       per voiced run, a silenced word, ``max_new_tokens``, an explanation with
+       ``backend.kind: mock_audio`` and the undecodable-audio guard.
+     - *(core)*
+     - `GitHub <https://github.com/Pawlo77/MLLM-SHAP/blob/main/examples/mock_audio_backend.ipynb>`__
+
 .. toctree::
    :hidden:
    :maxdepth: 1
@@ -147,3 +154,4 @@ open the ``.ipynb`` on GitHub or browse the full catalog in
    notebooks/attribution_viz
    notebooks/text_explain_e2e
    notebooks/audio_alignment
+   notebooks/mock_audio_backend

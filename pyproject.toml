@@ -1,6 +1,6 @@
 [project]
 name = "mllm-shap"
-version = "0.3.1"
+version = "0.4.0"
 description = "Shapley-value attributions for conversational language models."
 readme = "README.md"
 requires-python = ">=3.12"
@@ -85,6 +85,7 @@ min_max = "mllm_shap.estimation.normalizers:MinMaxNormalizer"
 
 [project.entry-points."mllm_shap.backends"]
 mock = "mllm_shap.backends.mock:MockBackend"
+mock_audio = "mllm_shap.backends.mock:MockAudioBackend"
 lmstudio = "mllm_shap.backends.lmstudio:LmStudioBackend"
 transformers = "mllm_shap.backends.transformers.text:TransformersTextBackend"
 api = "mllm_shap.backends.api:ApiBackend"
