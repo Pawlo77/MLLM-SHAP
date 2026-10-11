@@ -1,11 +1,11 @@
 """Tests for player sets.
 
-@see [[src/nlp_shap/domain/players.py]]
+@see [[src/mllm_shap/domain/players.py]]
 """
 
 import pytest
 
-from nlp_shap.domain.players import PlayerSet, PlayerSpan
+from mllm_shap.domain.players import PlayerSet, PlayerSpan
 
 
 def test_player_set_exposes_count() -> None:

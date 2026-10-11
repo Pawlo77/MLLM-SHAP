@@ -1,6 +1,6 @@
 """Archive and reanalyze with real logprobs.
 
-@see [[src/nlp_shap/pipeline/reanalyze.py]]
+@see [[src/mllm_shap/pipeline/reanalyze.py]]
 """
 
 from pathlib import Path
@@ -8,7 +8,7 @@ from typing import Any
 
 import pytest
 
-from nlp_shap.runtime.archive import RunArchive
+from mllm_shap.runtime.archive import RunArchive
 from tests.practical._harness import (
     PracticalModel,
     Scenario,

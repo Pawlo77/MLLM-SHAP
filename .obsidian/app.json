@@ -6,7 +6,7 @@
     ".ruff_cache/",
     ".mypy_cache/",
     "dist/",
-    "src/nlp_shap.egg-info/",
+    "src/mllm_shap.egg-info/",
     ".remember/logs/",
     ".remember/tmp/",
     "knowledge/_templates/",

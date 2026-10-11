@@ -60,7 +60,7 @@ def repo(tmp_path: Path) -> Path:
             "README.md": "# Demo\n",
             "pyproject.toml": PYPROJECT,
             "uv.lock": "version = 1\n",
-            "src/nlp_shap/__init__.py": '"""Demo."""\n',
+            "src/mllm_shap/__init__.py": '"""Demo."""\n',
             "scripts/hooks/merge_gate.sh": "# Guard.\n",
         },
     )
@@ -82,7 +82,7 @@ def test_docs_only_branch_is_routine(policy: ModuleType, repo: Path) -> None:
     [
         ("fix: correct the readme", {"README.md": "# Fixed\n"}, "fix"),
         ("feat!: break it", {"README.md": "# Broken\n"}, "feat!"),
-        ("chore: touch src", {"src/nlp_shap/x.py": '"""X."""\n'}, "src/nlp_shap/"),
+        ("chore: touch src", {"src/mllm_shap/x.py": '"""X."""\n'}, "src/mllm_shap/"),
         (
             "chore: tweak the guard",
             {"scripts/hooks/merge_gate.sh": "# Guard 2.\n"},

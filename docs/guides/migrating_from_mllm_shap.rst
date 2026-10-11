@@ -1,22 +1,22 @@
-Coming from MLLM-Shap
-=====================
+Coming from legacy MLLM-Shap
+============================
 
-``nlp-shap`` replaces the `MLLM-Shap <https://github.com/Pawlo77/MLLM-Shap>`_
+``mllm-shap`` replaces the `legacy MLLM-Shap <https://github.com/Pawlo77/MLLM-Shap-legacy>`_
 research code. The algorithms are the same family; the configuration, the result
 types and a few defaults differ. This page maps the old names to the new ones.
 
 Explainers to estimators
 ------------------------
 
-MLLM-Shap had one explainer class per estimator and sampling variant. In
-``nlp-shap`` the estimator is a name in ``explanation.estimator`` and the variant
+legacy MLLM-Shap had one explainer class per estimator and sampling variant. In
+``mllm-shap`` the estimator is a name in ``explanation.estimator`` and the variant
 is expressed with the budget keys:
 
 .. list-table::
    :header-rows: 1
    :widths: 42 28 30
 
-   * - MLLM-Shap class
+   * - legacy MLLM-Shap class
      - ``explanation.estimator``
      - Budget keys
    * - ``PreciseShapExplainer``
@@ -47,7 +47,7 @@ The estimand is a separate key: ``explanation.estimand`` is ``shapley`` or
 Utilities to value functions
 ----------------------------
 
-The MLLM-Shap experiments named their utilities U1 to U4. The corresponding
+The legacy MLLM-Shap experiments named their utilities U1 to U4. The corresponding
 ``explanation.value_fn`` settings:
 
 .. list-table::
@@ -55,8 +55,8 @@ The MLLM-Shap experiments named their utilities U1 to U4. The corresponding
    :widths: 14 40 46
 
    * - Label
-     - MLLM-Shap
-     - ``nlp-shap``
+     - legacy MLLM-Shap
+     - ``mllm-shap``
    * - U1
      - ``CosineSimilarity`` on static embeddings
      - ``value_fn: embedding_cosine``, ``embedding_mode: static``
@@ -81,12 +81,12 @@ Behaviour that changed
   difference; the axiom tests enforce it. Nothing checks it at run time. Exact results match ``PreciseShapExplainer`` on additive
   games.
 - **Archives store generations.** A run archive keeps the base generation and
-  every coalition output; :meth:`~nlp_shap.ExplainRunner.reanalyze` recomputes
+  every coalition output; :meth:`~mllm_shap.ExplainRunner.reanalyze` recomputes
   payoffs and attributions with another value function or normalizer without new
   model calls.
 - **Mask hashes are process-independent.**
-  :meth:`~nlp_shap.masking.codec.MaskCodec.hash_mask` uses BLAKE2b, so hashes
-  written by MLLM-Shap are not comparable with the ones ``nlp-shap`` produces.
+  :meth:`~mllm_shap.masking.codec.MaskCodec.hash_mask` uses BLAKE2b, so hashes
+  written by legacy MLLM-Shap are not comparable with the ones ``mllm-shap`` produces.
 - **One configuration object.** Model, generation and explanation settings live in
-  one validated :class:`~nlp_shap.ExplainConfig` (:doc:`config`) instead of
+  one validated :class:`~mllm_shap.ExplainConfig` (:doc:`config`) instead of
   separate keyword arguments and model config objects.

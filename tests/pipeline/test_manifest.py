@@ -1,16 +1,16 @@
 """Tests for the versioned run manifest schema.
 
-@see [[src/nlp_shap/pipeline/manifest.py]]
+@see [[src/mllm_shap/pipeline/manifest.py]]
 """
 
 import dataclasses
 
 import pytest
 
-from nlp_shap import ExplainConfig
-from nlp_shap.domain.estimands import Estimand
-from nlp_shap.errors import ArchiveCorruptError, ManifestVersionError
-from nlp_shap.pipeline.manifest import (
+from mllm_shap import ExplainConfig
+from mllm_shap.domain.estimands import Estimand
+from mllm_shap.errors import ArchiveCorruptError, ManifestVersionError
+from mllm_shap.pipeline.manifest import (
     MANIFEST_SCHEMA_VERSION,
     EmbeddingSource,
     RunManifest,

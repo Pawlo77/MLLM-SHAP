@@ -6,19 +6,19 @@ tags: [architecture, pipeline]
 created: 2026-10-07
 updated: 2026-10-09
 related-code:
-  - "[[src/nlp_shap/pipeline/__init__.py]]"
-  - "[[src/nlp_shap/pipeline/config.py]]"
-  - "[[src/nlp_shap/pipeline/context.py]]"
-  - "[[src/nlp_shap/pipeline/manifest.py]]"
-  - "[[src/nlp_shap/pipeline/orchestrator.py]]"
-  - "[[src/nlp_shap/pipeline/reanalyze.py]]"
-  - "[[src/nlp_shap/pipeline/result.py]]"
-  - "[[src/nlp_shap/pipeline/runner.py]]"
+  - "[[src/mllm_shap/pipeline/__init__.py]]"
+  - "[[src/mllm_shap/pipeline/config.py]]"
+  - "[[src/mllm_shap/pipeline/context.py]]"
+  - "[[src/mllm_shap/pipeline/manifest.py]]"
+  - "[[src/mllm_shap/pipeline/orchestrator.py]]"
+  - "[[src/mllm_shap/pipeline/reanalyze.py]]"
+  - "[[src/mllm_shap/pipeline/result.py]]"
+  - "[[src/mllm_shap/pipeline/runner.py]]"
 ---
 
 # pipeline
 
-Part of [[nlp-shap]]. Walkthrough: [[How a run works]].
+Part of [[mllm-shap]]. Walkthrough: [[How a run works]].
 
 ## Responsibility
 

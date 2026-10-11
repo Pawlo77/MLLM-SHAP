@@ -1,6 +1,6 @@
 """Spoken words of a real recording as players, through the whole pipeline.
 
-@see [[src/nlp_shap/alignment/partitions.py]]
+@see [[src/mllm_shap/alignment/partitions.py]]
 """
 
 from pathlib import Path
@@ -8,8 +8,8 @@ from typing import Any
 
 import pytest
 
-from nlp_shap import ExplainRunner
-from nlp_shap.domain.conversation import (
+from mllm_shap import ExplainRunner
+from mllm_shap.domain.conversation import (
     AudioPart,
     ConversationSnapshot,
     Message,

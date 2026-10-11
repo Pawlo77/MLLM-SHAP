@@ -1,10 +1,10 @@
 Generative backends
 ===================
 
-``nlp-shap`` sends the base prompt and every coalition prompt to a **generative
+``mllm-shap`` sends the base prompt and every coalition prompt to a **generative
 backend**. Each backend implements
-:class:`~nlp_shap.protocols.backend.GenerativeBackend` and is selected with
-``backend.kind`` in :class:`~nlp_shap.ExplainConfig`. The rest of the pipeline is
+:class:`~mllm_shap.protocols.backend.GenerativeBackend` and is selected with
+``backend.kind`` in :class:`~mllm_shap.ExplainConfig`. The rest of the pipeline is
 the same for every backend.
 
 Built-in backends
@@ -68,7 +68,7 @@ of each generated token:
 Mock
 ----
 
-:class:`~nlp_shap.backends.mock.MockBackend` returns a hash of the rendered prompt
+:class:`~mllm_shap.backends.mock.MockBackend` returns a hash of the rendered prompt
 and the model id as its "generation". It is deterministic and fast, so every guide
 and the test suite use it. The text has no meaning: attributions computed with it
 test the plumbing, not a model.
@@ -82,7 +82,7 @@ test the plumbing, not a model.
 HTTP API
 --------
 
-:class:`~nlp_shap.backends.api.ApiBackend` posts chat-completions requests to
+:class:`~mllm_shap.backends.api.ApiBackend` posts chat-completions requests to
 ``{api_host}/chat/completions``. At ``temperature: 0.0`` it caches responses keyed
 by the request body, so identical coalition prompts cost one HTTP call.
 
@@ -102,7 +102,7 @@ by the request body, so identical coalition prompts cost one HTTP call.
 429, 500, 502, 503 and 504 responses are retried up to ``max_retries`` times with
 exponential backoff (0.5 s doubling, at most 8 s, or the server's
 ``Retry-After``). Any other error status, a response that is not JSON, or running
-out of retries raises :exc:`~nlp_shap.errors.BackendUnavailableError`. The
+out of retries raises :exc:`~mllm_shap.errors.BackendUnavailableError`. The
 backend keeps at most 1024 cached responses and opens at most
 ``explanation.max_inflight`` connections. Contract tests in CI mock the HTTP
 transport; point ``api_host`` at a live server only for manual runs.
@@ -110,7 +110,7 @@ transport; point ``api_host`` at a live server only for manual runs.
 LM Studio
 ---------
 
-:class:`~nlp_shap.backends.lmstudio.LmStudioBackend` talks to a running
+:class:`~mllm_shap.backends.lmstudio.LmStudioBackend` talks to a running
 `LM Studio <https://lmstudio.ai>`_ through its Python SDK. It looks for a
 downloaded model whose key matches ``model_id`` and, when none is found and
 ``auto_download`` is on, searches the LM Studio hub (``hub_search`` or
@@ -120,7 +120,7 @@ does not accept concurrent requests on one model, so ``serialize_generate``
 
 ``model_id`` is matched against downloaded models exactly (after normalization)
 first, then as the prefix of the last ``/`` segment, then as a substring; more
-than one match at a stage raises :exc:`~nlp_shap.errors.BackendUnavailableError`
+than one match at a stage raises :exc:`~mllm_shap.errors.BackendUnavailableError`
 listing the candidates. Only connection failures (``OSError`` and the SDK's
 websocket or connection errors) are retried, once; ``ValueError`` and
 ``TypeError`` propagate unchanged.
@@ -135,7 +135,7 @@ websocket or connection errors) are retried, once; ``ValueError`` and
        auto_download: true
        serialize_generate: true
 
-.. config-table:: nlp_shap.backends.lmstudio.options.LmStudioOptions
+.. config-table:: mllm_shap.backends.lmstudio.options.LmStudioOptions
    :prefix: backend.options
 
 Integration tests that need a running LM Studio with ``qwen2-500m-instruct`` are
@@ -148,7 +148,7 @@ marked ``lms`` and excluded from ``make check``:
 Hugging Face transformers
 -------------------------
 
-:class:`~nlp_shap.backends.transformers.TransformersTextBackend` loads
+:class:`~mllm_shap.backends.transformers.TransformersTextBackend` loads
 ``model_id`` with ``AutoModelForCausalLM`` on the first call, on CUDA or Apple MPS
 when available, otherwise on CPU. ``backend.options.dtype`` picks the weight
 dtype: ``auto`` (default) uses ``bfloat16`` on accelerators that support it,
@@ -199,37 +199,37 @@ Environment variables
 
    * - Variable
      - Effect
-   * - ``NLP_SHAP_API_KEY``
+   * - ``MLLM_SHAP_API_KEY``
      - Bearer token the ``api`` backend sends to any host; it takes precedence
        over ``OPENAI_API_KEY``
    * - ``OPENAI_API_KEY``
      - Fallback bearer token, sent by the ``api`` backend only when
-       ``NLP_SHAP_API_KEY`` is not set and the host of ``backend.api_host`` is
+       ``MLLM_SHAP_API_KEY`` is not set and the host of ``backend.api_host`` is
        ``api.openai.com``, so an OpenAI key never reaches a local or third-party
        server
-   * - ``NLP_SHAP_LOGGING_CONFIG``
+   * - ``MLLM_SHAP_LOGGING_CONFIG``
      - Path to a TOML file whose ``[tool.logging]`` section configures the
-       ``nlp_shap`` loggers
+       ``mllm_shap`` loggers
 
 Example configurations
 ----------------------
 
 The repository keeps one runnable configuration per backend in ``config/``:
 `dev_api.yaml
-<https://github.com/Pawlo77/nlp-shap/blob/main/config/dev_api.yaml>`_,
+<https://github.com/Pawlo77/MLLM-SHAP/blob/main/config/dev_api.yaml>`_,
 `dev_lmstudio.yaml
-<https://github.com/Pawlo77/nlp-shap/blob/main/config/dev_lmstudio.yaml>`_ and
+<https://github.com/Pawlo77/MLLM-SHAP/blob/main/config/dev_lmstudio.yaml>`_ and
 `dev_transformers.yaml
-<https://github.com/Pawlo77/nlp-shap/blob/main/config/dev_transformers.yaml>`_.
+<https://github.com/Pawlo77/MLLM-SHAP/blob/main/config/dev_transformers.yaml>`_.
 Each file starts with a comment saying what it needs and how to run it.
 
 Install the extra of the backend you use:
 
 .. code-block:: bash
 
-   pip install "nlp-shap[api]"
-   pip install "nlp-shap[lmstudio]"
-   pip install "nlp-shap[transformers]"
+   pip install "mllm-shap[api]"
+   pip install "mllm-shap[lmstudio]"
+   pip install "mllm-shap[transformers]"
 
 To add a backend of your own, see :doc:`extending`.
 

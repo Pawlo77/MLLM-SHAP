@@ -2,7 +2,7 @@ Visualization
 =============
 
 Per-token Shapley and Banzhaf attributions are numeric tuples in
-:class:`~nlp_shap.ExplainRunOutput`. Renderer plugins turn those
+:class:`~mllm_shap.ExplainRunOutput`. Renderer plugins turn those
 values into review-ready figures for notebooks, reports, and stakeholder decks.
 
 Renderers
@@ -23,7 +23,7 @@ Install the optional visualization extra:
 
 .. code-block:: bash
 
-   pip install "nlp-shap[viz]"
+   pip install "mllm-shap[viz]"
 
 The renderers follow the `SHAP <https://github.com/shap/shap>`_ palette: warm red
 for positive attributions and cool blue for negative attributions, with soft
@@ -35,7 +35,7 @@ Quick start
 
 .. code-block:: python
 
-   from nlp_shap import (
+   from mllm_shap import (
        ConversationSnapshot,
        ExplainConfig,
        ExplainRunner,
@@ -44,7 +44,7 @@ Quick start
        Turn,
        render_attribution,
    )
-   from nlp_shap.masking import TokenPartitioner
+   from mllm_shap.masking import TokenPartitioner
 
    snapshot = ConversationSnapshot.from_turns((
        Turn(messages=(Message(role=Role.USER, text="refund within thirty days"),)),
@@ -77,20 +77,20 @@ Quick start
    :alt: Inline colored token attribution
 
 ``player_set`` must be the partition the run used; with ``players: tokens`` that
-is :class:`~nlp_shap.masking.TokenPartitioner`. Pass ``title=`` to label a figure
+is :class:`~mllm_shap.masking.TokenPartitioner`. Pass ``title=`` to label a figure
 and ``registry=`` to use a renderer registered in your own
-:class:`~nlp_shap.PluginRegistry`.
+:class:`~mllm_shap.PluginRegistry`.
 
 Jupyter HTML
 ------------
 
-In a notebook, :func:`~nlp_shap.viz.display_attribution_html` shows the colored
-tokens inline without matplotlib, and :func:`~nlp_shap.render_attribution_html`
+In a notebook, :func:`~mllm_shap.viz.display_attribution_html` shows the colored
+tokens inline without matplotlib, and :func:`~mllm_shap.render_attribution_html`
 returns the same fragment as a string for reports:
 
 .. code-block:: python
 
-   from nlp_shap import render_attribution_html
+   from mllm_shap import render_attribution_html
 
    html = render_attribution_html(output, snapshot, player_set, title="Refund")
    print(type(html).__name__, all(word in html for word in ("refund", "days")))

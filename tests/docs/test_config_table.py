@@ -9,7 +9,7 @@ import pytest
 from config_table import config_rows, format_type, import_model
 from pydantic import BaseModel
 
-from nlp_shap.pipeline.config import ExplainConfig
+from mllm_shap.pipeline.config import ExplainConfig
 
 
 class _Inner(BaseModel):
@@ -57,6 +57,6 @@ def test_format_type_handles_optional() -> None:
 
 def test_import_model_rejects_non_models() -> None:
     """Only pydantic models can be documented."""
-    assert import_model("nlp_shap.pipeline.config.ExplainConfig") is ExplainConfig
+    assert import_model("mllm_shap.pipeline.config.ExplainConfig") is ExplainConfig
     with pytest.raises(TypeError):
-        import_model("nlp_shap.pipeline.config.explain_config_from_yaml")
+        import_model("mllm_shap.pipeline.config.explain_config_from_yaml")

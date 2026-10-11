@@ -1,14 +1,14 @@
 """Every built-in plugin has a practical scenario and every scenario a test.
 
-@see [[src/nlp_shap/plugins/builtin.py]]
+@see [[src/mllm_shap/plugins/builtin.py]]
 """
 
 from pathlib import Path
 
 import pytest
 
-from nlp_shap.plugins import PluginGroup
-from nlp_shap.plugins.builtin import BUILTIN_PLUGINS
+from mllm_shap.plugins import PluginGroup
+from mllm_shap.plugins.builtin import BUILTIN_PLUGINS
 from tests.practical._harness import MODELS, SCENARIOS
 
 HERE = Path(__file__).parent

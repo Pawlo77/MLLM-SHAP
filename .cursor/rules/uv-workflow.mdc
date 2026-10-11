@@ -1,5 +1,5 @@
 ---
-description: uv-based dev workflow for nlp-shap
+description: uv-based dev workflow for mllm-shap
 alwaysApply: true
 ---
 

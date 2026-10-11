@@ -1,13 +1,13 @@
 """Micro-benchmarks for coalition deduplication.
 
-@see [[src/nlp_shap/runtime/dedup.py]]
+@see [[src/mllm_shap/runtime/dedup.py]]
 """
 
 import pytest
 from pytest_benchmark.fixture import BenchmarkFixture
 
-from nlp_shap.pipeline.config import GenerationConfig
-from nlp_shap.runtime.dedup import CoalitionDedupRegistry, build_coalition_key
+from mllm_shap.pipeline.config import GenerationConfig
+from mllm_shap.runtime.dedup import CoalitionDedupRegistry, build_coalition_key
 
 _GENERATION = GenerationConfig(max_new_tokens=32, temperature=0.0, top_k=1)
 _PLAYER_IDS = tuple(f"p{index}" for index in range(16))

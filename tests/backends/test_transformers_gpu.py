@@ -1,6 +1,6 @@
 """Optional GPU integration tests for the transformers backend.
 
-@see [[src/nlp_shap/backends/transformers/__init__.py]]
+@see [[src/mllm_shap/backends/transformers/__init__.py]]
 """
 
 import asyncio
@@ -9,15 +9,15 @@ from pathlib import Path
 
 import pytest
 
-from nlp_shap import ExplainRunner, explain_config_from_yaml
-from nlp_shap.backends._chat import snapshot_to_chat_messages
-from nlp_shap.backends.transformers.chat import render_prompt
-from nlp_shap.backends.transformers.text import TransformersTextBackend
-from nlp_shap.domain.config import GenerationConfig
-from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
-from nlp_shap.domain.enums import Role
-from nlp_shap.domain.generation import GenerationRecord
-from nlp_shap.pipeline.config import BackendConfig
+from mllm_shap import ExplainRunner, explain_config_from_yaml
+from mllm_shap.backends._chat import snapshot_to_chat_messages
+from mllm_shap.backends.transformers.chat import render_prompt
+from mllm_shap.backends.transformers.text import TransformersTextBackend
+from mllm_shap.domain.config import GenerationConfig
+from mllm_shap.domain.conversation import ConversationSnapshot, Message, Turn
+from mllm_shap.domain.enums import Role
+from mllm_shap.domain.generation import GenerationRecord
+from mllm_shap.pipeline.config import BackendConfig
 from tests.backends._context import backend_context
 
 TINY_MODEL = "hf-internal-testing/tiny-random-gpt2"

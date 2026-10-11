@@ -7,8 +7,8 @@ paths:
 
 # Tests
 
-- Files: `test_*.py` under `tests/`, mirror `src/nlp_shap/` layout
-- Absolute imports: `from nlp_shap...`
+- Files: `test_*.py` under `tests/`, mirror `src/mllm_shap/` layout
+- Absolute imports: `from mllm_shap...`
 - Behavior tests over trivia / mock theater
 - Estimator, estimand aggregator, masking or orchestrator changes must pass the axiom tests (`tests/estimation/test_axioms.py`, `tests/pipeline/test_pipeline_axioms.py`) and add a known-truth case for any new code path
 - Assert values (known-truth games, exact numbers), not only shapes or types

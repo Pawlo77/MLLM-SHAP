@@ -1,6 +1,6 @@
 ---
 paths:
-  - "src/nlp_shap/**/*.py"
+  - "src/mllm_shap/**/*.py"
   - "pyproject.toml"
 ---
 
@@ -15,7 +15,7 @@ Use the stdlib [`logging`](https://docs.python.org/3/library/logging.html) packa
 - One module logger per file: `logger = logging.getLogger(__name__)`
 - Never add handlers in library modules — configuration lives in TOML
 - Define logging under `[tool.logging]` in `pyproject.toml`; loaded via [logging518](https://pypi.org/project/logging518/) on import (`logging.config.dictConfig`)
-- Override the config file with `NLP_SHAP_LOGGING_CONFIG=/path/to/config.toml`
+- Override the config file with `MLLM_SHAP_LOGGING_CONFIG=/path/to/config.toml`
 - When no TOML config is found, import installs a null handler so library use stays quiet
 - Host applications may also configure logging themselves; avoid duplicate handlers
 

@@ -1,11 +1,11 @@
 """Tests for building generation records from generated text.
 
-@see [[src/nlp_shap/value/generation_records.py]]
+@see [[src/mllm_shap/value/generation_records.py]]
 """
 
 import pytest
 
-from nlp_shap.value.generation_records import (
+from mllm_shap.value.generation_records import (
     EMBED_DIM,
     generation_record_from_text,
     hash_embedding,

@@ -1,10 +1,10 @@
 ---
 name: development
 description: >-
-  Use for any code, test, packaging, hook or CI change in nlp-shap.
+  Use for any code, test, packaging, hook or CI change in mllm-shap.
 ---
 
-# nlp-shap development
+# mllm-shap development
 
 Exit criterion: `make check` (`AGENTS.md`). Rules: `.cursor/rules/*.mdc` (always-apply rules
 plus the ones whose globs match the files you touch).
@@ -17,7 +17,7 @@ plus the ones whose globs match the files you touch).
 - Docs and release notes: `docs.mdc`
 - Notebooks: `examples.mdc`
 - Benchmarks: `benchmarks.mdc` (`make bench`, not part of `make check`)
-- Legacy port: skill `port-legacy` (`../MLLM-Shap/mllm_shap/src/mllm_shap/`)
+- Legacy port: skill `port-legacy` (`../MLLM-Shap-legacy/mllm_shap/src/mllm_shap/`)
 - Audio rewrite: skill `rewrite`
 
 Details that grow: [reference.md](reference.md).

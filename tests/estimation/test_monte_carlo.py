@@ -1,6 +1,6 @@
 """Tests for Monte Carlo coalition sampling.
 
-@see [[src/nlp_shap/estimation/monte_carlo.py]]
+@see [[src/mllm_shap/estimation/monte_carlo.py]]
 """
 
 import logging
@@ -8,12 +8,12 @@ from itertools import product
 
 import pytest
 
-from nlp_shap.domain.coalition import CoalitionMask
-from nlp_shap.domain.players import PlayerSet
-from nlp_shap.estimation.estimands.banzhaf import BanzhafAggregator
-from nlp_shap.estimation.estimands.shapley import ShapleyAggregator
-from nlp_shap.estimation.exact import ExactEstimator
-from nlp_shap.estimation.monte_carlo import MonteCarloEstimator
+from mllm_shap.domain.coalition import CoalitionMask
+from mllm_shap.domain.players import PlayerSet
+from mllm_shap.estimation.estimands.banzhaf import BanzhafAggregator
+from mllm_shap.estimation.estimands.shapley import ShapleyAggregator
+from mllm_shap.estimation.exact import ExactEstimator
+from mllm_shap.estimation.monte_carlo import MonteCarloEstimator
 
 
 def _majority_payoffs(masks: tuple[tuple[bool, ...], ...]) -> list[float]:
@@ -169,7 +169,7 @@ def test_mc_warns_when_a_player_has_no_observed_marginal(
     masks = list(estimator.sample_masks(players, 0.1, False, seed=0))
     assert [mask.present for mask in masks] == [(True,) * 4, (False,) * 4]
 
-    with caplog.at_level(logging.WARNING, logger="nlp_shap"):
+    with caplog.at_level(logging.WARNING, logger="mllm_shap"):
         values = estimator.estimate_attributions(masks, [4.0, 0.0], ShapleyAggregator())
 
     assert values == [0.0] * 4
@@ -183,7 +183,7 @@ def test_mc_does_not_warn_when_every_player_is_observed(
     estimator = MonteCarloEstimator()
     masks = list(estimator.sample_masks(players, 0.1, True, seed=0))
 
-    with caplog.at_level(logging.WARNING, logger="nlp_shap"):
+    with caplog.at_level(logging.WARNING, logger="mllm_shap"):
         estimator.estimate_attributions(
             masks, [float(sum(m.present)) for m in masks], ShapleyAggregator()
         )

@@ -6,17 +6,17 @@ created: 2026-10-07
 updated: 2026-10-08
 tags: [decisions, estimation]
 related-code:
-  - "[[src/nlp_shap/estimation/complementary.py]]"
-  - "[[src/nlp_shap/estimation/neyman.py]]"
-  - "[[src/nlp_shap/estimation/_shared.py]]"
-  - "[[src/nlp_shap/estimation/exact.py]]"
-  - "[[src/nlp_shap/estimation/estimands/_weights.py]]"
-  - "[[src/nlp_shap/pipeline/orchestrator.py]]"
+  - "[[src/mllm_shap/estimation/complementary.py]]"
+  - "[[src/mllm_shap/estimation/neyman.py]]"
+  - "[[src/mllm_shap/estimation/_shared.py]]"
+  - "[[src/mllm_shap/estimation/exact.py]]"
+  - "[[src/mllm_shap/estimation/estimands/_weights.py]]"
+  - "[[src/mllm_shap/pipeline/orchestrator.py]]"
 ---
 
 # Estimation decisions
 
-Part of [[nlp-shap]]; architecture: [[estimation]]. Theory: `docs/theory/approximation.rst`.
+Part of [[mllm-shap]]; architecture: [[estimation]]. Theory: `docs/theory/approximation.rst`.
 
 ## 2026-10-07 — Singleton-first complementary sampling
 

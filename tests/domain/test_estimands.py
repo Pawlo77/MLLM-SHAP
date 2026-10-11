@@ -1,11 +1,11 @@
 """Tests for estimand domain types.
 
-@see [[src/nlp_shap/domain/estimands.py]]
+@see [[src/mllm_shap/domain/estimands.py]]
 """
 
 import pytest
 
-from nlp_shap.domain.estimands import Estimand, estimand_to_wire
+from mllm_shap.domain.estimands import Estimand, estimand_to_wire
 
 
 def test_estimand_values_are_stable_strings() -> None:

@@ -1,6 +1,6 @@
 """Test doubles shared by the pipeline tests."""
 
-from nlp_shap.protocols.backend import GenerationResult
+from mllm_shap.protocols.backend import GenerationResult
 
 
 class WordCountValue:

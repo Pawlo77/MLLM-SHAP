@@ -65,8 +65,8 @@ memory() {
 state() {
   local version changes
   version="$(sed -n -E 's/^version[[:space:]]*=[[:space:]]*"([^"]+)".*/\1/p' pyproject.toml 2>/dev/null | head -n 1)"
-  echo "## nlp-shap session state"
-  echo "- package: nlp-shap ${version:-unknown}; branch: $(git branch --show-current 2>/dev/null)"
+  echo "## mllm-shap session state"
+  echo "- package: mllm-shap ${version:-unknown}; branch: $(git branch --show-current 2>/dev/null)"
   changes="$(git status --short 2>/dev/null)"
   if [ -n "$changes" ]; then
     echo "- uncommitted changes ($(printf '%s\n' "$changes" | wc -l | tr -d ' ') files; first 5):"
@@ -78,13 +78,13 @@ state() {
   git log --oneline -5 2>/dev/null | sed 's/^/    /'
   echo "- exit criterion: make check (filtered pytest + prek-all + vault-check)"
   local sib missing=""
-  for sib in MLLM-Shap; do
+  for sib in MLLM-Shap-legacy; do
     [ -d "../$sib" ] || missing="$missing $sib"
   done
   if [ -n "$missing" ]; then
-    echo "- siblings missing:$missing (clone next to nlp-shap/; see CONTRIBUTING.md \"Agent setup\")"
+    echo "- siblings missing:$missing (clone next to MLLM-SHAP/; see CONTRIBUTING.md \"Agent setup\")"
   else
-    echo "- sibling: ../MLLM-Shap (legacy port)"
+    echo "- sibling: ../MLLM-Shap-legacy (legacy port)"
   fi
   if [ -f scripts/check_vault.py ] && command -v uv >/dev/null 2>&1; then
     local vault rc

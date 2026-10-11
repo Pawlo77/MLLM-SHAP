@@ -6,7 +6,7 @@ description: >-
   solution note.
 ---
 
-# nlp-shap notes
+# mllm-shap notes
 
 Notes live in `knowledge/` (vault rules: `knowledge/README.md`; machinery: skill
 `obsidian`). A note is updated in the same change as the code it describes.
@@ -19,7 +19,7 @@ Notes live in `knowledge/` (vault rules: `knowledge/README.md`; machinery: skill
 - A decision is a section appended to `knowledge/decisions/<Domain> decisions.md`, newest
   first (`_templates/decision.md`); a paper is a section of `knowledge/papers/Papers.md`
   (`_templates/paper.md`). Link one with `[[<Log>#<heading>|<title>]]`.
-- Link a new note from its parent: the map `knowledge/nlp-shap.md` (architecture, concept,
+- Link a new note from its parent: the map `knowledge/mllm-shap.md` (architecture, concept,
   handbook, log), the architecture note's Known issues (issue),
   `knowledge/handbook/Solutions/README.md` (solution); link a decision from its cause.
 - Never edit `knowledge/generated/`; `make knowledge` rebuilds it.
@@ -35,7 +35,7 @@ Notes live in `knowledge/` (vault rules: `knowledge/README.md`; machinery: skill
 
 ## Procedure: update the architecture note after a `src/` change
 
-1. `git diff --stat main...HEAD -- src/nlp_shap/<pkg>` and read the changed modules.
+1. `git diff --stat main...HEAD -- src/mllm_shap/<pkg>` and read the changed modules.
 2. Diff the public surface: names added, removed, renamed, signatures changed
    (`make knowledge`, then read `knowledge/generated/Public API.md` and `Modules.md`).
 3. Rewrite "Public surface" and "Data flow" for what changed; adjust "Invariants".

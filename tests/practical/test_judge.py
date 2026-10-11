@@ -1,6 +1,6 @@
 """Rubric checks and the logit judge's vote, without a model.
 
-@see [[src/nlp_shap/pipeline/result.py]]
+@see [[src/mllm_shap/pipeline/result.py]]
 """
 
 import pytest

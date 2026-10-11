@@ -1,6 +1,6 @@
 """Direct tests for the explain orchestrator.
 
-@see [[src/nlp_shap/pipeline/orchestrator.py]]
+@see [[src/mllm_shap/pipeline/orchestrator.py]]
 """
 
 import asyncio
@@ -8,20 +8,20 @@ from collections.abc import Iterator, Sequence
 
 import pytest
 
-from nlp_shap import ExplainConfig, PluginGroup, PluginRegistry
-from nlp_shap.domain.coalition import CoalitionMask
-from nlp_shap.domain.config import GenerationConfig
-from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
-from nlp_shap.domain.enums import Role
-from nlp_shap.domain.generation import GenerationRecord
-from nlp_shap.domain.players import PlayerSet
-from nlp_shap.masking.partitions import TokenPartitioner
-from nlp_shap.pipeline.context import ExplainContext
-from nlp_shap.pipeline.orchestrator import ExplainOrchestrator
-from nlp_shap.pipeline.result import ExplainRunOutput
-from nlp_shap.plugins import default_registry
-from nlp_shap.protocols.estimand import EstimandAggregator
-from nlp_shap.protocols.estimator import TwoPhaseEstimator
+from mllm_shap import ExplainConfig, PluginGroup, PluginRegistry
+from mllm_shap.domain.coalition import CoalitionMask
+from mllm_shap.domain.config import GenerationConfig
+from mllm_shap.domain.conversation import ConversationSnapshot, Message, Turn
+from mllm_shap.domain.enums import Role
+from mllm_shap.domain.generation import GenerationRecord
+from mllm_shap.domain.players import PlayerSet
+from mllm_shap.masking.partitions import TokenPartitioner
+from mllm_shap.pipeline.context import ExplainContext
+from mllm_shap.pipeline.orchestrator import ExplainOrchestrator
+from mllm_shap.pipeline.result import ExplainRunOutput
+from mllm_shap.plugins import default_registry
+from mllm_shap.protocols.estimand import EstimandAggregator
+from mllm_shap.protocols.estimator import TwoPhaseEstimator
 from tests.pipeline._doubles import WordCountValue
 
 _WORDS = ("alpha", "beta", "gamma")

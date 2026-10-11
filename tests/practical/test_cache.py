@@ -1,15 +1,15 @@
 """Generation and verdict cache, without a model.
 
-@see [[src/nlp_shap/domain/generation.py]]
+@see [[src/mllm_shap/domain/generation.py]]
 """
 
 import asyncio
 from pathlib import Path
 
-from nlp_shap.domain.config import GenerationConfig
-from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
-from nlp_shap.domain.enums import Role
-from nlp_shap.domain.generation import GenerationRecord
+from mllm_shap.domain.config import GenerationConfig
+from mllm_shap.domain.conversation import ConversationSnapshot, Message, Turn
+from mllm_shap.domain.enums import Role
+from mllm_shap.domain.generation import GenerationRecord
 from tests.practical._cache import CachedBackend, PracticalCache
 
 RECORD = GenerationRecord(

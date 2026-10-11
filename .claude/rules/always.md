@@ -52,14 +52,14 @@ Chat replies only:
 - New behaviour needs tests first (`tdd.mdc`); no tests of the obvious.
 - No new markdown files unless requested.
 - If two approaches work, pick the simpler one that matches the repository.
-- From MLLM-Shap (`../MLLM-Shap/mllm_shap/src/mllm_shap/`), port only the slice the task needs.
+- From MLLM-Shap-legacy (`../MLLM-Shap-legacy/mllm_shap/src/mllm_shap/`), port only the slice the task needs.
 
 <!-- Generated from .cursor/rules/package-boundaries.mdc by scripts/sync_rules.py; do not edit. -->
 
 # Package boundaries
 
-- `src/nlp_shap/` is the library; experiments, papers and GUIs live elsewhere.
-- Inside `src/nlp_shap/` imports are relative; tests and examples use `from nlp_shap...`.
+- `src/mllm_shap/` is the library; experiments, papers and GUIs live elsewhere.
+- Inside `src/mllm_shap/` imports are relative; tests and examples use `from mllm_shap...`.
 - User workflows are notebooks in `examples/` (`examples.mdc`).
 - Add a module only with a real implementation; heavy stacks (torch, transformers) are optional extras.
 

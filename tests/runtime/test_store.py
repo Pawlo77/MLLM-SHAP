@@ -1,9 +1,9 @@
 """Tests for hot LRU result store.
 
-@see [[src/nlp_shap/runtime/store.py]]
+@see [[src/mllm_shap/runtime/store.py]]
 """
 
-from nlp_shap.runtime.store import HotResultStore
+from mllm_shap.runtime.store import HotResultStore
 
 
 def test_hot_store_returns_cached_generation() -> None:

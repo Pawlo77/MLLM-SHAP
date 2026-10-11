@@ -4,7 +4,7 @@ description: >-
   Use when asked to review or audit a diff or a branch, or on /review.
 ---
 
-# nlp-shap review
+# mllm-shap review
 
 ## Inputs
 

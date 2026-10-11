@@ -30,7 +30,7 @@ PHASE_NUMBER = re.compile(r"\b(?:Phase|Task)\s+\d+(?:\.\d+)?\b")
 DOC_ROLE = re.compile(r":doc:`(?:[^`<]*<)?(?P<target>[^`>]+)>?`")
 TOCTREE_ENTRY = re.compile(r"^\s{3}(?P<entry>[\w/.-]+)\s*$")
 REPO_LINK = re.compile(
-    r"https://github\.com/Pawlo77/nlp-shap/(?:blob|tree)/main/(?P<path>[^\s>`)?#]+)"
+    r"https://github\.com/Pawlo77/MLLM-SHAP/(?:blob|tree)/main/(?P<path>[^\s>`)?#]+)"
 )
 MARKDOWN_LINK = re.compile(r"\]\((?P<target>[^)\s#][^)\s]*)\)")
 AUTOMODULE = re.compile(r"^\.\. automodule:: (?P<module>[\w.]+)", re.MULTILINE)
@@ -140,7 +140,7 @@ def check_toctree(docs: Path = DOCS) -> list[Finding]:
     return findings
 
 
-def public_modules(package: str = "nlp_shap") -> list[str]:
+def public_modules(package: str = "mllm_shap") -> list[str]:
     """Return every importable module of ``package`` without a private segment."""
     root = importlib.import_module(package)
     names = [package]

@@ -12,13 +12,13 @@ from collections import Counter
 from collections.abc import Mapping
 from pathlib import Path
 
-from nlp_shap.backends._chat import snapshot_to_chat_messages
-from nlp_shap.domain.config import GenerationConfig
-from nlp_shap.domain.conversation import ConversationSnapshot
-from nlp_shap.domain.generation import GenerationRecord
-from nlp_shap.protocols.backend import GenerativeBackend
+from mllm_shap.backends._chat import snapshot_to_chat_messages
+from mllm_shap.domain.config import GenerationConfig
+from mllm_shap.domain.conversation import ConversationSnapshot
+from mllm_shap.domain.generation import GenerationRecord
+from mllm_shap.protocols.backend import GenerativeBackend
 
-DEFAULT_PATH = Path.home() / ".cache" / "nlp-shap" / "practical" / "cache.sqlite"
+DEFAULT_PATH = Path.home() / ".cache" / "mllm-shap" / "practical" / "cache.sqlite"
 """Cache file shared by every practical run on this machine."""
 
 STATS: Counter[str] = Counter()

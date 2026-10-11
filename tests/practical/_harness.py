@@ -20,14 +20,14 @@ from typing import Any
 import pytest
 import yaml
 
-from nlp_shap import ExplainConfig, ExplainRunner, explain_config_to_yaml
-from nlp_shap.backends.transformers.text import TransformersTextBackend
-from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
-from nlp_shap.domain.enums import Role
-from nlp_shap.pipeline.config import BackendConfig
-from nlp_shap.pipeline.result import ExplainRunOutput
-from nlp_shap.plugins import PluginContext, PluginRegistry
-from nlp_shap.protocols.backend import GenerativeBackend
+from mllm_shap import ExplainConfig, ExplainRunner, explain_config_to_yaml
+from mllm_shap.backends.transformers.text import TransformersTextBackend
+from mllm_shap.domain.conversation import ConversationSnapshot, Message, Turn
+from mllm_shap.domain.enums import Role
+from mllm_shap.pipeline.config import BackendConfig
+from mllm_shap.pipeline.result import ExplainRunOutput
+from mllm_shap.plugins import PluginContext, PluginRegistry
+from mllm_shap.protocols.backend import GenerativeBackend
 
 from ._cache import DEFAULT_PATH, CachedBackend, PracticalCache
 from ._judge import Judge, LmStudioJudge, LogitJudge
@@ -183,7 +183,7 @@ def archived(path: Path) -> dict[str, Any]:
 
 
 def cli_explain(scenario: Scenario, model: PracticalModel, folder: Path) -> Any:
-    """Run ``nlp-shap explain`` in a subprocess; return the result JSON."""
+    """Run ``mllm-shap explain`` in a subprocess; return the result JSON."""
     config = scenario.config(model.spec, archived(folder / "run"))
     (folder / "config.yaml").write_text(explain_config_to_yaml(config), "utf-8")
     (folder / "snapshot.json").write_text(scenario.snapshot.to_json(), "utf-8")
@@ -204,12 +204,12 @@ def cli_explain(scenario: Scenario, model: PracticalModel, folder: Path) -> Any:
 
 
 def run_cli(*args: str) -> None:
-    """Run ``python -m nlp_shap.cli`` offline unless downloads are allowed."""
+    """Run ``python -m mllm_shap.cli`` offline unless downloads are allowed."""
     env = dict(os.environ)
-    if env.get("NLP_SHAP_PRACTICAL_DOWNLOAD") != "1":
+    if env.get("MLLM_SHAP_PRACTICAL_DOWNLOAD") != "1":
         env["HF_HUB_OFFLINE"] = "1"
     done = subprocess.run(  # nosec B603
-        [sys.executable, "-m", "nlp_shap.cli", *args],
+        [sys.executable, "-m", "mllm_shap.cli", *args],
         capture_output=True,
         text=True,
         env=env,
@@ -277,7 +277,7 @@ class ModelPool:
         self, tier: str, backend: TransformersTextBackend, identity: dict[str, str]
     ) -> Judge:
         """Return the LM Studio judge for the quick tier when set, else the model."""
-        key = os.environ.get("NLP_SHAP_PRACTICAL_JUDGE", "")
+        key = os.environ.get("MLLM_SHAP_PRACTICAL_JUDGE", "")
         judge: Judge = LogitJudge(backend, self.cache, identity)
         if tier == "default" and key.startswith("lmstudio:"):
             judge = LmStudioJudge(key.removeprefix("lmstudio:"), self.cache)
@@ -324,7 +324,7 @@ WEIGHT_FILES = ("*.json", "*.safetensors", "*.txt", "*.model")
 
 def require_weights(spec: ModelSpec) -> None:
     """Skip unless the pinned weights are cached or downloads are allowed."""
-    if os.environ.get("NLP_SHAP_PRACTICAL_DOWNLOAD") == "1":
+    if os.environ.get("MLLM_SHAP_PRACTICAL_DOWNLOAD") == "1":
         return
     hub = pytest.importorskip("huggingface_hub")
     try:
@@ -338,5 +338,5 @@ def require_weights(spec: ModelSpec) -> None:
         pytest.skip(
             f"{spec.model_id}@{spec.revision[:8]} is not in the HF cache; run "
             f"`huggingface-cli download {spec.model_id} --revision {spec.revision}` "
-            "or set NLP_SHAP_PRACTICAL_DOWNLOAD=1"
+            "or set MLLM_SHAP_PRACTICAL_DOWNLOAD=1"
         )

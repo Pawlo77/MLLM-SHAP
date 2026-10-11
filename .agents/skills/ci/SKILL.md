@@ -5,7 +5,7 @@ description: >-
   checks or branch protection.
 ---
 
-# nlp-shap CI
+# mllm-shap CI
 
 ## After every push
 

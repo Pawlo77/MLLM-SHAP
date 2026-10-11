@@ -5,15 +5,15 @@ description: >-
   backend, value_fn, normalizer, partition, absence_policy, renderer).
 paths:
   - pyproject.toml
-  - src/nlp_shap/plugins/**
-  - src/nlp_shap/backends/**
-  - src/nlp_shap/estimation/**
-  - src/nlp_shap/value/**
-  - src/nlp_shap/viz/**
-  - src/nlp_shap/masking/**
+  - src/mllm_shap/plugins/**
+  - src/mllm_shap/backends/**
+  - src/mllm_shap/estimation/**
+  - src/mllm_shap/value/**
+  - src/mllm_shap/viz/**
+  - src/mllm_shap/masking/**
 ---
 
-# nlp-shap plugin
+# mllm-shap plugin
 
 ## Scaffold (optional)
 
@@ -32,7 +32,7 @@ The plugin contract (constructor, `BUILTIN_PLUGINS`, `TYPE_CHECKING` import, ext
 `.cursor/rules/plugins.mdc`; read it first.
 
 1. Implement the typed class under the matching package (`estimation/`, `backends/`, `value/`, `viz/`, `masking/`).
-2. Register it in `pyproject.toml` (`[project.entry-points."nlp_shap.<group>"]`) and in `BUILTIN_PLUGINS`.
+2. Register it in `pyproject.toml` (`[project.entry-points."mllm_shap.<group>"]`) and in `BUILTIN_PLUGINS`.
 3. **Red**: test resolution through `PluginRegistry` and a behaviour test (not only import);
    add a scenario to `tests/practical/scenarios.yaml` and run `/practical <id>`.
 4. **Green**: the smallest implementation that passes.

@@ -1,6 +1,6 @@
 cff-version: 1.2.0
-message: "If you use nlp-shap in research, please cite it."
-title: "nlp-shap: Shapley-value explainability for conversational language models"
+message: "If you use mllm-shap in research, please cite it."
+title: "mllm-shap: Shapley-value explainability for conversational language models"
 type: software
 authors:
   - family-names: Pozorski
@@ -9,6 +9,6 @@ authors:
 version: 0.2.1
 date-released: "2026-10-10"
 license: Apache-2.0
-repository-code: "https://github.com/Pawlo77/nlp-shap"
-url: "https://pawlo77.github.io/nlp-shap/"
+repository-code: "https://github.com/Pawlo77/MLLM-SHAP"
+url: "https://pawlo77.github.io/MLLM-SHAP/"
 keywords: [explainability, shapley-value, nlp, llm, xai]

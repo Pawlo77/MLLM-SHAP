@@ -1,10 +1,10 @@
 """Tests for cooperative-game domain types.
 
-@see [[src/nlp_shap/domain/game.py]]
+@see [[src/mllm_shap/domain/game.py]]
 """
 
-from nlp_shap.domain.game import CooperativeGame
-from nlp_shap.domain.players import PlayerSet
+from mllm_shap.domain.game import CooperativeGame
+from mllm_shap.domain.players import PlayerSet
 
 
 def test_cooperative_game_stores_player_set() -> None:

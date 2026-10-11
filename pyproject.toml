@@ -1,5 +1,5 @@
 [project]
-name = "nlp-shap"
+name = "mllm-shap"
 version = "0.2.1"
 description = "Shapley-value attributions for conversational language models."
 readme = "README.md"
@@ -43,55 +43,55 @@ dependencies = [
 ]
 
 [project.scripts]
-nlp-shap = "nlp_shap.cli:main"
+mllm-shap = "mllm_shap.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/Pawlo77/nlp-shap"
-Documentation = "https://pawlo77.github.io/nlp-shap/"
-Repository = "https://github.com/Pawlo77/nlp-shap"
-Issues = "https://github.com/Pawlo77/nlp-shap/issues"
+Homepage = "https://github.com/Pawlo77/MLLM-SHAP"
+Documentation = "https://pawlo77.github.io/MLLM-SHAP/"
+Repository = "https://github.com/Pawlo77/MLLM-SHAP"
+Issues = "https://github.com/Pawlo77/MLLM-SHAP/issues"
 
-[project.entry-points."nlp_shap.estimators"]
-exact = "nlp_shap.estimation.exact:ExactEstimator"
-mc = "nlp_shap.estimation.monte_carlo:MonteCarloEstimator"
-complementary = "nlp_shap.estimation.complementary:ComplementaryEstimator"
-neyman_cc = "nlp_shap.estimation.neyman:NeymanEstimator"
+[project.entry-points."mllm_shap.estimators"]
+exact = "mllm_shap.estimation.exact:ExactEstimator"
+mc = "mllm_shap.estimation.monte_carlo:MonteCarloEstimator"
+complementary = "mllm_shap.estimation.complementary:ComplementaryEstimator"
+neyman_cc = "mllm_shap.estimation.neyman:NeymanEstimator"
 
-[project.entry-points."nlp_shap.estimands"]
-shapley = "nlp_shap.estimation.estimands.shapley:ShapleyAggregator"
-banzhaf = "nlp_shap.estimation.estimands.banzhaf:BanzhafAggregator"
+[project.entry-points."mllm_shap.estimands"]
+shapley = "mllm_shap.estimation.estimands.shapley:ShapleyAggregator"
+banzhaf = "mllm_shap.estimation.estimands.banzhaf:BanzhafAggregator"
 
-[project.entry-points."nlp_shap.partitions"]
-tokens = "nlp_shap.masking.partitions:TokenPartitioner"
-messages = "nlp_shap.masking.partitions:MessagePartitioner"
-sgpa_segments = "nlp_shap.alignment.partitions:SgpaSegmentPartitioner"
+[project.entry-points."mllm_shap.partitions"]
+tokens = "mllm_shap.masking.partitions:TokenPartitioner"
+messages = "mllm_shap.masking.partitions:MessagePartitioner"
+sgpa_segments = "mllm_shap.alignment.partitions:SgpaSegmentPartitioner"
 
-[project.entry-points."nlp_shap.absence_policies"]
-delete = "nlp_shap.masking.policies:DeletePolicy"
-pad = "nlp_shap.masking.policies:PadPolicy"
-neutral = "nlp_shap.masking.policies:NeutralPolicy"
+[project.entry-points."mllm_shap.absence_policies"]
+delete = "mllm_shap.masking.policies:DeletePolicy"
+pad = "mllm_shap.masking.policies:PadPolicy"
+neutral = "mllm_shap.masking.policies:NeutralPolicy"
 
-[project.entry-points."nlp_shap.value_fns"]
-tfidf_cosine = "nlp_shap.value.tfidf:TfIdfCosineValue"
-embedding_cosine = "nlp_shap.value.embedding:CosineEmbeddingValue"
-embedding_euclidean = "nlp_shap.value.embedding:EuclideanEmbeddingValue"
-logprob = "nlp_shap.value.logprob:LogprobValue"
+[project.entry-points."mllm_shap.value_fns"]
+tfidf_cosine = "mllm_shap.value.tfidf:TfIdfCosineValue"
+embedding_cosine = "mllm_shap.value.embedding:CosineEmbeddingValue"
+embedding_euclidean = "mllm_shap.value.embedding:EuclideanEmbeddingValue"
+logprob = "mllm_shap.value.logprob:LogprobValue"
 
-[project.entry-points."nlp_shap.normalizers"]
-identity = "nlp_shap.estimation.normalizers:IdentityNormalizer"
-abs_sum = "nlp_shap.estimation.normalizers:AbsSumNormalizer"
-power_shift = "nlp_shap.estimation.normalizers:PowerShiftNormalizer"
-min_max = "nlp_shap.estimation.normalizers:MinMaxNormalizer"
+[project.entry-points."mllm_shap.normalizers"]
+identity = "mllm_shap.estimation.normalizers:IdentityNormalizer"
+abs_sum = "mllm_shap.estimation.normalizers:AbsSumNormalizer"
+power_shift = "mllm_shap.estimation.normalizers:PowerShiftNormalizer"
+min_max = "mllm_shap.estimation.normalizers:MinMaxNormalizer"
 
-[project.entry-points."nlp_shap.backends"]
-mock = "nlp_shap.backends.mock:MockBackend"
-lmstudio = "nlp_shap.backends.lmstudio:LmStudioBackend"
-transformers = "nlp_shap.backends.transformers.text:TransformersTextBackend"
-api = "nlp_shap.backends.api:ApiBackend"
+[project.entry-points."mllm_shap.backends"]
+mock = "mllm_shap.backends.mock:MockBackend"
+lmstudio = "mllm_shap.backends.lmstudio:LmStudioBackend"
+transformers = "mllm_shap.backends.transformers.text:TransformersTextBackend"
+api = "mllm_shap.backends.api:ApiBackend"
 
-[project.entry-points."nlp_shap.renderers"]
-token_text = "nlp_shap.viz.token_text:TokenTextRenderer"
-token_bar = "nlp_shap.viz.token_bar:TokenBarRenderer"
+[project.entry-points."mllm_shap.renderers"]
+token_text = "mllm_shap.viz.token_text:TokenTextRenderer"
+token_bar = "mllm_shap.viz.token_bar:TokenBarRenderer"
 
 [project.optional-dependencies]
 lmstudio = [
@@ -106,7 +106,7 @@ api = [
     "httpx>=0.28.0",
 ]
 # Audio decoding (soundfile) and boundary refinement and resampling (librosa) for
-# nlp_shap.alignment; the Wav2Vec2 model itself comes from the transformers extra.
+# mllm_shap.alignment; the Wav2Vec2 model itself comes from the transformers extra.
 audio = [
     "librosa>=0.11.0",
     "soundfile>=0.13.0",
@@ -183,9 +183,9 @@ convention = "google"
 "tests/**" = ["D", "ARG"]
 "docs/**" = ["D", "ARG", "PTH"]
 # Existing size; new code must fit the budget.
-"src/nlp_shap/pipeline/orchestrator.py" = ["PLR0915"]
-"src/nlp_shap/pipeline/reanalyze.py" = ["PLR0915"]
-"src/nlp_shap/estimation/complementary.py" = ["PLR0915"]
+"src/mllm_shap/pipeline/orchestrator.py" = ["PLR0915"]
+"src/mllm_shap/pipeline/reanalyze.py" = ["PLR0915"]
+"src/mllm_shap/estimation/complementary.py" = ["PLR0915"]
 "scripts/check_vault.py" = ["C901"]
 "scripts/build_knowledge.py" = ["C901"]
 ".agents/skills/plugin/scripts/new_plugin.py" = ["PLR0915"]
@@ -196,7 +196,7 @@ preview = true
 [tool.mypy]
 python_version = "3.12"
 mypy_path = "src"
-packages = ["nlp_shap"]
+packages = ["mllm_shap"]
 plugins = ["pydantic.mypy"]
 strict = true
 warn_unused_configs = true
@@ -244,13 +244,13 @@ markers = [
 # ``make mutate`` (slow, on demand, not CI): mutate the estimation package and
 # run only its tests against each mutant.
 source_paths = ["src"]
-only_mutate = ["src/nlp_shap/estimation/*"]
+only_mutate = ["src/mllm_shap/estimation/*"]
 also_copy = ["tests"]
 pytest_add_cli_args_test_selection = ["tests/estimation"]
 pytest_add_cli_args = ["-p", "no:cacheprovider", "-q"]
 
 [tool.coverage.run]
-source = ["nlp_shap"]
+source = ["mllm_shap"]
 branch = true
 
 [tool.coverage.report]
@@ -270,7 +270,7 @@ class = "logging.StreamHandler"
 formatter = "standard"
 stream = "ext://sys.stderr"
 
-[tool.logging.loggers.nlp_shap]
+[tool.logging.loggers.mllm_shap]
 level = "WARNING"
 handlers = ["console"]
 propagate = false

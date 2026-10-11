@@ -6,13 +6,13 @@ created: 2026-10-10
 updated: 2026-10-10
 tags: [decisions, alignment]
 related-code:
-  - "[[src/nlp_shap/alignment/ctc.py]]"
-  - "[[src/nlp_shap/alignment/sgpa.py]]"
+  - "[[src/mllm_shap/alignment/ctc.py]]"
+  - "[[src/mllm_shap/alignment/sgpa.py]]"
 ---
 
 # Alignment decisions
 
-Part of [[nlp-shap]]; architecture: [[alignment]]. Related: [[SGPA]].
+Part of [[mllm-shap]]; architecture: [[alignment]]. Related: [[SGPA]].
 
 ## 2026-10-10 — Own CTC alignment instead of torchaudio
 

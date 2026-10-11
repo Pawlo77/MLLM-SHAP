@@ -1,20 +1,20 @@
 """Tests for plugin registry entry-point loading.
 
-@see [[src/nlp_shap/plugins/registry.py]]
+@see [[src/mllm_shap/plugins/registry.py]]
 """
 
 import pytest
 
-from nlp_shap.backends.mock import MockBackend
-from nlp_shap.domain.generation import GenerationRecord
-from nlp_shap.errors import ConfigError, PluginLoadError, PluginNotFoundError
-from nlp_shap.estimation.estimands.banzhaf import BanzhafAggregator
-from nlp_shap.estimation.estimands.shapley import ShapleyAggregator
-from nlp_shap.estimation.neyman import NeymanEstimator
-from nlp_shap.estimation.normalizers import IdentityNormalizer, PowerShiftNormalizer
-from nlp_shap.masking.policies import PadPolicy
-from nlp_shap.pipeline.config import BackendConfig, ExplainConfig
-from nlp_shap.plugins import (
+from mllm_shap.backends.mock import MockBackend
+from mllm_shap.domain.generation import GenerationRecord
+from mllm_shap.errors import ConfigError, PluginLoadError, PluginNotFoundError
+from mllm_shap.estimation.estimands.banzhaf import BanzhafAggregator
+from mllm_shap.estimation.estimands.shapley import ShapleyAggregator
+from mllm_shap.estimation.neyman import NeymanEstimator
+from mllm_shap.estimation.normalizers import IdentityNormalizer, PowerShiftNormalizer
+from mllm_shap.masking.policies import PadPolicy
+from mllm_shap.pipeline.config import BackendConfig, ExplainConfig
+from mllm_shap.plugins import (
     PluginContext,
     PluginGroup,
     PluginRegistry,
@@ -22,8 +22,8 @@ from nlp_shap.plugins import (
     default_registry,
     register_builtin_plugins,
 )
-from nlp_shap.plugins.backends import instantiate_backend
-from nlp_shap.value.embedding import CosineEmbeddingValue
+from mllm_shap.plugins.backends import instantiate_backend
+from mllm_shap.value.embedding import CosineEmbeddingValue
 from tests.backends._context import backend_context
 
 
@@ -217,7 +217,7 @@ def test_load_entry_points_wraps_load_failures(
             raise ModuleNotFoundError(msg)
 
     monkeypatch.setattr(
-        "nlp_shap.plugins.registry.entry_points",
+        "mllm_shap.plugins.registry.entry_points",
         lambda group: [BrokenEntryPoint()],
     )
     registry = PluginRegistry()

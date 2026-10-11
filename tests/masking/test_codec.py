@@ -1,6 +1,6 @@
 """Tests for packed mask encoding and hashing.
 
-@see [[src/nlp_shap/masking/codec.py]]
+@see [[src/mllm_shap/masking/codec.py]]
 """
 
 import hashlib
@@ -11,7 +11,7 @@ import sys
 import numpy as np
 import pytest
 
-from nlp_shap.masking.codec import MaskCodec, PackedMask
+from mllm_shap.masking.codec import MaskCodec, PackedMask
 
 LEGACY_TOY_MASKS: tuple[tuple[bool, ...], ...] = (
     (True, False, True, True, False, False, True),
@@ -56,7 +56,7 @@ def test_normalize_rejects_multi_row_masks() -> None:
 
 
 def _legacy_pack(mask: tuple[bool, ...]) -> PackedMask:
-    """Reference packer mirroring MLLM-Shap ``MaskCodec.pack``."""
+    """Reference packer mirroring legacy MLLM-Shap ``MaskCodec.pack``."""
     bits = np.asarray(mask, dtype=np.uint8)
     packed = np.packbits(bits, bitorder="little")
     return PackedMask(words=packed.tobytes(), n_bits=len(mask))
@@ -64,7 +64,7 @@ def _legacy_pack(mask: tuple[bool, ...]) -> PackedMask:
 
 def test_hash_mask_is_stable_across_processes() -> None:
     code = (
-        "from nlp_shap.masking.codec import MaskCodec;"
+        "from mllm_shap.masking.codec import MaskCodec;"
         "print(MaskCodec.hash_mask((True, False, True, True)))"
     )
     outs = {

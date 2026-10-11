@@ -7,7 +7,7 @@ paths:
   - examples/**
 ---
 
-# nlp-shap notebook
+# mllm-shap notebook
 
 ## Scaffold (optional)
 
@@ -25,7 +25,7 @@ without outputs or for a stray `.py` file under `examples/`.
 Follow `.cursor/rules/examples.mdc`:
 
 1. One workflow per file; focused name
-2. Cell 1 = all imports (stdlib/third-party, then `nlp_shap`)
+2. Cell 1 = all imports (stdlib/third-party, then `mllm_shap`)
 3. Cover full public usability scope; no stubs
 4. Dual-audience markdown (technical + business)
 5. Catalog in `examples/README.md` and `docs/examples.rst`

@@ -1,6 +1,6 @@
 """Tests for exact coalition enumeration and estimand wiring.
 
-@see [[src/nlp_shap/estimation/exact.py]]
+@see [[src/mllm_shap/estimation/exact.py]]
 """
 
 from itertools import product
@@ -8,12 +8,12 @@ from itertools import product
 import numpy as np
 import pytest
 
-from nlp_shap.domain.coalition import CoalitionMask
-from nlp_shap.domain.estimands import Estimand
-from nlp_shap.domain.players import PlayerSet
-from nlp_shap.estimation.estimands.banzhaf import BanzhafAggregator
-from nlp_shap.estimation.estimands.shapley import ShapleyAggregator
-from nlp_shap.estimation.exact import ExactEstimator
+from mllm_shap.domain.coalition import CoalitionMask
+from mllm_shap.domain.estimands import Estimand
+from mllm_shap.domain.players import PlayerSet
+from mllm_shap.estimation.estimands.banzhaf import BanzhafAggregator
+from mllm_shap.estimation.estimands.shapley import ShapleyAggregator
+from mllm_shap.estimation.exact import ExactEstimator
 
 
 def _reference_shapley_values(

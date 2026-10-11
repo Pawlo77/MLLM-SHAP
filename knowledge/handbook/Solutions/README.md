@@ -9,7 +9,7 @@ updated: 2026-10-07
 
 # Solutions
 
-Part of [[nlp-shap]]. One note per solved problem, written by step 9 ("Compound") of skill `vibe` after its pull request (PR) merges; ported from the compound step of the compound-engineering plugin.
+Part of [[mllm-shap]]. One note per solved problem, written by step 9 ("Compound") of skill `vibe` after its pull request (PR) merges; ported from the compound step of the compound-engineering plugin.
 
 ## Rules
 

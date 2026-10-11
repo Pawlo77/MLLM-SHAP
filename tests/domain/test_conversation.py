@@ -1,20 +1,20 @@
 """Tests for conversation snapshots and their JSON form.
 
-@see [[src/nlp_shap/domain/conversation.py]]
+@see [[src/mllm_shap/domain/conversation.py]]
 """
 
 import json
 
 import pytest
 
-from nlp_shap.domain.conversation import (
+from mllm_shap.domain.conversation import (
     AudioPart,
     ConversationSnapshot,
     Message,
     TextPart,
     Turn,
 )
-from nlp_shap.domain.enums import Role
+from mllm_shap.domain.enums import Role
 
 
 def test_conversation_snapshot_from_turns_is_stable() -> None:

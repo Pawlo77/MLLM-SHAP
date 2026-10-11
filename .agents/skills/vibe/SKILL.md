@@ -5,9 +5,9 @@ description: >-
   build" or "ship", or invokes /vibe.
 ---
 
-# nlp-shap vibe loop
+# mllm-shap vibe loop
 
-Read `.remember/remember.md`, `knowledge/nlp-shap.md`, the open notes under
+Read `.remember/remember.md`, `knowledge/mllm-shap.md`, the open notes under
 `knowledge/issues/` and the notes in `knowledge/handbook/Solutions/` (problems
 already solved, with their reusable rules) before anything else.
 
@@ -29,7 +29,7 @@ already solved, with their reusable rules) before anything else.
    `make vault-check`.
 6. **Review**: run skill `review` on `git diff main...HEAD`; fix every
    Blocker and High finding before continuing. When the diff touches
-   `src/nlp_shap/estimation/` or `src/nlp_shap/runtime/scheduler.py` and `codex`
+   `src/mllm_shap/estimation/` or `src/mllm_shap/runtime/scheduler.py` and `codex`
    runs (`codex --version`), also run the Trail of Bits `second-opinion` skill
    (Codex through `codex exec`) on the same diff. List the findings where the two
    reviews disagree under "Second opinion: disagreements" for the user; do not

@@ -1,7 +1,7 @@
 # Tests agents
 
-- `test_*.py`; mirror `src/nlp_shap/`
-- Absolute `from nlp_shap...`
+- `test_*.py`; mirror `src/mllm_shap/`
+- Absolute `from mllm_shap...`
 - Exit criterion: `make check`; `make tests` for a quick pytest run
 - Full markers: `make tests-all`
 - `lms` / `gpu` / `bench` are local/optional

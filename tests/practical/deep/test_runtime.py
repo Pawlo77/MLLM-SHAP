@@ -1,6 +1,6 @@
 """Deep tier: KV prefix cache, dedup and archive, and CLI parity on the 3B model.
 
-@see [[src/nlp_shap/runtime/kv_cache.py]]
+@see [[src/mllm_shap/runtime/kv_cache.py]]
 """
 
 import asyncio
@@ -10,8 +10,8 @@ from typing import Any
 
 import pytest
 
-from nlp_shap.domain.config import GenerationConfig
-from nlp_shap.runtime.archive import RunArchive
+from mllm_shap.domain.config import GenerationConfig
+from mllm_shap.runtime.archive import RunArchive
 from tests.practical._harness import (
     ModelPool,
     PracticalModel,
@@ -102,7 +102,7 @@ def test_cli_matches_in_process_values(
     practical_record: dict[str, Any],
     tmp_path: Path,
 ) -> None:
-    """``nlp-shap explain`` at budget 128 equals the in-process run for the seed."""
+    """``mllm-shap explain`` at budget 128 equals the in-process run for the seed."""
     in_process = deep_model.explain(scenario)
     practical_models.release("deep")  # the subprocess loads its own copy
     started = time.perf_counter()

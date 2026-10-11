@@ -1,13 +1,13 @@
 """Rendered labels of a real multi-speaker explanation.
 
-@see [[src/nlp_shap/viz/render.py]]
+@see [[src/mllm_shap/viz/render.py]]
 """
 
 from typing import Any
 
 import pytest
 
-from nlp_shap.viz import render_attribution
+from mllm_shap.viz import render_attribution
 from tests.practical._harness import PracticalModel, Scenario, labels, scenario_cases
 
 

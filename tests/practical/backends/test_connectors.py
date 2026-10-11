@@ -1,11 +1,11 @@
 """Transformers, LM Studio and OpenAI-compatible backends on real models.
 
-LM Studio needs ``NLP_SHAP_PRACTICAL_LMS_MODEL`` (a downloaded model key such as
+LM Studio needs ``MLLM_SHAP_PRACTICAL_LMS_MODEL`` (a downloaded model key such as
 ``qwen2.5-1.5b-instruct``); the API scenario posts to
-``NLP_SHAP_PRACTICAL_API_HOST`` (default ``http://localhost:1234/v1``, LM Studio's
-server) with ``NLP_SHAP_PRACTICAL_API_MODEL`` (default: the LM Studio key).
+``MLLM_SHAP_PRACTICAL_API_HOST`` (default ``http://localhost:1234/v1``, LM Studio's
+server) with ``MLLM_SHAP_PRACTICAL_API_MODEL`` (default: the LM Studio key).
 
-@see [[src/nlp_shap/backends/transformers/text.py]]
+@see [[src/mllm_shap/backends/transformers/text.py]]
 """
 
 import asyncio
@@ -16,11 +16,11 @@ from urllib.parse import urlsplit
 
 import pytest
 
-from nlp_shap import ExplainConfig, ExplainRunner
-from nlp_shap.backends.api import ApiBackend
-from nlp_shap.backends.transformers.text import TransformersTextBackend
-from nlp_shap.pipeline.config import BackendConfig
-from nlp_shap.plugins import PluginContext
+from mllm_shap import ExplainConfig, ExplainRunner
+from mllm_shap.backends.api import ApiBackend
+from mllm_shap.backends.transformers.text import TransformersTextBackend
+from mllm_shap.pipeline.config import BackendConfig
+from mllm_shap.plugins import PluginContext
 from tests.practical._harness import (
     MODELS,
     PracticalModel,
@@ -104,10 +104,10 @@ def test_prefix_cache_leaves_a_three_turn_explanation_unchanged(
 
 
 def _lms_key() -> str:
-    key = os.environ.get("NLP_SHAP_PRACTICAL_LMS_MODEL")
+    key = os.environ.get("MLLM_SHAP_PRACTICAL_LMS_MODEL")
     if not key:
         pytest.skip(
-            "set NLP_SHAP_PRACTICAL_LMS_MODEL to a downloaded LM Studio model key "
+            "set MLLM_SHAP_PRACTICAL_LMS_MODEL to a downloaded LM Studio model key "
             "(for example qwen2.5-1.5b-instruct)"
         )
     return key
@@ -139,11 +139,11 @@ def test_lmstudio_serialised_generation_matches_one_inflight(
 
 
 def _api_target() -> tuple[str, str]:
-    host = os.environ.get("NLP_SHAP_PRACTICAL_API_HOST", "http://localhost:1234/v1")
+    host = os.environ.get("MLLM_SHAP_PRACTICAL_API_HOST", "http://localhost:1234/v1")
     remote = urlsplit(host).hostname not in LOCAL_HOSTS
-    if remote and os.environ.get("NLP_SHAP_PRACTICAL_REMOTE") != "1":
-        pytest.skip(f"{host} is remote; set NLP_SHAP_PRACTICAL_REMOTE=1 to use it")
-    model = os.environ.get("NLP_SHAP_PRACTICAL_API_MODEL") or _lms_key()
+    if remote and os.environ.get("MLLM_SHAP_PRACTICAL_REMOTE") != "1":
+        pytest.skip(f"{host} is remote; set MLLM_SHAP_PRACTICAL_REMOTE=1 to use it")
+    model = os.environ.get("MLLM_SHAP_PRACTICAL_API_MODEL") or _lms_key()
     httpx = pytest.importorskip("httpx")
     try:
         httpx.get(f"{host}/models", timeout=3.0).raise_for_status()
@@ -161,7 +161,7 @@ def test_api_exact_explanation_posts_each_payload_once(
     """Exact run over /v1: one POST per unique payload, no key, logprobs parsed."""
     host, model = _api_target()
     httpx = pytest.importorskip("httpx")
-    monkeypatch.delenv("NLP_SHAP_API_KEY", raising=False)
+    monkeypatch.delenv("MLLM_SHAP_API_KEY", raising=False)
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     posted: list[tuple[httpx.Request, dict[str, Any]]] = []
 

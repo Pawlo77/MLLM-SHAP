@@ -1,15 +1,15 @@
 """Deep-tier helpers without a model: focused partition and error tables.
 
-@see [[src/nlp_shap/masking/partitions.py]]
+@see [[src/mllm_shap/masking/partitions.py]]
 """
 
 import pytest
 
-from nlp_shap import ExplainConfig
-from nlp_shap.domain.conversation import ConversationSnapshot, Message, Turn
-from nlp_shap.domain.enums import Role
-from nlp_shap.pipeline.config import BackendConfig
-from nlp_shap.plugins import PluginContext, PluginGroup
+from mllm_shap import ExplainConfig
+from mllm_shap.domain.conversation import ConversationSnapshot, Message, Turn
+from mllm_shap.domain.enums import Role
+from mllm_shap.pipeline.config import BackendConfig
+from mllm_shap.plugins import PluginContext, PluginGroup
 from tests.practical._deep import (
     REGISTRY,
     error_table,

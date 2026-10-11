@@ -1,12 +1,12 @@
 """Tests for mask-space projection.
 
-@see [[src/nlp_shap/masking/space.py]]
+@see [[src/mllm_shap/masking/space.py]]
 """
 
 import pytest
 
-from nlp_shap.domain.coalition import CoalitionMask
-from nlp_shap.masking.space import MaskSpace
+from mllm_shap.domain.coalition import CoalitionMask
+from mllm_shap.masking.space import MaskSpace
 
 
 def test_materialize_projects_split_to_full_mask() -> None:

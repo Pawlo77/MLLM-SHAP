@@ -62,7 +62,7 @@ def _write(repo: Path, rel: str) -> None:
 def repo(tmp_path: Path) -> Path:
     """A repository with a ``main`` commit and a checked-out feature branch."""
     _git(tmp_path, "init", "-q", "-b", "main")
-    for rel in ("README.md", "src/nlp_shap/cli.py", "src/nlp_shap/_logging.py"):
+    for rel in ("README.md", "src/mllm_shap/cli.py", "src/mllm_shap/_logging.py"):
         _write(tmp_path, rel)
     _git(tmp_path, "add", "-A")
     _git(tmp_path, "commit", "-qm", "chore: base")
@@ -74,12 +74,12 @@ def test_committed_staged_and_untracked_changes_map(
     features: ModuleType, repo: Path
 ) -> None:
     """Committed, modified and new files count; unmapped and ``none`` add nothing."""
-    _write(repo, "src/nlp_shap/estimation/neyman.py")
+    _write(repo, "src/mllm_shap/estimation/neyman.py")
     _git(repo, "add", "-A")
     _git(repo, "commit", "-qm", "feat: neyman")
-    (repo / "src/nlp_shap/cli.py").write_text("changed\n", encoding="utf-8")
-    _write(repo, "src/nlp_shap/viz/render.py")
-    (repo / "src/nlp_shap/_logging.py").write_text("changed\n", encoding="utf-8")
+    (repo / "src/mllm_shap/cli.py").write_text("changed\n", encoding="utf-8")
+    _write(repo, "src/mllm_shap/viz/render.py")
+    (repo / "src/mllm_shap/_logging.py").write_text("changed\n", encoding="utf-8")
 
     ids = features.feature_ids(
         features.changed_paths("main", repo), features.load_map(MAP)
@@ -93,7 +93,7 @@ def test_orchestrator_change_runs_the_smoke_set(
 ) -> None:
     """Runner or orchestrator changes map to the smoke scenarios."""
     feature_map = features.load_map(MAP)
-    _write(repo, "src/nlp_shap/pipeline/orchestrator.py")
+    _write(repo, "src/mllm_shap/pipeline/orchestrator.py")
 
     ids = features.feature_ids(features.changed_paths("main", repo), feature_map)
 

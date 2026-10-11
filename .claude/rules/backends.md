@@ -1,6 +1,6 @@
 ---
 paths:
-  - "src/nlp_shap/backends/**"
+  - "src/mllm_shap/backends/**"
   - "tests/backends/**"
   - "config/**"
 ---
