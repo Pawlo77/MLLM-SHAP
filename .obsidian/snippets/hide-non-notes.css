@@ -1,0 +1,14 @@
+/* The vault root is the repository: keep code, docs and agent files out of the file
+   explorer. Obsidian still indexes them, so `related-code` links and Code Graph work. */
+.nav-folder:has(> .nav-folder-title[data-path="config"]),
+.nav-folder:has(> .nav-folder-title[data-path="docs"]),
+.nav-folder:has(> .nav-folder-title[data-path="examples"]),
+.nav-folder:has(> .nav-folder-title[data-path="scripts"]),
+.nav-folder:has(> .nav-folder-title[data-path="src"]),
+.nav-folder:has(> .nav-folder-title[data-path="tests"]),
+.nav-file:has(> .nav-file-title[data-path="README.md"]),
+.nav-file:has(> .nav-file-title[data-path="CONTRIBUTING.md"]),
+.nav-file:has(> .nav-file-title[data-path$="AGENTS.md"]),
+.nav-file:has(> .nav-file-title[data-path$="CLAUDE.md"]) {
+  display: none;
+}

@@ -2,6 +2,7 @@
 title: "Capability protocol"
 type: concept
 domain: protocols
+parent: "[[mllm-shap]]"
 tags: [concept]
 created: 2026-10-08
 related-code:

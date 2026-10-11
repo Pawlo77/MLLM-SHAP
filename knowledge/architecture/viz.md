@@ -2,6 +2,7 @@
 title: "viz"
 type: module
 domain: viz
+parent: "[[mllm-shap]]"
 tags: [architecture, viz]
 created: 2026-10-07
 updated: 2026-10-11
@@ -18,8 +19,6 @@ related-code:
 ---
 
 # viz
-
-Part of [[mllm-shap]].
 
 ## Responsibility
 

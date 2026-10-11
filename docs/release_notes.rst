@@ -408,14 +408,11 @@ Documentation
 Tooling
 ~~~~~~~
 
-- Delivery autopilot: skill ``ship`` opens the pull request with a Copilot review
-  request, addresses the threads and merges routine changes (``scripts/pr_policy.py``)
-  itself; other changes stop before the merge for the maintainer.
 - Upgrades and releases: ``make upgrade-check`` and ``make upgrade``
   (``scripts/upgrade.py``) list and apply new package versions, prek hook revisions,
   workflow action pins, the uv version and Obsidian plugins, except the pins in
   ``publish.yaml``. ``scripts/pr_policy.py --bump`` derives the next version from the
-  commits since the last tag; skill ``release`` commits it and tags after the merge.
+  commits since the last tag.
 - Benchmarks use ``pytest-benchmark``: ``make bench`` writes a JSON report and
   ``make bench-regression`` fails when a median is more than 25% slower than the
   committed ``tests/benchmarks/baseline.json``. New benchmarks cover exact,
@@ -426,14 +423,13 @@ Tooling
   ``make tests-all`` only.
 - Practical tests: ``make practical FEATURE=<id|glob|all>`` runs about 30
   scenarios (marker ``practical``) on ``Qwen/Qwen2.5-1.5B-Instruct`` and
-  ``SmolLM2-360M-Instruct`` on a GPU, with rubric checks and a logit judge. Skill
-  ``ship`` runs the scenarios ``scripts/practical_features.py`` maps from the
-  diff; ``make check`` excludes them.
+  ``SmolLM2-360M-Instruct`` on a GPU, with rubric checks and a logit judge;
+  ``make check`` excludes them.
 - Deep practical tier: ``make practical TIER=deep`` runs nine ``deep.*``
   scenarios on ``Qwen/Qwen2.5-3B-Instruct`` under an 8 GB VRAM cap. They cover error
   versus budget against a 10-player exact reference, estimator stability, Banzhaf, a
   counterfactual pair per value function, a 10-turn three-speaker thread, the KV
-  cache, archive reanalysis and CLI parity. Skill ``release`` runs it.
+  cache, archive reanalysis and CLI parity.
 
 .. _release-0-1-17:
 

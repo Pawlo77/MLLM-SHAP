@@ -2,6 +2,7 @@
 title: "masking"
 type: module
 domain: masking
+parent: "[[mllm-shap]]"
 tags: [architecture, masking]
 created: 2026-10-07
 updated: 2026-10-11
@@ -17,8 +18,6 @@ related-code:
 ---
 
 # masking
-
-Part of [[mllm-shap]].
 
 ## Responsibility
 

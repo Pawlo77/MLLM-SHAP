@@ -27,7 +27,7 @@ tags: [generated]
 | `test_stratified_marginals_m2000` | 3.788 |
 | `test_tfidf_fit_and_score_4096` | 580.937 |
 
-The baseline machine is named in `tests/benchmarks/AGENTS.md`. The latest local `make bench` report (`.pytest_benchmark/benchmark.json`) is machine-local and git-ignored, so it is not copied here.
+The baseline machine is named in the runtime guide (`docs/guides/runtime.rst`). The latest local `make bench` report (`.pytest_benchmark/benchmark.json`) is machine-local and git-ignored, so it is not copied here.
 
 ## Mutation testing
 

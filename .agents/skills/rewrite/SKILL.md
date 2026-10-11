@@ -12,7 +12,7 @@ The text track is done; the audio track (0.2.x) is in progress (check `version` 
 
 ## External references (siblings, not in this repository)
 
-Required layout (clone commands: `CONTRIBUTING.md`, "Agent setup"; workspace file
+Required layout (clone commands: skill `agent-setup`; workspace file
 `MLLM-SHAP.code-workspace`):
 
 ```text
@@ -42,7 +42,7 @@ Open the multi-root workspace file before audio-track or port work.
 This skill is the only place the roadmap lives (session hooks no longer carry it). Read
 the plan from the research repository (table above) and compare it with the
 `pyproject.toml` version to find the first unchecked **audio** phase. If the sibling is
-missing, ask the user to clone it (`CONTRIBUTING.md`, "Agent setup"). Implement **only that
+missing, ask the user to clone it (skill `agent-setup`). Implement **only that
 phase**, then follow skill `development` (validate and hand off: docs, notebooks, vault) and
 skill `release` for the version bump, tag and publish.
 

@@ -2,6 +2,7 @@
 title: "D02 - Audio backend"
 type: issue
 domain: backends
+parent: "[[mllm-shap]]"
 status: deferred
 severity: major
 found: 2026-10-07

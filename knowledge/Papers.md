@@ -2,6 +2,7 @@
 title: "Papers"
 type: paper-list
 domain: theory
+parent: "[[mllm-shap]]"
 created: 2026-10-07
 updated: 2026-10-08
 tags: [papers]
@@ -19,7 +20,7 @@ related-code:
 
 # Papers
 
-Part of [[mllm-shap]]. Papers the library and its theory pages cite, by first author; digital object identifier (DOI) or arXiv links only, never PDFs.
+Papers the library and its theory pages cite, by first author; digital object identifier (DOI) or arXiv links only, never PDFs.
 
 ## Banzhaf 1965 — Weighted voting doesn't work
 

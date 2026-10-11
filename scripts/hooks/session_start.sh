@@ -82,7 +82,7 @@ state() {
     [ -d "../$sib" ] || missing="$missing $sib"
   done
   if [ -n "$missing" ]; then
-    echo "- siblings missing:$missing (clone next to MLLM-SHAP/; see CONTRIBUTING.md \"Agent setup\")"
+    echo "- siblings missing:$missing (clone next to MLLM-SHAP/; see skill agent-setup)"
   else
     echo "- sibling: ../MLLM-Shap-legacy (legacy port)"
   fi

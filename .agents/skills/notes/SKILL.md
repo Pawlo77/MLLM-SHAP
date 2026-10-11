@@ -8,23 +8,22 @@ description: >-
 
 # mllm-shap notes
 
-Notes live in `knowledge/` (vault rules: `knowledge/README.md`; machinery: skill
-`obsidian`). A note is updated in the same change as the code it describes.
+Notes live in `knowledge/` (paths, frontmatter, rules: `knowledge/AGENTS.md`;
+machinery: skill `obsidian`). A note is updated in the same change as the code it describes.
 
 ## Where and how
 
-- Paths, frontmatter keys and vault rules: `knowledge/README.md`. Sections and
-  type-specific keys: the template `knowledge/_templates/<type>.md` (`module`, `issue`,
+- Sections and type-specific keys: the template `knowledge/_templates/<type>.md` (`module`, `issue`,
   `concept`, `handbook`, `solution`, `plan`); `make vault-check` enforces them.
 - A decision is a section appended to `knowledge/decisions/<Domain> decisions.md`, newest
-  first (`_templates/decision.md`); a paper is a section of `knowledge/papers/Papers.md`
+  first (`_templates/decision.md`); a paper is a section of `knowledge/Papers.md`
   (`_templates/paper.md`). Link one with `[[<Log>#<heading>|<title>]]`.
 - Link a new note from its parent: the map `knowledge/mllm-shap.md` (architecture, concept,
   handbook, log), the architecture note's Known issues (issue),
-  `knowledge/handbook/Solutions/README.md` (solution); link a decision from its cause.
+  the Dashboard list of solutions (solution); link a decision from its cause.
 - Never edit `knowledge/generated/`; `make knowledge` rebuilds it.
 
-## Writing rules (beyond `knowledge/README.md`)
+## Writing rules (beyond `knowledge/AGENTS.md`)
 
 - Every sentence carries a mechanism, a number, an invariant or a decision; no process
   history or status chatter.
@@ -63,7 +62,7 @@ rule. `related-code`, `pr` and `plan-task` are filled in.
 ## Procedure: paper
 
 1. Find candidates with the `paper-scout` agent (Semantic Scholar and arXiv, verified
-   DOI or arXiv URLs, deduplicated against `knowledge/papers/Papers.md`); the user picks.
+   DOI or arXiv URLs, deduplicated against `knowledge/Papers.md`); the user picks.
 2. Add its section to `Papers.md` (`_templates/paper.md`).
 3. For a paper whose method the library implements, run the `methodologist` agent for
    its "Paper-to-code compliance" table (each equation and the function that

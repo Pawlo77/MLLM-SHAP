@@ -122,7 +122,7 @@ def clean_vault(tmp_path: Path) -> Path:
     )
     write(
         root,
-        "knowledge/papers/Papers.md",
+        "knowledge/Papers.md",
         note(
             "Papers",
             "paper-list",

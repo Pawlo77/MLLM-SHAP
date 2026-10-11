@@ -18,7 +18,7 @@ from mllm_shap.pipeline.config import (
     explain_config_to_yaml,
 )
 
-FIXTURE = Path(__file__).parent / "fixtures" / "explain_config.yaml"
+FIXTURE = Path(__file__).parent / "explain_config.yaml"
 
 
 def test_explain_config_yaml_round_trip_matches_fixture() -> None:
