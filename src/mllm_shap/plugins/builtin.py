@@ -8,7 +8,7 @@
 from ..alignment.partitions import SgpaSegmentPartitioner
 from ..backends.api import ApiBackend
 from ..backends.lmstudio import LmStudioBackend
-from ..backends.mock import MockBackend
+from ..backends.mock import MockAudioBackend, MockBackend
 from ..backends.transformers import TransformersTextBackend
 from ..estimation.complementary import ComplementaryEstimator
 from ..estimation.estimands import BanzhafAggregator, ShapleyAggregator
@@ -56,6 +56,7 @@ BUILTIN_PLUGINS: dict[PluginGroup, dict[str, PluginFactory]] = {
     },
     PluginGroup.BACKENDS: {
         "mock": MockBackend,
+        "mock_audio": MockAudioBackend,
         "lmstudio": LmStudioBackend,
         "transformers": TransformersTextBackend,
         "api": ApiBackend,

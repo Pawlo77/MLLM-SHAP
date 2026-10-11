@@ -17,6 +17,7 @@ related-code:
   - "[[src/mllm_shap/backends/lmstudio/models.py]]"
   - "[[src/mllm_shap/backends/lmstudio/options.py]]"
   - "[[src/mllm_shap/backends/mock/__init__.py]]"
+  - "[[src/mllm_shap/backends/mock/audio.py]]"
   - "[[src/mllm_shap/backends/mock/backend.py]]"
   - "[[src/mllm_shap/backends/transformers/__init__.py]]"
   - "[[src/mllm_shap/backends/transformers/_torch.py]]"
@@ -38,8 +39,9 @@ Part of [[mllm-shap]].
 
 - All backends take a `PluginContext` and read `context.config.backend`; `generate(snapshot, generation: GenerationConfig)`.
 - `MockBackend` (`mock`): deterministic text from a SHA-256 of the snapshot id, each message's `message_chat_text`, model id and generation parameters; at most 16 four-character tokens; used in continuous integration (CI).
+- `MockAudioBackend` (`mock_audio`, subclass of `MockBackend`): echoes each message's words, then one token per voiced run of each `AudioPart` (amplitude above `SILENCE` 0.01, runs split by `MIN_GAP_S` 0.01 s), truncated to `max_new_tokens` ([[Backends decisions#2026-10-11 — Audio mock backend answers one token per voiced run|decision]]). 16-bit WAV decodes with `wave`; other formats use `decode_audio` (`audio` extra).
 - `ApiBackend` (`api`): OpenAI-compatible application programming interface (API) `/chat/completions` over `httpx`, with `Timeout(backend.timeout_s)` and at most `max_inflight` connections.
-  - Retries `RETRYABLE_STATUS` (408, 429, 500, 502, 503, 504) and transport errors up to `backend.max_retries` with exponential backoff, honouring `Retry-After` up to `timeout_s`. Non-JSON responses raise `BackendUnavailableError`.
+  - Retries `RETRYABLE_STATUS` (408, 429, 5xx gateway codes) and transport errors up to `backend.max_retries` with exponential backoff, honouring `Retry-After` up to `timeout_s`. Non-JSON responses raise `BackendUnavailableError`.
   - Sends `"logprobs": true`; `extract_logprobs` reads `choices[0].logprobs.content[*].logprob`, else `None`; an empty reply gets `()` (LM Studio sends `null`), which `logprob` scores 0. `returns_logprobs` is true (`SupportsLogprobs`).
   - Caches temperature-0 records (text and logprobs) in an LRU of `RESPONSE_CACHE_SIZE` (1024).
   - `backend.api_host` is required (`ConfigError` without it; no environment or localhost fallback).
@@ -66,7 +68,8 @@ Part of [[mllm-shap]].
 
 ## Invariants
 
-- The API, LM Studio and transformers backends refuse audio parts with `ValueError`; the mock backend hashes text only ([[D02 - Audio backend]]).
+- The API, LM Studio and transformers backends refuse audio parts with `ValueError`; `mock` hashes text and the snapshot id only ([[D02 - Audio backend]]).
+- `mock_audio`: a run's token depends on its samples only, so silencing or cutting another run leaves it unchanged.
 - In float32, greedy transformers outputs are identical with the prefix cache on and off, and their logprobs agree within 1e-4; in float16 and bfloat16 they agree up to rounding, and the backend warns once ([[Backends decisions#2026-10-09 — Half-precision prefix cache warns instead of promising equality|decision]]). No prompt token is processed twice.
 - A backend injected into `ExplainRunner` is reused across calls and closed by the runner; otherwise one backend is built and closed per `explain()`.
 
@@ -77,6 +80,7 @@ Part of [[mllm-shap]].
 ## Tests
 
 - [[tests/backends/test_mock.py]]
+- [[tests/backends/test_mock_audio.py]]
 - [[tests/backends/test_api.py]]
 - [[tests/backends/test_lmstudio.py]]
 - [[tests/backends/test_lmstudio_chat.py]]
@@ -87,3 +91,4 @@ Part of [[mllm-shap]].
 - [[tests/backends/test_transformers_text.py]]
 - [[tests/backends/test_transformers_gpu.py]]
 - [[tests/benchmarks/test_api_backend_bench.py]]
+- [[tests/benchmarks/test_mock_audio_bench.py]]

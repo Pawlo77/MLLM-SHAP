@@ -20,6 +20,7 @@ A plugin registered only as an entry point resolves only through `PluginRegistry
 | mllm_shap.backends | backend.kind | `api` | `ApiBackend` | [[src/mllm_shap/backends/api/backend.py]] | entry point | Generate text through an OpenAI-compatible ``/chat/completions`` endpoint. |
 | mllm_shap.backends | backend.kind | `lmstudio` | `LmStudioBackend` | [[src/mllm_shap/backends/lmstudio/backend.py]] | entry point | Generate text through a local LM Studio API server. |
 | mllm_shap.backends | backend.kind | `mock` | `MockBackend` | [[src/mllm_shap/backends/mock/backend.py]] | entry point | Hash-based generative backend with no external model dependencies. |
+| mllm_shap.backends | backend.kind | `mock_audio` | `MockAudioBackend` | [[src/mllm_shap/backends/mock/audio.py]] | entry point | Echo text words and answer one token per voiced run of every audio part. |
 | mllm_shap.backends | backend.kind | `transformers` | `TransformersTextBackend` | [[src/mllm_shap/backends/transformers/text.py]] | entry point | Generate text with a local Hugging Face causal language model. |
 | mllm_shap.estimands | explanation.estimand | `banzhaf` | `BanzhafAggregator` | [[src/mllm_shap/estimation/estimands/banzhaf.py]] | entry point | Aggregate coalition samples with uniform Banzhaf coalition weights. |
 | mllm_shap.estimands | explanation.estimand | `shapley` | `ShapleyAggregator` | [[src/mllm_shap/estimation/estimands/shapley.py]] | entry point | Aggregate coalition samples with Shapley coalition weights. |

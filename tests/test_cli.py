@@ -128,7 +128,10 @@ def test_cli_plugins_lists_every_group(tmp_path: Path) -> None:
     assert "mllm_shap.estimators: complementary, exact, mc, neyman_cc" in (
         completed.stdout
     )
-    assert "mllm_shap.backends: api, lmstudio, mock, transformers" in completed.stdout
+    assert (
+        "mllm_shap.backends: api, lmstudio, mock, mock_audio, transformers"
+        in completed.stdout
+    )
 
 
 def test_cli_config_example_and_check(tmp_path: Path) -> None:

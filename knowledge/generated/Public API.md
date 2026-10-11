@@ -47,6 +47,7 @@ tags: [generated]
 | `MessagePartitioner` | [[src/mllm_shap/masking/partitions.py]] | Partition a snapshot into one player per non-empty message. |
 | `MinMaxNormalizer` | [[src/mllm_shap/estimation/normalizers.py]] | Min-max scale to ``[0, 1]`` then normalize to sum one. |
 | `MllmShapError` | [[src/mllm_shap/errors.py]] | Root of every error raised on purpose by mllm-shap. |
+| `MockAudioBackend` | [[src/mllm_shap/backends/mock/audio.py]] | Echo text words and answer one token per voiced run of every audio part. |
 | `MockBackend` | [[src/mllm_shap/backends/mock/backend.py]] | Hash-based generative backend with no external model dependencies. |
 | `MonteCarloEstimator` | [[src/mllm_shap/estimation/monte_carlo.py]] | Sample random coalitions and delegate attribution to an estimand plugin. |
 | `NeutralPolicy` | [[src/mllm_shap/masking/policies.py]] | Replace absent players with neutral fillers that preserve their width. |

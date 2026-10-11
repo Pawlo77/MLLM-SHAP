@@ -1,7 +1,10 @@
 """Audio players from SGPA segments, rendered by every absence policy.
 
 @see [[src/mllm_shap/alignment/partitions.py]]
+@see [[src/mllm_shap/backends/mock/audio.py]]
 """
+
+import asyncio
 
 import numpy as np
 import pytest
@@ -13,7 +16,9 @@ from mllm_shap import ExplainConfig, ExplainRunner, PluginGroup
 from mllm_shap.alignment.io import decode_audio
 from mllm_shap.alignment.partitions import SgpaSegmentPartitioner
 from mllm_shap.alignment.sgpa import SpectrogramGuidedAligner
+from mllm_shap.backends.mock import MockAudioBackend
 from mllm_shap.domain.coalition import CoalitionMask
+from mllm_shap.domain.config import GenerationConfig
 from mllm_shap.domain.conversation import (
     AudioPart,
     ConversationSnapshot,
@@ -101,8 +106,9 @@ def test_audio_without_transcript_is_refused() -> None:
         _partitioner().partition(snapshot)
 
 
-def test_explain_runs_with_audio_players_end_to_end() -> None:
-    """The mock backend scores the masked transcripts; efficiency holds."""
+@pytest.mark.parametrize("backend", ["mock", "mock_audio"])
+def test_explain_runs_with_audio_players_end_to_end(backend: str) -> None:
+    """Both mock backends score the rendered coalitions; efficiency holds."""
     registry = default_registry()
     registry.register(
         PluginGroup.PARTITIONS,
@@ -111,7 +117,7 @@ def test_explain_runs_with_audio_players_end_to_end() -> None:
         replace=True,
     )
     config = ExplainConfig.model_validate({
-        "backend": {"kind": "mock", "model_id": "stub"},
+        "backend": {"kind": backend, "model_id": "stub"},
         "explanation": {
             "players": "sgpa_segments",
             "absence_policy": "delete",
@@ -124,6 +130,28 @@ def test_explain_runs_with_audio_players_end_to_end() -> None:
     assert sum(output.result.values) == pytest.approx(
         output.result.grand_value - output.result.base_value
     )
+
+
+def test_mock_audio_hears_only_present_audio_players() -> None:
+    """Silencing a word's samples drops exactly its heard token."""
+    snapshot = _snapshot()
+    players = _partitioner().partition(snapshot)
+    backend = MockAudioBackend(model_id="stub")
+
+    def heard(present: tuple[bool, bool]) -> list[str]:
+        rendered = PadPolicy().apply(snapshot, players, CoalitionMask(present))
+        text = asyncio.run(backend.generate(rendered, GenerationConfig())).text
+        return text.split()[-2:]
+
+    both, first, neither = (
+        heard((True, True)),
+        heard((True, False)),
+        heard((False, False)),
+    )
+    assert both[0] != both[1]
+    assert first[-1] == both[0]
+    assert both[0] not in neither
+    assert both[1] not in neither + first
 
 
 def test_options_reach_the_default_aligner() -> None:

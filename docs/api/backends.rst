@@ -12,6 +12,8 @@ Mock
 
 .. automodule:: mllm_shap.backends.mock.backend
 
+.. automodule:: mllm_shap.backends.mock.audio
+
 OpenAI-compatible HTTP API
 --------------------------
 
