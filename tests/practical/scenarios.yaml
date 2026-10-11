@@ -146,10 +146,29 @@ scenarios:
     overrides: {explanation: {players: messages}}
     expect: {system: 0}
   conversation.audio:
-    tier: default
+    # Granite Speech hears the clip; the transcript gives the sgpa_segments players.
+    tier: audio
     turns:
-      - [{role: user, text: Transcribe this recording.}]
-    expect: {}
+      - [{role: user, text: "I had that curiosity beside me at this moment"}]
+    # Eager attention: Granite's projector fails under SDPA on Apple MPS. 64 of 512
+    # coalitions (complementary) keep the run near 70 s on an M4 Pro; measured
+    # efficiency gap 0.15 (all nine values 0.04 to 0.18), so the test checks the
+    # values, not efficiency.
+    overrides:
+      backend: {options: {attn_implementation: eager}}
+      explanation:
+        estimator: complementary
+        budget: {fraction: 0.125}
+        players: sgpa_segments
+        plugin_options:
+          sgpa_segments:
+            model_id: facebook/wav2vec2-base-960h
+            revision: 22aad52d435eb6dbaf354bdad9b0da84ce7d6156
+    expect:
+      audio: examples/data/voices_sp0307.wav
+      ask: can you transcribe the speech into a written format?
+      heard: curiosity
+      heard_tokens: 48
 
   backend.transformers:
     tier: default
@@ -205,8 +224,8 @@ scenarios:
     tier: fast
     turns: &voices
       - [{role: user, text: "I had that curiosity beside me at this moment"}]
-    # No backend takes audio yet (issue D02): the mock backend scores the masked
-    # transcripts while the real aligner builds the players and masks the audio.
+    # The mock backend keeps this test model-free while the real aligner builds the
+    # players and masks the audio; conversation.audio runs a model that hears it.
     overrides:
       backend: {kind: mock, model_id: stub, options: null}
       explanation:

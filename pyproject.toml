@@ -98,9 +98,13 @@ token_bar = "mllm_shap.viz.token_bar:TokenBarRenderer"
 lmstudio = [
     "lmstudio>=1.5.0",
 ]
+# torchaudio and peft: audio language models; Granite Speech's feature extractor
+# needs torchaudio and its audio LoRA adapter needs peft.
 transformers = [
     "accelerate>=1.0.0",
+    "peft>=0.17.0",
     "torch>=2.5.0",
+    "torchaudio>=2.9.0",
     "transformers>=4.56.0",
 ]
 api = [

@@ -10,6 +10,11 @@ fast:
   revision: a10cc1512eabd3dde888204e902eca88bddb4951
   dtype: float16
   size_gb: 0.7
+audio:  # audio language model of conversation.audio (transformers processor path)
+  model_id: ibm-granite/granite-speech-3.3-2b
+  revision: 4ac2f02f413c6169ae8c0ccc217115a366e552d7
+  dtype: bfloat16
+  size_gb: 5.9
 alignment:  # CTC model of alignment.sgpa (not a chat model; float32 on CPU)
   model_id: facebook/wav2vec2-base-960h
   revision: 22aad52d435eb6dbaf354bdad9b0da84ce7d6156

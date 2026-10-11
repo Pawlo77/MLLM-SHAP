@@ -4,7 +4,10 @@
 """
 
 import asyncio
+import base64
+import io
 import json
+import wave
 
 import httpx
 import pytest
@@ -16,6 +19,7 @@ from mllm_shap.domain.conversation import (
     AudioPart,
     ConversationSnapshot,
     Message,
+    TextPart,
     Turn,
 )
 from mllm_shap.domain.enums import Role
@@ -189,25 +193,84 @@ def test_api_backend_raises_on_http_error() -> None:
         asyncio.run(run())
 
 
-def test_api_backend_rejects_audio_snapshots() -> None:
-    """Audio-marked snapshots are rejected before any HTTP call."""
-    backend = _api_backend(lambda request: _success_response("noop"))
-    snapshot = ConversationSnapshot.from_turns((
-        Turn(
-            messages=(Message(role=Role.USER, content=(AudioPart(b"\x00", 16_000),)),)
-        ),
-    ))
+def _wav(frames: int = 160) -> bytes:
+    buffer = io.BytesIO()
+    with wave.open(buffer, "wb") as writer:
+        writer.setnchannels(1)
+        writer.setsampwidth(2)
+        writer.setframerate(16_000)
+        writer.writeframes(b"\x01\x00" * frames)
+    return buffer.getvalue()
+
+
+def _sent_messages(snapshot: ConversationSnapshot) -> list[dict[str, object]]:
+    sent: list[dict[str, object]] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        sent.extend(json.loads(request.content.decode("utf-8"))["messages"])
+        return _success_response("heard")
+
+    backend = _api_backend(handler)
 
     async def run() -> None:
         try:
-            await backend.generate(
-                snapshot, GenerationConfig(max_new_tokens=4, temperature=0.0, top_k=1)
-            )
+            await backend.generate(snapshot, GenerationConfig(max_new_tokens=4))
         finally:
             await backend.aclose()
 
-    with pytest.raises(ValueError, match="audio snapshots"):
-        asyncio.run(run())
+    asyncio.run(run())
+    return sent
+
+
+def test_api_backend_sends_audio_as_input_audio_parts() -> None:
+    """A message with audio becomes text and base64 WAV ``input_audio`` parts."""
+    audio = _wav()
+    spoken = Message(
+        role=Role.USER,
+        content=(TextPart("What is said?"), AudioPart(audio, 16_000)),
+        speaker="ann",
+    )
+    snapshot = ConversationSnapshot.from_turns((
+        Turn(messages=(Message(role=Role.SYSTEM, text="Be brief."), spoken)),
+    ))
+    assert _sent_messages(snapshot) == [
+        {"role": "system", "content": "Be brief."},
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "ann: What is said?"},
+                {
+                    "type": "input_audio",
+                    "input_audio": {
+                        "data": base64.b64encode(audio).decode("ascii"),
+                        "format": "wav",
+                    },
+                },
+            ],
+        },
+    ]
+
+
+def test_api_backend_reencodes_non_wav_audio() -> None:
+    soundfile = pytest.importorskip("soundfile")
+    pytest.importorskip("librosa")
+    buffer = io.BytesIO()
+    soundfile.write(buffer, [0.0, 0.5, -0.5, 0.0], 16_000, format="FLAC")
+    snapshot = ConversationSnapshot.from_turns((
+        Turn(
+            messages=(
+                Message(
+                    role=Role.USER, content=(AudioPart(buffer.getvalue(), 16_000),)
+                ),
+            )
+        ),
+    ))
+    (message,) = _sent_messages(snapshot)
+    content = message["content"]
+    assert isinstance(content, list)
+    data = base64.b64decode(content[-1]["input_audio"]["data"])
+    assert data[:4] == b"RIFF"
+    assert data[8:12] == b"WAVE"
 
 
 def test_payload_cache_key_is_stable_for_equivalent_payloads() -> None:
