@@ -11,7 +11,7 @@ updated: 2026-10-10
 
 mllm-shap explains the output of a conversational language model. The prompt's tokens are players of a cooperative game, and each player gets a share of the change in a value function between masked and unmasked generations. The library separates what is measured (the estimand: Shapley value or Banzhaf index), how coalitions are sampled (the estimator) and how a generation is scored (the value function). Every coalition evaluation goes into a run archive that can be re-scored later.
 
-Start here: [[Onboarding]], then [[How a run works]]. Vault rules: [[knowledge/README|README]]. Live tables: [[Dashboard]]. Session handoff: `.remember/remember.md`.
+Start here: [[Onboarding]], then [[How a run works]]. Live tables: [[Dashboard]].
 
 > [!note] State of the code
 > The architecture notes describe release 0.1.18. Open items: [[Open issues]]; all decisions: [[Decisions]].
@@ -69,4 +69,4 @@ Full citations: [[Papers]].
 
 ## Handbook
 
-[[Onboarding]] · [[How a run works]] · [[Debugging a wrong attribution]] · [[Roadmap]] · [[Python SHAP visualization reference]] · [[knowledge/handbook/Solutions/README|Solutions]] (problems already solved; read first by `review` and the vibe brainstorm)
+[[Onboarding]] · [[How a run works]] · [[Debugging a wrong attribution]] · [[Roadmap]] · [[Python SHAP visualization reference]]

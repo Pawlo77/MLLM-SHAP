@@ -27,7 +27,7 @@ Package: [[alignment]]. Concept: [[SGPA]].
 ## Repro
 
 ```bash
-grep -n "2603.02250" knowledge/papers/Papers.md   # no match
+grep -n "2603.02250" knowledge/Papers.md   # no match
 ```
 
 ## Fix

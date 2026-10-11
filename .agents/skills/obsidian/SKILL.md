@@ -8,8 +8,8 @@ description: >-
 # mllm-shap Obsidian vault
 
 The vault `mllm-shap` is the repository root. Notes live in `knowledge/` (written with
-skill `notes`), plus `plans/` and `.remember/*.md`. Vault rules for people:
-`knowledge/README.md`. Read [references/syntax.md](references/syntax.md) before
+skill `notes`; its [reference.md](../notes/reference.md) holds the vault rules), plus
+`plans/` and `.remember/*.md`. Read [references/syntax.md](references/syntax.md) before
 writing Dataview, Bases, Canvas, Mermaid or Templater.
 
 ## Keeping this skill current
@@ -59,7 +59,7 @@ before other work:
 
 - Link notes by file name without `.md` (`[[Run archive]]`); link code and other
   files by vault path with extension (`[[src/mllm_shap/estimation/exact.py]]`); link
-  plans and memory by path without `.md` (`[[plans/README]]`,
+  plans and memory by path without `.md` (`[[plans/<file>]]`,
   `[[.remember/remember]]`).
 - Inside Markdown tables escape the alias pipe: `[[Note\|text]]`.
 - Never use `#` in note file names (it starts a heading link).

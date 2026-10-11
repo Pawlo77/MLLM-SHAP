@@ -76,5 +76,5 @@ Signatures: [[Public API]]; configuration keys: [[Config keys]].
 - [[tests/pipeline/test_dev_configs.py]]
 - [[tests/pipeline/test_manifest.py]]
 - [[tests/pipeline/test_result.py]]
-- [[tests/signoff/test_text_mvp_checklist.py]]
+- [[tests/test_text_mvp_checklist.py]]
 - [[tests/benchmarks/test_pipeline_bench.py]]

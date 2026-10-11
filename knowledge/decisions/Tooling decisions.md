@@ -33,7 +33,7 @@ Decision: Implementation plans live in `plans/YYYY-MM-DD-<slug>.md` with the wri
 
 Why: Plans lived in chat or outside this repository, where agents here could not read or tick them.
 
-Consequences: `make vault-check` validates plan frontmatter and headers; the [[Dashboard]] lists plans by status. Conventions: [[plans/README|the plans README]].
+Consequences: `make vault-check` validates plan frontmatter and headers; the [[Dashboard]] lists plans by status.
 
 ## 2026-10-07 — Python upper bound lifted
 

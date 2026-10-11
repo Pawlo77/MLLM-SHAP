@@ -13,7 +13,7 @@ related-code:
 
 # Vault decisions
 
-Part of [[mllm-shap]]; rules: [[knowledge/README|Vault rules]].
+Part of [[mllm-shap]].
 
 ## 2026-10-08 — One log per domain and one papers file
 
