@@ -12,14 +12,15 @@ from typing import Any
 import numpy as np
 import pytest
 
-torch = pytest.importorskip("torch")
+pytest.importorskip("torch")
 pytest.importorskip("soundfile")
 pytest.importorskip("librosa")
 
-from mllm_shap.backends.transformers.audio import processor_inputs
+import torch
 
 from mllm_shap.alignment.io import encode_wav
 from mllm_shap.backends.transformers import text as transformers_text
+from mllm_shap.backends.transformers.audio import processor_inputs
 from mllm_shap.domain.config import GenerationConfig
 from mllm_shap.domain.conversation import (
     AudioPart,
@@ -94,7 +95,7 @@ class _Model:
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         self.forward_calls += 1
-        raise AssertionError("audio prompts must not run a prefix forward pass")
+        pytest.fail("audio prompts must not run a prefix forward pass")
 
     def generate(self, **kwargs: Any) -> SimpleNamespace:
         self.generate_calls.append(kwargs)
