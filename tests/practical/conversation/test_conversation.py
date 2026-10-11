@@ -1,13 +1,18 @@
 """Multi-turn, multi-user, system-prompt and audio conversations.
 
 @see [[src/mllm_shap/masking/partitions.py]]
+@see [[src/mllm_shap/backends/transformers/audio.py]]
 """
 
 import asyncio
+from pathlib import Path
 from typing import Any
 
 import pytest
 
+from mllm_shap import ExplainRunner
+from mllm_shap.backends.lmstudio import LmStudioBackend
+from mllm_shap.backends.transformers.text import TransformersTextBackend
 from mllm_shap.domain.config import GenerationConfig
 from mllm_shap.domain.conversation import (
     AudioPart,
@@ -18,16 +23,19 @@ from mllm_shap.domain.conversation import (
 )
 from mllm_shap.domain.enums import Role
 from mllm_shap.pipeline.config import BackendConfig, ExplainConfig
-from mllm_shap.plugins import PluginContext, PluginGroup
-from mllm_shap.plugins.builtin import BUILTIN_PLUGINS
+from mllm_shap.plugins import PluginContext
 from tests.practical._harness import (
+    MODELS,
     PracticalModel,
     Scenario,
     labels,
+    require_weights,
     scenario_cases,
     summary,
 )
 from tests.practical._judge import driver_prompts, top_players
+
+ROOT = Path(__file__).parents[3]
 
 
 def _conversation(scenario: Scenario) -> str:
@@ -100,21 +108,52 @@ def _audio_snapshot(scenario: Scenario) -> ConversationSnapshot:
 
 
 @pytest.mark.parametrize("scenario", scenario_cases("conversation.audio"))
-def test_audio_is_refused_by_every_real_backend(scenario: Scenario) -> None:
-    """Text backends raise ValueError on an audio part before any model call."""
-    backends = BUILTIN_PLUGINS[PluginGroup.BACKENDS]
-    for kind, factory in backends.items():
-        if kind == "mock":
-            continue
-        config = BackendConfig(
-            kind=kind, model_id="unused", api_host="http://127.0.0.1:9/v1"
-        )
-        backend = factory(PluginContext(config=ExplainConfig(backend=config)))
-        with pytest.raises(ValueError, match="audio"):
-            asyncio.run(backend.generate(_audio_snapshot(scenario), GenerationConfig()))
+def test_lmstudio_refuses_audio_by_default(scenario: Scenario) -> None:
+    """The LM Studio SDK takes no audio: the backend raises before any call."""
+    config = BackendConfig(kind="lmstudio", model_id="unused")
+    backend = LmStudioBackend(PluginContext(config=ExplainConfig(backend=config)))
+    with pytest.raises(ValueError, match="audio: transcript"):
+        asyncio.run(backend.generate(_audio_snapshot(scenario), GenerationConfig()))
 
 
 @pytest.mark.parametrize("scenario", scenario_cases("conversation.audio"))
-def test_audio_explanation(scenario: Scenario) -> None:
-    """No backend generates from audio yet."""
-    pytest.skip("no audio backend yet")
+def test_audio_model_hears_the_recording_and_explains_its_words(
+    scenario: Scenario, practical_record: dict[str, Any]
+) -> None:
+    """Granite Speech transcribes the clip from audio alone; spoken words get values."""
+    pytest.importorskip("librosa")
+    pytest.importorskip("torchaudio")
+    require_weights(MODELS[scenario.tier])
+    require_weights(MODELS["alignment"])
+    config = scenario.config(MODELS[scenario.tier])
+    audio = AudioPart(ROOT / scenario.expect["audio"], sample_rate=16_000)
+    ask = Message(role=Role.USER, content=(audio, TextPart(scenario.expect["ask"])))
+    backend = TransformersTextBackend(PluginContext(config=config))
+    try:
+        heard = asyncio.run(
+            backend.generate(
+                ConversationSnapshot.from_turns((Turn(messages=(ask,)),)),
+                config.generation.model_copy(
+                    update={"max_new_tokens": scenario.expect["heard_tokens"]}
+                ),
+            )
+        )
+        transcript = scenario.snapshot.messages()[0].text
+        spoken = Message(role=Role.USER, content=(TextPart(transcript), audio))
+        snapshot = ConversationSnapshot.from_turns((Turn(messages=(spoken,)),))
+        output = ExplainRunner(config, backend=backend).explain_sync(snapshot)
+    finally:
+        asyncio.run(backend.aclose())
+    result = output.result
+    gap = sum(result.values) - (result.grand_value - result.base_value)
+    practical_record["properties"] = {"heard": heard.text, "efficiency_gap": gap}
+    assert output.player_set is not None
+    spans = output.player_set.spans
+    practical_record["numbers"] = {
+        span.text: value for span, value in zip(spans, result.values, strict=True)
+    }
+
+    assert scenario.expect["heard"] in heard.text.lower()
+    assert len(spans) == len(transcript.split())
+    assert all(span.samples is not None for span in spans)
+    assert max(abs(value) for value in result.values) > 0.0

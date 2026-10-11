@@ -19,12 +19,12 @@ from ...domain.generation import GenerationRecord
 from ...errors import BackendUnavailableError, ConfigError
 from ...protocols.plugin import PluginOptions
 from ...value.generation_records import generation_record_from_text
-from .._chat import snapshot_has_audio, snapshot_to_chat_messages
 from .payload import (
     build_chat_payload,
     extract_logprobs,
     extract_message_content,
     payload_cache_key,
+    snapshot_to_api_messages,
 )
 
 if TYPE_CHECKING:
@@ -80,10 +80,7 @@ class ApiBackend:
         generation: GenerationConfig,
     ) -> GenerationRecord:
         """Generate assistant text for ``snapshot`` via the HTTP API."""
-        if snapshot_has_audio(snapshot):
-            msg = "audio snapshots are not supported by the API backend"
-            raise ValueError(msg)
-        messages = snapshot_to_chat_messages(snapshot)
+        messages = snapshot_to_api_messages(snapshot)
         payload = build_chat_payload(self._config.model_id, messages, generation)
         cache_key: str | None = None
         if generation.temperature == 0.0:

@@ -6,6 +6,7 @@
 """
 
 from collections.abc import Mapping
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, ValidationError
 
@@ -28,6 +29,10 @@ class LmStudioOptions(BaseModel):
 
     serialize_generate: bool = True
     """Serialize ``generate`` calls (needed for MLX models in LM Studio)."""
+
+    audio: Literal["refuse", "transcript"] = "refuse"
+    """What to do with audio parts, which the LM Studio SDK cannot send. ``refuse``
+    raises ``ValueError``; ``transcript`` sends the text parts only."""
 
 
 def parse_lmstudio_options(options: Mapping[str, object]) -> LmStudioOptions:
