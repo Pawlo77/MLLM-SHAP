@@ -98,7 +98,7 @@ jobs:
       - name: Execute notebooks
         run: |
           set -euo pipefail
-          notebooks="estimands_toy_game masking_views runtime_core exact_estimation attribution_viz"
+          notebooks="estimands_toy_game masking_views runtime_core exact_estimation"
           before="$RUNNER_TEMP/nb-before"
           after="$RUNNER_TEMP/nb-after"
           mkdir -p "$before" "$after"

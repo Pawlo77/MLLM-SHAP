@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .audio import plot_audio_segments
+    from .conversation import plot_conversation, render_conversation_html
     from .render import (
         display_attribution_html,
         render_attribution,
@@ -17,8 +18,10 @@ if TYPE_CHECKING:
 __all__ = [
     "display_attribution_html",
     "plot_audio_segments",
+    "plot_conversation",
     "render_attribution",
     "render_attribution_html",
+    "render_conversation_html",
 ]
 
 
@@ -29,6 +32,10 @@ def __getattr__(name: str) -> object:
         from . import audio
 
         return audio.plot_audio_segments
+    if name in {"plot_conversation", "render_conversation_html"}:
+        from . import conversation
+
+        return getattr(conversation, name)
     if name in __all__:
         from . import render
 

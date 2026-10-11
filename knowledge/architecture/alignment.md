@@ -4,7 +4,7 @@ type: module
 domain: alignment
 tags: [architecture, alignment]
 created: 2026-10-10
-updated: 2026-10-10
+updated: 2026-10-11
 related-code:
   - "[[src/nlp_shap/alignment/__init__.py]]"
   - "[[src/nlp_shap/alignment/ctc.py]]"
@@ -27,7 +27,7 @@ Part of [[nlp-shap]]. Concept: [[SGPA]]. Decisions: [[Alignment decisions]].
 
 - `SpectrogramGuidedAligner(model=None, energy_weight=0.8, flux_weight=0.2, separator="|")`; `align(transcript, audio: AudioPart, attach_audio=False) -> list[AudioSegment]`.
 - `CtcModel` protocol (`sample_rate`, `blank_id`, `vocab`, `log_probs(waveform)`); `Wav2Vec2Ctc(model_id="facebook/wav2vec2-base-960h", revision=None, device="cpu")` implements it.
-- `SgpaSegmentPartitioner` (`sgpa_segments`, options `SgpaOptions`: `model_id`, `revision`, `device`, `energy_weight`, `flux_weight`): one player per spellable word of every message with an `AudioPart` and a transcript; ids `"{snapshot_id}:{turn}:{message}:{token}"`; spans carry the word's text range and `samples`; the default aligner loads on the first `partition`.
+- `SgpaSegmentPartitioner` (`sgpa_segments`, options `SgpaOptions`: `model_id`, `revision`, `device`, `energy_weight`, `flux_weight`, `text_roles` for word players of typed messages): one player per spellable word of every message with an `AudioPart` and a transcript; ids `"{snapshot_id}:{turn}:{message}:{token}"`; spans carry the word's text range and `samples`; the default aligner loads on the first `partition`.
 - `AudioSegment(token, token_index, start_time, end_time, ctc_start_time, ctc_end_time, confidence, boundary_refined, sample_rate, start_sample, end_sample, audio=b"")` with `duration`.
 - `decode_audio(data, sample_rate=None)` (mono float32, optional resampling) and `encode_wav(waveform, sample_rate)` (16-bit PCM).
 - `ctc.forced_align(log_probs, targets, blank)` and `ctc.target_spans(...)`: Viterbi alignment over the blank-extended target sequence.
