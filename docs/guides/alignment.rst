@@ -107,8 +107,8 @@ same length.
 
 Plugin options: ``model_id``, ``revision``, ``device``, ``energy_weight``,
 ``flux_weight`` and ``text_roles`` (roles whose typed messages also give word
-players, none by default). Only the ``mock_audio`` backend (:doc:`backends`)
-hears the masked audio; the model backends score the masked transcripts.
+players, none by default). Backends that hear the masked audio:
+:doc:`audio_backends`.
 
 Other CTC models
 ----------------

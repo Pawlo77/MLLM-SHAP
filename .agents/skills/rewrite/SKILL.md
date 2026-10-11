@@ -1,13 +1,13 @@
 ---
 name: rewrite
 description: >-
-  Use for audio-track work: multimodal or audio modules, SGPA alignment, liquid-audio,
-  or a named rewrite phase.
+  Use for audio-track work: multimodal or audio modules, SGPA alignment, audio
+  backends, or a named rewrite phase.
 ---
 
 # mllm-shap rewrite (audio track)
 
-The text track is done; the audio track (0.2.x) is in progress (check `version` in
+The text track is done; the audio track is in progress (check `version` in
 `pyproject.toml`). This skill covers audio and multimodal work only.
 
 ## External references (siblings, not in this repository)
@@ -22,7 +22,7 @@ Required layout (clone commands: `CONTRIBUTING.md`, "Agent setup"; workspace fil
 
 | What | Path from `MLLM-SHAP/` |
 |------|----------------------|
-| Canonical plan | the private research repository, cloned as `../nlp-shap-research/` (`docs/plans/infrastructure/`); it depends on this package, never the reverse |
+| Canonical plan | the private research repository, cloned as `../mllm-xai/` (`plans/infrastructure/mllm-shap Package Rewrite.md`); it depends on this package, never the reverse |
 | Legacy reference | `../MLLM-Shap-legacy/mllm_shap/src/mllm_shap/`: gather logic, rewrite; never bulk-copy |
 
 Open the multi-root workspace file before audio-track or port work.
@@ -32,8 +32,8 @@ Open the multi-root workspace file before audio-track or port work.
 1. **Gather logic, rewrite modules**: reference legacy; never bulk-copy files or god-classes
 2. **One phase, one tag, one PyPI publish**: do not batch phases
 3. **Dropped:** `shap/hierarchical/*`; do not implement or reference
-4. **Audio track** (Phases 15 to 21; next is Phase 18, `v0.2.2`)
-5. **Deps:** torch / transformers / liquid-audio in extras only
+4. **Audio track** (Phases 15 to 21; next is Phase 20)
+5. **Deps:** torch / torchaudio / transformers in extras only
 6. **Imports:** relative inside `src/mllm_shap/`; absolute `from mllm_shap...` in tests and examples
 7. **No `from __future__ import annotations`** unless required (`python-types.mdc`)
 
@@ -46,17 +46,17 @@ missing, ask the user to clone it (`CONTRIBUTING.md`, "Agent setup"). Implement 
 phase**, then follow skill `development` (validate and hand off: docs, notebooks, vault) and
 skill `release` for the version bump, tag and publish.
 
-## Audio track order (v0.2.x)
+## Audio track order
 
 | Phase | Tag | Module focus |
 |-------|-----|--------------|
 | 15 | 0.1.18 | multimodal domain (content parts; done) |
 | 16 | v0.2.0 | SGPA alignment (Wav2Vec2; done) |
 | 17 | v0.2.1 | audio players `sgpa_segments` (done) |
-| 18 | v0.2.2 | mock audio backend |
-| 19 | v0.2.3 | liquid-audio backend |
-| 20 | v0.2.4 | multimodal E2E pipeline |
-| 21 | v0.2.5 | audio value fns + SGPA Audio smoke |
+| 18 | v0.4.0 | mock audio backend `mock_audio` (done) |
+| 19 | v0.5.0 | audio input: transformers processor, `api` `input_audio`, `lmstudio` transcript (done) |
+| 20 | next minor | audio E2E pipeline on any audio backend |
+| 21 | later | audio value fns + SGPA Audio smoke |
 
 ## Workflow
 

@@ -47,7 +47,7 @@ Part of [[mllm-shap]]. Concept: [[SGPA]]. Decisions: [[Alignment decisions]].
 
 ## Known issues
 
-- No model backend generates from audio yet ([[D02 - Audio backend]]); only `mock_audio` ([[backends]]) hears the masked audio.
+- None open.
 - [[D06 - SGPA paper not in the papers list]]: the method's paper is under review, so it has no [[Papers]] section yet.
 
 ## Tests

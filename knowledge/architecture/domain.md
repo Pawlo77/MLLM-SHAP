@@ -51,7 +51,7 @@ Part of [[mllm-shap]].
 
 ## Known issues
 
-- No backend accepts audio yet ([[D02 - Audio backend]]).
+- Audio parts reach the `transformers` audio models, the `api` backend and `mock_audio` ([[backends]]).
 
 ## Tests
 

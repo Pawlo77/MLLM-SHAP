@@ -46,6 +46,8 @@ Hugging Face transformers
 
 .. automodule:: mllm_shap.backends.transformers.text
 
+.. automodule:: mllm_shap.backends.transformers.audio
+
 .. automodule:: mllm_shap.backends.transformers.chat
 
 .. automodule:: mllm_shap.backends.transformers.embeddings
