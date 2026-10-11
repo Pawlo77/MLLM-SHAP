@@ -24,9 +24,15 @@ _AI = (
     r"(claude|anthropic|copilot|codex|openai|chatgpt|gpt-?[0-9o]|gemini|cursor|devin|"
     r"aider|windsurf|an ai\b|ai assistant|ai agent|llm\b)"
 )
+_AI_TRAILER = (
+    rf"(?:{_AI}|grok|deepseek|jules|mistral|qwen|llama|kimi|cline|junie|kiro|augment|"
+    r"sourcegraph|\[bot\]|noreply@(?:anthropic|openai|cursor|x)\.)"
+)
+"""Names accepted after a trailer key, where a person's name is not expected."""
 _VERB = r"(generated|written|created|made|drafted|authored|produced|co-authored)"
 WATERMARK = re.compile(
-    rf"^(?:(?:co-authored|assisted|generated|authored|signed-off|ai-generated)-by\s*:.*{_AI}"
+    rf"^(?:(?:co-authored|assisted|generated|authored|signed-off|ai-generated|made)"
+    rf"-(?:by|with)\s*:.*{_AI_TRAILER}"
     rf"|(?:🤖\s*)?{_VERB}\s+(?:with|by|using)\s+(?:the\s+)?(?:help\s+of\s+)?\[?{_AI}"
     rf"|(?:this|the)\s+\w+\s+(?:was|is)\s+{_VERB}\s+(?:with|by|using)\s+\[?{_AI})",
     re.IGNORECASE,
