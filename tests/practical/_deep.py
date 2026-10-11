@@ -1,7 +1,7 @@
 """Deep-tier helpers: a one-message token partition, cached references, sweeps.
 
 An exact reference is kept in ``results/reference-<hash>.json``; the hash covers
-the model pin, the device, the rendered chat and the config, so a cold generation
+the model identity, the rendered chat and the config, so a cold generation
 cache reuses it unless one of them changed.
 """
 
@@ -22,7 +22,7 @@ from mllm_shap.plugins import PluginContext, PluginGroup, default_registry
 from mllm_shap.protocols.plugin import PluginOptions
 
 from ._cache import cache_key
-from ._harness import HERE, RUN_INFO, PracticalModel, Scenario, labels
+from ._harness import HERE, PracticalModel, Scenario, labels
 from ._judge import normalised_l1
 
 
@@ -72,7 +72,7 @@ def reference(
     """Return the exact run's labels and values, from its file when present."""
     config = scenario.config(model.spec, variant)
     key = cache_key(
-        RUN_INFO["device"],
+        model.identity,
         snapshot_to_chat_messages(scenario.snapshot),
         config.model_dump(mode="json"),
     )

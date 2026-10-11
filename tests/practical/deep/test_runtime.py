@@ -1,4 +1,4 @@
-"""Deep tier: KV prefix cache, dedup and archive, and CLI parity on the 3B model.
+"""Deep tier: KV prefix cache (in-process 3B), dedup and archive, and CLI parity.
 
 @see [[src/mllm_shap/runtime/kv_cache.py]]
 """
@@ -13,7 +13,6 @@ import pytest
 from mllm_shap.domain.config import GenerationConfig
 from mllm_shap.runtime.archive import RunArchive
 from tests.practical._harness import (
-    ModelPool,
     PracticalModel,
     Scenario,
     archived,
@@ -25,20 +24,20 @@ from tests.practical._harness import (
 
 @pytest.mark.parametrize("scenario", scenario_cases("deep.runtime.kv_cache"))
 def test_prefix_cache_is_faster_and_equal(
-    scenario: Scenario, deep_model: PracticalModel, practical_record: dict[str, Any]
+    scenario: Scenario, deep_hf_model: PracticalModel, practical_record: dict[str, Any]
 ) -> None:
     """Exact over six messages: cache on equals off within float16, and is faster."""
     # Other deep tests may come from the generation cache, leaving the model cold;
     # an unwarmed first arm pays the accelerator warm-up (issue D05).
     asyncio.run(
-        deep_model.backend.generate(
+        deep_hf_model.backend.generate(
             scenario.snapshot, GenerationConfig(max_new_tokens=8)
         )
     )
     seconds, outputs = [], []
     for variant in ({}, scenario.variants[0]):
         started = time.perf_counter()
-        outputs.append(deep_model.explain(scenario, variant, deep_model.backend))
+        outputs.append(deep_hf_model.explain(scenario, variant, deep_hf_model.backend))
         seconds.append(time.perf_counter() - started)
     on, off = outputs
     gap = max(
@@ -91,20 +90,20 @@ def test_archive_reanalyzes_with_logprobs(
     assert again.result.values == pytest.approx(output.result.values, abs=1e-12)
     assert again.metrics.executed == rescored.metrics.executed == 0
     assert rescored.result.values == pytest.approx(direct.result.values, abs=1e-12)
-    assert all(row.logprobs and max(row.logprobs) <= 0.0 for row in rows)
+    # an empty reply has the logprobs ``()``; a missing tuple means the server sent none
+    assert all(row.logprobs is not None for row in rows)
+    assert all(max(row.logprobs or (), default=0.0) <= 0.0 for row in rows)
 
 
 @pytest.mark.parametrize("scenario", scenario_cases("deep.cli.parity"))
 def test_cli_matches_in_process_values(
     scenario: Scenario,
     deep_model: PracticalModel,
-    practical_models: ModelPool,
     practical_record: dict[str, Any],
     tmp_path: Path,
 ) -> None:
     """``mllm-shap explain`` at budget 128 equals the in-process run for the seed."""
     in_process = deep_model.explain(scenario)
-    practical_models.release("deep")  # the subprocess loads its own copy
     started = time.perf_counter()
     payload = cli_explain(scenario, deep_model, tmp_path)
     practical_record["numbers"] = {"in_process": summary(in_process)}

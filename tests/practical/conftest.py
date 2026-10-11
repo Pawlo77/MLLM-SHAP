@@ -2,7 +2,7 @@
 
 ``--tier`` (quick, deep or all; default all) and ``--feature`` (``all`` or
 comma-separated globs) select over the ``practical`` marker's feature id; the deep
-tier runs last so each model loads once. Each run writes
+tier runs last, on LM Studio, so each in-process model loads once. Each run writes
 ``results/<utc>-<tier>-<feature>.json`` and ``results/latest.json`` (git-ignored).
 """
 
@@ -100,9 +100,12 @@ def practical_device() -> str:
 
 
 @pytest.fixture(scope="session")
-def practical_models(practical_device: str) -> Iterator[ModelPool]:
-    """Return the session's model pool; models load on first use."""
-    pool = ModelPool(practical_device)
+def practical_models(request: pytest.FixtureRequest) -> Iterator[ModelPool]:
+    """Return the session's model pool; models load on first use.
+
+    The device resolves only for in-process tiers: the deep tier runs in LM Studio.
+    """
+    pool = ModelPool(lambda: request.getfixturevalue("practical_device"))
     yield pool
     pool.close()
 
@@ -121,8 +124,14 @@ def fast_model(practical_models: ModelPool) -> PracticalModel:
 
 @pytest.fixture
 def deep_model(practical_models: ModelPool) -> PracticalModel:
-    """Return the deep tier (Qwen2.5-3B); loading it releases the quick tiers."""
+    """Return the deep tier: an LM Studio model, skipped when the server is down."""
     return practical_models.get("deep")
+
+
+@pytest.fixture
+def deep_hf_model(practical_models: ModelPool) -> PracticalModel:
+    """Return in-process Qwen2.5-3B (KV cache); loading it releases the quick tiers."""
+    return practical_models.get("deep_hf")
 
 
 @pytest.fixture

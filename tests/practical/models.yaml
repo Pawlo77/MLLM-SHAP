@@ -15,7 +15,15 @@ alignment:  # CTC model of alignment.sgpa (not a chat model; float32 on CPU)
   revision: 22aad52d435eb6dbaf354bdad9b0da84ce7d6156
   dtype: float32
   size_gb: 0.36
-deep:  # deep tier: generator and judge in one model; the 8 GB VRAM cap allows no second
+deep:  # deep tier: an LM Studio model (OpenAI-compatible server) is generator and judge
+  kind: api
+  model_id: qwen2.5-3b-instruct  # MLX 4-bit; MLLM_SHAP_PRACTICAL_DEEP_MODEL overrides it
+  size_gb: 1.75
+deep_judge:  # deep tier judge: qwen2.5-3b-instruct (MLX 4-bit) answers the day questions
+  kind: api  # wrongly (margins -12 to +8 for one reply), gemma-3-4b-it separates them
+  model_id: gemma-3-4b-it  # MLLM_SHAP_PRACTICAL_DEEP_JUDGE overrides it
+  size_gb: 3.44
+deep_hf:  # deep.runtime.kv_cache only: the prefix cache exists in-process, not in LM Studio
   model_id: Qwen/Qwen2.5-3B-Instruct
   revision: aa8e72537993ba99e69dfaafa59ed015b17504d1
   dtype: float16

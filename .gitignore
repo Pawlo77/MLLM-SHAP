@@ -108,7 +108,6 @@ examples/runs/
 # settings, literature-watch shortlists
 .claude/jit-context/.discovery/
 .claude/settings.local.json
-knowledge/papers/_watch/
 
 # Extracted from examples/*.ipynb by docs/scripts/notebook_figures.py at build time.
 docs/_static/notebook_figures/

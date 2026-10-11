@@ -10,7 +10,7 @@ description: >-
 
 Scenarios: `tests/practical/scenarios.yaml`; models, variables and VRAM: CONTRIBUTING
 "Practical tests"; design: [[Process decisions#2026-10-08 — Practical tests on real small models]]
-and [[Process decisions#2026-10-08 — Deep practical tier]].
+and [[Process decisions#2026-10-11 — Deep practical tier on LM Studio]].
 
 ## 1. Preflight
 
@@ -21,8 +21,11 @@ uv run hf cache ls | grep -E "Qwen2.5-(1.5B|3B)-Instruct|SmolLM2-360M-Instruct"
 
 - Missing extras: `uv sync --all-groups --all-extras`.
 - No GPU: stop and say so (`MLLM_SHAP_PRACTICAL_CPU=1` only if the user asks).
-- Weights missing: ask before downloading (quick 3.1 GB and 0.7 GB, deep 6.2 GB); on
-  yes, set `MLLM_SHAP_PRACTICAL_DOWNLOAD=1` for the run.
+- Weights missing: ask before downloading (quick 3.1 GB and 0.7 GB, `deep.runtime.kv_cache`
+  6.2 GB; it skips without them); on yes, set `MLLM_SHAP_PRACTICAL_DOWNLOAD=1`.
+- Deep tier: `lms server start` and `lms ls` lists `qwen2.5-3b-instruct` (else the run
+  skips) and `gemma-3-4b-it` (the judge); `MLLM_SHAP_PRACTICAL_DEEP_MODEL` and
+  `MLLM_SHAP_PRACTICAL_DEEP_JUDGE` pick other keys. Keep LM Studio otherwise idle.
 - `backend.lmstudio` / `backend.api`: need `lms server start`; they skip without it.
   `make practical` sets `MLLM_SHAP_PRACTICAL_LMS_MODEL=qwen2-500m-instruct`.
 - Optional quick-tier judge in LM Studio: `MLLM_SHAP_PRACTICAL_JUDGE=lmstudio:<key>`.
@@ -31,10 +34,11 @@ uv run hf cache ls | grep -E "Qwen2.5-(1.5B|3B)-Instruct|SmolLM2-360M-Instruct"
 
 ```bash
 make practical FEATURE='<id|glob|all>'   # quick tier; comma-separated globs allowed
-make practical TIER=deep                 # deep.* ids on Qwen2.5-3B, before a release
+make practical TIER=deep                 # deep.* ids on LM Studio, before a release
 ```
 
-The deep tier runs last with `TIER=all`; loading it frees the quick models (8 GB cap).
+The deep tier runs last with `TIER=all`; `deep.runtime.kv_cache` alone loads Qwen2.5-3B
+in-process and frees the quick models first (8 GB cap).
 
 ## 3. Report
 
