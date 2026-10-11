@@ -20,4 +20,4 @@ Full note: `knowledge/architecture/backends.md`; update it in the same change (s
 
 ## Known issues
 
-- None open. Fixed: C06, C08, C15, D04, D05 (Fixed issues (`knowledge/issues/Fixed issues.md`)).
+- None open. Fixed: C06, C08, C15, D04, D05, D07 (Fixed issues (`knowledge/issues/Fixed issues.md`)).

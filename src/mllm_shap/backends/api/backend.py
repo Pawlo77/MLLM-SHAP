@@ -192,7 +192,10 @@ def _parse_response(response: Any) -> GenerationRecord:
         msg = "HTTP API response was not a JSON object"
         raise BackendUnavailableError(msg)
     record = generation_record_from_text(extract_message_content(data))
-    return dataclasses.replace(record, logprobs=extract_logprobs(data))
+    logprobs = extract_logprobs(data)
+    if logprobs is None and not record.text:
+        logprobs = ()  # servers send ``logprobs: null`` for a reply of zero tokens
+    return dataclasses.replace(record, logprobs=logprobs)
 
 
 def _retry_delay(attempt: int, retry_after: str | None, max_delay: float) -> float:

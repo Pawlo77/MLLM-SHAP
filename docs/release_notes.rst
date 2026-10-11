@@ -8,6 +8,13 @@ Changes in each published ``mllm-shap`` version. Newest first.
 Unreleased
 ----------
 
+Fixed
+~~~~~
+
+- The ``api`` backend gives an empty reply the logprobs ``()`` instead of ``None``
+  (LM Studio sends ``logprobs: null`` for it), so ``reanalyze`` accepts archives of
+  runs that contain empty generations.
+
 .. _release-0-3-0:
 
 0.3.0 (2026-10-11)

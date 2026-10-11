@@ -446,6 +446,18 @@ def test_api_backend_requests_and_parses_logprobs() -> None:
     assert isinstance(_api_backend(handler), SupportsLogprobs)
 
 
+def test_api_backend_scores_an_empty_completion_with_no_logprobs() -> None:
+    """A zero-token reply (``logprobs: null`` from LM Studio) has logprobs ``()``."""
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        choice = {"message": {"role": "assistant", "content": ""}, "logprobs": None}
+        return httpx.Response(200, json={"choices": [choice]})
+
+    first, _ = _generate_twice(handler)
+    assert first.text == ""
+    assert first.logprobs == ()
+
+
 def test_api_backend_returns_none_when_the_server_omits_logprobs() -> None:
     first, _ = _generate_twice(lambda request: _success_response("world"))
     assert first.text == "world"
