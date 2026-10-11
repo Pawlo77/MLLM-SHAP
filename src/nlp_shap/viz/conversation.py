@@ -7,7 +7,10 @@
 
 from typing import TYPE_CHECKING, Any
 
-from ..domain.conversation import ConversationSnapshot
+import numpy as np
+
+from ..alignment.io import decode_audio
+from ..domain.conversation import AudioPart, ConversationSnapshot, Message
 from ..domain.players import PlayerSet
 from ..pipeline.result import ExplainRunOutput
 from .colors import token_background_css, token_background_rgba
@@ -27,6 +30,7 @@ if TYPE_CHECKING:
     from matplotlib.figure import Figure
 
 _CONTEXT = "#9CA3AF"  # text that is no player: filtered roles, punctuation gaps
+_STRIP_INCHES = 1.5  # height of one audio message's waveform strip
 Piece = tuple[str, float | None]
 
 
@@ -42,7 +46,10 @@ def plot_conversation(
     Every message gets a ``"<role>[/<speaker>] <n>"`` header. Token or message
     players are shaded on the attribution scale where they stand; text that is
     no player (roles the partition left out, for example) stays grey, so the
-    context of a filtered explanation remains readable.
+    context of a filtered explanation remains readable. A message whose players
+    carry ``samples`` (``sgpa_segments``) also gets a waveform strip below, with
+    those players shaded on the same scale, so typed and spoken words compare
+    directly.
 
     Raises:
         ValueError: If ``player_set`` does not match ``snapshot`` or the values.
@@ -71,11 +78,79 @@ def plot_conversation(
         groups.append((first - 1, first))
     figure.tight_layout()
     lines = _lines(axis, texts, groups, fontsize)
-    figure.set_size_inches(10.0, _HEADER_INCHES + _LINE_INCHES * len(lines))
+    text_inches = _HEADER_INCHES + _LINE_INCHES * len(lines)
+    figure.set_size_inches(10.0, text_inches)
     figure.tight_layout()
+    strips = _audio_messages(snapshot, player_set, values)
+    if strips:
+        _add_strips(figure, axis, text_inches, strips, vmax)
     _place_tokens(axis, texts, lines, fontsize)
     _draw_color_legend(axis)
     return figure
+
+
+AudioStrip = tuple[str, AudioPart, list[tuple[int, int, str, float]]]
+
+
+def _audio_messages(
+    snapshot: ConversationSnapshot, player_set: PlayerSet, values: tuple[float, ...]
+) -> list[AudioStrip]:
+    """Header, audio and ``(start, end, word, value)`` per audio message."""
+    players: dict[int, list[tuple[int, int, str, float]]] = {}
+    for span, value in zip(player_set.spans, values, strict=True):
+        if span.samples is not None:
+            players.setdefault(span.message_index, []).append((
+                *span.samples,
+                span.text,
+                value,
+            ))
+    messages = snapshot.messages()
+    return [
+        (
+            f"{_head(messages[index], index)} (audio)",
+            next(p for p in messages[index].content if isinstance(p, AudioPart)),
+            found,
+        )
+        for index, found in sorted(players.items())
+    ]
+
+
+def _add_strips(
+    figure: Any, axis: Any, text_inches: float, strips: list[AudioStrip], vmax: float
+) -> None:
+    """Grow the figure by one waveform strip per audio message, below the text."""
+    box = axis.get_position()
+    below = _STRIP_INCHES * len(strips)
+    total = text_inches + below
+    figure.set_size_inches(10.0, total)
+    axis.set_position([
+        box.x0,
+        (below + box.y0 * text_inches) / total,
+        box.width,
+        box.height * text_inches / total,
+    ])
+    for row, (head, audio, players) in enumerate(strips):
+        bottom = (_STRIP_INCHES * (len(strips) - 1 - row) + 0.45) / total
+        strip = figure.add_axes([box.x0, bottom, box.width, 0.75 / total])
+        waveform, rate = decode_audio(audio.data())
+        strip.plot(
+            np.arange(len(waveform)) / rate, waveform, color=TEXT_MUTED, linewidth=0.5
+        )
+        for start, end, word, value in players:
+            fill = token_background_rgba(value, vmax)
+            strip.axvspan(start / rate, end / rate, color=fill, label="segment")
+            strip.text(
+                (start + end) / 2 / rate,
+                1.02,
+                word,
+                transform=strip.get_xaxis_transform(),
+                ha="center",
+                va="bottom",
+                fontsize=8,
+            )
+        strip.set_title(head, loc="left", fontsize=9, color=TEXT_MUTED, pad=14)
+        strip.set_yticks([])
+        strip.set_xlabel("time (s)", fontsize=8)
 
 
 def render_conversation_html(
@@ -135,9 +210,6 @@ def _messages(
         ))
     result: list[tuple[str, list[Piece]]] = []
     for index, message in enumerate(snapshot.messages()):
-        head = message.role.value
-        if message.speaker is not None:
-            head += f"/{message.speaker}"
         pieces: list[Piece] = []
         cursor = 0
         for start, end, value in sorted(by_message.get(index, [])):
@@ -145,8 +217,15 @@ def _messages(
             pieces.append((message.text[start:end], value))
             cursor = end
         pieces.append((message.text[cursor:], None))
-        result.append((f"{head} {index + 1}", [p for p in pieces if p[0].strip()]))
+        result.append((_head(message, index), [p for p in pieces if p[0].strip()]))
     return result
+
+
+def _head(message: Message, index: int) -> str:
+    head = message.role.value
+    if message.speaker is not None:
+        head += f"/{message.speaker}"
+    return f"{head} {index + 1}"
 
 
 def _text(

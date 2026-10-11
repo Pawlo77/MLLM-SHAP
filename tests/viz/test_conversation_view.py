@@ -86,3 +86,61 @@ def test_values_must_match_the_players() -> None:
     )
     with pytest.raises(ValueError, match="same length"):
         render_conversation_html(short, THREAD, output.player_set)
+
+
+def test_audio_messages_get_a_waveform_strip_on_the_same_colour_scale() -> None:
+    """Typed and spoken players share one scale; the spoken ones also on the audio."""
+    pytest.importorskip("librosa")
+    pytest.importorskip("soundfile")
+    from nlp_shap import AudioPart, PluginGroup, TextPart
+    from nlp_shap.alignment.partitions import SgpaSegmentPartitioner
+    from nlp_shap.alignment.sgpa import SpectrogramGuidedAligner
+    from nlp_shap.plugins import default_registry
+    from nlp_shap.plugins.context import PluginContext
+    from nlp_shap.viz.colors import token_background_rgba
+    from tests.alignment._fakes import RATE, FakeCtc, speech
+
+    snapshot = ConversationSnapshot.from_turns((
+        Turn(
+            messages=(
+                Message(role=Role.USER, text="What was said?"),
+                Message(
+                    role=Role.USER,
+                    content=(TextPart("ab — c"), AudioPart(speech(), RATE)),
+                ),
+            )
+        ),
+    ))
+    config = ExplainConfig.model_validate({
+        "backend": {"kind": "mock", "model_id": "stub"},
+        "explanation": {
+            "players": "sgpa_segments",
+            "plugin_options": {"sgpa_segments": {"text_roles": ["user"]}},
+            "archive": {"path": ""},
+        },
+    })
+    registry = default_registry()
+    registry.register(
+        PluginGroup.PARTITIONS,
+        "sgpa_segments",
+        lambda context: SgpaSegmentPartitioner(
+            PluginContext(config=config, options={"text_roles": ["user"]}),
+            aligner=SpectrogramGuidedAligner(FakeCtc()),
+        ),
+        replace=True,
+    )
+    output = ExplainRunner(config, registry=registry).explain_sync(snapshot)
+    values = (0.1, -0.2, 0.3, 0.5, -0.4)
+    output = dataclasses.replace(
+        output, result=dataclasses.replace(output.result, values=values)
+    )
+    assert output.player_set is not None
+    figure = plot_conversation(output, snapshot, output.player_set)
+    text_axis, audio_axis = figure.axes
+    assert audio_axis.get_title(loc="left") == "user 2 (audio)"
+    segments = [p for p in audio_axis.patches if p.get_label() == "segment"]
+    assert [p.get_facecolor() for p in segments] == pytest.approx([
+        token_background_rgba(v, 0.5) for v in values[3:]
+    ])
+    boxed = {t.get_text() for t in text_axis.texts if t.get_bbox_patch() is not None}
+    assert boxed == {"What", "was", "said?", "ab", "c"}
