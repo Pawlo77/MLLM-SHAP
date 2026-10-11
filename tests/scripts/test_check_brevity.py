@@ -87,11 +87,11 @@ def test_docstring_and_nested_agents_lines(
     brevity: ModuleType, tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
     write(tmp_path, "scripts/tool.py", '"""Doc.\n' + "\n" * 11 + '"""\n')
-    write(tmp_path, "src/AGENTS.md", "rule\n" * 16)
+    write(tmp_path, "src/AGENTS.md", "rule\n" * 61)
     code, out = run(brevity, tmp_path, capsys)
     assert code == 1
     assert "scripts/tool.py: 13 > 12 (module docstring lines)" in out
-    assert "src/AGENTS.md: 16 > 15 (lines)" in out
+    assert "src/AGENTS.md: 61 > 60 (lines)" in out
 
 
 def test_list_prints_passing_files(

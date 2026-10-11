@@ -8,7 +8,7 @@ description: >-
 
 # mllm-shap notes
 
-Notes live in `knowledge/` (paths, frontmatter, rules: [reference.md](reference.md);
+Notes live in `knowledge/` (paths, frontmatter, rules: `knowledge/AGENTS.md`;
 machinery: skill `obsidian`). A note is updated in the same change as the code it describes.
 
 ## Where and how
@@ -23,7 +23,7 @@ machinery: skill `obsidian`). A note is updated in the same change as the code i
   the Dashboard list of solutions (solution); link a decision from its cause.
 - Never edit `knowledge/generated/`; `make knowledge` rebuilds it.
 
-## Writing rules (beyond reference.md)
+## Writing rules (beyond `knowledge/AGENTS.md`)
 
 - Every sentence carries a mechanism, a number, an invariant or a decision; no process
   history or status chatter.

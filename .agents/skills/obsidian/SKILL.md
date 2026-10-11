@@ -8,7 +8,7 @@ description: >-
 # mllm-shap Obsidian vault
 
 The vault `mllm-shap` is the repository root. Notes live in `knowledge/` (written with
-skill `notes`; its [reference.md](../notes/reference.md) holds the vault rules), plus
+skill `notes`; the vault rules are in `knowledge/AGENTS.md`), plus
 `plans/` and `.remember/*.md`. Read [references/syntax.md](references/syntax.md) before
 writing Dataview, Bases, Canvas, Mermaid or Templater.
 
