@@ -10,17 +10,26 @@ related-code:
   - "[[src/mllm_shap/pipeline/orchestrator.py]]"
   - "[[src/mllm_shap/backends/transformers/text.py]]"
   - "[[src/mllm_shap/backends/mock/audio.py]]"
+  - "[[src/mllm_shap/backends/transformers/audio.py]]"
 ---
 
 # Backends decisions
 
 Part of [[mllm-shap]]; architecture: [[backends]]. Related: [[value]], [[Capability protocol]].
 
+## 2026-10-11 — Audio input through the transformers processor
+
+Decision: The `transformers` kind hears audio: a checkpoint `AutoModelForCausalLM` does not know loads its own class with `AutoProcessor`. `api` sends `input_audio` parts; `lmstudio` refuses audio unless `audio: transcript`.
+
+Why: A dedicated liquid-audio backend served one model family. Granite Speech, Qwen2-Audio and Voxtral share the processor path, and the LM Studio SDK (1.6.0b1 included) takes no audio.
+
+Consequences: Granite Speech's chat template has no audio slot, so audio goes in as `audio_token`; templates that mention audio get structured parts. Audio prompts skip the prefix cache. `torchaudio` joins the `transformers` extra. Rejected: a `transformers_audio` kind (a second loader for the same models).
+
 ## 2026-10-11 — Audio mock backend answers one token per voiced run
 
 Decision: `MockAudioBackend` is a separate `mock_audio` entry, not a mode of `mock`. It echoes message words and adds one token per voiced run of each `AudioPart`, the SHA-256 of the run's 16-bit samples; 16-bit WAV decodes with the standard library `wave`.
 
-Why: `mock` hashes the whole prompt, so audio players got arbitrary values; continuous integration (CI) must run audio explanations without the `audio` extra ([[D02 - Audio backend]]).
+Why: `mock` hashes the whole prompt, so audio players got arbitrary values; continuous integration (CI) must run audio explanations without the `audio` extra.
 
 Consequences: silencing or cutting a word's samples drops exactly its token, so audio attributions are checkable. `mock` outputs stay unchanged. Rejected: a flag on `mock` (changes its archived outputs), fixed-length windows (cutting shifts every later window).
 

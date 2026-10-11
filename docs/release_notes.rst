@@ -8,6 +8,24 @@ Changes in each published ``mllm-shap`` version. Newest first.
 Unreleased
 ----------
 
+Added
+~~~~~
+
+- The ``transformers`` backend hears audio: a checkpoint ``AutoModelForCausalLM``
+  does not know (or any ``backend.options.model_class``) loads with its processor
+  and takes audio parts, for example Granite Speech (:doc:`guides/audio_backends`).
+  ``backend.options.attn_implementation`` is passed to ``from_pretrained``.
+- The ``api`` backend sends audio parts as OpenAI ``input_audio`` parts
+  (base64 WAV) instead of refusing them.
+- The ``lmstudio`` option ``audio: transcript`` sends the text parts of a message
+  with audio; by default audio is still refused, since the LM Studio SDK takes none.
+
+Changed
+~~~~~~~
+
+- The ``transformers`` extra adds ``torchaudio`` (Granite Speech's feature
+  extractor needs it), and the backend reads the model config before loading.
+
 .. _release-0-4-0:
 
 0.4.0 (2026-10-11)

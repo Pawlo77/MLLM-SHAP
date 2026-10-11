@@ -73,7 +73,7 @@ tags: [generated]
 | `TokenBarRenderer` | [[src/mllm_shap/viz/token_bar.py]] | Render attributions as a SHAP-style horizontal bar chart. |
 | `TokenPartitioner` | [[src/mllm_shap/masking/partitions.py]] | Partition a snapshot into whitespace-delimited text tokens. |
 | `TokenTextRenderer` | [[src/mllm_shap/viz/token_text.py]] | Render attributions as inline colored tokens. |
-| `TransformersTextBackend` | [[src/mllm_shap/backends/transformers/text.py]] | Generate text with a local Hugging Face causal language model. |
+| `TransformersTextBackend` | [[src/mllm_shap/backends/transformers/text.py]] | Generate text with a local Hugging Face language model. |
 | `Turn` | [[src/mllm_shap/domain/conversation.py]] | One conversational turn composed of ordered messages. |
 | `__version__` | | Installed package version string. |
 | `configure_logging` | [[src/mllm_shap/_logging.py]] | Configure the ``mllm_shap`` loggers from TOML or with one stderr handler. |

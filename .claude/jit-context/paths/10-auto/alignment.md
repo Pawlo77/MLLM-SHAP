@@ -22,5 +22,5 @@ Full note: `knowledge/architecture/alignment.md`; update it in the same change (
 
 ## Known issues
 
-- No model backend generates from audio yet (D02 - Audio backend (`knowledge/issues/D02 - Audio backend.md`)); only `mock_audio` (backends (`knowledge/architecture/backends.md`)) hears the masked audio.
+- None open.
 - D06 - SGPA paper not in the papers list (`knowledge/issues/D06 - SGPA paper not in the papers list.md`): the method's paper is under review, so it has no Papers (`knowledge/papers/Papers.md`) section yet.
