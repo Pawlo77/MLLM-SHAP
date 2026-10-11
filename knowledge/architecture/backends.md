@@ -4,7 +4,7 @@ type: module
 domain: backends
 tags: [architecture, backends]
 created: 2026-10-07
-updated: 2026-10-10
+updated: 2026-10-11
 related-code:
   - "[[src/mllm_shap/backends/__init__.py]]"
   - "[[src/mllm_shap/backends/_chat.py]]"

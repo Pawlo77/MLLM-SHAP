@@ -4,7 +4,7 @@ type: module
 domain: pipeline
 tags: [architecture, pipeline]
 created: 2026-10-07
-updated: 2026-10-09
+updated: 2026-10-11
 related-code:
   - "[[src/mllm_shap/pipeline/__init__.py]]"
   - "[[src/mllm_shap/pipeline/config.py]]"

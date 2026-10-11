@@ -4,7 +4,7 @@ type: module
 domain: plugins
 tags: [architecture, plugins]
 created: 2026-10-07
-updated: 2026-10-10
+updated: 2026-10-11
 related-code:
   - "[[src/mllm_shap/plugins/__init__.py]]"
   - "[[src/mllm_shap/plugins/backends.py]]"
