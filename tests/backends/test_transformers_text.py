@@ -7,7 +7,7 @@ import asyncio
 import dataclasses
 import math
 from types import SimpleNamespace
-from typing import Any
+from typing import Any, ClassVar
 
 import pytest
 
@@ -431,7 +431,7 @@ def test_transformers_backend_loads_the_configured_revision_and_dtype(
 
     class _TextConfig:
         # GPT-2 style: a causal language model whose class is no *ForCausalLM.
-        architectures = ["GPT2LMHeadModel"]
+        architectures: ClassVar[list[str]] = ["GPT2LMHeadModel"]
 
     fake = SimpleNamespace(
         AutoConfig=_Auto("config", _TextConfig()),
