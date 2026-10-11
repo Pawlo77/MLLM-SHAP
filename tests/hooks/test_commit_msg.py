@@ -55,6 +55,8 @@ def test_valid_commit_messages(commit_msg, message: str) -> None:
         "feat add missing colon",
         "unknown: not a type",
         "feat: " + ("x" * 80),
+        "feat: add x\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
+        "feat: add x\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)",
     ],
 )
 def test_invalid_commit_messages(commit_msg, message: str) -> None:
