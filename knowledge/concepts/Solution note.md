@@ -2,6 +2,7 @@
 title: "Solution note"
 type: concept
 domain: process
+parent: "[[mllm-shap]]"
 tags: [concept]
 created: 2026-10-08
 ---

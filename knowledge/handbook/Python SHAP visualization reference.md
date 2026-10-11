@@ -2,6 +2,7 @@
 title: "Python SHAP visualization reference"
 type: handbook
 domain: viz
+parent: "[[mllm-shap]]"
 tags: [handbook, viz, shap]
 created: 2026-10-10
 updated: 2026-10-10
@@ -9,7 +10,7 @@ updated: 2026-10-10
 
 # Python SHAP visualization reference
 
-Part of [[mllm-shap]]. Module note: [[viz]].
+Module note: [[viz]].
 
 Read: `shap` 0.53.0 (tag `v0.53.0`, PyPI latest on 2026-10-10), source `shap/plots/`. SHAP means SHapley Additive exPlanations.
 

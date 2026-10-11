@@ -2,6 +2,7 @@
 title: "Onboarding"
 type: handbook
 domain: handbook
+parent: "[[mllm-shap]]"
 tags: [handbook, onboarding]
 created: 2026-10-07
 updated: 2026-10-08
@@ -9,12 +10,12 @@ updated: 2026-10-08
 
 # Onboarding
 
-Part of [[mllm-shap]]. Next: [[How a run works]].
+Next: [[How a run works]].
 
 ## Set up
 
 1. Clone the repository; optionally clone `MLLM-Shap-legacy` as a sibling.
-2. `uv self update` (uv 0.12 or newer), then `make install`: Python 3.12 ([[Tooling decisions#2026-10-07 — Python upper bound lifted|Python upper bound lifted]]), all dependency groups, prek git hooks.
+2. `uv self update` (uv 0.12 or newer), then `make install`: Python 3.12, all dependency groups, prek git hooks.
 3. `make check`: filtered tests, every prek hook and `make vault-check`. It must pass before any hand-off.
 
 ## Open the vault
@@ -30,7 +31,7 @@ Part of [[mllm-shap]]. Next: [[How a run works]].
 |---|---|
 | `src/mllm_shap/` | the package; one architecture note per subpackage ([[Modules]]) |
 | `tests/` | pytest suite; markers `lms`, `gpu`, `bench`, `slow`, `practical` are excluded from `make check` |
-| `tests/practical/` | real-model scenarios on a GPU, `make practical FEATURE=<glob>` ([[Process decisions#2026-10-08 — Practical tests on real small models\|Practical tests]]) |
+| `tests/practical/` | real-model scenarios on a GPU, `make practical FEATURE=<glob>` |
 | `docs/` | Sphinx site (`make docs`) |
 | `examples/` | notebooks with stored outputs (`make notebooks`) |
 | `knowledge/` | this vault: map, architecture notes, decisions, issues |
@@ -40,5 +41,5 @@ Part of [[mllm-shap]]. Next: [[How a run works]].
 
 1. Read the map and the architecture note of the package you touch.
 2. Test first, implement, run `make check`.
-3. Update the architecture note and append decision sections and issue notes within the [[Process decisions#2026-10-08 — Brevity budgets|brevity budgets]]; run `make knowledge vault-check`.
-4. Open a pull request ([[Process decisions#2026-10-08 — Claude reviews before the pull request|how changes are reviewed]]).
+3. Update the architecture note and append decision sections and issue notes; run `make knowledge vault-check`.
+4. Open a pull request; Cursor Bugbot and CodeQL review it.

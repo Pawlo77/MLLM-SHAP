@@ -8,7 +8,7 @@ description: >-
 # mllm-shap Obsidian vault
 
 The vault `mllm-shap` is the repository root. Notes live in `knowledge/` (written with
-skill `notes`; its [reference.md](../notes/reference.md) holds the vault rules), plus
+skill `notes`; the vault rules are in `knowledge/AGENTS.md`), plus
 `plans/` and `.remember/*.md`. Read [references/syntax.md](references/syntax.md) before
 writing Dataview, Bases, Canvas, Mermaid or Templater.
 
@@ -32,10 +32,11 @@ before other work:
 - **Dataview**: live tables in `knowledge/Dashboard.md`; DQL only, no DataviewJS.
 - **Templater**: templates in `knowledge/_templates/` for people; agents write notes
   directly from skill `notes`.
-  Excluded files (`app.json`) keep templates, `docs/` (the handbook export), test
-  fixtures, the GitHub-facing `README.md`/`CONTRIBUTING.md` and every
-  `AGENTS.md`/`CLAUDE.md` out of the graph, search and link suggestions; templates build their links from split bracket strings so nothing in
-  them is clickable.
+  Excluded files (`app.json`) keep templates, `docs/`, `README.md`/`CONTRIBUTING.md` and
+  every `AGENTS.md`/`CLAUDE.md` out of the graph, search and link suggestions (templates
+  build links from split bracket strings, so none is clickable). The snippet
+  `.obsidian/snippets/hide-non-notes.css` hides folders without notes (`src/`, `tests/`,
+  ...) from the file explorer; list a new such folder there.
 - **Mermaid Tools**: an editor toolbar; agents only write ```` ```mermaid ```` fences.
 - **Bases, Canvas**: `.base` property views and `.canvas` maps under `knowledge/`.
 - **Templates (core)**: folder `knowledge/_templates`.

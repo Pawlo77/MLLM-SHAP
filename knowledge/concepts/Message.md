@@ -2,6 +2,7 @@
 title: "Message"
 type: concept
 domain: domain
+parent: "[[mllm-shap]]"
 tags: [concept]
 created: 2026-10-07
 updated: 2026-10-08

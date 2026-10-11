@@ -2,6 +2,7 @@
 title: "alignment"
 type: module
 domain: alignment
+parent: "[[mllm-shap]]"
 tags: [architecture, alignment]
 created: 2026-10-10
 updated: 2026-10-11
@@ -16,7 +17,7 @@ related-code:
 
 # alignment
 
-Part of [[mllm-shap]]. Concept: [[SGPA]]. Decisions: [[Alignment decisions]].
+Concept: [[SGPA]]. Decisions: [[Alignment decisions]].
 
 ## Responsibility
 

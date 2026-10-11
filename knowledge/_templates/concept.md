@@ -2,6 +2,7 @@
 title: "<% tp.file.title %>"
 type: concept
 domain: <% tp.system.prompt("Package?") %>
+parent: "[[mllm-shap]]"
 tags: [concept]
 created: <% tp.date.now("YYYY-MM-DD") %>
 aliases: []

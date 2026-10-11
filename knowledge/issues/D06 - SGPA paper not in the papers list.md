@@ -2,6 +2,7 @@
 title: "D06 - SGPA paper not in the papers list"
 type: issue
 domain: alignment
+parent: "[[mllm-shap]]"
 status: deferred
 severity: minor
 found: 2026-10-10

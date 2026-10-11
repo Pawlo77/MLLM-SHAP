@@ -9,8 +9,7 @@ description: >-
 # mllm-shap practical tests
 
 Scenarios: `tests/practical/scenarios.yaml`; models, variables and VRAM: CONTRIBUTING
-"Practical tests"; design: [[Process decisions#2026-10-08 — Practical tests on real small models]]
-and [[Process decisions#2026-10-11 — Deep practical tier on LM Studio]].
+"Practical tests"; design and rejected options: `tests/practical/AGENTS.md`.
 
 ## 1. Preflight
 

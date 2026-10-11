@@ -2,6 +2,7 @@
 title: "Package root"
 type: module
 domain: core
+parent: "[[mllm-shap]]"
 tags: [architecture, core]
 created: 2026-10-07
 updated: 2026-10-11
@@ -13,8 +14,6 @@ related-code:
 ---
 
 # Package root
-
-Part of [[mllm-shap]].
 
 ## Responsibility
 

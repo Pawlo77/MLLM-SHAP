@@ -2,6 +2,7 @@
 title: "Estimation decisions"
 type: decision-log
 domain: estimation
+parent: "[[mllm-shap]]"
 created: 2026-10-07
 updated: 2026-10-08
 tags: [decisions, estimation]
@@ -16,7 +17,7 @@ related-code:
 
 # Estimation decisions
 
-Part of [[mllm-shap]]; architecture: [[estimation]]. Theory: `docs/theory/approximation.rst`.
+Architecture: [[estimation]]. Theory: `docs/theory/approximation.rst`.
 
 ## 2026-10-07 — Singleton-first complementary sampling
 

@@ -15,22 +15,14 @@ Newest first.
 | Date | Domain | Decision | Status |
 |---|---|---|---|
 | 2026-10-11 | backends | [[Backends decisions#2026-10-11 — Audio mock backend answers one token per voiced run\|Audio mock backend answers one token per voiced run]] | accepted |
-| 2026-10-11 | process | [[Process decisions#2026-10-11 — Deep practical tier on LM Studio\|Deep practical tier on LM Studio]] | accepted |
 | 2026-10-10 | alignment | [[Alignment decisions#2026-10-10 — Own CTC alignment instead of torchaudio\|Own CTC alignment instead of torchaudio]] | accepted |
 | 2026-10-10 | masking | [[Masking decisions#2026-10-10 — Audio players are sample ranges on the player span\|Audio players are sample ranges on the player span]] | accepted |
 | 2026-10-09 | backends | [[Backends decisions#2026-10-09 — Half-precision prefix cache warns instead of promising equality\|Half-precision prefix cache warns instead of promising equality]] | accepted |
-| 2026-10-09 | process | [[Process decisions#2026-10-09 — AI attribution stripped\|AI attribution stripped]] | accepted |
 | 2026-10-08 | domain | [[Domain decisions#2026-10-08 — Speaker rendered into the message content\|Speaker rendered into the message content]] | accepted |
 | 2026-10-08 | masking | [[Masking decisions#2026-10-08 — Message players keep their slot when deleted\|Message players keep their slot when deleted]] | accepted |
 | 2026-10-08 | pipeline | [[Pipeline decisions#2026-10-08 — Absolute budget passed to samplers as an exact fraction\|Absolute budget passed to samplers as an exact fraction]] | accepted |
-| 2026-10-08 | process | [[Process decisions#2026-10-08 — Practical tests on real small models\|Practical tests on real small models]] | accepted |
-| 2026-10-08 | process | [[Process decisions#2026-10-08 — Automatic upgrades and releases\|Automatic upgrades and releases]] | accepted |
-| 2026-10-08 | process | [[Process decisions#2026-10-08 — Delivery autopilot merges routine changes\|Delivery autopilot merges routine changes]] | accepted |
-| 2026-10-08 | process | [[Process decisions#2026-10-08 — Claude reviews before the pull request\|Claude reviews before the pull request]] | accepted |
-| 2026-10-08 | process | [[Process decisions#2026-10-08 — Brevity budgets\|Brevity budgets]] | accepted |
 | 2026-10-08 | value | [[Value decisions#2026-10-08 — Logprob value is the coalition's own mean token logprob\|Logprob value is the coalition's own mean token logprob]] | accepted |
 | 2026-10-08 | value | [[Value decisions#2026-10-08 — Contextual hash embedding derived from text only\|Contextual hash embedding derived from text only]] | accepted |
-| 2026-10-08 | vault | [[Vault decisions#2026-10-08 — One log per domain and one papers file\|One log per domain and one papers file]] | accepted |
 | 2026-10-07 | backends | [[Backends decisions#2026-10-07 — Embeddings computed only when the value function needs them\|Embeddings computed only when the value function needs them]] | accepted |
 | 2026-10-07 | estimation | [[Estimation decisions#2026-10-07 — Singleton-first complementary sampling\|Singleton-first complementary sampling]] | accepted |
 | 2026-10-07 | estimation | [[Estimation decisions#2026-10-07 — Empty and grand pair in CC sampling\|Empty and grand pair in CC sampling]] | accepted |
@@ -38,12 +30,4 @@ Newest first.
 | 2026-10-07 | estimation | [[Estimation decisions#2026-10-07 — Full coalition table\|Full coalition table]] | accepted |
 | 2026-10-07 | pipeline | [[Pipeline decisions#2026-10-07 — Run id config digest and archive policy\|Run id config digest and archive policy]] | accepted |
 | 2026-10-07 | pipeline | [[Pipeline decisions#2026-10-07 — Manifest schema version 2\|Manifest schema version 2]] | accepted |
-| 2026-10-07 | process | [[Process decisions#2026-10-07 — Single release 0.1.18 for Phases 3 and 2\|Single release 0.1.18 for Phases 3 and 2]] | accepted |
-| 2026-10-07 | process | [[Process decisions#2026-10-07 — Merge strategy\|Merge strategy]] | accepted |
 | 2026-10-07 | runtime | [[Runtime decisions#2026-10-07 — KV cache off by default\|KV cache off by default]] | accepted |
-| 2026-10-07 | tooling | [[Tooling decisions#2026-10-07 — Agent skills canonical directory\|Agent skills canonical directory]] | accepted |
-| 2026-10-07 | tooling | [[Tooling decisions#2026-10-07 — Memory committed under remember\|Memory committed under remember]] | accepted |
-| 2026-10-07 | tooling | [[Tooling decisions#2026-10-07 — Plans directory\|Plans directory]] | accepted |
-| 2026-10-07 | tooling | [[Tooling decisions#2026-10-07 — Python upper bound lifted\|Python upper bound lifted]] | accepted |
-| 2026-10-07 | vault | [[Vault decisions#2026-10-07 — Vault hook is a ratchet (superseded 2026-10-08)\|Vault hook is a ratchet]] | superseded 2026-10-08 |
-| 2026-10-07 | vault | [[Vault decisions#2026-10-07 — Repository root as Obsidian vault\|Repository root as Obsidian vault]] | accepted |
