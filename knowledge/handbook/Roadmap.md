@@ -19,7 +19,7 @@ Detailed plans live outside this repository.
 | 1 | Repository tooling and this vault | none |
 | 2 | Correctness: efficient attributions for every estimator (C01 to C11 in [[Fixed issues]]) | 0.1.17 |
 | 3 | Documentation cleanup, continuous integration (CI) and security hardening | none |
-| 4 | Typed plugin contracts, player spans owned by the partition, backend runtime hardening ([[Fixed issues\|C06]]), one release ([[Process decisions#2026-10-07 — Single release 0.1.18 for Phases 3 and 2\|Single release 0.1.18 for Phases 3 and 2]]) | 0.1.18 |
+| 4 | Typed plugin contracts, player spans owned by the partition, backend runtime hardening ([[Fixed issues\|C06]]), one release | 0.1.18 |
 | 5 | Test hygiene, command line, TaskGroup scheduler, mutation testing, sampler fixes ([[Fixed issues\|C12]]) | 0.1.18 |
 
 ## Audio track

@@ -7,7 +7,7 @@ changes limited to :func:`_project_review`, within ``MAX_LINES``/``MAX_FILES`` (
 ``GENERATED``), no ``PROTECTED`` file. ``--write-marker`` stores the result for
 ``scripts/hooks/merge_gate.sh``; ``--bump`` prints :func:`suggest_bump`. Stdlib only.
 
-@see [[Process decisions#2026-10-08 — Delivery autopilot merges routine changes]]
+@see [[.agents/AGENTS.md]]
 @tested-by [[tests/scripts/test_pr_policy.py]]
 """
 
