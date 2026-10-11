@@ -17,7 +17,7 @@ tags: [generated]
 | [[src/nlp_shap/alignment/__init__.py]] | Spectrogram-guided alignment of transcript tokens to speech (``audio`` extra). | alignment | [[knowledge/architecture/alignment]] | 18 | [[alignment]] |
 | [[src/nlp_shap/alignment/ctc.py]] | CTC forced alignment (Viterbi over the blank-extended target sequence). | alignment | [[knowledge/architecture/alignment]] | 82 | [[alignment]] |
 | [[src/nlp_shap/alignment/io.py]] | Encoded audio bytes to mono float waveforms and back. | alignment | [[knowledge/architecture/alignment]] | 61 | [[alignment]] |
-| [[src/nlp_shap/alignment/partitions.py]] | The ``sgpa_segments`` partition: one player per spoken word of an audio message. | alignment | [[knowledge/architecture/alignment]] | 127 | [[alignment]] |
+| [[src/nlp_shap/alignment/partitions.py]] | The ``sgpa_segments`` partition: one player per spoken word of an audio message. | alignment | [[knowledge/architecture/alignment]] | 143 | [[alignment]] |
 | [[src/nlp_shap/alignment/segments.py]] | Transcript tokens aligned to audio time ranges. | alignment | [[knowledge/architecture/alignment]] | 66 | [[alignment]] |
 | [[src/nlp_shap/alignment/sgpa.py]] | Spectrogram-guided alignment of transcript tokens to speech (SGPA). | alignment | [[knowledge/architecture/alignment]] | 279 | [[alignment]] |
 | [[src/nlp_shap/backends/__init__.py]] | Backend plugin implementations. | backends | [[knowledge/architecture/backends]] | 9 | [[backends]] |
@@ -43,7 +43,7 @@ tags: [generated]
 | [[src/nlp_shap/domain/coalition.py]] | Coalition masks over explainability players. | domain | [[knowledge/architecture/domain]] | 45 | [[domain]] |
 | [[src/nlp_shap/domain/config.py]] | Generation and runtime settings shared by backends, runtime and pipeline. | domain | [[knowledge/architecture/domain]] | 52 | [[domain]] |
 | [[src/nlp_shap/domain/conversation.py]] | Immutable conversation snapshots without backend or IO. | domain | [[knowledge/architecture/domain]] | 320 | [[domain]] |
-| [[src/nlp_shap/domain/enums.py]] | Conversation and explanation enumerations for the text MVP. | domain | [[knowledge/architecture/domain]] | 31 | [[domain]] |
+| [[src/nlp_shap/domain/enums.py]] | Conversation and explanation enumerations for the text MVP. | domain | [[knowledge/architecture/domain]] | 36 | [[domain]] |
 | [[src/nlp_shap/domain/estimands.py]] | Estimand labels for attribution outputs and archive manifests. | domain | [[knowledge/architecture/domain]] | 34 | [[domain]] |
 | [[src/nlp_shap/domain/game.py]] | Cooperative-game domain types. | domain | [[knowledge/architecture/domain]] | 18 | [[domain]] |
 | [[src/nlp_shap/domain/generation.py]] | Generation payloads scored by value functions. | domain | [[knowledge/architecture/domain]] | 31 | [[domain]] |
@@ -64,7 +64,7 @@ tags: [generated]
 | [[src/nlp_shap/masking/audio.py]] | Render audio players: cut or silence the sample ranges of absent players. | masking | [[knowledge/architecture/masking]] | 53 | [[masking]] |
 | [[src/nlp_shap/masking/builder.py]] | View-based masked snapshots with structural sharing. | masking | [[knowledge/architecture/masking]] | 83 | [[masking]] |
 | [[src/nlp_shap/masking/codec.py]] | Packed bitset encoding and stable hashing for coalition masks. | masking | [[knowledge/architecture/masking]] | 66 | [[masking]] |
-| [[src/nlp_shap/masking/partitions.py]] | Player partition plugins: whitespace tokens and whole messages. | masking | [[knowledge/architecture/masking]] | 136 | [[masking]] |
+| [[src/nlp_shap/masking/partitions.py]] | Player partition plugins: whitespace tokens and whole messages. | masking | [[knowledge/architecture/masking]] | 133 | [[masking]] |
 | [[src/nlp_shap/masking/policies.py]] | Absence policies for rendering masked conversation snapshots. | masking | [[knowledge/architecture/masking]] | 162 | [[masking]] |
 | [[src/nlp_shap/masking/space.py]] | Mask-space utilities for explainable feature indexing. | masking | [[knowledge/architecture/masking]] | 61 | [[masking]] |
 | [[src/nlp_shap/masking/tokens.py]] | Whitespace token spans and span-based snapshot rendering. | masking | [[knowledge/architecture/masking]] | 124 | [[masking]] |
@@ -113,7 +113,7 @@ tags: [generated]
 | [[src/nlp_shap/viz/__init__.py]] | Token attribution visualization plugins. | viz | [[knowledge/architecture/viz]] | 44 | [[viz]] |
 | [[src/nlp_shap/viz/audio.py]] | Figure of aligned audio segments: waveform, refined boundaries and energy. | viz | [[knowledge/architecture/viz]] | 122 | [[viz]] |
 | [[src/nlp_shap/viz/colors.py]] | SHAP-inspired diverging colors for signed attributions. | viz | [[knowledge/architecture/viz]] | 65 | [[viz]] |
-| [[src/nlp_shap/viz/conversation.py]] | Conversation view: each message under its role, players coloured in place. | viz | [[knowledge/architecture/viz]] | 203 | [[viz]] |
+| [[src/nlp_shap/viz/conversation.py]] | Conversation view: each message under its role, players coloured in place. | viz | [[knowledge/architecture/viz]] | 282 | [[viz]] |
 | [[src/nlp_shap/viz/labels.py]] | Token label helpers for attribution renderers. | viz | [[knowledge/architecture/viz]] | 45 | [[viz]] |
 | [[src/nlp_shap/viz/render.py]] | Public helpers for attribution visualization. | viz | [[knowledge/architecture/viz]] | 104 | [[viz]] |
 | [[src/nlp_shap/viz/style.py]] | Seaborn-backed styling for attribution figures. | viz | [[knowledge/architecture/viz]] | 95 | [[viz]] |

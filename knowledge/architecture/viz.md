@@ -33,7 +33,8 @@ Part of [[nlp-shap]].
 - `token_labels(snapshot, player_set)`: each span's `display_label` (the partitioner's label, else the text with a `"<speaker>: "` prefix) from `PlayerSet.spans`; raises without spans or when spans do not match the snapshot.
 - `check_attribution(labels, values)`: the `ValueError` both renderers raise for unequal lengths or an empty attribution.
 - `plot_audio_segments(audio, segments, values=None)`: a two-panel figure of [[alignment]] segments, with the waveform, segment shading (by `values` on the diverging scale when given), refined boundaries, dashed CTC edges with arrows to where refinement moved them, and the RMS energy below; not a renderer plugin, since it draws audio, not a player attribution table.
-- `plot_conversation(output, snapshot, player_set, title=None)` and `render_conversation_html(...)`: the conversation message by message under `"<role>[/<speaker>] <n>"` headers, token or message players shaded in place, text that is no player grey; reuses the `token_text` layout and colours.
+- `plot_conversation(output, snapshot, player_set, title=None)` and `render_conversation_html(...)`: the conversation message by message under `"<role>[/<speaker>] <n>"` headers, players shaded in place, text that is no player grey.
+- `plot_conversation` adds a waveform strip per message with audio players, on the same colour scale; it reuses the `token_text` layout and colours.
 - `colors.py` (red-blue diverging scale), `style.py` (seaborn theme).
 
 ## Data flow

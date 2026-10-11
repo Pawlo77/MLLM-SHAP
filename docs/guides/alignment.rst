@@ -108,8 +108,9 @@ same length.
    Words as players, coloured by attribution with ``values``. The mock backend
    scores every word alike, so the colours are equal here.
 
-Plugin options: ``model_id``, ``revision``, ``device``, ``energy_weight`` and
-``flux_weight``. No backend generates from audio yet, so a run scores the masked
+Plugin options: ``model_id``, ``revision``, ``device``, ``energy_weight``,
+``flux_weight`` and ``text_roles`` (roles whose typed messages also give word
+players, none by default). No backend generates from audio yet, so a run scores the masked
 transcripts.
 
 Other CTC models
