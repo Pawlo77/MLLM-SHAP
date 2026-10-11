@@ -107,6 +107,17 @@ its value over the waveform and its energy.
    "curiosity" and "I" shape the model's reading of the speaker's mood most;
    "at" counts slightly against it.
 
+With the ``sgpa_segments`` option ``text_roles: [user]`` the words of typed user
+messages are players too, so typed and spoken words share one run and one colour
+scale. :func:`~nlp_shap.viz.plot_conversation` then adds a waveform strip below
+each audio message, shaded on the same scale as the text.
+
+.. figure:: /_static/notebook_figures/viz_text_audio.png
+   :alt: A typed question and a spoken answer, words shaded on one colour scale,
+         with the spoken answer's waveform below.
+
+   Typed and spoken words of one explanation.
+
 Jupyter HTML
 ------------
 
