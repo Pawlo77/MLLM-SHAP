@@ -4,7 +4,7 @@ type: module
 domain: runtime
 tags: [architecture, runtime]
 created: 2026-10-07
-updated: 2026-10-09
+updated: 2026-10-11
 related-code:
   - "[[src/mllm_shap/runtime/__init__.py]]"
   - "[[src/mllm_shap/runtime/archive.py]]"

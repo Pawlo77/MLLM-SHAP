@@ -4,7 +4,7 @@ type: module
 domain: alignment
 tags: [architecture, alignment]
 created: 2026-10-10
-updated: 2026-10-10
+updated: 2026-10-11
 related-code:
   - "[[src/mllm_shap/alignment/__init__.py]]"
   - "[[src/mllm_shap/alignment/ctc.py]]"

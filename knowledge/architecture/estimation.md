@@ -4,7 +4,7 @@ type: module
 domain: estimation
 tags: [architecture, estimation]
 created: 2026-10-07
-updated: 2026-10-09
+updated: 2026-10-11
 related-code:
   - "[[src/mllm_shap/estimation/__init__.py]]"
   - "[[src/mllm_shap/estimation/_shared.py]]"
