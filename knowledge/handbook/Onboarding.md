@@ -2,6 +2,7 @@
 title: "Onboarding"
 type: handbook
 domain: handbook
+parent: "[[mllm-shap]]"
 tags: [handbook, onboarding]
 created: 2026-10-07
 updated: 2026-10-08
@@ -9,7 +10,7 @@ updated: 2026-10-08
 
 # Onboarding
 
-Part of [[mllm-shap]]. Next: [[How a run works]].
+Next: [[How a run works]].
 
 ## Set up
 

@@ -2,6 +2,7 @@
 title: "Debugging a wrong attribution"
 type: handbook
 domain: estimation
+parent: "[[mllm-shap]]"
 tags: [handbook, debugging]
 created: 2026-10-07
 updated: 2026-10-08
@@ -9,7 +10,7 @@ updated: 2026-10-08
 
 # Debugging a wrong attribution
 
-Part of [[mllm-shap]]. Background: [[How a run works]], `docs/theory/shapley_values.rst`.
+Background: [[How a run works]], `docs/theory/shapley_values.rst`.
 
 ## 1. Check efficiency
 

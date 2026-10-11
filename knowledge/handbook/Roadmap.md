@@ -2,6 +2,7 @@
 title: "Roadmap"
 type: handbook
 domain: roadmap
+parent: "[[mllm-shap]]"
 tags: [handbook, roadmap]
 created: 2026-10-07
 updated: 2026-10-08
@@ -9,7 +10,7 @@ updated: 2026-10-08
 
 # Roadmap
 
-Part of [[mllm-shap]]. Detailed plans live outside this repository.
+Detailed plans live outside this repository.
 
 ## Remediation (2026-10)
 

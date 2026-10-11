@@ -62,6 +62,11 @@ VIOLATIONS = [
         "not valid YAML",
     ),
     ("missing field", _replace(CONCEPT, "domain: demo\n", ""), "has no 'domain'"),
+    (
+        "missing parent",
+        _replace(CONCEPT, 'parent: "[[Map]]"\n', ""),
+        "has no 'parent'",
+    ),
     ("bad type", _replace(CONCEPT, "type: concept", "type: essay"), "type 'essay'"),
     (
         "bad status",

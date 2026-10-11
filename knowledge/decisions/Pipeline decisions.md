@@ -2,6 +2,7 @@
 title: "Pipeline decisions"
 type: decision-log
 domain: pipeline
+parent: "[[mllm-shap]]"
 created: 2026-10-07
 updated: 2026-10-08
 tags: [decisions, pipeline]
@@ -17,7 +18,7 @@ related-code:
 
 # Pipeline decisions
 
-Part of [[mllm-shap]]; architecture: [[pipeline]]. Concepts: [[Manifest]], [[Run id]], [[Run archive]].
+Architecture: [[pipeline]]. Concepts: [[Manifest]], [[Run id]], [[Run archive]].
 
 ## 2026-10-08 — Absolute budget passed to samplers as an exact fraction
 

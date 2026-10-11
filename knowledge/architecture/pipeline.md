@@ -2,6 +2,7 @@
 title: "pipeline"
 type: module
 domain: pipeline
+parent: "[[mllm-shap]]"
 tags: [architecture, pipeline]
 created: 2026-10-07
 updated: 2026-10-11
@@ -18,7 +19,7 @@ related-code:
 
 # pipeline
 
-Part of [[mllm-shap]]. Walkthrough: [[How a run works]].
+Walkthrough: [[How a run works]].
 
 ## Responsibility
 

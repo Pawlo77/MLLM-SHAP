@@ -2,6 +2,7 @@
 title: "Value decisions"
 type: decision-log
 domain: value
+parent: "[[mllm-shap]]"
 created: 2026-10-08
 updated: 2026-10-08
 tags: [decisions, value]
@@ -15,7 +16,7 @@ related-code:
 
 # Value decisions
 
-Part of [[mllm-shap]]; architecture: [[value]]. Related: [[backends]], [[pipeline]], [[Reanalyze]].
+Architecture: [[value]]. Related: [[backends]], [[pipeline]], [[Reanalyze]].
 
 ## 2026-10-08 — Logprob value is the coalition's own mean token logprob
 
