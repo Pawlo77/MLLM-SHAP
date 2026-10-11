@@ -5,21 +5,18 @@
 @tested-by [[tests/masking/test_partitions.py]]
 """
 
-from typing import TYPE_CHECKING, ClassVar, Final, Literal
+from typing import TYPE_CHECKING, ClassVar, Final
 
 from pydantic import Field
 
 from ..domain.conversation import ConversationSnapshot, Message
+from ..domain.enums import RoleName
 from ..domain.players import PlayerSet, PlayerSpan
 from ..protocols.plugin import PluginOptions
 from .tokens import token_spans
 
 if TYPE_CHECKING:
     from ..plugins.context import PluginContext
-
-
-RoleName = Literal["user", "assistant", "system"]
-"""Message role accepted by :class:`RolesOptions`."""
 
 
 class RolesOptions(PluginOptions):
