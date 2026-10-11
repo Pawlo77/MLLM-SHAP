@@ -7,7 +7,7 @@ ids, ``smoke`` adds the smoke set and ``none`` adds nothing. Prints the sorted i
 comma-separated, an empty line when there are none; skill ``ship`` passes them to
 ``make practical FEATURE=...``.
 
-@see [[Process decisions#2026-10-08 — Practical tests on real small models]]
+@see [[tests/practical/AGENTS.md]]
 @tested-by [[tests/scripts/test_practical_features.py]]
 """
 

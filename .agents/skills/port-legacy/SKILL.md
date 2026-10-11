@@ -18,7 +18,7 @@ Legacy is a **sibling clone**, not inside this repo:
 
 Legacy package root: `../MLLM-Shap-legacy/mllm_shap/src/mllm_shap/`
 
-Open `<parent>/MLLM-SHAP/MLLM-SHAP.code-workspace` (clone commands: `CONTRIBUTING.md`, "Agent setup") so Cursor sees both folders.
+Open `<parent>/MLLM-SHAP/MLLM-SHAP.code-workspace` (clone commands: skill `agent-setup`) so Cursor sees both folders.
 
 ## Rules
 

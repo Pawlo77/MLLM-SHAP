@@ -2,6 +2,7 @@
 title: "<% tp.file.title %>"
 type: issue
 domain: <% tp.system.prompt("Package?") %>
+parent: "[[mllm-shap]]"
 status: open
 severity: <% tp.system.suggester(["blocker", "major", "minor"], ["blocker", "major", "minor"]) %>
 found: <% tp.date.now("YYYY-MM-DD") %>

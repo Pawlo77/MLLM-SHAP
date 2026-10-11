@@ -2,6 +2,7 @@
 title: "<% tp.file.title %>"
 type: module
 domain: <% tp.file.title %>
+parent: "[[mllm-shap]]"
 tags: [architecture, <% tp.file.title %>]
 created: <% tp.date.now("YYYY-MM-DD") %>
 updated: <% tp.date.now("YYYY-MM-DD") %>
@@ -10,8 +11,6 @@ related-code:
 ---
 
 # <% tp.file.title %>
-
-Part of [[mllm-shap]].
 
 ## Responsibility
 

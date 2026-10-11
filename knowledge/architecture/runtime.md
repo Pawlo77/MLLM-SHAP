@@ -2,6 +2,7 @@
 title: "runtime"
 type: module
 domain: runtime
+parent: "[[mllm-shap]]"
 tags: [architecture, runtime]
 created: 2026-10-07
 updated: 2026-10-11
@@ -18,8 +19,6 @@ related-code:
 ---
 
 # runtime
-
-Part of [[mllm-shap]].
 
 ## Responsibility
 

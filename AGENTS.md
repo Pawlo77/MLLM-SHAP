@@ -22,7 +22,7 @@ Optional, not part of `make check`: `make tests-all`, `make bench`, `make practi
   session). Files, code, commits, PR bodies and subagent reports stay normal prose.
 - Delivery goes through skill `ship` after `make check`: it commits, pushes, opens the PR,
   gets Copilot's review and addresses it; routine changes (`scripts/pr_policy.py`) merge
-  by themselves, everything else stops before the merge with the PR link. Outside `ship` and `release`,
+  by themselves, everything else stops before the merge with the PR link. It watches CI to green and keeps `main` merged in. Outside `ship` and `release`,
   no commit, push, tag or PR; never draft or WIP PRs, force pushes, amends or pushes to
   `main` (rule `git-commits`; enforced by each tool's permission settings and prek).
 - Upgrades and releases go through skills `upgrade`, `release` and `ship`.
@@ -36,19 +36,15 @@ Optional, not part of `make check`: `make tests-all`, `make bench`, `make practi
   `uv lock`, never `pip install`.
 - Write the fewest lines that keep the meaning: one home per fact, link instead of
   restating, budgets in rule `brevity` (checked by `scripts/check_brevity.py`).
+- Agent procedures live in `AGENTS.md`, skills and rules, never in README, CONTRIBUTING,
+  docs or vault notes. A lone file sits in its parent folder (skill layouts excepted).
 - Never edit generated files: `.claude/rules/` (edit `.cursor/rules/*.mdc`, then
   `uv run python scripts/sync_rules.py`), `.codex/agents/` (`scripts/sync_agents.py`),
   `knowledge/generated/` and `.claude/jit-context/*/10-auto/` (`make knowledge`).
 
 Keep this file general; detail lives in skills (`.agents/skills/`) and rules
-(`.cursor/rules/*.mdc`). Tool matrix, plugins, sibling clones and Codex setup:
-`CONTRIBUTING.md`, section "Agent setup".
-
-## Siblings
-
-| Sibling path (clone next to `MLLM-SHAP/`) | Use |
-|------|-----|
-| `../MLLM-Shap-legacy/mllm_shap/src/mllm_shap/` | legacy code to port (skill `port-legacy`) |
+(`.cursor/rules/*.mdc`); tool matrix, plugins and the legacy sibling clone
+(`../MLLM-Shap-legacy`, skill `port-legacy`): skill `agent-setup`.
 
 ## Memory and context
 
@@ -60,12 +56,8 @@ Keep this file general; detail lives in skills (`.agents/skills/`) and rules
 ## Vault
 
 - The repository root is an Obsidian vault; notes live in `knowledge/` only (entry:
-  `knowledge/mllm-shap.md`).
-- A change under `src/mllm_shap/<pkg>/` updates `knowledge/architecture/<pkg>.md` in the same
-  change.
-- A design choice appends a section to `knowledge/decisions/<Domain> decisions.md`; a bug
-  found or fixed updates `knowledge/issues/`.
-- Write notes only through skill `notes`.
+  `knowledge/mllm-shap.md`). Rules: `knowledge/AGENTS.md`; write notes only through skill
+  `notes`.
 - `make vault-check` (part of `make check`) fails on broken links, missing frontmatter and
   stale generated notes.
 

@@ -333,9 +333,7 @@ group when it builds its default registry:
 
 Names already registered are skipped, so a third-party plugin cannot silently
 replace a built-in one; call ``registry.register(..., replace=True)`` explicitly
-for that. Contributors adding a built-in plugin to this repository can start from
-the scaffold ``uv run python .agents/skills/plugin/scripts/new_plugin.py``
-(see ``CONTRIBUTING.md``).
+for that.
 
 Further reading
 ---------------

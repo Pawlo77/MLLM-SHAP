@@ -163,7 +163,7 @@ scenarios:
             model_id: facebook/wav2vec2-base-960h
             revision: 22aad52d435eb6dbaf354bdad9b0da84ce7d6156
     expect:
-      audio: examples/data/voices_sp0307.wav
+      audio: examples/voices_sp0307.wav
       ask: can you transcribe the speech into a written format?
       heard: curiosity
       heard_tokens: 48
@@ -215,9 +215,9 @@ scenarios:
     tier: fast
     turns:
       - [{role: user, text: "I had that curiosity beside me at this moment"}]
-    # examples/data/voices_sp0307.wav: VOiCES corpus (Lab41, SRI), CC BY 4.0; the 3.4 s clip
+    # examples/voices_sp0307.wav: VOiCES corpus (Lab41, SRI), CC BY 4.0; the 3.4 s clip
     # of torchaudio's forced-alignment tutorial.
-    expect: {audio: examples/data/voices_sp0307.wav, min_confidence: 0.8, longest: curiosity}
+    expect: {audio: examples/voices_sp0307.wav, min_confidence: 0.8, longest: curiosity}
   partition.sgpa_segments:
     tier: fast
     turns: &voices
@@ -232,7 +232,7 @@ scenarios:
           sgpa_segments:
             model_id: facebook/wav2vec2-base-960h
             revision: 22aad52d435eb6dbaf354bdad9b0da84ce7d6156
-    expect: {audio: examples/data/voices_sp0307.wav}
+    expect: {audio: examples/voices_sp0307.wav}
   viz.render:
     tier: fast
     turns: *multi_user

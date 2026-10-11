@@ -2,6 +2,7 @@
 title: "value"
 type: module
 domain: value
+parent: "[[mllm-shap]]"
 tags: [architecture, value]
 created: 2026-10-07
 updated: 2026-10-11
@@ -16,8 +17,6 @@ related-code:
 ---
 
 # value
-
-Part of [[mllm-shap]].
 
 ## Responsibility
 
