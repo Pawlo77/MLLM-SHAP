@@ -6,7 +6,7 @@
 ``required-version`` must not outrun) are reported, never edited. External commands
 (``uv``, ``prek``, ``gh``) go through an injectable :data:`Runner`. Stdlib only.
 
-@see [[Process decisions#2026-10-08 — Automatic upgrades and releases]]
+@see [[.agents/AGENTS.md]]
 @tested-by [[tests/scripts/test_upgrade.py]]
 """
 
