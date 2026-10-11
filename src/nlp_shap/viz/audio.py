@@ -21,6 +21,8 @@ if TYPE_CHECKING:
 
 _FRAME, _HOP = 256, 64  # RMS window and hop in samples, as in the aligner
 _SHADES = ("#E5E7EB", "#F3F4F6")  # alternating segment fills without values
+_MAX_ALPHA = 0.55  # value fills stay translucent so the waveform shows through
+_LIGHTEN = 0.35  # every second value fill moves this far toward white
 _BOUNDARY, _CTC = "#111827", "#6B7280"
 _MIN_SHIFT_S = 0.005  # shorter moves get no arrow
 
@@ -69,7 +71,7 @@ def _draw_segments(
     boundaries: set[float] = set()
     for index, segment in enumerate(segments):
         fill = (
-            diverging_rgba(values[index], vmax)
+            _value_fill(values[index], vmax, lighten=index % 2 == 1)
             if values is not None
             else _SHADES[index % 2]
         )
@@ -91,6 +93,16 @@ def _draw_segments(
             _draw_shift(axis, rough, refined)
     for time in sorted(boundaries):
         axis.axvline(time, color=_BOUNDARY, linewidth=1.1, label="boundary")
+
+
+def _value_fill(
+    value: float, vmax: float, lighten: bool
+) -> tuple[float, float, float, float]:
+    """Attribution colour, translucent; alternate neighbours are lighter."""
+    red, green, blue, alpha = diverging_rgba(value, vmax)
+    if lighten:
+        red, green, blue = (c + (1.0 - c) * _LIGHTEN for c in (red, green, blue))
+    return red, green, blue, min(alpha, _MAX_ALPHA)
 
 
 def _draw_shift(axis: Any, rough: float, refined: float) -> None:
