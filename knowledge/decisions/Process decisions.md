@@ -3,7 +3,7 @@ title: "Process decisions"
 type: decision-log
 domain: process
 created: 2026-10-07
-updated: 2026-10-09
+updated: 2026-10-11
 tags: [decisions, process]
 related-code:
   - "[[scripts/pr_policy.py]]"
@@ -18,6 +18,14 @@ related-code:
 
 Part of [[mllm-shap]]; handbook: [[Onboarding]].
 
+## 2026-10-11 — Deep practical tier on LM Studio
+
+Decision: `make practical TIER=deep` runs `deep.*` scenarios on `qwen2.5-3b-instruct` through LM Studio's `api` backend, judged by `gemma-3-4b-it` (the 3B misjudged). Only `deep.runtime.kv_cache` loads `Qwen2.5-3B-Instruct` in-process, since LM Studio has no prefix cache. A cached 10-player exact reference feeds every sampled run.
+
+Why: The in-process 3B needed 7.4 GB and 28 minutes cold.
+
+Consequences: 13 minutes cold, 4 warm (M4 Pro). Parallel load changes LM Studio's outputs, so keep it idle. Replaces the 2026-10-08 decision.
+
 ## 2026-10-09 — AI attribution stripped
 
 Decision: No `Co-Authored-By` or "Generated with" line naming an assistant; `scripts/strip_watermarks.py` strips them (prek, edit hooks, skill `ship`), `pr-title.yaml` rejects them.
@@ -25,14 +33,6 @@ Decision: No `Co-Authored-By` or "Generated with" line naming an assistant; `scr
 Why: Banners add noise, not information (reverses 2026-10-07).
 
 Consequences: Agent work is invisible in `git log`. Rejected: check-only hook (agents re-add them).
-
-## 2026-10-08 — Deep practical tier
-
-Decision: `make practical TIER=deep` runs `deep.*` scenarios on pinned `Qwen2.5-3B-Instruct` float16 (generator and judge) under an 8 GB VRAM cap. A cached 10-player exact reference (1024 generations, `results/reference-<hash>.json`) feeds every sampled run. Skill `release` runs it; `ship` keeps the quick tier, whose judge may run in LM Studio.
-
-Why: Five-player prompts cannot separate estimators by error versus budget or test long threads.
-
-Consequences: 28 minutes cold, 4 warm (M4 Pro). Rejected: a 7B in-process model (over the cap).
 
 ## 2026-10-08 — Practical tests on real small models
 
