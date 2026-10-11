@@ -1,6 +1,6 @@
 {
   // Multi-root workspace: MLLM-SHAP plus the legacy MLLM-Shap-legacy sibling.
-  // Layout and clone commands: CONTRIBUTING.md, section "Agent setup".
+  // Layout and clone commands: skill agent-setup (.agents/skills/agent-setup).
   "folders": [
     {
       "name": "MLLM-SHAP",

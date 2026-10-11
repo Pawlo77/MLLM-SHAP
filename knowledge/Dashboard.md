@@ -75,6 +75,15 @@ WHERE type = "plan"
 SORT created DESC
 ```
 
+## Solved problems
+
+```dataview
+TABLE created AS "Date", domain AS "Area", pr AS "PR"
+FROM "knowledge/handbook/Solutions"
+WHERE type = "solution"
+SORT created DESC
+```
+
 ## Generated
 
 ![[Open issues]]
@@ -85,4 +94,4 @@ SORT created DESC
 
 ![[Benchmarks]]
 
-Code tables: [[Modules]], [[Public API]], [[Config keys]], [[Plugins]]. Cited papers: [[Papers]]. Solved problems: [[knowledge/handbook/Solutions/README|Solutions]].
+Code tables: [[Modules]], [[Public API]], [[Config keys]], [[Plugins]]. Cited papers: [[Papers]].

@@ -53,7 +53,6 @@ BUDGETS = (
     Budget(("knowledge/issues/*.md",), 350, sentences=True),
     Budget(("knowledge/architecture/*.md", "knowledge/handbook/*.md"), 700, None, True),
     Budget(("knowledge/mllm-shap.md",), words=600, sentences=True),
-    Budget(("knowledge/README.md",), words=500, sentences=True),
     Budget(("knowledge/*.md", "docs/release_notes.rst"), sentences=True),
     Budget(("README.md",), words=900, sentences=True),
     Budget(("CONTRIBUTING.md",), words=1500, sentences=True),

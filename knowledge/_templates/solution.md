@@ -11,7 +11,7 @@ related-code: []
 
 # <% tp.file.title.split(' - ').slice(1).join(' - ') %>
 
-Solved in the pull request above; plan: <% "[" + "[<plan file>]" + "]" %>. Index: [[knowledge/handbook/Solutions/README|Solutions]].
+Solved in the pull request above; plan: <% "[" + "[<plan file>]" + "]" %>.
 
 ## Problem
 

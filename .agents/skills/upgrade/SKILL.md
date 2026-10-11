@@ -44,7 +44,7 @@ Remove what finished work left behind; git keeps history. Touch only the rows be
 |--------|-------|
 | `.remember/remember.md` | drop done items and merged-PR detail; compress `State` to current version, CI and schedules; keep `User-only` and open `Next` |
 | `knowledge/issues/` | a fixed issue leaves its own note for one `Fixed issues` row; merge rows older than the last release into one line; keep it ≤ 800 words |
-| `plans/`, `runs/` | delete finished plans and stale run output; keep `plans/README.md` |
+| `plans/`, `runs/` | delete finished plans and stale run output; keep `plans/AGENTS.md` |
 | merged branches | `git branch --merged main` minus `main`: `git branch -d` each; no `-D`, no remote deletes |
 
 Check each claim against `git log` and `gh pr list` first; when unsure, keep it and list it
