@@ -4,6 +4,9 @@ import re
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from strip_watermarks import is_watermark
+
 COMMIT_TYPES: tuple[str, ...] = (
     "feat",
     "fix",
@@ -37,6 +40,9 @@ def validate_commit_message(message: str) -> str | None:
     subject = subject_line(message)
     if not subject:
         return "commit message is empty"
+    for line in message.splitlines():
+        if is_watermark(line):
+            return f"AI attribution is not allowed in commit messages: {line.strip()!r}"
     if subject.startswith(_PREK_PREFIX):
         return None
     if subject.endswith("."):
