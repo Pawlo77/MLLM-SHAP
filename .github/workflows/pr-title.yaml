@@ -1,6 +1,7 @@
 # The PR title appears in the merge commit and drives the label (assign-author.yaml), so it
 # follows the commit convention (AGENTS.md). No drafts, WIP titles or WIP labels: PRs are
-# opened ready for review. The body carries no AI attribution (scripts/strip_watermarks.py).
+# opened ready for review. The body and the commit messages carry no AI attribution (scripts/strip_watermarks.py), and
+# every commit subject follows the same convention (scripts/hooks/commit_msg.py).
 name: PR title
 
 on:
@@ -19,12 +20,15 @@ jobs:
     timeout-minutes: 5
     permissions:
       contents: read  # private repository checkout
+      pull-requests: read  # list the PR's commits
     steps:
       - name: Checkout code
         uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
-          sparse-checkout: scripts/strip_watermarks.py
+          sparse-checkout: |
+            scripts/strip_watermarks.py
+            scripts/hooks/commit_msg.py
           sparse-checkout-cone-mode: false
 
       - name: Body carries no AI attribution
@@ -36,6 +40,34 @@ jobs:
             echo "::error::Remove the AI attribution line(s) above from the PR body."
             exit 1
           fi
+
+      - name: Commit messages carry no AI attribution
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh api --paginate "repos/$REPO/pulls/$PR/commits" --jq '.[].commit.message' > "$RUNNER_TEMP/commits.md"
+          if ! python3 scripts/strip_watermarks.py --check "$RUNNER_TEMP/commits.md"; then
+            echo "::error::Remove the AI attribution trailer(s) above from the commit message(s)."
+            exit 1
+          fi
+
+      - name: 'Commit subjects are "type: summary"'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          status=0
+          while IFS= read -r subject; do
+            case "$subject" in Merge\ branch*|Merge\ remote-tracking*|Merge\ pull\ request*) continue ;; esac
+            if ! python3 scripts/hooks/commit_msg.py --check-text "$subject"; then
+              echo "::error::Commit subject: $subject"
+              status=1
+            fi
+          done < <(gh api --paginate "repos/$REPO/pulls/$PR/commits" --jq '.[].commit.message | split("\n")[0]')
+          exit "$status"
 
       - name: 'Title is "type: subject"; not a draft, not WIP'
         env:
