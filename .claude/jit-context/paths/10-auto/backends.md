@@ -14,7 +14,8 @@ Full note: `knowledge/architecture/backends.md`; update it in the same change (s
 
 ## Invariants
 
-- The API, LM Studio and transformers backends refuse audio parts with `ValueError`; the mock backend hashes text only (D02 - Audio backend (`knowledge/issues/D02 - Audio backend.md`)).
+- The API, LM Studio and transformers backends refuse audio parts with `ValueError`; `mock` hashes text and the snapshot id only (D02 - Audio backend (`knowledge/issues/D02 - Audio backend.md`)).
+- `mock_audio`: a run's token depends on its samples only, so silencing or cutting another run leaves it unchanged.
 - In float32, greedy transformers outputs are identical with the prefix cache on and off, and their logprobs agree within 1e-4; in float16 and bfloat16 they agree up to rounding, and the backend warns once (decision (`knowledge/decisions/Backends decisions.md`)). No prompt token is processed twice.
 - A backend injected into `ExplainRunner` is reused across calls and closed by the runner; otherwise one backend is built and closed per `explain()`.
 

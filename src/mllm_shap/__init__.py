@@ -10,7 +10,7 @@ from ._logging import bootstrap_logging, configure_logging
 from .alignment.partitions import SgpaSegmentPartitioner
 from .backends.api import ApiBackend
 from .backends.lmstudio import LmStudioBackend
-from .backends.mock import MockBackend
+from .backends.mock import MockAudioBackend, MockBackend
 from .backends.transformers import TransformersTextBackend
 from .domain import (
     AudioPart,
@@ -137,6 +137,7 @@ __all__ = [
     "MessagePartitioner",
     "MinMaxNormalizer",
     "MllmShapError",
+    "MockAudioBackend",
     "MockBackend",
     "MonteCarloEstimator",
     "NeutralPolicy",
