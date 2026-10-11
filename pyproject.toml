@@ -3,7 +3,7 @@ name = "mllm-shap"
 version = "0.4.1"
 description = "Shapley-value attributions for conversational language models."
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.12"  # no upper bound: CI tests 3.12 to 3.14; optional extras may lag
 license = "Apache-2.0"
 license-files = ["LICENSE"]
 

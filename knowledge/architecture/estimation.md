@@ -2,6 +2,7 @@
 title: "estimation"
 type: module
 domain: estimation
+parent: "[[mllm-shap]]"
 tags: [architecture, estimation]
 created: 2026-10-07
 updated: 2026-10-11
@@ -20,8 +21,6 @@ related-code:
 ---
 
 # estimation
-
-Part of [[mllm-shap]].
 
 ## Responsibility
 

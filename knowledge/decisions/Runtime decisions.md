@@ -2,6 +2,7 @@
 title: "Runtime decisions"
 type: decision-log
 domain: runtime
+parent: "[[mllm-shap]]"
 created: 2026-10-07
 updated: 2026-10-08
 tags: [decisions, runtime]
@@ -12,7 +13,7 @@ related-code:
 
 # Runtime decisions
 
-Part of [[mllm-shap]]; architecture: [[runtime]]. Concept: [[Prefix hash]].
+Architecture: [[runtime]]. Concept: [[Prefix hash]].
 
 ## 2026-10-07 — KV cache off by default
 

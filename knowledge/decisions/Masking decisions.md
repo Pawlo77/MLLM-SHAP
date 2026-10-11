@@ -2,6 +2,7 @@
 title: "Masking decisions"
 type: decision-log
 domain: masking
+parent: "[[mllm-shap]]"
 created: 2026-10-08
 updated: 2026-10-10
 tags: [decisions, masking]
@@ -12,7 +13,7 @@ related-code:
 
 # Masking decisions
 
-Part of [[mllm-shap]]; architecture: [[masking]]. Related: [[Player span]].
+Architecture: [[masking]]. Related: [[Player span]].
 
 
 ## 2026-10-10 — Audio players are sample ranges on the player span

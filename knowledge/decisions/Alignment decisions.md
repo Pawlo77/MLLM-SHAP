@@ -2,6 +2,7 @@
 title: "Alignment decisions"
 type: decision-log
 domain: alignment
+parent: "[[mllm-shap]]"
 created: 2026-10-10
 updated: 2026-10-10
 tags: [decisions, alignment]
@@ -12,7 +13,7 @@ related-code:
 
 # Alignment decisions
 
-Part of [[mllm-shap]]; architecture: [[alignment]]. Related: [[SGPA]].
+Architecture: [[alignment]]. Related: [[SGPA]].
 
 ## 2026-10-10 — Own CTC alignment instead of torchaudio
 

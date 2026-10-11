@@ -53,7 +53,7 @@ def _add(rel: str, text: str) -> Callable[[Path], None]:
 ESTIMATION = "knowledge/architecture/estimation.md"
 CONCEPT = "knowledge/concepts/Coalition.md"
 DECISIONS = "knowledge/decisions/Demo decisions.md"
-PAPERS = "knowledge/papers/Papers.md"
+PAPERS = "knowledge/Papers.md"
 
 VIOLATIONS = [
     (
@@ -62,6 +62,11 @@ VIOLATIONS = [
         "not valid YAML",
     ),
     ("missing field", _replace(CONCEPT, "domain: demo\n", ""), "has no 'domain'"),
+    (
+        "missing parent",
+        _replace(CONCEPT, 'parent: "[[Map]]"\n', ""),
+        "has no 'parent'",
+    ),
     ("bad type", _replace(CONCEPT, "type: concept", "type: essay"), "type 'essay'"),
     (
         "bad status",

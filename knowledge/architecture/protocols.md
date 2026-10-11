@@ -2,6 +2,7 @@
 title: "protocols"
 type: module
 domain: protocols
+parent: "[[mllm-shap]]"
 tags: [architecture, protocols]
 created: 2026-10-07
 updated: 2026-10-11
@@ -20,8 +21,6 @@ related-code:
 ---
 
 # protocols
-
-Part of [[mllm-shap]].
 
 ## Responsibility
 

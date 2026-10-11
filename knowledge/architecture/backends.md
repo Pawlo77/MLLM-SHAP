@@ -2,6 +2,7 @@
 title: "backends"
 type: module
 domain: backends
+parent: "[[mllm-shap]]"
 tags: [architecture, backends]
 created: 2026-10-07
 updated: 2026-10-11
@@ -29,8 +30,6 @@ related-code:
 ---
 
 # backends
-
-Part of [[mllm-shap]].
 
 ## Responsibility
 

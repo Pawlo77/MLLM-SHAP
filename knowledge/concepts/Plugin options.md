@@ -2,6 +2,7 @@
 title: "Plugin options"
 type: concept
 domain: plugins
+parent: "[[mllm-shap]]"
 tags: [concept]
 created: 2026-10-08
 related-code:

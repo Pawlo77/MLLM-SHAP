@@ -75,12 +75,18 @@ start a line inside it. Decision-log entries are dated and listed newest first."
 FIXED_ISSUES = "Fixed issues"
 """Issue note holding one table row per fixed bug; exempt from the issue sections."""
 
-SKIPPED_FOLDERS = {"_templates", "_watch"}
-"""Folders under ``knowledge/`` that hold no vault notes: Templater templates and the
-git-ignored literature-watch shortlists (``knowledge/papers/_watch/``)."""
+SKIPPED_FOLDERS = {"_templates"}
+"""Folders under ``knowledge/`` that hold no vault notes: Templater templates."""
 
-REQUIRED_FIELDS = ("title", "type", "domain", "created")
-"""Frontmatter keys every knowledge note needs (``created`` optional when generated)."""
+AGENT_FILES = {"AGENTS.md", "CLAUDE.md"}
+"""Agent instructions beside the notes (``CLAUDE.md`` links to ``AGENTS.md``)."""
+
+REQUIRED_FIELDS = ("title", "type", "domain", "created", "parent")
+"""Frontmatter keys every knowledge note needs (``created`` optional when generated,
+``parent`` absent on the map and generated notes)."""
+
+ROOTLESS_TYPES = {"map", "generated"}
+"""Note types without a ``parent`` link."""
 
 PLAN_HEADER = ("**Goal:**", "**Architecture:**", "**Tech Stack:**")
 """Writing-plans header lines a ``type: plan`` file must contain."""
@@ -133,6 +139,11 @@ class Finding:
         return f"{self.path}:{self.line}: {level}{self.message}"
 
 
+def _notes_in(folder: Path) -> list[Path]:
+    """Return the Markdown notes directly in ``folder``, agent files excluded."""
+    return sorted(p for p in folder.glob("*.md") if p.name not in AGENT_FILES)
+
+
 @dataclass
 class Vault:
     """Notes and link targets of a vault rooted at ``root``."""
@@ -151,9 +162,10 @@ class Vault:
             path
             for path in (root / "knowledge").rglob("*.md")
             if not SKIPPED_FOLDERS & set(path.relative_to(root).parts)
+            and path.name not in AGENT_FILES
         )
-        vault.plans = sorted((root / "plans").glob("*.md"))
-        vault.memory = sorted((root / ".remember").glob("*.md"))
+        vault.plans = _notes_in(root / "plans")
+        vault.memory = _notes_in(root / ".remember")
         stems: dict[str, list[Path]] = defaultdict(list)
         for path in vault.notes + vault.plans:
             stems[path.stem].append(path)
@@ -402,6 +414,8 @@ def check_note(
     kind = meta.get("type")
     for key in REQUIRED_FIELDS:
         if key == "created" and kind == "generated":
+            continue
+        if key == "parent" and kind in ROOTLESS_TYPES:
             continue
         if not meta.get(key):
             findings.append(Finding(rel, 1, f"frontmatter has no '{key}'"))
@@ -682,8 +696,8 @@ def aux_markdown(vault: Vault) -> list[Path]:
         paths = [
             path.relative_to(vault.root).as_posix()
             for path in vault.root.rglob("*.md")
-            # Templates are link-checked; the git-ignored watch shortlists are not.
-            if not set(path.relative_to(vault.root).parts) & (STRAY_SKIP | {"_watch"})
+            # Templates are link-checked.
+            if not set(path.relative_to(vault.root).parts) & STRAY_SKIP
         ]
     else:
         paths = listed.splitlines()
