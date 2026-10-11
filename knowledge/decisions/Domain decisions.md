@@ -2,6 +2,7 @@
 title: "Domain decisions"
 type: decision-log
 domain: domain
+parent: "[[mllm-shap]]"
 created: 2026-10-08
 updated: 2026-10-08
 tags: [decisions, domain]
@@ -13,7 +14,7 @@ related-code:
 
 # Domain decisions
 
-Part of [[mllm-shap]]; architecture: [[domain]]. Related: [[backends]], [[Message]].
+Architecture: [[domain]]. Related: [[backends]], [[Message]].
 
 ## 2026-10-08 — Speaker rendered into the message content
 

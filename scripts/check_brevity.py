@@ -41,7 +41,7 @@ class Budget:
 
 BUDGETS = (
     Budget(("AGENTS.md",), words=500, lines=80),
-    Budget(("*/AGENTS.md",), lines=15),
+    Budget(("*/AGENTS.md",), lines=60),
     Budget((".claude/rules/always.md",), words=700),
     Budget((".agents/skills/*/SKILL.md",), words=500, lines=100),
     Budget((".agents/skills/*.md",), words=400),

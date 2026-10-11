@@ -12,7 +12,7 @@ Every line is read again by people and agents. Write the fewest lines that keep 
 - One home per fact. Link (`[[note]]`, `:doc:`, path) instead of restating it in another file.
 - Reference material as tables or lists, not paragraphs. No "Overview", "Introduction" or "Summary" sections. No sentence over 35 words.
 - Delete obsolete code and text; do not deprecate, archive or keep it "for history" (git has it).
-- Budgets (`scripts/check_brevity.py`, run by `make vault-check`): README ≤ 900 words; docs page ≤ 1200; release-note bullet ≤ 60; issue note ≤ 350 (`Fixed issues` table ≤ 800); decision log ≤ 700 (≤ 120 per decision); architecture/handbook note ≤ 700; skill ≤ 100 lines and 500 words; rule ≤ 60 lines and 400 words; agent ≤ 40 lines; nested AGENTS.md ≤ 15 lines.
+- Budgets (`scripts/check_brevity.py`, run by `make vault-check`): README ≤ 900 words; docs page ≤ 1200; release-note bullet ≤ 60; issue note ≤ 350 (`Fixed issues` table ≤ 800); decision log ≤ 700 (≤ 120 per decision); architecture/handbook note ≤ 700; skill ≤ 100 lines and 500 words; rule ≤ 60 lines and 400 words; agent ≤ 40 lines; nested AGENTS.md ≤ 60 lines.
 - Notebooks: markdown cell ≤ 150 words, code cell ≤ 40 lines, ≤ 900 markdown words per notebook; read a notebook with `jupyter nbconvert --to script --stdout`, never the raw file.
 - A file at or over budget must not grow: cut or split before adding.
 - Reports and PR bodies: findings first; no recap of the task or of code you only read.

@@ -53,7 +53,7 @@ Groups, config keys and built-in names: [[Plugins]]. `BUILTIN_PLUGINS` registers
 
 ## Decisions
 
-One log per domain, newest first: [[Domain decisions|domain]] · [[Masking decisions|masking]] · [[Estimation decisions|estimation]] · [[Pipeline decisions|pipeline]] · [[Backends decisions|backends]] · [[Runtime decisions|runtime]] · [[Value decisions|value]] · [[Process decisions|process]] · [[Tooling decisions|tooling]] · [[Vault decisions|vault]] · [[Alignment decisions|alignment]]
+One log per domain, newest first: [[Domain decisions|domain]] · [[Masking decisions|masking]] · [[Estimation decisions|estimation]] · [[Pipeline decisions|pipeline]] · [[Backends decisions|backends]] · [[Runtime decisions|runtime]] · [[Value decisions|value]] · [[Alignment decisions|alignment]]
 
 ## Papers
 

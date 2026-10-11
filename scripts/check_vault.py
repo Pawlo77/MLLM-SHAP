@@ -81,8 +81,12 @@ SKIPPED_FOLDERS = {"_templates"}
 AGENT_FILES = {"AGENTS.md", "CLAUDE.md"}
 """Agent instructions beside the notes (``CLAUDE.md`` links to ``AGENTS.md``)."""
 
-REQUIRED_FIELDS = ("title", "type", "domain", "created")
-"""Frontmatter keys every knowledge note needs (``created`` optional when generated)."""
+REQUIRED_FIELDS = ("title", "type", "domain", "created", "parent")
+"""Frontmatter keys every knowledge note needs (``created`` optional when generated,
+``parent`` absent on the map and generated notes)."""
+
+ROOTLESS_TYPES = {"map", "generated"}
+"""Note types without a ``parent`` link."""
 
 PLAN_HEADER = ("**Goal:**", "**Architecture:**", "**Tech Stack:**")
 """Writing-plans header lines a ``type: plan`` file must contain."""
@@ -410,6 +414,8 @@ def check_note(
     kind = meta.get("type")
     for key in REQUIRED_FIELDS:
         if key == "created" and kind == "generated":
+            continue
+        if key == "parent" and kind in ROOTLESS_TYPES:
             continue
         if not meta.get(key):
             findings.append(Finding(rel, 1, f"frontmatter has no '{key}'"))

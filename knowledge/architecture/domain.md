@@ -2,6 +2,7 @@
 title: "domain"
 type: module
 domain: domain
+parent: "[[mllm-shap]]"
 tags: [architecture, domain]
 created: 2026-10-07
 updated: 2026-10-11
@@ -18,8 +19,6 @@ related-code:
 ---
 
 # domain
-
-Part of [[mllm-shap]].
 
 ## Responsibility
 
