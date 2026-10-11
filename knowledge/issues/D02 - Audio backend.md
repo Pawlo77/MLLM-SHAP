@@ -35,4 +35,4 @@ Explain a snapshot whose message has an `AudioPart` with the transformers or API
 
 ## Fix
 
-- Deferred to the audio track (versions 0.2.x, [[Roadmap]]). Prerequisites done: player spans owned by the partitioner and message content parts (0.1.18), [[SGPA]] alignment (0.2.0), audio players and audio absence rendering (`sgpa_segments`, 0.2.1), the `mock_audio` backend for continuous integration (CI) audio runs (0.3.2, [[Backends decisions#2026-10-11 — Audio mock backend answers one token per voiced run|decision]]).
+- Deferred to the audio track (versions 0.2.x, [[Roadmap]]). Prerequisites done: player spans owned by the partitioner and message content parts (0.1.18), [[SGPA]] alignment (0.2.0), audio players and audio absence rendering (`sgpa_segments`, 0.2.1), the `mock_audio` backend for continuous integration (CI) audio runs (0.4.0, [[Backends decisions#2026-10-11 — Audio mock backend answers one token per voiced run|decision]]).
