@@ -12,6 +12,8 @@ Visualization
 
 .. automodule:: nlp_shap.viz.audio
 
+.. automodule:: nlp_shap.viz.conversation
+
 .. automodule:: nlp_shap.viz.colors
 
 .. automodule:: nlp_shap.viz.labels

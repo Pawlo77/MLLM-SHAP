@@ -110,6 +110,10 @@ nitpick_ignore_regex: list[tuple[str, str]] = [
     # comma (``OrderedDict[str, str]``, ``Mapping[str, object]``,
     # ``tuple[str, ...]``) and then looks up the fragment before the comma.
     ("py:class", r"(collections\.abc\.Mapping|collections\.OrderedDict|tuple)\[str"),
+    # The same split in plugin option models: ``list[RoleName]`` expands to
+    # ``list[Literal['user', ...]]`` and ``Field(ge=...)`` to ``Annotated[float, ...]``.
+    ("py:class", r"list\[~?typing\.Literal\['user'"),
+    ("py:obj", r"typing\.Annotated\[float"),
 ]
 
 linkcheck_ignore = [

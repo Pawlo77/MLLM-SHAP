@@ -6,6 +6,7 @@
 """
 
 from enum import StrEnum
+from typing import Literal
 
 
 class Role(StrEnum):
@@ -19,6 +20,10 @@ class Role(StrEnum):
 
     SYSTEM = "system"
     """System-level instruction or steering text."""
+
+
+RoleName = Literal["user", "assistant", "system"]
+"""A :class:`Role` value as plugin options spell it."""
 
 
 class EmbeddingMode(StrEnum):

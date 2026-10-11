@@ -8,6 +8,19 @@ Changes in each published ``nlp-shap`` version. Newest first.
 Unreleased
 ----------
 
+Added
+~~~~~
+
+- ``players: tokens`` takes the plugin option ``roles`` (like ``messages``): only
+  the words of the listed roles become players, other messages stay present.
+- :func:`~nlp_shap.viz.plot_conversation` and
+  :func:`~nlp_shap.viz.render_conversation_html` draw a conversation message by
+  message under role and speaker headers, with token or message players shaded in
+  place and text that is no player in grey. Messages with audio players get a
+  waveform strip shaded on the same colour scale.
+- The ``sgpa_segments`` option ``text_roles`` also makes the words of typed
+  messages of those roles players, so typed and spoken words share one run.
+
 Changed
 ~~~~~~~
 

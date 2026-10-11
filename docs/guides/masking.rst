@@ -83,7 +83,9 @@ player whose span is the whole message text. Its label reads
 ``"<role>[/<speaker>] <n>: "`` plus the first 30 characters, with ``n`` the
 message's 1-based position. ``delete`` empties an absent message, ``pad`` and
 ``neutral`` replace its text. The plugin option ``roles`` (default every role)
-keeps the messages of other roles, such as the system prompt, always present:
+keeps the messages of other roles, such as the system prompt, always present;
+``players: tokens`` takes the same option to explain only the words of the
+listed roles:
 
 .. code-block:: python
 
