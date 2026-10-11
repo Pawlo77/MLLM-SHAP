@@ -59,18 +59,15 @@ def test_solution_note_needs_sections(checker: ModuleType, clean_vault: Path) ->
     assert any("missing section '## What was tried'" in item for item in errors)
 
 
-def test_watch_folder_is_skipped(
+def test_agent_files_are_not_notes(
     checker: ModuleType, script: Callable[[str], ModuleType], clean_vault: Path
 ) -> None:
-    """A literature-watch shortlist (unlinked, git-ignored) is not a vault note."""
-    write(
-        clean_vault,
-        "knowledge/papers/_watch/2026-10-07.md",
-        '---\ntitle: "Watch"\ntype: handbook\n---\n\nUnlinked; [[Missing note]].\n',
-    )
+    """``AGENTS.md`` beside the notes carries no frontmatter and is not a note."""
+    for folder in ("knowledge", "plans", ".remember"):
+        write(clean_vault, f"{folder}/AGENTS.md", "# Agents\n\n- No frontmatter.\n")
     assert _errors(checker, clean_vault) == []
     builder = script("build_knowledge")
     assert all(
-        "_watch" not in path.parts
+        path.name != "AGENTS.md"
         for path, _ in builder.notes_of_type(clean_vault, "handbook")
     )

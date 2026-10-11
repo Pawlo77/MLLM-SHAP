@@ -2,6 +2,7 @@
 title: "Base generation"
 type: concept
 domain: pipeline
+parent: "[[mllm-shap]]"
 tags: [concept]
 created: 2026-10-07
 related-code:

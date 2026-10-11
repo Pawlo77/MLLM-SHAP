@@ -24,6 +24,7 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from check_vault import (
+    AGENT_FILES,
     LINK,
     SKIPPED_FOLDERS,
     Vault,
@@ -217,7 +218,7 @@ def notes_of_type(root: Path, kind: str) -> list[tuple[Path, dict[str, Any]]]:
     """Return (path, frontmatter) for knowledge notes of one type."""
     out: list[tuple[Path, dict[str, Any]]] = []
     for path in sorted((root / "knowledge").rglob("*.md")):
-        if SKIPPED_FOLDERS & set(path.parts):
+        if SKIPPED_FOLDERS & set(path.parts) or path.name in AGENT_FILES:
             continue
         meta = frontmatter(path.read_text(encoding="utf-8"))
         if meta.get("type") == kind:
@@ -604,8 +605,9 @@ def build_benchmarks(root: Path) -> str:
     if not found:
         body += "No committed baseline file.\n\n"
     body += (
-        "The baseline machine is named in `tests/benchmarks/AGENTS.md`. The latest "
-        "local `make bench` report (`.pytest_benchmark/benchmark.json`) is "
+        "The baseline machine is named in the runtime guide "
+        "(`docs/guides/runtime.rst`). The latest local `make bench` report "
+        "(`.pytest_benchmark/benchmark.json`) is "
         "machine-local and git-ignored, so it is not copied here.\n\n"
     )
     body += mutation_section(root)

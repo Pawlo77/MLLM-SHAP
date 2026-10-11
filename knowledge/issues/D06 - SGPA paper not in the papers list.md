@@ -2,6 +2,7 @@
 title: "D06 - SGPA paper not in the papers list"
 type: issue
 domain: alignment
+parent: "[[mllm-shap]]"
 status: deferred
 severity: minor
 found: 2026-10-10
@@ -27,7 +28,7 @@ Package: [[alignment]]. Concept: [[SGPA]].
 ## Repro
 
 ```bash
-grep -n "2603.02250" knowledge/papers/Papers.md   # no match
+grep -n "2603.02250" knowledge/Papers.md   # no match
 ```
 
 ## Fix

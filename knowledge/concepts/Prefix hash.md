@@ -2,6 +2,7 @@
 title: "Prefix hash"
 type: concept
 domain: runtime
+parent: "[[mllm-shap]]"
 tags: [concept]
 created: 2026-10-07
 updated: 2026-10-08

@@ -195,6 +195,7 @@ def pytest_sessionfinish(session: pytest.Session) -> None:
         "cache": dict(STATS),
         "scenarios": RESULTS,
     }
+    RESULTS_DIR.mkdir(exist_ok=True)
     name = f"{stamp}-{tier}-{re.sub(r'[^A-Za-z0-9._-]+', '_', feature)}.json"
     text = json.dumps(payload, indent=2) + "\n"
     for target in (name, "latest.json"):

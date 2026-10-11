@@ -2,6 +2,7 @@
 title: "Onboarding"
 type: handbook
 domain: handbook
+parent: "[[mllm-shap]]"
 tags: [handbook, onboarding]
 created: 2026-10-07
 updated: 2026-10-08
@@ -9,12 +10,12 @@ updated: 2026-10-08
 
 # Onboarding
 
-Part of [[mllm-shap]]. Next: [[How a run works]].
+Next: [[How a run works]].
 
 ## Set up
 
-1. Clone the repository; optionally clone `MLLM-Shap-legacy` as a sibling (see `AGENTS.md`).
-2. `uv self update` (uv 0.12 or newer), then `make install`: Python 3.12 ([[Tooling decisions#2026-10-07 — Python upper bound lifted|Python upper bound lifted]]), all dependency groups, prek git hooks.
+1. Clone the repository; optionally clone `MLLM-Shap-legacy` as a sibling.
+2. `uv self update` (uv 0.12 or newer), then `make install`: Python 3.12, all dependency groups, prek git hooks.
 3. `make check`: filtered tests, every prek hook and `make vault-check`. It must pass before any hand-off.
 
 ## Open the vault
@@ -30,18 +31,15 @@ Part of [[mllm-shap]]. Next: [[How a run works]].
 |---|---|
 | `src/mllm_shap/` | the package; one architecture note per subpackage ([[Modules]]) |
 | `tests/` | pytest suite; markers `lms`, `gpu`, `bench`, `slow`, `practical` are excluded from `make check` |
-| `tests/practical/` | real-model scenarios on a GPU, `make practical FEATURE=<glob>` ([[Process decisions#2026-10-08 — Practical tests on real small models\|Practical tests]]) |
+| `tests/practical/` | real-model scenarios on a GPU, `make practical FEATURE=<glob>` |
 | `docs/` | Sphinx site (`make docs`) |
 | `examples/` | notebooks with stored outputs (`make notebooks`) |
-| `knowledge/` | this vault ([[knowledge/README|rules]]) |
-| `plans/` | implementation plans ([[Tooling decisions#2026-10-07 — Plans directory\|Plans directory]]) |
-| `.agents/skills/` | agent skills shared by Cursor, Claude Code and Codex ([[Tooling decisions#2026-10-07 — Agent skills canonical directory\|Agent skills canonical directory]]) |
+| `knowledge/` | this vault: map, architecture notes, decisions, issues |
 | `scripts/` | vault checker, knowledge builder, editor hooks |
 
-## The vibe loop
+## Making a change
 
-1. Read the handoff (`.remember/remember.md`; [[Tooling decisions#2026-10-07 — Memory committed under remember|Memory committed under remember]]), the map and the architecture note of the package you touch.
-2. Plan in `plans/` for anything larger than one task.
-3. Test first, implement, run `make check`.
-4. Update the architecture note, append decision sections and issue notes (skill `notes`) within the [[Process decisions#2026-10-08 — Brevity budgets|brevity budgets]], run `make knowledge vault-check`.
-5. Review with skill `review` ([[Process decisions#2026-10-08 — Claude reviews before the pull request|Claude reviews before the pull request]]); commit only after the maintainer approves.
+1. Read the map and the architecture note of the package you touch.
+2. Test first, implement, run `make check`.
+3. Update the architecture note and append decision sections and issue notes; run `make knowledge vault-check`.
+4. Open a pull request; Cursor Bugbot and CodeQL review it.

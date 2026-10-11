@@ -2,6 +2,7 @@
 title: "<% tp.file.title.split(' - ').slice(1).join(' - ') %>"
 type: solution
 domain: <% tp.system.prompt("Package or area?") %>
+parent: "[[mllm-shap]]"
 created: <% tp.date.now("YYYY-MM-DD") %>
 tags: [solution]
 pr: "<% tp.system.prompt("Pull request URL?") %>"
@@ -11,7 +12,7 @@ related-code: []
 
 # <% tp.file.title.split(' - ').slice(1).join(' - ') %>
 
-Solved in the pull request above; plan: <% "[" + "[<plan file>]" + "]" %>. Index: [[knowledge/handbook/Solutions/README|Solutions]].
+Solved in the pull request above; plan: <% "[" + "[<plan file>]" + "]" %>.
 
 ## Problem
 

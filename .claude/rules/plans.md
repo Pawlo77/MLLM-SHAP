@@ -7,7 +7,7 @@ paths:
 
 # Plans
 
-- Naming, header and status values: `plans/README.md`.
+- Naming, header and status values: `plans/AGENTS.md`.
 - A plan task is done only when its checkbox is ticked and `make check` passed after the change.
 - Update the plan in the same pull request that executes it: tick boxes, bump `updated`, change
   the status line (`draft | in progress | done | superseded by <file>`).
