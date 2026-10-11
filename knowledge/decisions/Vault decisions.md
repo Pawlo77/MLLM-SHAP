@@ -2,6 +2,7 @@
 title: "Vault decisions"
 type: decision-log
 domain: vault
+parent: "[[mllm-shap]]"
 created: 2026-10-07
 updated: 2026-10-08
 tags: [decisions, vault]
@@ -12,8 +13,6 @@ related-code:
 ---
 
 # Vault decisions
-
-Part of [[mllm-shap]].
 
 ## 2026-10-08 — One log per domain and one papers file
 

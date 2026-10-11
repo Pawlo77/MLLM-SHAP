@@ -2,6 +2,7 @@
 title: "Backends decisions"
 type: decision-log
 domain: backends
+parent: "[[mllm-shap]]"
 created: 2026-10-07
 updated: 2026-10-11
 tags: [decisions, backends]
@@ -14,7 +15,7 @@ related-code:
 
 # Backends decisions
 
-Part of [[mllm-shap]]; architecture: [[backends]]. Related: [[value]], [[Capability protocol]].
+Architecture: [[backends]]. Related: [[value]], [[Capability protocol]].
 
 ## 2026-10-11 — Audio mock backend answers one token per voiced run
 

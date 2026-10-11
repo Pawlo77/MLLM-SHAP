@@ -2,6 +2,7 @@
 title: "Tooling decisions"
 type: decision-log
 domain: tooling
+parent: "[[mllm-shap]]"
 created: 2026-10-07
 updated: 2026-10-08
 tags: [decisions, tooling]
@@ -9,7 +10,7 @@ tags: [decisions, tooling]
 
 # Tooling decisions
 
-Part of [[mllm-shap]]; handbook: [[Onboarding]].
+Handbook: [[Onboarding]].
 
 ## 2026-10-07 — Agent skills canonical directory
 

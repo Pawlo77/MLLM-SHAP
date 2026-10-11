@@ -2,6 +2,7 @@
 title: "<% tp.file.title.split(' - ').slice(1).join(' - ') %>"
 type: solution
 domain: <% tp.system.prompt("Package or area?") %>
+parent: "[[mllm-shap]]"
 created: <% tp.date.now("YYYY-MM-DD") %>
 tags: [solution]
 pr: "<% tp.system.prompt("Pull request URL?") %>"

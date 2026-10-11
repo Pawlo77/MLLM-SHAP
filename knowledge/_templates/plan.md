@@ -2,6 +2,7 @@
 title: "<% tp.system.prompt("Feature name?") %> implementation plan"
 type: plan
 domain: <% tp.system.prompt("Package or area?") %>
+parent: "[[mllm-shap]]"
 status: draft
 created: <% tp.date.now("YYYY-MM-DD") %>
 tags: [plan]

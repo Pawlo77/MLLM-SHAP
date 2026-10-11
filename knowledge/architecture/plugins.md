@@ -2,6 +2,7 @@
 title: "plugins"
 type: module
 domain: plugins
+parent: "[[mllm-shap]]"
 tags: [architecture, plugins]
 created: 2026-10-07
 updated: 2026-10-11
@@ -17,7 +18,7 @@ related-code:
 
 # plugins
 
-Part of [[mllm-shap]]. Registered plugins: [[Plugins]].
+Registered plugins: [[Plugins]].
 
 ## Responsibility
 

@@ -2,6 +2,7 @@
 title: "Process decisions"
 type: decision-log
 domain: process
+parent: "[[mllm-shap]]"
 created: 2026-10-07
 updated: 2026-10-11
 tags: [decisions, process]
@@ -16,7 +17,7 @@ related-code:
 
 # Process decisions
 
-Part of [[mllm-shap]]; handbook: [[Onboarding]].
+Handbook: [[Onboarding]].
 
 ## 2026-10-11 — Deep practical tier on LM Studio
 

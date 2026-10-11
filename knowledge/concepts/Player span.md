@@ -2,6 +2,7 @@
 title: "Player span"
 type: concept
 domain: domain
+parent: "[[mllm-shap]]"
 tags: [concept]
 created: 2026-10-08
 related-code:

@@ -2,6 +2,7 @@
 title: "Dashboard"
 type: dashboard
 domain: index
+parent: "[[mllm-shap]]"
 tags: [moc, dashboard]
 created: 2026-10-07
 updated: 2026-10-08
@@ -9,7 +10,7 @@ updated: 2026-10-08
 
 # Dashboard
 
-Part of [[mllm-shap]]. Live tables built by the Dataview plugin from note frontmatter; they render only in Obsidian. The embedded generated notes at the end render everywhere.
+Live tables built by the Dataview plugin from note frontmatter; they render only in Obsidian. The embedded generated notes at the end render everywhere.
 
 ## Issues by status and severity
 

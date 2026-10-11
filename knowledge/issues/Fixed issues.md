@@ -2,6 +2,7 @@
 title: "Fixed issues"
 type: issue
 domain: index
+parent: "[[mllm-shap]]"
 status: fixed
 found: 2026-10-07
 created: 2026-10-08
@@ -11,7 +12,7 @@ tags: [issue, fixed]
 
 # Fixed issues
 
-Part of [[mllm-shap]]. Fixed bugs, one row each; open and deferred issues keep their own notes ([[Open issues]]). Release dates: [[Release history]].
+Fixed bugs, one row each; open and deferred issues keep their own notes ([[Open issues]]). Release dates: [[Release history]].
 
 | ID | Title | Package | Cause | Fixed in | Pinned by |
 |---|---|---|---|---|---|

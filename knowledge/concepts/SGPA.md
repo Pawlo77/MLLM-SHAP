@@ -2,6 +2,7 @@
 title: "SGPA"
 type: concept
 domain: audio
+parent: "[[mllm-shap]]"
 tags: [concept]
 created: 2026-10-07
 aliases: [Spectrogram-Guided Phonetic Alignment]
