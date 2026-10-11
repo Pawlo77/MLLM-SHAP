@@ -150,7 +150,7 @@ scenarios:
     tier: audio
     turns:
       - [{role: user, text: "I had that curiosity beside me at this moment"}]
-    # 64 of 512 coalitions (complementary) keep the run near 70 s on an M4 Pro;
+    # 64 of 512 coalitions (complementary) keep the run near 70 s on an Apple M4 (16 GB);
     # measured efficiency gap 0.15 (all nine values 0.04 to 0.18), so the test
     # checks the values, not efficiency.
     overrides:
