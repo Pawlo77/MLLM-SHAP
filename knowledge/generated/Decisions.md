@@ -14,6 +14,7 @@ Newest first.
 
 | Date | Domain | Decision | Status |
 |---|---|---|---|
+| 2026-10-11 | process | [[Process decisions#2026-10-11 — Deep practical tier on LM Studio\|Deep practical tier on LM Studio]] | accepted |
 | 2026-10-10 | alignment | [[Alignment decisions#2026-10-10 — Own CTC alignment instead of torchaudio\|Own CTC alignment instead of torchaudio]] | accepted |
 | 2026-10-10 | masking | [[Masking decisions#2026-10-10 — Audio players are sample ranges on the player span\|Audio players are sample ranges on the player span]] | accepted |
 | 2026-10-09 | backends | [[Backends decisions#2026-10-09 — Half-precision prefix cache warns instead of promising equality\|Half-precision prefix cache warns instead of promising equality]] | accepted |
@@ -21,7 +22,6 @@ Newest first.
 | 2026-10-08 | domain | [[Domain decisions#2026-10-08 — Speaker rendered into the message content\|Speaker rendered into the message content]] | accepted |
 | 2026-10-08 | masking | [[Masking decisions#2026-10-08 — Message players keep their slot when deleted\|Message players keep their slot when deleted]] | accepted |
 | 2026-10-08 | pipeline | [[Pipeline decisions#2026-10-08 — Absolute budget passed to samplers as an exact fraction\|Absolute budget passed to samplers as an exact fraction]] | accepted |
-| 2026-10-08 | process | [[Process decisions#2026-10-08 — Deep practical tier\|Deep practical tier]] | accepted |
 | 2026-10-08 | process | [[Process decisions#2026-10-08 — Practical tests on real small models\|Practical tests on real small models]] | accepted |
 | 2026-10-08 | process | [[Process decisions#2026-10-08 — Automatic upgrades and releases\|Automatic upgrades and releases]] | accepted |
 | 2026-10-08 | process | [[Process decisions#2026-10-08 — Delivery autopilot merges routine changes\|Delivery autopilot merges routine changes]] | accepted |

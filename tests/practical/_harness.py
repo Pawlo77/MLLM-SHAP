@@ -6,13 +6,14 @@ session-wide model whose generations go through the SQLite cache.
 """
 
 import asyncio
+import dataclasses
 import fnmatch
 import gc
 import json
 import os
 import subprocess  # nosec B404 - fixed argv
 import sys
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -21,6 +22,7 @@ import pytest
 import yaml
 
 from mllm_shap import ExplainConfig, ExplainRunner, explain_config_to_yaml
+from mllm_shap.backends.api import ApiBackend
 from mllm_shap.backends.transformers.text import TransformersTextBackend
 from mllm_shap.domain.conversation import ConversationSnapshot, Message, Turn
 from mllm_shap.domain.enums import Role
@@ -37,18 +39,27 @@ HERE = Path(__file__).parent
 RUN_INFO: dict[str, Any] = {"device": None, "models": {}, "judges": {}}
 """Device, loaded model pins and judges, written into the results file."""
 
+LOOP = asyncio.new_event_loop()
+"""One loop for the whole session: an HTTP client cannot outlive ``asyncio.run``."""
+
+LMS_HOST = "http://localhost:1234/v1"
+"""LM Studio's OpenAI-compatible server, the backend of ``kind: api`` tiers."""
+
 
 @dataclass(frozen=True)
 class ModelSpec:
-    """One tier of ``models.yaml``."""
+    """One tier of ``models.yaml``: a pinned transformers model or an LM Studio key."""
 
     model_id: str
-    revision: str
-    dtype: str
     size_gb: float
+    kind: str = "transformers"
+    revision: str = ""
+    dtype: str = ""
 
     def backend_config(self) -> dict[str, Any]:
-        """Return the ``backend`` section of a transformers config."""
+        """Return the ``backend`` section of an ``api`` or transformers config."""
+        if self.kind == "api":
+            return {"kind": "api", "model_id": self.model_id, "api_host": LMS_HOST}
         options = {"revision": self.revision, "dtype": self.dtype}
         return {"kind": "transformers", "model_id": self.model_id, "options": options}
 
@@ -106,7 +117,7 @@ def _load(name: str) -> dict[str, Any]:
 
 
 MODELS = {tier: ModelSpec(**spec) for tier, spec in _load("models.yaml").items()}
-"""Model tiers by name: ``default`` (generator and judge), ``fast`` and ``deep``."""
+"""Model tiers: ``default`` (generator and judge), ``fast``, ``deep`` (LM Studio)."""
 
 _CATALOGUE = _load("scenarios.yaml")
 DEFAULTS: dict[str, Any] = _CATALOGUE["defaults"]
@@ -141,9 +152,11 @@ class PracticalModel:
     """A loaded tier: the raw backend, its cached view and the judge."""
 
     spec: ModelSpec
-    backend: TransformersTextBackend
+    backend: TransformersTextBackend | ApiBackend
     cached: CachedBackend
     judge: Judge
+    identity: dict[str, str]
+    """Model, revision and device that key the generation cache and references."""
 
     def explain(
         self,
@@ -158,7 +171,7 @@ class PracticalModel:
             backend=backend or self.cached,
             registry=registry,
         )
-        return asyncio.run(runner.explain(scenario.snapshot))
+        return LOOP.run_until_complete(runner.explain(scenario.snapshot))
 
     def reanalyze(
         self,
@@ -172,7 +185,9 @@ class PracticalModel:
     def answer(self, scenario: Scenario) -> str:
         """Return the base generation of ``scenario`` (a cache hit after a run)."""
         config = scenario.config(self.spec)
-        record = asyncio.run(self.cached.generate(scenario.snapshot, config.generation))
+        record = LOOP.run_until_complete(
+            self.cached.generate(scenario.snapshot, config.generation)
+        )
         return record.text
 
 
@@ -236,60 +251,79 @@ def summary(output: ExplainRunOutput) -> dict[str, Any]:
 
 
 class ModelPool:
-    """Load each tier once per session, on first use; ``deep`` never shares memory."""
+    """Load each tier once per session, on first use; ``deep_hf`` owns the device."""
 
-    def __init__(self, device: str) -> None:
-        """Remember ``device``; the cache file is shared by every tier."""
-        self.device = device
+    def __init__(self, resolve_device: Callable[[], str]) -> None:
+        """Resolve the device lazily (LM Studio tiers need none); share one cache."""
+        self._resolve_device = resolve_device
         self.cache = PracticalCache(DEFAULT_PATH)
         self._models: dict[str, PracticalModel] = {}
 
     def get(self, tier: str) -> PracticalModel:
-        """Return the tier's model, skipping when its weights are not cached."""
+        """Return the tier's model, skipping when its weights or server are missing."""
         if tier not in self._models:
             spec = MODELS[tier]
-            require_weights(spec)
-            if tier == "deep" or "deep" in self._models:
-                self.close()
-            backend = TransformersTextBackend(
-                PluginContext(
-                    config=ExplainConfig(
-                        backend=BackendConfig.model_validate(spec.backend_config())
-                    )
-                )
-            )
-            identity = {
-                "model": spec.model_id,
-                "revision": spec.revision,
-                "device": self.device,
-                "dtype": spec.dtype,
-            }
-            self._models[tier] = PracticalModel(
-                spec,
-                backend,
-                CachedBackend(backend, self.cache, identity),
-                self._judge(tier, backend, identity),
-            )
-            RUN_INFO["models"][tier] = f"{spec.model_id}@{spec.revision}"
+            if spec.kind == "api":
+                self._models[tier] = self._load_lmstudio(spec)
+            else:
+                self._models[tier] = self._load_transformers(tier, spec)
+            RUN_INFO["models"][tier] = f"{spec.model_id}@{spec.revision or spec.kind}"
         return self._models[tier]
 
-    def _judge(
-        self, tier: str, backend: TransformersTextBackend, identity: dict[str, str]
-    ) -> Judge:
-        """Return the LM Studio judge for the quick tier when set, else the model."""
-        key = os.environ.get("MLLM_SHAP_PRACTICAL_JUDGE", "")
+    def _load_transformers(self, tier: str, spec: ModelSpec) -> PracticalModel:
+        require_weights(spec)
+        if tier == "deep_hf" or "deep_hf" in self._models:
+            self._close_in_process()
+        device = self._resolve_device()
+        backend = TransformersTextBackend(_context(spec))
+        identity = {
+            "model": spec.model_id,
+            "revision": spec.revision,
+            "device": device,
+            "dtype": spec.dtype,
+        }
         judge: Judge = LogitJudge(backend, self.cache, identity)
-        if tier == "default" and key.startswith("lmstudio:"):
-            judge = LmStudioJudge(key.removeprefix("lmstudio:"), self.cache)
+        if tier == "default" and (key := _judge_key()):
+            judge = LmStudioJudge(key, self.cache)
         RUN_INFO["judges"][tier] = judge.name
-        return judge
+        return PracticalModel(
+            spec, backend, CachedBackend(backend, self.cache, identity), judge, identity
+        )
+
+    def _load_lmstudio(self, spec: ModelSpec) -> PracticalModel:
+        key = os.environ.get("MLLM_SHAP_PRACTICAL_DEEP_MODEL")
+        spec = dataclasses.replace(spec, model_id=key) if key else spec
+        info = require_lmstudio(spec)
+        judge_key = os.environ.get("MLLM_SHAP_PRACTICAL_DEEP_JUDGE")
+        judge_spec = MODELS["deep_judge"]
+        if judge_key:
+            judge_spec = dataclasses.replace(judge_spec, model_id=judge_key)
+        require_lmstudio(judge_spec)
+        backend = ApiBackend(_context(spec))
+        identity = {
+            "model": spec.model_id,
+            "publisher": str(info.get("publisher")),
+            "quantization": str(info.get("quantization")),
+            "device": "lmstudio",
+        }
+        RUN_INFO["device"] = RUN_INFO["device"] or "lmstudio"
+        judge = LmStudioJudge(judge_spec.model_id, self.cache)
+        RUN_INFO["judges"]["deep"] = judge.name
+        return PracticalModel(
+            spec, backend, CachedBackend(backend, self.cache, identity), judge, identity
+        )
+
+    def _close_in_process(self) -> None:
+        for tier, model in list(self._models.items()):
+            if model.spec.kind == "transformers":
+                self.release(tier)
 
     def release(self, tier: str) -> None:
-        """Drop ``tier``'s weights and return the memory to the device."""
+        """Drop ``tier``'s backend and return the memory to the device."""
         model = self._models.pop(tier, None)
         if model is None:
             return
-        asyncio.run(model.backend.aclose())
+        LOOP.run_until_complete(model.backend.aclose())
         gc.collect()
         torch = sys.modules.get("torch")
         if torch is not None and torch.backends.mps.is_available():
@@ -301,6 +335,17 @@ class ModelPool:
         """Release every loaded model."""
         for tier in list(self._models):
             self.release(tier)
+
+
+def _context(spec: ModelSpec) -> PluginContext:
+    backend = BackendConfig.model_validate(spec.backend_config())
+    return PluginContext(config=ExplainConfig(backend=backend))
+
+
+def _judge_key() -> str:
+    """Return the LM Studio key of ``MLLM_SHAP_PRACTICAL_JUDGE=lmstudio:<key>``."""
+    value = os.environ.get("MLLM_SHAP_PRACTICAL_JUDGE", "")
+    return value.removeprefix("lmstudio:") if value.startswith("lmstudio:") else ""
 
 
 def vram_gb() -> dict[str, float]:
@@ -340,3 +385,21 @@ def require_weights(spec: ModelSpec) -> None:
             f"`huggingface-cli download {spec.model_id} --revision {spec.revision}` "
             "or set MLLM_SHAP_PRACTICAL_DOWNLOAD=1"
         )
+
+
+def require_lmstudio(spec: ModelSpec) -> dict[str, Any]:
+    """Skip unless LM Studio serves ``spec.model_id``; return its model info."""
+    httpx = pytest.importorskip("httpx")
+    root = LMS_HOST.removesuffix("/v1")
+    try:
+        response = httpx.get(f"{root}/api/v0/models/{spec.model_id}", timeout=3.0)
+        info: dict[str, Any] = response.json()
+    except (httpx.HTTPError, ValueError) as error:
+        pytest.skip(
+            f"LM Studio is not serving at {LMS_HOST} (lms server start): {error}"
+        )
+    if response.status_code != 200 or info.get("type") not in {"llm", "vlm"}:
+        pytest.skip(
+            f"LM Studio has no chat model {spec.model_id!r} (download: lms get)"
+        )
+    return info
