@@ -8,14 +8,10 @@ Changes in each published ``mllm-shap`` version. Newest first.
 Unreleased
 ----------
 
-Changed
-~~~~~~~
+.. _release-0-3-0:
 
-- The project is renamed to ``mllm-shap``: install ``mllm-shap`` from PyPI,
-  import ``mllm_shap``, and find the repository at ``Pawlo77/MLLM-SHAP``.
-  Environment variables start with ``MLLM_SHAP_``, entry-point groups with
-  ``mllm_shap.``, and the base error is ``MllmShapError``. The old
-  ``nlp-shap`` package is archived.
+0.3.0 (2026-10-11)
+------------------
 
 Added
 ~~~~~
@@ -33,6 +29,11 @@ Added
 Changed
 ~~~~~~~
 
+- The project is renamed to ``mllm-shap``: install ``mllm-shap`` from PyPI,
+  import ``mllm_shap``, and find the repository at ``Pawlo77/MLLM-SHAP``.
+  Environment variables start with ``MLLM_SHAP_``, entry-point groups with
+  ``mllm_shap.``, and the base error is ``MllmShapError``. The old
+  ``nlp-shap`` package is archived.
 - :func:`~mllm_shap.viz.plot_audio_segments` with ``values`` lightens every second
   segment and keeps fills translucent, so neighbouring words stay distinct (equal
   values no longer merge into one block) and the waveform shows through.
