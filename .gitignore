@@ -111,3 +111,6 @@ examples/runs/
 
 # Extracted from examples/*.ipynb by docs/scripts/notebook_figures.py at build time.
 docs/_static/notebook_figures/
+
+# Practical-test results (written by make practical)
+tests/practical/results/
