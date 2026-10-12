@@ -12,8 +12,12 @@ help: ## Show available targets
 install: ## Set up the development environment
 	uv python install 3.12
 	uv sync --all-groups --all-extras
-	uv run prek install --hook-type pre-commit --hook-type commit-msg --hook-type pre-push
-	@echo "prek hooks installed (pre-commit, commit-msg, pre-push). Re-run after cloning."
+	@if [ "$$(git rev-parse --git-dir)" = "$$(git rev-parse --git-common-dir)" ]; then \
+		uv run prek install --hook-type pre-commit --hook-type commit-msg --hook-type pre-push; \
+		echo "prek hooks installed (pre-commit, commit-msg, pre-push). Re-run after cloning."; \
+	else \
+		echo "Secondary worktree: git hooks are shared and tied to one venv; run 'make install' in the main checkout."; \
+	fi
 
 kernel: ## Register .venv as the Jupyter kernel "mllm-shap (uv)"
 	uv run python -m ipykernel install --user --name mllm-shap --display-name "mllm-shap (uv)"
