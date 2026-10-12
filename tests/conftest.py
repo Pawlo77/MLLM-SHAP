@@ -3,6 +3,7 @@
 @see [[tests/AGENTS.md]]
 """
 
+import os
 from dataclasses import dataclass, field
 
 import pytest
@@ -11,6 +12,18 @@ from mllm_shap.domain.conversation import ConversationSnapshot, Message, Turn
 from mllm_shap.domain.enums import Role
 from mllm_shap.domain.estimands import Estimand
 from mllm_shap.pipeline.manifest import RunManifest
+
+
+@pytest.fixture(autouse=True)
+def isolate_git_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Hide the git hook environment, so test repos never touch the real index.
+
+    Under ``git push`` or ``git commit`` hooks, ``GIT_DIR``/``GIT_INDEX_FILE`` point at
+    the real repository (absolute in a worktree); a ``git add`` in a temp repo would
+    otherwise overwrite it.
+    """
+    for name in [key for key in os.environ if key.startswith("GIT_")]:
+        monkeypatch.delenv(name)
 
 
 @pytest.fixture
