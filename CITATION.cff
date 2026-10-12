@@ -6,8 +6,8 @@ authors:
   - family-names: Pozorski
     given-names: Paweł
     email: pozorski.paul@gmail.com
-version: 0.4.1
-date-released: "2026-10-11"
+version: 0.5.0
+date-released: "2026-10-12"
 license: Apache-2.0
 repository-code: "https://github.com/Pawlo77/MLLM-SHAP"
 url: "https://pawlo77.github.io/MLLM-SHAP/"
