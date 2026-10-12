@@ -1,7 +1,6 @@
 ---
 paths:
-  - "src/mllm_shap/**/*.py"
-  - "tests/**/*.py"
+  - "**/*.py"
 ---
 
 <!-- Generated from .cursor/rules/tdd.mdc by scripts/sync_rules.py; do not edit. -->
@@ -11,13 +10,12 @@ paths:
 New behavior or bug fixes: **test first**, then implement.
 
 1. **Red** — write failing test in `tests/` (`test_*.py`, mirror `src/` layout)
-2. **Green** — minimal implementation in `src/mllm_shap/`
-3. **Refactor** — run `make agent-check`; keep green
+2. **Green** — minimal implementation in the package under `src/`
+3. **Refactor** — run `make check`; keep green
 4. **Validate** — re-read the diff; run full checks; fix style, coverage, docs, and consistency issues before hand-off
-5. **Performance** — analyze hot paths for time/memory scaling; implement the fastest low-resource correct version (see `performance.mdc`)
+5. **Performance** — analyze hot paths for time/memory scaling; implement the fastest low-resource correct version before hand-off
 
-- No `from __future__ import annotations` unless required — use `Self` or quoted forward refs (see `python-types.mdc`)
+- No `from __future__ import annotations` unless required — use `Self` or quoted forward refs
 - Bug fix → regression test reproducing failure before the fix
 - Test real behavior, not trivial constants or mock theater
-- `@pytest.mark.bench` for local perf tests only — see `benchmarks.mdc`
 - Scaffold/config-only work: skip TDD only when user explicitly asks
