@@ -3,10 +3,12 @@
 @see [[src/mllm_shap/cli.py]]
 """
 
+import io
 import json
 import logging
 import subprocess
 import sys
+import wave
 from collections.abc import Callable
 from pathlib import Path
 
@@ -461,3 +463,44 @@ def test_main_explains_messages_with_speaker_labels(
         "user/bob 2: Yes, mostly.",
         "user/alice 3: Why?",
     ]
+
+
+def test_cli_explain_reads_audio_paths_relative_to_the_snapshot(tmp_path: Path) -> None:
+    """A clip next to the snapshot file loads whatever the working directory."""
+    config_path, _ = _write_inputs(tmp_path, kind="mock_audio")
+    inputs = tmp_path / "inputs"
+    inputs.mkdir()
+    (inputs / "clip.wav").write_bytes(_tone_wav())
+    snapshot_path = inputs / "spoken.json"
+    content = [
+        {"type": "text", "text": "say it"},
+        {"type": "audio", "path": "clip.wav", "sample_rate": 8000},
+    ]
+    snapshot = {"turns": [{"messages": [{"role": "user", "content": content}]}]}
+    snapshot_path.write_text(json.dumps(snapshot), encoding="utf-8")
+    out = tmp_path / "result.json"
+
+    completed = _cli(
+        "explain",
+        "--config",
+        str(config_path),
+        "--snapshot",
+        str(snapshot_path),
+        "--out",
+        str(out),
+        cwd=tmp_path,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    result = json.loads(out.read_text(encoding="utf-8"))
+    assert [label["text"] for label in result["labels"]] == ["say", "it"]
+
+
+def _tone_wav() -> bytes:
+    buffer = io.BytesIO()
+    with wave.open(buffer, "wb") as writer:
+        writer.setnchannels(1)
+        writer.setsampwidth(2)
+        writer.setframerate(8000)
+        writer.writeframes(b"\x00\x40" * 800)
+    return buffer.getvalue()
