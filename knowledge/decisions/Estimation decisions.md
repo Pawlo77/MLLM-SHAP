@@ -4,7 +4,7 @@ type: decision-log
 domain: estimation
 parent: "[[mllm-shap]]"
 created: 2026-10-07
-updated: 2026-10-08
+updated: 2026-10-12
 tags: [decisions, estimation]
 related-code:
   - "[[src/mllm_shap/estimation/complementary.py]]"
@@ -18,6 +18,14 @@ related-code:
 # Estimation decisions
 
 Architecture: [[estimation]]. Theory: `docs/theory/approximation.rst`.
+
+## 2026-10-12 — Leave-one-out bypasses the estimand
+
+Decision: `loo` returns `v(N) - v(N - {i})` from its own payoffs and ignores the configured estimand and budget.
+
+Why: the Spectrogram-Guided Phonetic Alignment ([[SGPA]]) Audio plan (Phase 4) needs leave-one-out as the minimum baseline; it is neither a Shapley nor a Banzhaf value, so routing it through an aggregator would mislabel it.
+
+Consequences: `loo` values need not add up to `v(N) - v(∅)`, and the manifest's estimand describes the run, not the values. Runs past `max_players` set `budget.evaluations`. Rejected: a third estimand (it would also apply to the samplers, which cannot estimate it).
 
 ## 2026-10-07 — Singleton-first complementary sampling
 

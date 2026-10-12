@@ -54,7 +54,7 @@ def new_attribution_figure(
     """Create a styled figure and single axes for attribution plots."""
     plt = _import_pyplot()
     apply_attribution_theme()
-    fig, axis = cast(Any, plt).subplots(figsize=(width, height))
+    fig, axis = plt.subplots(figsize=(width, height))
     return cast("Figure", fig), cast("Axes", axis)
 
 

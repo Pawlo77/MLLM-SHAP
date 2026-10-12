@@ -327,3 +327,12 @@ def test_check_plugin_options_accepts_renderer_options() -> None:
     registry = default_registry()
     context = _configured_context(registry, plugin_options={"renderers/token_bar": {}})
     check_plugin_options(context.config, registry)
+
+
+def test_copy_is_independent_of_the_original() -> None:
+    registry = PluginRegistry()
+    registry.register(PluginGroup.BACKENDS, "mock", MockBackend)
+    clone = registry.copy()
+    clone.register(PluginGroup.BACKENDS, "other", MockBackend)
+    assert registry.names(PluginGroup.BACKENDS) == ("mock",)
+    assert clone.names(PluginGroup.BACKENDS) == ("mock", "other")

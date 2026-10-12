@@ -15,6 +15,8 @@ Estimation
 
 .. automodule:: mllm_shap.estimation.neyman
 
+.. automodule:: mllm_shap.estimation.loo
+
 Estimand aggregators
 --------------------
 

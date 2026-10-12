@@ -10,4 +10,6 @@ Value functions
 
 .. automodule:: mllm_shap.value.logprob
 
+.. automodule:: mllm_shap.value.wer
+
 .. automodule:: mllm_shap.value.generation_records

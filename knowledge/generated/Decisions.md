@@ -14,6 +14,7 @@ Newest first.
 
 | Date | Domain | Decision | Status |
 |---|---|---|---|
+| 2026-10-12 | estimation | [[Estimation decisions#2026-10-12 — Leave-one-out bypasses the estimand\|Leave-one-out bypasses the estimand]] | accepted |
 | 2026-10-12 | masking | [[Masking decisions#2026-10-12 — Alignment-only transcripts are hidden by the policies\|Alignment-only transcripts are hidden by the policies]] | accepted |
 | 2026-10-11 | backends | [[Backends decisions#2026-10-11 — Audio input through the transformers processor\|Audio input through the transformers processor]] | accepted |
 | 2026-10-11 | backends | [[Backends decisions#2026-10-11 — Audio mock backend answers one token per voiced run\|Audio mock backend answers one token per voiced run]] | accepted |

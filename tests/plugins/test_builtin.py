@@ -94,6 +94,7 @@ def test_builtin_registers_approximate_estimators() -> None:
     assert registry.names(PluginGroup.ESTIMATORS) == (
         "complementary",
         "exact",
+        "loo",
         "mc",
         "neyman_cc",
     )
@@ -136,6 +137,7 @@ def test_builtin_registers_value_functions_and_normalizers() -> None:
         "embedding_cosine",
         "embedding_euclidean",
         "logprob",
+        "reference_wer",
         "tfidf_cosine",
     )
     assert registry.names(PluginGroup.NORMALIZERS) == (

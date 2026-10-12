@@ -1,9 +1,12 @@
 # Handoff
 
 ## State
-v0.2.1 released 2026-10-10: the audio track's Phases 16 (SGPA alignment, 0.2.0, PR 11)
-and 17 (`sgpa_segments` audio players and audio absence rendering, 0.2.1, PR 13), ported
-from the closed PR 4 onto the 0.1.18 message model; Phase 15 was superseded by 0.1.18.
+The rewrite plan is complete: text Phases 0–14 and audio Phases 15–21, released
+through v0.6.0 (2026-10-12). The audio track added `mock_audio` (0.4.0, never on
+PyPI), audio input for `transformers` (processor path, Granite Speech), `api`
+(`input_audio`) and `lmstudio` (`audio: transcript`) (0.4.1), snapshot JSON audio and
+`sgpa_segments` `transcript: align_only` (0.5.0), and `loo`, `reference_wer` and
+`deletion_curve` (0.6.0). PyPI skipped 0.3.1 and 0.4.0.
 The repository is public; `main` is protected (`prek`, `tests-passed`, `CodeQL`,
 `title`), merge commits only, auto-merge on for routine PRs; secret scanning on.
 Weekly local task: `mllm-shap-upgrade` (Mon 08:00).
@@ -11,11 +14,14 @@ Weekly local task: `mllm-shap-upgrade` (Mon 08:00).
 ## User-only
 - Copilot code review reports "quota limit"; skill `ship` merges routine PRs without it
   and says so.
+- Done means every CI check green, the Codecov report comment green (CI has no torch,
+  so test new transformers code with stubs) and the PR mergeable with `main`.
 
 ## Next
-- Audio track Phase 18 (mock audio backend, 0.2.2), then 19 to 21 (skill `rewrite`);
-  D02 stays open until a backend generates from audio.
-- D05: the deep prefix-cache speed-up check.
+- SGPA Audio work moves to `mllm-xai`: the Phase 0 game definition and model matrix,
+  then the runner factory and smoke experiment on top of `mllm-shap` 0.6.0.
 - D06: add the SGPA paper to Papers.md once its conference review ends.
+- `tests/benchmarks/baseline.json` has no `test_mock_audio_bench` entry; record it with
+  `make bench-baseline` on the baseline machine.
 - Guide figures from notebooks: tag a cell `docs-figure:<name>`; the docs build extracts
   it (`docs/scripts/notebook_figures.py`).
