@@ -1,1 +1,1 @@
-('complementary', 'exact', 'mc', 'neyman_cc')
+('complementary', 'exact', 'loo', 'mc', 'neyman_cc')

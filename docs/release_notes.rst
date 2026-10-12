@@ -8,6 +8,18 @@ Changes in each published ``mllm-shap`` version. Newest first.
 Unreleased
 ----------
 
+Added
+~~~~~
+
+- The ``loo`` estimator gives leave-one-out values
+  :math:`v(N) - v(N \setminus \{i\})` from :math:`n + 2` generations, the
+  baseline any attribution method should beat.
+- The ``reference_wer`` value function scores ``1 - min(1, WER)`` against a
+  reference such as a transcript, or against the full answer.
+- :func:`~mllm_shap.deletion_curve` removes the top-``k`` players at once for each
+  ``k`` and rescores, to test faithfulness with a second value function.
+- :meth:`~mllm_shap.PluginRegistry.copy` returns an independent copy of a registry.
+
 .. _release-0-5-0:
 
 0.5.0 (2026-10-12)

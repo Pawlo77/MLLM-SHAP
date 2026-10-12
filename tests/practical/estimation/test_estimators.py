@@ -1,6 +1,7 @@
 """Estimators and estimands on a real model against the exact reference.
 
 @see [[src/mllm_shap/estimation/exact.py]]
+@see [[src/mllm_shap/estimation/loo.py]]
 """
 
 from typing import Any
@@ -65,6 +66,19 @@ def test_sampled_estimators_track_exact(
     assert set(top_players(names, estimate)) <= set(top_players(names, reference))
     assert [estimate[i] > 0 for i in top] == [reference[i] > 0 for i in top]
     assert distance <= scenario.expect["max_l1"]
+
+
+@pytest.mark.parametrize("scenario", scenario_cases("estimator.loo"))
+def test_leave_one_out_needs_n_plus_two_coalitions(
+    scenario: Scenario, default_model: PracticalModel, practical_record: dict[str, Any]
+) -> None:
+    """Leave-one-out ranks France first from the grand, empty and n drops."""
+    output = default_model.explain(scenario)
+    names = labels(output)
+    practical_record["numbers"] = summary(output)
+
+    assert scenario.expect["top_player"] in top_players(names, output.result.values)
+    assert output.metrics.requested == len(names) + 2
 
 
 @pytest.mark.parametrize("scenario", scenario_cases("estimand.banzhaf"))
