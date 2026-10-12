@@ -48,6 +48,7 @@ PROTECTED = frozenset({
     ".github/workflows/template-drift.yaml",
     ".github/workflows/template-sync.yaml",
     "scripts/pr_policy.py",
+    "scripts/sync_configs.py",
     "scripts/template_drift.py",
     "scripts/hooks/merge_gate.sh",
     "scripts/hooks/commit_msg.py",
