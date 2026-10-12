@@ -58,6 +58,12 @@ model that ``AutoModelForCausalLM`` also knows, such as Gemma 3n.
      players: sgpa_segments
      absence_policy: delete
 
+Cost: exact Shapley values over ``n`` spoken words take ``2^n`` generations, and
+audio prompts cannot reuse the prefix cache. On an Apple M4, Granite Speech
+evaluates 64 coalitions of nine words in about a minute: the complementary
+estimator with ``budget.fraction: 0.125`` (:doc:`choosing_an_estimator`); all 512
+take roughly eight times as long.
+
 Granite needs ``torchaudio`` (features) and ``peft`` (its audio adapter), both in the ``transformers``
 extra. ``backend.options.attn_implementation`` is passed to ``from_pretrained``. Notebook: :doc:`/notebooks/audio_explain_transformers`.
 
