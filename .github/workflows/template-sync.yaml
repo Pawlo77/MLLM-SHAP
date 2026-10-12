@@ -54,6 +54,11 @@ jobs:
             exit 0
           fi
           git config --global "url.https://x-access-token:${GH_TOKEN}@github.com/.insteadOf" https://github.com/
+          src="$(sed -n 's/^_src_path: *//p' .copier-answers.yml | tr -d "'\"")"
+          if ! git ls-remote --exit-code --tags --refs "${src/gh:/https://github.com/}.git" >/dev/null 2>&1; then
+            echo "::error::TEMPLATE_SYNC_TOKEN cannot read ${src}. Check that the token lists that repository and has Contents: read (and Workflows: read and write for the sync)."
+            exit 1
+          fi
           args=(--trust --defaults --conflict inline)
           [ -z "$REF" ] || args+=(--vcs-ref "$REF")
           uvx --from copier==9.18.2 copier update "${args[@]}"
