@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # Stop gate (Claude Code and Codex Stop, Cursor stop): the turn may not end with red tests.
 # Per session (key: session_id, else Cursor's conversation_id, else the process id). The
-# gate acts when tree_hash (gate_lib.sh: a content hash of the files under src/ and tests/)
+# gate acts when tree_hash (gate_lib.sh: a content hash of the tree-dirs of [tool.agent-kit])
 # differs from .remember/tmp/tests-ok.<key>, the hash session_start.sh seeds and every
 # green run updates; shell edits (sed, heredocs) change the hash too. Other sessions never
 # gate this one, and a session without a tests-ok file (no session start seen) is not gated.
-# It runs `make tests` (the pytest half of make agent-check; prek never runs from a hook)
+# It runs `make tests` (the pytest half of make check; prek never runs from a hook)
 # with a 180 s limit and a WARNING on stderr past 120 s. Red: Claude Code and Codex get
 # decision "block" with at most 20 failing-test lines, Cursor gets a followup_message.
 # Green: the run's tree hash goes to tests-ok. Each run's start time, exit code and tree
@@ -15,11 +15,11 @@
 # passes quietly. Older results always re-run; continuations (stop_hook_active) are gated
 # too. A timeout is reported and never blocks.
 # session_start.sh clears this session's state and state older than a day.
-# Exits 0 silently when jq, make or .remember/ is missing; AGENT_TEST_GATE=off (or the legacy MLLM_SHAP_TEST_GATE=off) disables it.
+# Exits 0 silently when jq, make or .remember/ is missing; AGENT_TEST_GATE=off disables it.
 source "$(dirname "$0")/lib.sh"
 command -v jq >/dev/null 2>&1 || exit 0
 source "$(dirname "$0")/gate_lib.sh"
-[ "${AGENT_TEST_GATE:-${MLLM_SHAP_TEST_GATE:-on}}" = off ] && quiet_exit
+[ "${AGENT_TEST_GATE:-on}" = off ] && quiet_exit
 cd "$ROOT" || exit 0
 [ -d .remember ] || quiet_exit
 state=".remember/tmp"
@@ -46,7 +46,7 @@ report() {
   local failures reason
   failures="$(grep -E '^(FAILED|ERROR) ' "$output" 2>/dev/null | head -n 20)"
   [ -z "$failures" ] && failures="$(tail -n 20 "$output" 2>/dev/null)"
-  reason="make tests is red (the pytest half of make agent-check). Fix these before handing off:
+  reason="make tests is red (the pytest half of make check). Fix these before handing off:
 $failures
 Then run make check."
   if is_cursor; then

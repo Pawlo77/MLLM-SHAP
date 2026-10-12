@@ -3,12 +3,11 @@
 Usage:
     python scripts/hooks/check_memory_files.py [FILE ...]
 
-Checks the given files, else every ``.remember/*.md`` and ``knowledge/**/*.md``; prints
+Checks the given files, else every ``.remember/*.md`` and the ``**/*.md`` under the
+``vault-dirs`` of ``[tool.agent-kit]`` (default ``knowledge``); prints
 ``path:line: <rule>`` per finding and exits 1 on any. Allowed e-mail addresses: the
 ``pyproject.toml`` authors, ``noreply`` and ``example.com``/``.org`` (never the local
 ``git config user.email``); loopback IPv4 addresses are allowed.
-
-@domain tooling
 """
 
 import re
@@ -16,6 +15,9 @@ import sys
 import tomllib
 from collections.abc import Iterable, Iterator
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from kit_config import words
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -114,7 +116,8 @@ def scan_text(text: str, allowed_emails: set[str]) -> list[tuple[int, str]]:
 def default_files(root: Path = ROOT) -> Iterator[Path]:
     """Yield every memory and vault Markdown file under ``root``."""
     yield from sorted((root / ".remember").glob("*.md"))
-    yield from sorted((root / "knowledge").rglob("*.md"))
+    for folder in words(root, "vault-dirs", "knowledge"):
+        yield from sorted((root / folder).rglob("*.md"))
 
 
 def in_scope(path: Path, root: Path = ROOT) -> bool:
@@ -123,7 +126,8 @@ def in_scope(path: Path, root: Path = ROOT) -> bool:
         rel = path.resolve().relative_to(root).as_posix()
     except ValueError:
         return False
-    return rel.endswith(".md") and rel.startswith((".remember/", "knowledge/"))
+    folders = (f"{d}/" for d in words(root, "vault-dirs", "knowledge"))
+    return rel.endswith(".md") and rel.startswith((".remember/", *folders))
 
 
 def run(paths: Iterable[Path], root: Path = ROOT) -> list[str]:
