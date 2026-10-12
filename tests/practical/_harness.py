@@ -55,12 +55,15 @@ class ModelSpec:
     kind: str = "transformers"
     revision: str = ""
     dtype: str = ""
+    attn_implementation: str = ""
 
     def backend_config(self) -> dict[str, Any]:
         """Return the ``backend`` section of an ``api`` or transformers config."""
         if self.kind == "api":
             return {"kind": "api", "model_id": self.model_id, "api_host": LMS_HOST}
         options = {"revision": self.revision, "dtype": self.dtype}
+        if self.attn_implementation:
+            options["attn_implementation"] = self.attn_implementation
         return {"kind": "transformers", "model_id": self.model_id, "options": options}
 
 
@@ -250,8 +253,12 @@ def summary(output: ExplainRunOutput) -> dict[str, Any]:
     }
 
 
+EXCLUSIVE_TIERS = frozenset({"deep_hf", "audio"})
+"""In-process tiers that release every other in-process model before loading."""
+
+
 class ModelPool:
-    """Load each tier once per session, on first use; ``deep_hf`` owns the device."""
+    """Load each tier once per session, on first use; ``EXCLUSIVE_TIERS`` run alone."""
 
     def __init__(self, resolve_device: Callable[[], str]) -> None:
         """Resolve the device lazily (LM Studio tiers need none); share one cache."""
@@ -272,7 +279,8 @@ class ModelPool:
 
     def _load_transformers(self, tier: str, spec: ModelSpec) -> PracticalModel:
         require_weights(spec)
-        if tier == "deep_hf" or "deep_hf" in self._models:
+        # deep_hf and audio each need most of a 16 GB machine: they run alone.
+        if tier in EXCLUSIVE_TIERS or EXCLUSIVE_TIERS & self._models.keys():
             self._close_in_process()
         device = self._resolve_device()
         backend = TransformersTextBackend(_context(spec))

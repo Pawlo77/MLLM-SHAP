@@ -14,6 +14,7 @@ Newest first.
 
 | Date | Domain | Decision | Status |
 |---|---|---|---|
+| 2026-10-11 | backends | [[Backends decisions#2026-10-11 — Audio input through the transformers processor\|Audio input through the transformers processor]] | accepted |
 | 2026-10-11 | backends | [[Backends decisions#2026-10-11 — Audio mock backend answers one token per voiced run\|Audio mock backend answers one token per voiced run]] | accepted |
 | 2026-10-10 | alignment | [[Alignment decisions#2026-10-10 — Own CTC alignment instead of torchaudio\|Own CTC alignment instead of torchaudio]] | accepted |
 | 2026-10-10 | masking | [[Masking decisions#2026-10-10 — Audio players are sample ranges on the player span\|Audio players are sample ranges on the player span]] | accepted |

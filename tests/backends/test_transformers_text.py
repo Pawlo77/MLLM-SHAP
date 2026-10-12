@@ -7,7 +7,7 @@ import asyncio
 import dataclasses
 import math
 from types import SimpleNamespace
-from typing import Any
+from typing import Any, ClassVar
 
 import pytest
 
@@ -429,7 +429,13 @@ def test_transformers_backend_loads_the_configured_revision_and_dtype(
             calls.append((self._kind, {"model_id": model_id, **kwargs}))
             return self._result
 
+    class _TextConfig:
+        # GPT-2 style: a causal language model whose class is no *ForCausalLM.
+        architectures: ClassVar[list[str]] = ["GPT2LMHeadModel"]
+
     fake = SimpleNamespace(
+        AutoConfig=_Auto("config", _TextConfig()),
+        MODEL_FOR_CAUSAL_LM_MAPPING={_TextConfig: object},
         AutoTokenizer=_Auto("tokenizer", _TokenizerStub()),
         AutoModelForCausalLM=_Auto("model", _ModelStub()),
     )
@@ -446,6 +452,7 @@ def test_transformers_backend_loads_the_configured_revision_and_dtype(
     asyncio.run(backend.generate(_snapshot("shared alpha"), GenerationConfig()))
 
     assert calls == [
+        ("config", {"model_id": "org/model", "revision": "0123abcd"}),
         ("tokenizer", {"model_id": "org/model", "revision": "0123abcd"}),
         (
             "model",

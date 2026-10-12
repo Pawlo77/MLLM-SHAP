@@ -25,6 +25,8 @@ from .options import LmStudioOptions, parse_lmstudio_options
 if TYPE_CHECKING:
     from ...plugins.context import PluginContext
 
+logger = logging.getLogger(__name__)
+
 
 class LmStudioBackend:
     """Generate text through a local LM Studio API server."""
@@ -40,6 +42,7 @@ class LmStudioBackend:
         self._model: Any | None = None
         self._init_lock = asyncio.Lock()
         self._generate_lock = asyncio.Lock()
+        self._warned_transcript = False
 
     @property
     def options(self) -> LmStudioOptions:
@@ -58,8 +61,7 @@ class LmStudioBackend:
     ) -> GenerationRecord:
         """Generate assistant text for ``snapshot`` via LM Studio."""
         if snapshot_has_audio(snapshot):
-            msg = "audio snapshots are not supported by the LM Studio backend"
-            raise ValueError(msg)
+            self._check_audio()
         lms = _import_lmstudio()
         chat = snapshot_to_chat(snapshot, lms.Chat)
         prediction_config: dict[str, float | int] = {
@@ -88,6 +90,21 @@ class LmStudioBackend:
                     raise BackendUnavailableError(msg) from retry_exc
             text = _extract_text(result)
             return generation_record_from_text(text)
+
+    def _check_audio(self) -> None:
+        """Refuse audio, or warn once that only its transcript is sent."""
+        if self._options.audio == "refuse":
+            msg = (
+                "audio snapshots are not supported by the LM Studio backend (its SDK "
+                "takes no audio input); set backend.options audio: transcript to "
+                "score the text parts only"
+            )
+            raise ValueError(msg)
+        if not self._warned_transcript:
+            self._warned_transcript = True
+            logger.warning(
+                "LM Studio backend sends the text parts only: the audio is not heard"
+            )
 
     async def aclose(self) -> None:
         """Close the underlying LM Studio client connection."""

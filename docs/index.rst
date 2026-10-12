@@ -118,6 +118,7 @@ See :doc:`guides/extending` for the full extras and entry-point matrix.
    guides/value_functions
    guides/masking
    guides/backends
+   guides/audio_backends
    guides/runtime
    guides/visualization
    guides/alignment

@@ -135,6 +135,12 @@ def deep_hf_model(practical_models: ModelPool) -> PracticalModel:
 
 
 @pytest.fixture
+def audio_model(practical_models: ModelPool) -> PracticalModel:
+    """Return in-process Granite Speech; loading it releases the other tiers."""
+    return practical_models.get("audio")
+
+
+@pytest.fixture
 def practical_record(request: pytest.FixtureRequest) -> Iterator[dict[str, Any]]:
     """Return a dict the test fills with properties, numbers and judge margins."""
     record: dict[str, Any] = {"properties": {}, "judge": {}}

@@ -21,24 +21,25 @@ tags: [generated]
 | [[src/mllm_shap/alignment/segments.py]] | Transcript tokens aligned to audio time ranges. | alignment | [[knowledge/architecture/alignment]] | 66 | [[alignment]] |
 | [[src/mllm_shap/alignment/sgpa.py]] | Spectrogram-guided alignment of transcript tokens to speech (SGPA). | alignment | [[knowledge/architecture/alignment]] | 279 | [[alignment]] |
 | [[src/mllm_shap/backends/__init__.py]] | Backend plugin implementations. | backends | [[knowledge/architecture/backends]] | 9 | [[backends]] |
-| [[src/mllm_shap/backends/_chat.py]] | Conversation helpers shared by chat-style backends. | backends | [[knowledge/architecture/backends]] | 47 | [[backends]] |
+| [[src/mllm_shap/backends/_chat.py]] | Conversation helpers shared by chat-style backends. | backends | [[knowledge/architecture/backends]] | 41 | [[backends]] |
 | [[src/mllm_shap/backends/api/__init__.py]] | OpenAI-compatible HTTP API backend plugin. | backends | [[knowledge/architecture/backends]] | 10 | [[backends]] |
-| [[src/mllm_shap/backends/api/backend.py]] | OpenAI-compatible HTTP generative backend. | backends | [[knowledge/architecture/backends]] | 216 | [[backends]] |
-| [[src/mllm_shap/backends/api/payload.py]] | Chat-completions request and response helpers. | backends | [[knowledge/architecture/backends]] | 67 | [[backends]] |
+| [[src/mllm_shap/backends/api/backend.py]] | OpenAI-compatible HTTP generative backend. | backends | [[knowledge/architecture/backends]] | 213 | [[backends]] |
+| [[src/mllm_shap/backends/api/payload.py]] | Chat-completions request and response helpers. | backends | [[knowledge/architecture/backends]] | 97 | [[backends]] |
 | [[src/mllm_shap/backends/lmstudio/__init__.py]] | LM Studio backend plugin. | backends | [[knowledge/architecture/backends]] | 10 | [[backends]] |
-| [[src/mllm_shap/backends/lmstudio/backend.py]] | LM Studio generative backend. | backends | [[knowledge/architecture/backends]] | 185 | [[backends]] |
+| [[src/mllm_shap/backends/lmstudio/backend.py]] | LM Studio generative backend. | backends | [[knowledge/architecture/backends]] | 202 | [[backends]] |
 | [[src/mllm_shap/backends/lmstudio/chat.py]] | Convert conversation snapshots to LM Studio chat contexts. | backends | [[knowledge/architecture/backends]] | 42 | [[backends]] |
 | [[src/mllm_shap/backends/lmstudio/models.py]] | Resolve and download LM Studio models through the ``lmstudio`` SDK. | backends | [[knowledge/architecture/backends]] | 185 | [[backends]] |
-| [[src/mllm_shap/backends/lmstudio/options.py]] | Settings of the LM Studio backend read from ``BackendConfig.options``. | backends | [[knowledge/architecture/backends]] | 43 | [[backends]] |
+| [[src/mllm_shap/backends/lmstudio/options.py]] | Settings of the LM Studio backend read from ``BackendConfig.options``. | backends | [[knowledge/architecture/backends]] | 48 | [[backends]] |
 | [[src/mllm_shap/backends/mock/__init__.py]] | Mock backend exports. | backends | [[knowledge/architecture/backends]] | 12 | [[backends]] |
 | [[src/mllm_shap/backends/mock/audio.py]] | Deterministic mock backend that hears the voiced runs of audio parts. | backends | [[knowledge/architecture/backends]] | 81 | [[backends]] |
 | [[src/mllm_shap/backends/mock/backend.py]] | Deterministic mock backend for CI-safe E2E tests. | backends | [[knowledge/architecture/backends]] | 73 | [[backends]] |
 | [[src/mllm_shap/backends/transformers/__init__.py]] | Hugging Face transformers text backend. | backends | [[knowledge/architecture/backends]] | 9 | [[backends]] |
 | [[src/mllm_shap/backends/transformers/_torch.py]] | Lazy import of the optional ``torch`` dependency. | backends | [[knowledge/architecture/backends]] | 21 | [[backends]] |
+| [[src/mllm_shap/backends/transformers/audio.py]] | Model inputs for audio language models through a Hugging Face processor. | backends | [[knowledge/architecture/backends]] | 89 | [[backends]] |
 | [[src/mllm_shap/backends/transformers/chat.py]] | Conversation snapshot helpers for Hugging Face chat templates. | backends | [[knowledge/architecture/backends]] | 26 | [[backends]] |
 | [[src/mllm_shap/backends/transformers/embeddings.py]] | Embedding helpers for the transformers text backend. | backends | [[knowledge/architecture/backends]] | 50 | [[backends]] |
-| [[src/mllm_shap/backends/transformers/options.py]] | Settings of the transformers backend read from ``BackendConfig.options``. | backends | [[knowledge/architecture/backends]] | 42 | [[backends]] |
-| [[src/mllm_shap/backends/transformers/text.py]] | Hugging Face causal language model backend (text-only). | backends | [[knowledge/architecture/backends]] | 326 | [[backends]] |
+| [[src/mllm_shap/backends/transformers/options.py]] | Settings of the transformers backend read from ``BackendConfig.options``. | backends | [[knowledge/architecture/backends]] | 52 | [[backends]] |
+| [[src/mllm_shap/backends/transformers/text.py]] | Hugging Face language model backend for text and, with a processor, audio. | backends | [[knowledge/architecture/backends]] | 382 | [[backends]] |
 | [[src/mllm_shap/cli.py]] | Command-line interface: ``mllm-shap explain\|reanalyze\|plugins\|config``. | core | [[knowledge/architecture/core]] | 255 | [[core]] |
 | [[src/mllm_shap/domain/__init__.py]] | Domain types for cooperative-game explainability. | domain | [[knowledge/architecture/domain]] | 43 | [[domain]] |
 | [[src/mllm_shap/domain/coalition.py]] | Coalition masks over explainability players. | domain | [[knowledge/architecture/domain]] | 45 | [[domain]] |
