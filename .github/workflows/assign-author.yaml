@@ -20,10 +20,13 @@ jobs:
       GH_REPO: ${{ github.repository }}
       PR: ${{ github.event.pull_request.number }}
       AUTHOR: ${{ github.event.pull_request.user.login }}
+      OWNER: ${{ github.repository_owner }}
       TITLE: ${{ github.event.pull_request.title }}
     steps:
       - name: Assign the author and label from the title type
         run: |
+          # Apps cannot be assigned with the workflow token; the owner takes their PRs.
+          case "$AUTHOR" in *"[bot]") AUTHOR="$OWNER" ;; esac
           case "$TITLE" in
             fix:* | fix\(*) label=bug ;;
             docs:* | docs\(*) label=documentation ;;
