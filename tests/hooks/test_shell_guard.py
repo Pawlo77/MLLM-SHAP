@@ -5,11 +5,18 @@
 
 import importlib.util
 import json
+import re
 from types import ModuleType
 
 import pytest
 
 from tests.hooks._hookrun import CLAUDE, CURSOR, HAVE_TOOLS, HOOKS, run_hook
+
+ASK_PATTERNS = (
+    r"^(uv\s+publish|twine\s+upload)\b",
+    r"^gh\s+release\s+create\b",
+    r"^gh\s+api\b.*(-X|--method)[\s=]+DELETE\b",
+)
 
 
 @pytest.fixture(scope="module")
@@ -22,6 +29,11 @@ def guard() -> ModuleType:
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
+    # Pin the project rules, so the cases do not depend on the repository's config.
+    module._project_rules = lambda: (
+        [re.compile(p) for p in ASK_PATTERNS],
+        ("deploy.sh",),
+    )
     return module
 
 
@@ -91,6 +103,7 @@ PR_BODY = (
         ("gh pr create --title 'WIP: feat: x' --body 'y'", "deny"),
         ("sbatch scripts/cluster/helios/run_suite.sbatch", "ask"),
         ("ssh helios 'scancel 123'", "ask"),
+        ("bash scripts/deploy.sh", "ask"),
         ("uv publish dist/*", "ask"),
         ("gh release create v1.0.0", "ask"),
         ("gh api -X DELETE repos/Pawlo77/x/git/refs/heads/y", "ask"),

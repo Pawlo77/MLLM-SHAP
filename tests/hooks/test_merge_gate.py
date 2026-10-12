@@ -11,8 +11,10 @@ from pathlib import Path
 
 import pytest
 
-from scripts import pr_policy
 from tests.hooks._hookrun import CLAUDE, CURSOR, HAVE_TOOLS, ROOT, git, scratch_repo
+
+# pr_policy.py belongs to the adopting repository (not template-managed yet).
+pr_policy = pytest.importorskip("scripts.pr_policy")
 
 pytestmark = pytest.mark.skipif(not HAVE_TOOLS, reason="needs bash and jq")
 
