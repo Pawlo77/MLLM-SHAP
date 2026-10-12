@@ -26,4 +26,4 @@ New backends also need a matching minimal notebook in `examples/` (see `examples
   informational artifact; it does not gate PRs
 - Regression gate stays local: `make bench-regression` fails when a median is more than 25%
   (at least 5 rounds, warm-up on) slower than `tests/benchmarks/baseline.json` (recorded on the maintainer's machine, named
-  in `tests/benchmarks/AGENTS.md`); re-record with `make bench-baseline`
+  in `docs/guides/runtime.rst`); re-record with `make bench-baseline`
