@@ -1,6 +1,6 @@
-mllm_shap.estimators: complementary, exact, mc, neyman_cc
+mllm_shap.estimators: complementary, exact, loo, mc, neyman_cc
 mllm_shap.estimands: banzhaf, shapley
-mllm_shap.value_fns: embedding_cosine, embedding_euclidean, logprob, tfidf_cosine
+mllm_shap.value_fns: embedding_cosine, embedding_euclidean, logprob, reference_wer, tfidf_cosine
 mllm_shap.normalizers: abs_sum, identity, min_max, power_shift
 mllm_shap.backends: api, lmstudio, mock, mock_audio, transformers
 mllm_shap.partitions: messages, sgpa_segments, tokens

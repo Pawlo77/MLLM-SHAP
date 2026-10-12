@@ -29,6 +29,7 @@ tags: [generated]
 | `CooperativeGame` | [[src/mllm_shap/domain/game.py]] | Player set and reference values for a characteristic function. |
 | `CosineEmbeddingValue` | [[src/mllm_shap/value/embedding.py]] | Cosine similarity between static or contextual embeddings (U1/U2). |
 | `DeletePolicy` | [[src/mllm_shap/masking/policies.py]] | Remove absent players from the rendered conversation. |
+| `DeletionCurve` | [[src/mllm_shap/pipeline/faithfulness.py]] | Value of the coalition left after removing the top-``k`` players, per ``k``. |
 | `Estimand` | [[src/mllm_shap/domain/estimands.py]] | Supported cooperative-game value formulations. |
 | `EuclideanEmbeddingValue` | [[src/mllm_shap/value/embedding.py]] | Similarity ``1 / (1 + distance)`` between embeddings (U4). |
 | `ExactEstimator` | [[src/mllm_shap/estimation/exact.py]] | Enumerate all coalitions and delegate attribution to an estimand plugin. |
@@ -39,6 +40,7 @@ tags: [generated]
 | `GenerationRecord` | [[src/mllm_shap/domain/generation.py]] | Concrete generation output consumed by built-in value functions. |
 | `IdentityNormalizer` | [[src/mllm_shap/estimation/normalizers.py]] | Return attributions unchanged. |
 | `InMemoryObservabilitySink` | [[src/mllm_shap/runtime/telemetry.py]] | Collect span records in memory for tests and diagnostics. |
+| `LeaveOneOutEstimator` | [[src/mllm_shap/estimation/loo.py]] | Attribute ``v(N) - v(N - {i})`` to player ``i`` from ``n + 1`` coalitions. |
 | `LmStudioBackend` | [[src/mllm_shap/backends/lmstudio/backend.py]] | Generate text through a local LM Studio API server. |
 | `LogprobValue` | [[src/mllm_shap/value/logprob.py]] | Score a coalition by the model's confidence in its own generation. |
 | `LogprobsUnavailableError` | [[src/mllm_shap/errors.py]] | Raised when a value function needs token logprobs a generation lacks. |
@@ -64,6 +66,7 @@ tags: [generated]
 | `PluginRegistry` | [[src/mllm_shap/plugins/registry.py]] | Register and resolve pipeline plugins by group and name. |
 | `PowerShiftNormalizer` | [[src/mllm_shap/estimation/normalizers.py]] | Shift to non-negative values, apply a power, then scale to sum one. |
 | `ReanalyzeMismatchError` | [[src/mllm_shap/errors.py]] | Raised when reanalyze settings disagree with the archived run. |
+| `ReferenceWerValue` | [[src/mllm_shap/value/wer.py]] | Score ``1 - min(1, WER)`` of a coalition's answer against a reference. |
 | `Role` | [[src/mllm_shap/domain/enums.py]] | Participant role attached to a message or token. |
 | `RunManifest` | [[src/mllm_shap/pipeline/manifest.py]] | Top-level metadata persisted alongside a run archive. |
 | `SgpaSegmentPartitioner` | [[src/mllm_shap/alignment/partitions.py]] | Make each spellable word of every audio message's transcript a player. |
@@ -78,6 +81,7 @@ tags: [generated]
 | `__version__` | | Installed package version string. |
 | `configure_logging` | [[src/mllm_shap/_logging.py]] | Configure the ``mllm_shap`` loggers from TOML or with one stderr handler. |
 | `default_registry` | [[src/mllm_shap/plugins/builtin.py]] | Return a registry with the built-in plugins and third-party entry points. |
+| `deletion_curve` | [[src/mllm_shap/pipeline/faithfulness.py]] | Score ``snapshot`` with its ``k`` highest-attributed players removed at once. |
 | `display_attribution_html` | [[src/mllm_shap/viz/render.py]] | Display colored token HTML when IPython is available. |
 | `explain_config_from_yaml` | [[src/mllm_shap/pipeline/config.py]] | Parse YAML text into a validated :class:`ExplainConfig`. |
 | `explain_config_to_yaml` | [[src/mllm_shap/pipeline/config.py]] | Serialize a config to YAML with stable key ordering within sections. |

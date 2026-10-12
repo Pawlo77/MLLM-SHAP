@@ -14,6 +14,8 @@ Pipeline
 
 .. automodule:: mllm_shap.pipeline.reanalyze
 
+.. automodule:: mllm_shap.pipeline.faithfulness
+
 .. automodule:: mllm_shap.pipeline.orchestrator
 
 .. automodule:: mllm_shap.pipeline.context

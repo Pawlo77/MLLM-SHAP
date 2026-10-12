@@ -13,6 +13,7 @@ from ..backends.transformers import TransformersTextBackend
 from ..estimation.complementary import ComplementaryEstimator
 from ..estimation.estimands import BanzhafAggregator, ShapleyAggregator
 from ..estimation.exact import ExactEstimator
+from ..estimation.loo import LeaveOneOutEstimator
 from ..estimation.monte_carlo import MonteCarloEstimator
 from ..estimation.neyman import NeymanEstimator
 from ..estimation.normalizers import (
@@ -26,6 +27,7 @@ from ..masking.policies import DeletePolicy, NeutralPolicy, PadPolicy
 from ..value.embedding import CosineEmbeddingValue, EuclideanEmbeddingValue
 from ..value.logprob import LogprobValue
 from ..value.tfidf import TfIdfCosineValue
+from ..value.wer import ReferenceWerValue
 from ..viz.token_bar import TokenBarRenderer
 from ..viz.token_text import TokenTextRenderer
 from .groups import PluginGroup
@@ -37,6 +39,7 @@ BUILTIN_PLUGINS: dict[PluginGroup, dict[str, PluginFactory]] = {
         "mc": MonteCarloEstimator,
         "complementary": ComplementaryEstimator,
         "neyman_cc": NeymanEstimator,
+        "loo": LeaveOneOutEstimator,
     },
     PluginGroup.ESTIMANDS: {
         "shapley": ShapleyAggregator,
@@ -47,6 +50,7 @@ BUILTIN_PLUGINS: dict[PluginGroup, dict[str, PluginFactory]] = {
         "embedding_cosine": CosineEmbeddingValue,
         "embedding_euclidean": EuclideanEmbeddingValue,
         "logprob": LogprobValue,
+        "reference_wer": ReferenceWerValue,
     },
     PluginGroup.NORMALIZERS: {
         "identity": IdentityNormalizer,

@@ -34,6 +34,7 @@ paths:
   src/mllm_shap/estimation/monte_carlo.py: [estimator.mc, estimand.banzhaf]
   src/mllm_shap/estimation/complementary.py: [estimator.complementary]
   src/mllm_shap/estimation/neyman.py: [estimator.neyman_cc]
+  src/mllm_shap/estimation/loo.py: [estimator.loo]
   src/mllm_shap/estimation/estimands/*: [estimator.exact, estimand.banzhaf]
   src/mllm_shap/estimation/normalizers.py: [value.normalizers]
 
@@ -47,6 +48,7 @@ paths:
   src/mllm_shap/pipeline/reanalyze.py: [archive.reanalyze, cli.reanalyze, value.normalizers]
   src/mllm_shap/pipeline/result.py: [cli.explain, viz.render]
   src/mllm_shap/pipeline/manifest.py: [cli.reanalyze]
+  src/mllm_shap/pipeline/faithfulness.py: [value.reference_wer]
 
   src/mllm_shap/plugins/*: smoke
   src/mllm_shap/runtime/*: smoke

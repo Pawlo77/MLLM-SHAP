@@ -5,11 +5,12 @@ domain: estimation
 parent: "[[mllm-shap]]"
 tags: [architecture, estimation]
 created: 2026-10-07
-updated: 2026-10-11
+updated: 2026-10-12
 related-code:
   - "[[src/mllm_shap/estimation/__init__.py]]"
   - "[[src/mllm_shap/estimation/_shared.py]]"
   - "[[src/mllm_shap/estimation/complementary.py]]"
+  - "[[src/mllm_shap/estimation/loo.py]]"
   - "[[src/mllm_shap/estimation/estimands/__init__.py]]"
   - "[[src/mllm_shap/estimation/estimands/_weights.py]]"
   - "[[src/mllm_shap/estimation/estimands/banzhaf.py]]"
@@ -32,6 +33,7 @@ related-code:
 - `ExactEstimator` (`exact`): yields all `2^n` masks in bitmask order (`num_coalitions(n) == 2^n`); requires `budget_fraction == 1.0` (raised by `sample_masks` and refused earlier by config validation).
 - `MonteCarloEstimator` (`mc`): yields the grand and empty coalitions, the empty and singleton coalitions when `include_minimal_masks`, then uniform random masks without repeats until `compute_mc_num_samples` (a fraction of `2^n`, boundary masks included).
 - `ComplementaryEstimator` (`complementary`): yields the pair `(N, ∅)`, then all `n` singleton pairs `({i}, N ∖ {i})`, then random complementary pairs (Complementary contribution, [[Estimation decisions#2026-10-07 — Singleton-first complementary sampling|Singleton-first complementary sampling]]); `m_counts` exposes the sampled count matrix.
+- `LeaveOneOutEstimator` (`loo`): yields `N` and each `N - {i}` (the orchestrator adds `∅`); `estimate_attributions` returns `v(N) - v(N - {i})` and ignores the budget and the estimand, so values need not add up ([[Estimation decisions#2026-10-12 — Leave-one-out bypasses the estimand|decision]]).
 - `NeymanEstimator` (`neyman_cc`, the default): phase one yields `(N, ∅)` and the singleton pairs, then walks the `(size, player)` grid size by size, round-robin over players, until every cell reaches `initial_num_splits` or its count of distinct coalitions. `begin_allocation(masks, payoffs)` estimates stratum variances and water-fills the remaining pairs over coalition sizes (complement column `n - j`); `sample_allocation_masks()` yields phase two (Neyman allocation). Options come from `explanation.neyman`.
 - Every estimator: `estimate_attributions(masks, payoffs, aggregator)`. Exact and Monte Carlo inherit it from `_shared._SnapshotEstimator` (with `options_model`, `__init__` and `bind_snapshot`), which delegates to the aggregator. The complementary estimators pair masks by complement (`pair_masks_by_complement`, `build_c_matrix_from_pairs`, `aggregate_complementary_shapley`) and accept only the Shapley estimand.
 - `ShapleyAggregator`, `BanzhafAggregator`: `aggregate(masks, payoffs)`. Shapley sends a complete `2^n` table through the vectorised `aggregate_shapley_exact`. Banzhaf and partial tables go through `aggregate_from_marginals`: the mean observed marginal per coalition size, renormalised over the observed strata with the semivalue's stratum probabilities ([[Estimation decisions#2026-10-07 — Stratified mean for partial samples|Stratified mean for partial samples]]). A player with no observed marginal gets 0, and one `WARNING` lists all such players.
@@ -65,6 +67,7 @@ related-code:
 
 - [[tests/estimation/test_axioms.py]]
 - [[tests/estimation/test_exact.py]]
+- [[tests/estimation/test_loo.py]]
 - [[tests/estimation/test_monte_carlo.py]]
 - [[tests/estimation/test_complementary.py]]
 - [[tests/estimation/test_neyman.py]]

@@ -5,7 +5,7 @@ domain: value
 parent: "[[mllm-shap]]"
 tags: [architecture, value]
 created: 2026-10-07
-updated: 2026-10-11
+updated: 2026-10-12
 related-code:
   - "[[src/mllm_shap/value/__init__.py]]"
   - "[[src/mllm_shap/value/_metrics.py]]"
@@ -13,6 +13,7 @@ related-code:
   - "[[src/mllm_shap/value/embedding.py]]"
   - "[[src/mllm_shap/value/generation_records.py]]"
   - "[[src/mllm_shap/value/logprob.py]]"
+  - "[[src/mllm_shap/value/wer.py]]"
   - "[[src/mllm_shap/value/tfidf.py]]"
 ---
 
@@ -27,6 +28,7 @@ related-code:
 
 - `TfIdfCosineValue` (`tfidf_cosine`, the default): a `FittableValueFunction`. `fit(corpus)` freezes inverse document frequencies over the base and all coalition records. `score` is the cosine similarity of term frequency-inverse document frequency (TF-IDF) vectors built from `text_token_rows` of `GenerationRecord` inputs.
 - `EmbeddingValue`: abstract base holding the embedding mode (`explanation.embedding_mode` through the plugin context), the provider and `score`; `needs_embeddings` is true, so subclasses satisfy `RequiresEmbeddings` ([[Backends decisions#2026-10-07 — Embeddings computed only when the value function needs them|Embeddings computed only when the value function needs them]]). `CosineEmbeddingValue` (`embedding_cosine`) and `EuclideanEmbeddingValue` (`embedding_euclidean`, `1 / (1 + distance)`) set `registered_name` and the metric. Both read `embedding`, or `contextual_embedding` in `contextual` mode.
+- `ReferenceWerValue` (`reference_wer`, option `reference`): `1 - min(1, word_error_rate(target, candidate))`, the target being `reference` or the base text; `word_error_rate` is word-level Levenshtein over lowercased `[\w']+` words (empty reference: 0 or 1).
 - `LogprobValue` (`logprob`): mean of the candidate's `logprobs` (0 for an empty generation); ignores the base; `needs_logprobs` makes it `RequiresLogprobs`; a record with `logprobs is None` raises `LogprobsUnavailableError` ([[Value decisions#2026-10-08 — Logprob value is the coalition's own mean token logprob|logprob value]]).
 - `generation_record_from_text(text, context_id=None)`: token rows from `text.split()` with `stable_token_id` (56-bit `blake2b`) and 8-dimensional `hash_embedding` vectors. `embedding = hash_embedding(text)` and `contextual_embedding = hash_embedding(text + "\0")`, so every field depends on the generated text only. `context_id` is ignored and emits a `DeprecationWarning` (removal in 0.2.0; [[Value decisions#2026-10-08 — Contextual hash embedding derived from text only|Contextual hash embedding derived from text only]]).
 - Private helpers: `_metrics.py` (cosine and Euclidean similarity), `_token_hash.py` (`TokenHasher`, maps token rows to dense ids).
@@ -52,6 +54,7 @@ related-code:
 
 - [[tests/value/test_tfidf.py]]
 - [[tests/value/test_embedding.py]]
+- [[tests/value/test_wer.py]]
 - [[tests/value/test_logprob.py]]
 - [[tests/value/test_metrics.py]]
 - [[tests/value/test_generation_records.py]]

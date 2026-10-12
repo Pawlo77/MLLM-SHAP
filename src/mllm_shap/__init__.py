@@ -44,6 +44,7 @@ from .errors import (
 from .estimation.complementary import ComplementaryEstimator
 from .estimation.estimands import BanzhafAggregator, ShapleyAggregator
 from .estimation.exact import ExactEstimator
+from .estimation.loo import LeaveOneOutEstimator
 from .estimation.monte_carlo import MonteCarloEstimator
 from .estimation.neyman import NeymanEstimator
 from .estimation.normalizers import (
@@ -60,11 +61,13 @@ from .masking import (
     TokenPartitioner,
 )
 from .pipeline import (
+    DeletionCurve,
     ExplainConfig,
     ExplainResult,
     ExplainRunner,
     ExplainRunOutput,
     RunManifest,
+    deletion_curve,
     explain_config_from_yaml,
     explain_config_to_yaml,
     parse_manifest,
@@ -75,6 +78,7 @@ from .value import (
     CosineEmbeddingValue,
     EuclideanEmbeddingValue,
     LogprobValue,
+    ReferenceWerValue,
     TfIdfCosineValue,
 )
 from .viz.token_bar import TokenBarRenderer
@@ -119,6 +123,7 @@ __all__ = [
     "CooperativeGame",
     "CosineEmbeddingValue",
     "DeletePolicy",
+    "DeletionCurve",
     "Estimand",
     "EuclideanEmbeddingValue",
     "ExactEstimator",
@@ -129,6 +134,7 @@ __all__ = [
     "GenerationRecord",
     "IdentityNormalizer",
     "InMemoryObservabilitySink",
+    "LeaveOneOutEstimator",
     "LmStudioBackend",
     "LogprobValue",
     "LogprobsUnavailableError",
@@ -154,6 +160,7 @@ __all__ = [
     "PluginRegistry",
     "PowerShiftNormalizer",
     "ReanalyzeMismatchError",
+    "ReferenceWerValue",
     "Role",
     "RunManifest",
     "SgpaSegmentPartitioner",
@@ -168,6 +175,7 @@ __all__ = [
     "__version__",
     "configure_logging",
     "default_registry",
+    "deletion_curve",
     "display_attribution_html",
     "explain_config_from_yaml",
     "explain_config_to_yaml",

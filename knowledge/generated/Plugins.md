@@ -26,6 +26,7 @@ A plugin registered only as an entry point resolves only through `PluginRegistry
 | mllm_shap.estimands | explanation.estimand | `shapley` | `ShapleyAggregator` | [[src/mllm_shap/estimation/estimands/shapley.py]] | entry point | Aggregate coalition samples with Shapley coalition weights. |
 | mllm_shap.estimators | explanation.estimator | `complementary` | `ComplementaryEstimator` | [[src/mllm_shap/estimation/complementary.py]] | entry point | Sample complementary coalition pairs and aggregate CC attributions. |
 | mllm_shap.estimators | explanation.estimator | `exact` | `ExactEstimator` | [[src/mllm_shap/estimation/exact.py]] | entry point | Enumerate all coalitions and delegate attribution to an estimand plugin. |
+| mllm_shap.estimators | explanation.estimator | `loo` | `LeaveOneOutEstimator` | [[src/mllm_shap/estimation/loo.py]] | entry point | Attribute ``v(N) - v(N - {i})`` to player ``i`` from ``n + 1`` coalitions. |
 | mllm_shap.estimators | explanation.estimator | `mc` | `MonteCarloEstimator` | [[src/mllm_shap/estimation/monte_carlo.py]] | entry point | Sample random coalitions and delegate attribution to an estimand plugin. |
 | mllm_shap.estimators | explanation.estimator | `neyman_cc` | `NeymanEstimator` | [[src/mllm_shap/estimation/neyman.py]] | entry point | Two-phase complementary estimator with Neyman coalition-size allocation. |
 | mllm_shap.normalizers | explanation.normalizer | `abs_sum` | `AbsSumNormalizer` | [[src/mllm_shap/estimation/normalizers.py]] | entry point | Scale attributions by the sum of absolute values. |
@@ -40,4 +41,5 @@ A plugin registered only as an entry point resolves only through `PluginRegistry
 | mllm_shap.value_fns | explanation.value_fn | `embedding_cosine` | `CosineEmbeddingValue` | [[src/mllm_shap/value/embedding.py]] | entry point | Cosine similarity between static or contextual embeddings (U1/U2). |
 | mllm_shap.value_fns | explanation.value_fn | `embedding_euclidean` | `EuclideanEmbeddingValue` | [[src/mllm_shap/value/embedding.py]] | entry point | Similarity ``1 / (1 + distance)`` between embeddings (U4). |
 | mllm_shap.value_fns | explanation.value_fn | `logprob` | `LogprobValue` | [[src/mllm_shap/value/logprob.py]] | entry point | Score a coalition by the model's confidence in its own generation. |
+| mllm_shap.value_fns | explanation.value_fn | `reference_wer` | `ReferenceWerValue` | [[src/mllm_shap/value/wer.py]] | entry point | Score ``1 - min(1, WER)`` of a coalition's answer against a reference. |
 | mllm_shap.value_fns | explanation.value_fn | `tfidf_cosine` | `TfIdfCosineValue` | [[src/mllm_shap/value/tfidf.py]] | entry point | Score generations with cosine similarity of frozen TF-IDF vectors. |

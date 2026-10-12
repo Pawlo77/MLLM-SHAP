@@ -1,6 +1,8 @@
 """Value functions and normalizers on real generations.
 
 @see [[src/mllm_shap/value/logprob.py]]
+@see [[src/mllm_shap/value/wer.py]]
+@see [[src/mllm_shap/pipeline/faithfulness.py]]
 """
 
 import math
@@ -9,7 +11,9 @@ from typing import Any
 
 import pytest
 
+from mllm_shap import DeletionCurve, deletion_curve
 from tests.practical._harness import (
+    LOOP,
     SCENARIOS,
     PracticalModel,
     Scenario,
@@ -66,6 +70,33 @@ def test_logprob_values_flag_the_planted_contradiction(
     assert result.grand_value <= 0.0
     assert efficiency_gap(result.values, result.base_value, result.grand_value) < 1e-9
     assert math.copysign(1.0, result.values[planted]) == scenario.expect["sign"]
+
+
+@pytest.mark.parametrize("scenario", scenario_cases("value.reference_wer"))
+def test_shapley_ranking_beats_its_reverse_on_a_deletion_curve(
+    scenario: Scenario, default_model: PracticalModel, practical_record: dict[str, Any]
+) -> None:
+    """Removing the top Shapley words first destroys the answer sooner."""
+    exact = default_model.explain(SCENARIOS[scenario.expect["explained_by"]])
+    values = exact.result.values
+    config = scenario.config(default_model.spec)
+
+    def curve(ranking: list[float]) -> DeletionCurve:
+        return LOOP.run_until_complete(
+            deletion_curve(
+                config, scenario.snapshot, ranking, backend=default_model.cached
+            )
+        )
+
+    ranked, reverse = curve(values), curve([-value for value in values])
+    practical_record["numbers"] = {
+        "ranked": list(ranked.values),
+        "reverse": list(reverse.values),
+    }
+    practical_record["properties"] = {"area": ranked.area, "reverse_area": reverse.area}
+
+    assert ranked.values[0] == pytest.approx(1.0)  # the full answer matches itself
+    assert ranked.area < reverse.area
 
 
 @pytest.mark.parametrize("scenario", scenario_cases("value.normalizers"))

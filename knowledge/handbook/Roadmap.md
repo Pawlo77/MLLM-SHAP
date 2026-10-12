@@ -24,7 +24,7 @@ Detailed plans live outside this repository.
 
 ## Audio track
 
-One phase, one tag, one publish (skill `rewrite`). Pull request (PR) 4 was ported per phase onto the 0.1.18 message model and closed ([[Fixed issues|D03]]).
+Complete: every phase is released. One phase, one tag, one publish (skill `rewrite`). Pull request (PR) 4 was ported per phase onto the 0.1.18 message model and closed ([[Fixed issues|D03]]).
 
 | Phase | Tag | Module focus |
 |---|---|---|
@@ -34,6 +34,6 @@ One phase, one tag, one publish (skill `rewrite`). Pull request (PR) 4 was porte
 | 18 | 0.4.0 | mock audio backend (`mock_audio`, done) |
 | 19 | 0.4.1 | audio input for transformers audio models, the application programming interface (API) backend and LM Studio (done) |
 | 20 | 0.5.0 | audio end-to-end pipeline: audio in snapshot JSON and the command line, hearing-only `transcript: align_only` (done) |
-| 21 | next | audio value functions and SGPA audio smoke test |
+| 21 | 0.6.0 | research utilities: `loo` estimator, `reference_wer` value function, `deletion_curve` (done; the smoke experiment lives in `mllm-xai`) |
 
 Phase 19 replaced a dedicated liquid-audio backend ([[Backends decisions#2026-10-11 — Audio input through the transformers processor|decision]]).

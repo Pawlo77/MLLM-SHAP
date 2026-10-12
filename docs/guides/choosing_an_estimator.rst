@@ -43,6 +43,11 @@ Decision table
        pairs come first, so every size-1 stratum is covered from a budget of
        :math:`2 + 2n` masks; converges more slowly than ``mc`` on the benchmark
        game
+   * - A baseline any attribution method must beat
+     - ``loo``
+     - ``budget.evaluations: n + 2`` past ``max_players``
+     - Leave-one-out, :math:`v(N) - v(N \setminus \{i\})`; :math:`n + 2`
+       generations; not Shapley, so values need not add up
    * - Expensive backend (paid API, large model)
      - ``mc``
      - smallest that is stable
