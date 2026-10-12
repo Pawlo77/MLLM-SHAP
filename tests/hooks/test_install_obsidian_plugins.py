@@ -1,21 +1,29 @@
 """Tests for the pinned Obsidian plugin installer (offline, fake fetch).
 
-@domain tooling
 @see [[scripts/install_obsidian_plugins.py]]
 """
 
+import importlib.util
 import json
 from pathlib import Path
+from types import ModuleType
 
 import pytest
 
-ROOT = Path(__file__).resolve().parents[2]
+from tests.hooks._hookrun import ROOT
 
 
 @pytest.fixture
-def installer(script):
+def installer() -> ModuleType:
     """Load scripts/install_obsidian_plugins.py."""
-    return script("install_obsidian_plugins")
+    spec = importlib.util.spec_from_file_location(
+        "install_obsidian_plugins", ROOT / "scripts" / "install_obsidian_plugins.py"
+    )
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 @pytest.fixture
@@ -78,8 +86,15 @@ def test_styles_css_is_optional(installer, vault: Path) -> None:
     assert installer.install("dataview", obsidian=vault, fetch=fetch) == ["main.js"]
 
 
-def test_every_enabled_repository_plugin_is_pinned_and_installed(installer) -> None:
-    """The committed vault ships main.js for every enabled community plugin."""
-    for plugin in installer.enabled_plugins():
-        assert plugin in installer.REPOSITORIES, plugin
-        assert installer.missing(plugin) == [], plugin
+def test_repositories_merge_the_project_table(installer, tmp_path: Path) -> None:
+    (tmp_path / "pyproject.toml").write_text(
+        "[tool.agent-kit.obsidian-plugins]\n"
+        'templater-obsidian = "silentvoid13/Templater"\n',
+        encoding="utf-8",
+    )
+    found = installer.repositories(tmp_path)
+    assert found["dataview"] == "blacksmithgu/obsidian-dataview"
+    assert found["templater-obsidian"] == "silentvoid13/Templater"
+    assert installer.repositories(tmp_path / "missing") == {
+        "dataview": "blacksmithgu/obsidian-dataview"
+    }

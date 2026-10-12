@@ -2,13 +2,12 @@
 
 Usage: ``python scripts/pr_policy.py [--base B] [--json] [--write-marker] [--pr N]``.
 
-Routine: only ``ROUTINE_TYPES`` commits, nothing under ``src/mllm_shap/``, ``[project]``
-changes limited to :func:`_project_review`, within ``MAX_LINES``/``MAX_FILES`` (without
-``GENERATED``), no ``PROTECTED`` file. ``--write-marker`` stores the result for
-``scripts/hooks/merge_gate.sh``; ``--bump`` prints :func:`suggest_bump`. Stdlib only.
-
-@see [[.agents/AGENTS.md]]
-@tested-by [[tests/scripts/test_pr_policy.py]]
+Routine: only routine-type commits, nothing under the review paths, the same pin,
+``[project]`` changes limited to :func:`_project_review`, within the line and file caps
+(without the generated paths), no ``PROTECTED`` file. ``--write-marker`` stores the
+result for ``scripts/hooks/merge_gate.sh``; ``--bump`` prints :func:`suggest_bump`.
+What differs per repository lives in ``[tool.agent-kit.pr-policy]`` (``Settings``).
+Stdlib only.
 """
 
 import argparse
@@ -26,6 +25,9 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Literal, TypedDict, cast
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from kit_config import load as load_config
+
 ROOT = Path(__file__).resolve().parents[1]
 """Repository root."""
 
@@ -35,25 +37,28 @@ MAX_LINES = 400
 MAX_FILES = 25
 """Most changed files a routine branch may have."""
 
-ROUTINE_TYPES = frozenset({"chore", "ci", "build", "docs", "test", "style"})
-"""Commit subject types that may merge without the maintainer."""
+ROUTINE_TYPES = frozenset({"chore", "ci", "build", "docs", "test"})
+"""Default commit subject types that may merge without the maintainer."""
 
 PROTECTED = frozenset({
-    ".github/workflows/publish.yaml",
     ".claude/settings.json",
     ".codex/config.toml",
     ".codex/hooks.json",
     ".cursor/hooks.json",
+    ".github/workflows/template-drift.yaml",
+    ".github/workflows/template-sync.yaml",
     "scripts/pr_policy.py",
+    "scripts/template_drift.py",
     "scripts/hooks/merge_gate.sh",
     "scripts/hooks/commit_msg.py",
     "scripts/hooks/lib.sh",
     "scripts/hooks/gate_lib.sh",
+    "scripts/hooks/shell_guard.py",
+    "scripts/hooks/shell_guard.sh",
 })
-"""Security-relevant files: a change to any of them always gets a human merge."""
+"""Security-relevant files: a change to any of them always gets a human merge.
 
-PACKAGE = "src/mllm_shap/"
-"""Library source; any change under it needs the maintainer's review."""
+A repository adds its own (a publish workflow, say) under ``protected``."""
 
 PROJECT_KEYS = ("version", "dependencies", "optional-dependencies")
 """``[project]`` keys whose change needs the maintainer's review."""
@@ -61,8 +66,8 @@ PROJECT_KEYS = ("version", "dependencies", "optional-dependencies")
 DEPENDENCY_TYPES = frozenset({"build", "chore", "ci"})
 """Commit types under which a dependency specifier change stays routine."""
 
-GENERATED = ("uv.lock", ".obsidian/plugins/*/main.js", ".obsidian/plugins/*/styles.css")
-"""Lock file and pinned plugin bundles: left out of the line and file caps."""
+GENERATED = ("uv.lock",)
+"""Default generated paths, left out of the line and file caps."""
 
 MAIN_BRANCHES = frozenset({"main", "master"})
 """Branches the autopilot never writes a marker for."""
@@ -76,6 +81,45 @@ _REQUIREMENT = re.compile(r"^\s*([A-Za-z0-9][A-Za-z0-9._-]*)")
 _SHORTSTAT = re.compile(r"(\d+) (insertion|deletion)")
 
 Kind = Literal["routine", "review"]
+
+
+@dataclass(frozen=True)
+class Settings:
+    """Per-repository policy, read from ``[tool.agent-kit.pr-policy]``."""
+
+    routine_types: frozenset[str] = ROUTINE_TYPES
+    review_paths: tuple[str, ...] = ()
+    protected: frozenset[str] = PROTECTED
+    generated: tuple[str, ...] = GENERATED
+    pin: str = ""
+    release: bool = False
+    max_lines: int = MAX_LINES
+    max_files: int = MAX_FILES
+
+
+def settings(root: Path = ROOT) -> Settings:
+    """Return the policy of the repository at ``root`` (defaults when unset).
+
+    Keys: ``routine-types`` (words), ``review-paths`` and ``generated`` (glob lists),
+    ``protected`` (extra files), ``pin`` (a locked package whose change needs review),
+    ``release`` (a ``chore: release vX.Y.Z`` commit may change the version),
+    ``max-lines`` and ``max-files``.
+    """
+    raw = load_config(root).get("pr-policy", {})
+    table = raw if isinstance(raw, dict) else {}
+    defaults = Settings()
+    return Settings(
+        routine_types=frozenset(
+            str(table.get("routine-types", " ".join(ROUTINE_TYPES))).split()
+        ),
+        review_paths=tuple(table.get("review-paths", defaults.review_paths)),
+        protected=PROTECTED | frozenset(table.get("protected", ())),
+        generated=tuple(table.get("generated", defaults.generated)),
+        pin=str(table.get("pin", "")),
+        release=bool(table.get("release", False)),
+        max_lines=int(table.get("max-lines", MAX_LINES)),
+        max_files=int(table.get("max-files", MAX_FILES)),
+    )
 
 
 class PolicyError(RuntimeError):
@@ -144,18 +188,22 @@ def _packages(value: object) -> object:
 
 
 def _project_review(
-    old: dict[str, object], new: dict[str, object], subjects: list[str]
+    old: dict[str, object],
+    new: dict[str, object],
+    subjects: list[str],
+    release: bool = False,
 ) -> list[str]:
     """``[project]`` keys whose change needs the maintainer.
 
     A dependency change keeps the package set and has only ``DEPENDENCY_TYPES``
-    commits; a version change equals the version of a ``chore: release vX.Y.Z`` commit.
+    commits; a version change always needs the maintainer, unless ``release`` is set
+    and it equals the version of a ``chore: release vX.Y.Z`` commit.
     """
     types = {
         m["type"] + (m["bang"] or "") if m else ""
         for m in map(_SUBJECT.match, subjects)
     }
-    releases = {m["version"] for m in map(_RELEASE.match, subjects) if m}
+    releases = {m["version"] for m in map(_RELEASE.match, subjects) if m and release}
     keys = []
     for key in PROJECT_KEYS:
         if old.get(key) == new.get(key):
@@ -169,8 +217,19 @@ def _project_review(
     return keys
 
 
-def _counted(files: list[str]) -> list[str]:
-    return [f for f in files if not any(fnmatch.fnmatchcase(f, g) for g in GENERATED)]
+def _pinned(root: Path, rev: str, pin: str) -> str:
+    """The locked entry of package ``pin`` in ``uv.lock`` at ``rev`` ("" if absent)."""
+    name = re.escape(pin)
+    pattern = rf'(?ms)^\[\[package\]\]\nname = "{name}"\n(.*?)(?=^\[\[|\Z)'
+    try:
+        match = re.search(pattern, _git(root, "show", f"{rev}:uv.lock"))
+    except PolicyError:
+        return ""
+    return match[1] if match else ""
+
+
+def _counted(files: list[str], generated: Sequence[str] = GENERATED) -> list[str]:
+    return [f for f in files if not any(fnmatch.fnmatchcase(f, g) for g in generated)]
 
 
 def _names(root: Path, base: str) -> list[str]:
@@ -194,6 +253,7 @@ def classify(base: str = "main", root: Path = ROOT) -> Classification:
         ``routine`` when every rule in the module docstring holds, else ``review``
         with one reason per broken rule.
     """
+    cfg = settings(root)
     files = _names(root, base)
     subjects = _git(root, "log", "--format=%s", f"{base}..HEAD").splitlines()
     review: list[str] = []
@@ -204,29 +264,42 @@ def classify(base: str = "main", root: Path = ROOT) -> Classification:
         match = _SUBJECT.match(subject)
         kind = (match["type"] + (match["bang"] or "")) if match else subject[:40]
         types.append(kind)
-        if not match or match["bang"] or match["type"] not in ROUTINE_TYPES:
+        if not match or match["bang"] or match["type"] not in cfg.routine_types:
             review.append(f"commit type {kind!r} is not routine")
-    src = [f for f in files if f.startswith(PACKAGE)]
-    if src:
-        review.append(f"{len(src)} changed files under {PACKAGE}")
+    hits = {
+        p: [f for f in files if fnmatch.fnmatchcase(f, p)] for p in cfg.review_paths
+    }
+    review += [
+        f"{len(h)} changed files under {p.removesuffix('*')}"
+        for p, h in hits.items()
+        if h
+    ]
+    merge_base = _git(root, "merge-base", base, "HEAD")
     if "pyproject.toml" in files:
-        merge_base = _git(root, "merge-base", base, "HEAD")
         old, new = _project(root, merge_base), _project(root, "HEAD")
-        if changed := _project_review(old, new, subjects):
+        if changed := _project_review(old, new, subjects, cfg.release):
             review.append(f"pyproject.toml [project] {', '.join(changed)} changed")
-    review += [f"{f} is security-relevant" for f in files if f in PROTECTED]
-    excluded = [f":(exclude,glob){pattern}" for pattern in GENERATED]
+    pin_moved = cfg.pin and "uv.lock" in files
+    if pin_moved and _pinned(root, merge_base, cfg.pin) != _pinned(
+        root, "HEAD", cfg.pin
+    ):
+        review.append(f"the {cfg.pin} pin in uv.lock changed (results may change)")
+    review += [f"{f} is security-relevant" for f in files if f in cfg.protected]
+    excluded = [f":(exclude,glob){pattern}" for pattern in cfg.generated]
     stat = _git(root, "diff", "--shortstat", f"{base}...HEAD", "--", ".", *excluded)
     lines = sum(int(n) for n, _ in _SHORTSTAT.findall(stat))
-    if lines > MAX_LINES:
-        review.append(f"{lines} changed lines (cap {MAX_LINES})")
-    if (counted := len(_counted(files))) > MAX_FILES:
-        review.append(f"{counted} files (cap {MAX_FILES})")
+    if lines > cfg.max_lines:
+        review.append(f"{lines} changed lines (cap {cfg.max_lines})")
+    if (counted := len(_counted(files, cfg.generated))) > cfg.max_files:
+        review.append(f"{counted} files (cap {cfg.max_files})")
     if review:
         return Classification("review", tuple(review), tuple(files))
     reasons = (
         f"commit types: {', '.join(sorted(set(types)))}",
-        f"nothing under {PACKAGE}, no reviewed [project] change, no protected file",
+        (
+            "nothing under the review paths, no reviewed [project] or pin change, "
+            "no protected file"
+        ),
         f"{len(files)} files, {lines} changed lines",
     )
     return Classification("routine", reasons, tuple(files))
