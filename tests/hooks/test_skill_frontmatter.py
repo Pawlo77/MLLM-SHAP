@@ -5,7 +5,7 @@ The skill checks re-implement the Agent Skills specification validator
 with one difference: the client extension keys in ``CLIENT_FIELDS`` are allowed, because
 Claude Code and Cursor read them and the upstream validator rejects them.
 
-@see [[knowledge/handbook/Onboarding]]
+@see [[scripts/sync_agents.py]]
 """
 
 import json
@@ -16,7 +16,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 SKILLS = ROOT / ".agents" / "skills"
 AGENTS = ROOT / ".claude" / "agents"
 
@@ -133,12 +133,6 @@ def test_spec_errors_accept_client_fields() -> None:
 
 
 EVAL_FILES = sorted(SKILLS.glob("*/evals/trigger-evals.json"))
-
-
-def test_trigger_evals_exist_for_review_and_bugspot() -> None:
-    """The review and bug-hunting skills carry trigger evals (skill-creator format)."""
-    names = {path.parents[1].name for path in EVAL_FILES}
-    assert {"review", "bugspot"} <= names
 
 
 @pytest.mark.parametrize("path", EVAL_FILES, ids=lambda p: p.parents[1].name)

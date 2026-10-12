@@ -247,6 +247,9 @@ markers = [
   "practical(feature): real model on a GPU (make practical TIER=quick|deep FEATURE=<glob>)",
 ]
 
+[tool.codespell]
+ignore-words-list = "nlp,shapley,shap,explainability,pyproject,toml,venv,prek,autosummary,intersphinx,napoleon,myst,pydata,sdist,wheel,readonly,kwargs,args,init,utils,backend,frontend,untracked,workflow,workflows,pytest,cov"
+
 [tool.agent-kit]
 # Settings of the shared agent tooling (python-kit-template); read by scripts/ and hooks.
 name = "mllm-shap"
