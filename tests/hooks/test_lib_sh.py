@@ -154,7 +154,7 @@ def test_statusline(tmp_path: Path) -> None:
     repo = scratch_repo(tmp_path)
     (repo / "new.txt").write_text("x\n", encoding="utf-8")
     proc = run_hook(repo / "scripts" / "hooks" / "statusline.sh", CLAUDE, cwd=repo)
-    assert proc.stdout.strip() == "mllm-shap main 1"
+    assert proc.stdout.strip() == "demo-kit main 1"
 
 
 def _codex_patch(*lines: str) -> dict[str, object]:

@@ -7,8 +7,6 @@ Removes whole lines that are only an AI attribution: ``Co-Authored-By``-style
 trailers naming an assistant, ``Generated with <assistant>`` banners and ``written by
 <assistant>`` comments. Prints ``path:line: <text>`` per removed line; ``--check``
 only reports and exits 1 on a finding. Run by prek, the edit hooks and skill ``ship``.
-
-@domain tooling
 """
 
 import re
@@ -17,8 +15,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
-SKIP = ("scripts/strip_watermarks.py", "tests/scripts/test_strip_watermarks.py")
-"""Repository paths that quote the patterns on purpose."""
+SKIP = ("scripts/strip_watermarks.py",)
+SKIP_NAMES = ("test_strip_watermarks.py",)
+"""Repository paths and file names that quote the patterns on purpose."""
 
 _AI = (
     r"(claude|anthropic|copilot|codex|openai|chatgpt|gpt-?[0-9o]|gemini|cursor|devin|"
@@ -75,7 +74,7 @@ def _readable(path: Path) -> str | None:
         if path.resolve().is_relative_to(ROOT)
         else ""
     )
-    if rel in SKIP or not path.is_file():
+    if rel in SKIP or path.name in SKIP_NAMES or not path.is_file():
         return None
     data = path.read_bytes()
     if b"\0" in data[:8000]:

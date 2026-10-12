@@ -4,7 +4,7 @@ Usage: ``python3 scripts/hooks/shell_guard.py "<command>"`` prints one JSON obje
 ``{"permission": ..., "reason": ...}``; ``shell_guard.sh`` wraps it for Claude Code,
 Codex and Cursor. Denies skipped hooks, force pushes, amends, malformed commit messages
 and draft or WIP pull requests. Asks before cluster jobs (``sbatch``, ``scancel``, also
-over ``ssh``), the submit and deploy scripts, publishing, and ``rsync``/``scp`` uploads.
+over ``ssh``) and ``rsync``/``scp`` uploads.
 Projects extend the "ask" rules in ``pyproject.toml``, table
 ``[tool.agent-kit.shell-guard]``: ``ask-patterns`` (regexes) and ``ask-scripts``.
 """
@@ -23,7 +23,7 @@ ENV_ASSIGN = re.compile(r"^(?:[A-Za-z_][A-Za-z0-9_]*=(?:\S+|\"[^\"]*\"|'[^']*')\
 MINUS_M = re.compile(r"""(?:^|\s)-m\s+(?:'([^']*)'|"([^"]*)"|\$'((?:\\'|[^'])*)')""")
 HEREDOC = re.compile(r"""<<-?\s*['"]?(\w+)['"]?\n(.*?)\n\1\b""", re.DOTALL)
 CLUSTER_JOB = re.compile(r"(^|[\s;&|'\"(])(sbatch|scancel)\b")
-ASK_SCRIPTS = ("submit_all.sh", "publish_results.py")
+ASK_SCRIPTS: tuple[str, ...] = ()
 
 
 def _project_rules() -> tuple[list[re.Pattern[str]], tuple[str, ...]]:

@@ -1,0 +1,95 @@
+# Opens a pull request when python-kit-template has newer content for this repository.
+# Secret TEMPLATE_SYNC_TOKEN (fine-grained PAT: Contents read on the template, Contents
+# and Pull requests write here) reads a private template and lets the pull request start its
+# checks; with the default token (public template only) the pull request opens, but GitHub
+# starts no checks for it.
+name: Template sync
+
+on:
+  schedule:
+    - cron: "17 5 * * 1"
+  repository_dispatch:
+    types: [template-updated]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Template tag or branch to update to (default is the latest tag)
+        required: false
+
+permissions: {}
+
+concurrency:
+  group: template-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write  # push the update branch
+      pull-requests: write  # open the pull request
+    env:
+      GH_TOKEN: ${{ secrets.TEMPLATE_SYNC_TOKEN || github.token }}
+      GH_REPO: ${{ github.repository }}
+      BASE: ${{ github.event.repository.default_branch }}
+      REF: ${{ inputs.ref }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7.0.1
+        with:
+          token: ${{ secrets.TEMPLATE_SYNC_TOKEN || github.token }}
+          persist-credentials: true  # zizmor: ignore[artipacked] the update branch is pushed
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.3.0
+        with:
+          version: "0.12.23"
+
+      - name: Update from the template
+        run: |
+          set -euo pipefail
+          if [ ! -f .copier-answers.yml ]; then
+            echo "::notice::No .copier-answers.yml; nothing to update."
+            exit 0
+          fi
+          git config --global "url.https://x-access-token:${GH_TOKEN}@github.com/.insteadOf" https://github.com/
+          args=(--trust --defaults --conflict inline)
+          [ -z "$REF" ] || args+=(--vcs-ref "$REF")
+          uvx --from copier==9.18.2 copier update "${args[@]}"
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "Up to date with the template."
+            exit 0
+          fi
+          ref="$(sed -n 's/^_commit: *//p' .copier-answers.yml | tr -d "'\"")"
+          branch="chore/template-update-${ref//[^A-Za-z0-9._-]/-}"
+          if git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
+            echo "Branch $branch exists; its pull request is already open or merged."
+            exit 0
+          fi
+          conflicts="$(git grep -l '^<<<<<<< ' -- . || true)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git add -A
+          git commit -q -m "chore: update from python-kit-template ${ref}"
+          git push -q origin "$branch"
+          {
+            echo "Updates the template-managed files to python-kit-template \`${ref}\`."
+            echo
+            git diff --stat HEAD~1 HEAD
+            if [ -n "$conflicts" ]; then
+              echo
+              echo "Conflicts to resolve by hand (markers are inline):"
+              printf '%s\n' "$conflicts" | sed 's/^/- /'
+            fi
+            if [ -z "${TEMPLATE_TOKEN_SET:-}" ]; then
+              echo
+              echo "Opened with the default token: close and reopen this pull request to start its checks."
+            fi
+          } > "$RUNNER_TEMP/body.md"
+          gh pr create --base "$BASE" --head "$branch" \
+            --title "chore: update from python-kit-template ${ref}" \
+            --body-file "$RUNNER_TEMP/body.md"
+        env:
+          TEMPLATE_TOKEN_SET: ${{ secrets.TEMPLATE_SYNC_TOKEN && 'yes' || '' }}

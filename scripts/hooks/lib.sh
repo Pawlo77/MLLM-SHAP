@@ -1,6 +1,7 @@
 # Shared by the agent hooks. Claude Code and Cursor both run them; they differ in how
 # context is returned. Cursor's input has cursor_version.
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+source "$(dirname "${BASH_SOURCE[0]}")/kit_conf.sh"
 HOOK_INPUT=""
 [ -t 0 ] || HOOK_INPUT="$(cat)"
 is_cursor() { printf '%s' "$HOOK_INPUT" | jq -e 'has("cursor_version")' >/dev/null 2>&1; }
