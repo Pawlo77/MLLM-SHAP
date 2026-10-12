@@ -1,4 +1,4 @@
-"""Render audio players: cut or silence the sample ranges of absent players.
+"""Render audio players: cut or silence absent samples, hide alignment transcripts.
 
 @domain masking
 @see [[knowledge/architecture/masking]]
@@ -10,7 +10,13 @@ from collections.abc import Sequence
 import numpy as np
 
 from ..alignment.io import decode_audio, encode_wav
-from ..domain.conversation import AudioPart, ConversationSnapshot, Message, Turn
+from ..domain.conversation import (
+    AudioPart,
+    ConversationSnapshot,
+    Message,
+    TextPart,
+    Turn,
+)
 from ..domain.players import PlayerSpan
 
 
@@ -38,6 +44,29 @@ def render_audio(
         for message in turn.messages:
             ranges = absent.get(index)
             messages.append(message if ranges is None else _edit(message, ranges, cut))
+            index += 1
+        turns.append(Turn(messages=tuple(messages)))
+    return ConversationSnapshot.from_turns(tuple(turns))
+
+
+def hide_text(
+    snapshot: ConversationSnapshot, message_indices: Sequence[int]
+) -> ConversationSnapshot:
+    """Drop the text parts of the messages at ``message_indices`` (turns flattened)."""
+    if not message_indices:
+        return snapshot
+    hidden = set(message_indices)
+    turns: list[Turn] = []
+    index = 0
+    for turn in snapshot.turns:
+        messages: list[Message] = []
+        for message in turn.messages:
+            if index in hidden:
+                parts = tuple(p for p in message.content if not isinstance(p, TextPart))
+                message = Message(
+                    role=message.role, content=parts, speaker=message.speaker
+                )
+            messages.append(message)
             index += 1
         turns.append(Turn(messages=tuple(messages)))
     return ConversationSnapshot.from_turns(tuple(turns))

@@ -186,3 +186,52 @@ def test_text_roles_add_word_players_of_text_messages() -> None:
 def test_text_roles_default_to_audio_players_only() -> None:
     players = _partitioner().partition(_snapshot())
     assert all(span.samples is not None for span in players.spans)
+
+
+def _align_only() -> SgpaSegmentPartitioner:
+    from mllm_shap.plugins.context import PluginContext
+
+    config = ExplainConfig.model_validate({
+        "backend": {"kind": "mock_audio", "model_id": "stub"},
+        "explanation": {"players": "sgpa_segments"},
+    })
+    context = PluginContext(config=config, options={"transcript": "align_only"})
+    return SgpaSegmentPartitioner(context, aligner=SpectrogramGuidedAligner(FakeCtc()))
+
+
+@pytest.mark.parametrize("policy", [DeletePolicy(), PadPolicy(), NeutralPolicy()])
+def test_align_only_transcript_never_reaches_the_model(
+    policy: DeletePolicy | PadPolicy | NeutralPolicy,
+) -> None:
+    """The transcript builds the players; every coalition sends audio only."""
+    snapshot = _snapshot()
+    players = _align_only().partition(snapshot)
+    assert players.hidden_text == (1,)
+    for present in ((True, True), (True, False), (False, False)):
+        rendered = policy.apply(snapshot, players, CoalitionMask(present))
+        question, spoken = rendered.turns[0].messages
+        assert question.text == "What was said?"
+        assert [type(part) for part in spoken.content] == [AudioPart]
+
+
+def test_align_only_values_come_from_the_audio_alone() -> None:
+    """With mock_audio each spoken word moves the answer only through its sound."""
+    registry = default_registry()
+    registry.register(
+        PluginGroup.PARTITIONS,
+        "sgpa_segments",
+        lambda context: _align_only(),
+        replace=True,
+    )
+    config = ExplainConfig.model_validate({
+        "backend": {"kind": "mock_audio", "model_id": "stub"},
+        "explanation": {
+            "players": "sgpa_segments",
+            "absence_policy": "pad",
+            "archive": {"path": ""},
+        },
+    })
+    output = ExplainRunner(config, registry=registry).explain_sync(_snapshot())
+    result = output.result
+    assert all(value > 0.0 for value in result.values)
+    assert sum(result.values) == pytest.approx(result.grand_value - result.base_value)

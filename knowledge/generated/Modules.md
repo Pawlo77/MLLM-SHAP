@@ -17,7 +17,7 @@ tags: [generated]
 | [[src/mllm_shap/alignment/__init__.py]] | Spectrogram-guided alignment of transcript tokens to speech (``audio`` extra). | alignment | [[knowledge/architecture/alignment]] | 18 | [[alignment]] |
 | [[src/mllm_shap/alignment/ctc.py]] | CTC forced alignment (Viterbi over the blank-extended target sequence). | alignment | [[knowledge/architecture/alignment]] | 82 | [[alignment]] |
 | [[src/mllm_shap/alignment/io.py]] | Encoded audio bytes to mono float waveforms and back. | alignment | [[knowledge/architecture/alignment]] | 63 | [[alignment]] |
-| [[src/mllm_shap/alignment/partitions.py]] | The ``sgpa_segments`` partition: one player per spoken word of an audio message. | alignment | [[knowledge/architecture/alignment]] | 143 | [[alignment]] |
+| [[src/mllm_shap/alignment/partitions.py]] | The ``sgpa_segments`` partition: one player per spoken word of an audio message. | alignment | [[knowledge/architecture/alignment]] | 155 | [[alignment]] |
 | [[src/mllm_shap/alignment/segments.py]] | Transcript tokens aligned to audio time ranges. | alignment | [[knowledge/architecture/alignment]] | 66 | [[alignment]] |
 | [[src/mllm_shap/alignment/sgpa.py]] | Spectrogram-guided alignment of transcript tokens to speech (SGPA). | alignment | [[knowledge/architecture/alignment]] | 279 | [[alignment]] |
 | [[src/mllm_shap/backends/__init__.py]] | Backend plugin implementations. | backends | [[knowledge/architecture/backends]] | 9 | [[backends]] |
@@ -40,16 +40,16 @@ tags: [generated]
 | [[src/mllm_shap/backends/transformers/embeddings.py]] | Embedding helpers for the transformers text backend. | backends | [[knowledge/architecture/backends]] | 50 | [[backends]] |
 | [[src/mllm_shap/backends/transformers/options.py]] | Settings of the transformers backend read from ``BackendConfig.options``. | backends | [[knowledge/architecture/backends]] | 52 | [[backends]] |
 | [[src/mllm_shap/backends/transformers/text.py]] | Hugging Face language model backend for text and, with a processor, audio. | backends | [[knowledge/architecture/backends]] | 382 | [[backends]] |
-| [[src/mllm_shap/cli.py]] | Command-line interface: ``mllm-shap explain\|reanalyze\|plugins\|config``. | core | [[knowledge/architecture/core]] | 255 | [[core]] |
+| [[src/mllm_shap/cli.py]] | Command-line interface: ``mllm-shap explain\|reanalyze\|plugins\|config``. | core | [[knowledge/architecture/core]] | 257 | [[core]] |
 | [[src/mllm_shap/domain/__init__.py]] | Domain types for cooperative-game explainability. | domain | [[knowledge/architecture/domain]] | 43 | [[domain]] |
 | [[src/mllm_shap/domain/coalition.py]] | Coalition masks over explainability players. | domain | [[knowledge/architecture/domain]] | 45 | [[domain]] |
 | [[src/mllm_shap/domain/config.py]] | Generation and runtime settings shared by backends, runtime and pipeline. | domain | [[knowledge/architecture/domain]] | 52 | [[domain]] |
-| [[src/mllm_shap/domain/conversation.py]] | Immutable conversation snapshots without backend or IO. | domain | [[knowledge/architecture/domain]] | 320 | [[domain]] |
+| [[src/mllm_shap/domain/conversation.py]] | Immutable conversation snapshots without backend or IO. | domain | [[knowledge/architecture/domain]] | 401 | [[domain]] |
 | [[src/mllm_shap/domain/enums.py]] | Conversation and explanation enumerations for the text MVP. | domain | [[knowledge/architecture/domain]] | 36 | [[domain]] |
 | [[src/mllm_shap/domain/estimands.py]] | Estimand labels for attribution outputs and archive manifests. | domain | [[knowledge/architecture/domain]] | 34 | [[domain]] |
 | [[src/mllm_shap/domain/game.py]] | Cooperative-game domain types. | domain | [[knowledge/architecture/domain]] | 18 | [[domain]] |
 | [[src/mllm_shap/domain/generation.py]] | Generation payloads scored by value functions. | domain | [[knowledge/architecture/domain]] | 31 | [[domain]] |
-| [[src/mllm_shap/domain/players.py]] | Player indexing for cooperative-game explainability. | domain | [[knowledge/architecture/domain]] | 74 | [[domain]] |
+| [[src/mllm_shap/domain/players.py]] | Player indexing for cooperative-game explainability. | domain | [[knowledge/architecture/domain]] | 78 | [[domain]] |
 | [[src/mllm_shap/errors.py]] | Typed errors raised by mllm-shap pipeline components. | core | [[knowledge/architecture/core]] | 68 | [[core]] |
 | [[src/mllm_shap/estimation/__init__.py]] | Estimation algorithms for cooperative-game attribution. | estimation | [[knowledge/architecture/estimation]] | 30 | [[estimation]] |
 | [[src/mllm_shap/estimation/_shared.py]] | Shared estimator base class and sampling utilities. | estimation | [[knowledge/architecture/estimation]] | 332 | [[estimation]] |
@@ -63,11 +63,11 @@ tags: [generated]
 | [[src/mllm_shap/estimation/neyman.py]] | Neyman complementary allocation estimator. | estimation | [[knowledge/architecture/estimation]] | 426 | [[estimation]] |
 | [[src/mllm_shap/estimation/normalizers.py]] | Post-aggregation attribution normalizers. | estimation | [[knowledge/architecture/estimation]] | 134 | [[estimation]] |
 | [[src/mllm_shap/masking/__init__.py]] | Coalition masking codecs, views, and absence policies. | masking | [[knowledge/architecture/masking]] | 25 | [[masking]] |
-| [[src/mllm_shap/masking/audio.py]] | Render audio players: cut or silence the sample ranges of absent players. | masking | [[knowledge/architecture/masking]] | 53 | [[masking]] |
+| [[src/mllm_shap/masking/audio.py]] | Render audio players: cut or silence absent samples, hide alignment transcripts. | masking | [[knowledge/architecture/masking]] | 82 | [[masking]] |
 | [[src/mllm_shap/masking/builder.py]] | View-based masked snapshots with structural sharing. | masking | [[knowledge/architecture/masking]] | 83 | [[masking]] |
 | [[src/mllm_shap/masking/codec.py]] | Packed bitset encoding and stable hashing for coalition masks. | masking | [[knowledge/architecture/masking]] | 66 | [[masking]] |
 | [[src/mllm_shap/masking/partitions.py]] | Player partition plugins: whitespace tokens and whole messages. | masking | [[knowledge/architecture/masking]] | 133 | [[masking]] |
-| [[src/mllm_shap/masking/policies.py]] | Absence policies for rendering masked conversation snapshots. | masking | [[knowledge/architecture/masking]] | 162 | [[masking]] |
+| [[src/mllm_shap/masking/policies.py]] | Absence policies for rendering masked conversation snapshots. | masking | [[knowledge/architecture/masking]] | 173 | [[masking]] |
 | [[src/mllm_shap/masking/space.py]] | Mask-space utilities for explainable feature indexing. | masking | [[knowledge/architecture/masking]] | 61 | [[masking]] |
 | [[src/mllm_shap/masking/tokens.py]] | Whitespace token spans and span-based snapshot rendering. | masking | [[knowledge/architecture/masking]] | 124 | [[masking]] |
 | [[src/mllm_shap/pipeline/__init__.py]] | Explain pipeline types and orchestration. | pipeline | [[knowledge/architecture/pipeline]] | 26 | [[pipeline]] |

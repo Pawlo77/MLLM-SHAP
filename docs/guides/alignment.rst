@@ -106,9 +106,12 @@ same length.
    scores every word alike, so the colours are equal here.
 
 Plugin options: ``model_id``, ``revision``, ``device``, ``energy_weight``,
-``flux_weight`` and ``text_roles`` (roles whose typed messages also give word
-players, none by default). Backends that hear the masked audio:
-:doc:`audio_backends`.
+``flux_weight``, ``text_roles`` (roles whose typed messages also give word
+players, none by default) and ``transcript``. With ``transcript: send`` (default)
+the model gets the masked transcript next to the masked audio. With
+``align_only`` the transcript only builds the players: every coalition sends the
+audio alone, so the values reflect what the model hears, not what it reads.
+Backends that hear the masked audio: :doc:`audio_backends`.
 
 Other CTC models
 ----------------
