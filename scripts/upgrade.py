@@ -1,13 +1,12 @@
 """List or apply upgrades of packages, prek hooks, action pins, uv and Obsidian plugins.
 
-``--check`` prints one line per outdated item and exits 1 when there is any;
-``--apply`` upgrades every item that is not protected and prints the changed files.
-Protected items are reported, never edited: the workflows listed under
-``protected-workflows`` (their action pins and the uv version, which
-``required-version`` must not outrun) and the package ``pin``, which only ``--pin``
-moves, on its own review branch. Both come from ``[tool.agent-kit.upgrade]`` (see
-:class:`Settings`). External commands (``uv``, ``prek``, ``gh``) go through an
-injectable :data:`Runner`. Stdlib only.
+``--check`` prints one line per outdated item and exits 1 when there is any; ``--apply``
+upgrades every item that is not protected and prints the changed files. Protected items
+are reported, never edited: the ``protected-workflows`` (their pins and the uv version)
+and the package ``pin``, which only ``--pin`` moves, on its own review branch. Both come
+from ``[tool.agent-kit.upgrade]``. The files the template ships (:data:`KIT_WORKFLOWS`,
+the prek config) are bumped in the template; its own job passes ``--include-managed``.
+External commands go through an injectable :data:`Runner`. Stdlib only.
 """
 
 import argparse
@@ -34,6 +33,16 @@ ROOT = Path(__file__).resolve().parents[1]
 
 SYNC_ARGS = "--all-groups"
 """Default ``uv sync`` arguments after an upgrade."""
+
+KIT_WORKFLOWS = frozenset({
+    "assign-author.yaml",
+    "codeql.yaml",
+    "pr-title.yaml",
+    "prek.yaml",
+    "template-drift.yaml",
+    "template-sync.yaml",
+})
+"""Workflows the template ships; their pins, like the hook revisions, move there."""
 
 PRE_COMMIT = ".pre-commit-config.yaml"
 PREK = ("uv", "run", "prek", "update", "--color", "never", "--no-progress")
@@ -177,6 +186,20 @@ class GitHub:
         return sha
 
 
+INCLUDE_MANAGED = False
+"""Set by ``--include-managed``: the template's own job upgrades the shipped files."""
+
+
+def _managed(root: Path) -> bool:
+    """Whether the template ships the workflows and prek config of ``root``."""
+    return not INCLUDE_MANAGED and (root / ".copier-answers.yml").is_file()
+
+
+def _own(root: Path, path: Path) -> bool:
+    """Whether ``path`` is a workflow this repository maintains itself."""
+    return not (_managed(root) and path.name in KIT_WORKFLOWS)
+
+
 def python_deps(runner: Runner, root: Path, _gh: GitHub) -> list[Item]:
     """Locked packages ``uv lock --upgrade`` would update; the pin is protected."""
     cfg = settings(root)
@@ -211,7 +234,9 @@ def _prek(runner: Runner, root: Path, *, dry_run: bool) -> tuple[str, str]:
 
 
 def hook_revs(runner: Runner, root: Path, _gh: GitHub) -> list[Item]:
-    """Prek hook repositories with a newer tagged revision."""
+    """Prek hook repositories with a newer tagged revision (none when managed)."""
+    if _managed(root):
+        return []
     out, _ = _prek(runner, root, dry_run=True)
     items, repo = [], ""
     for line in out.splitlines():
@@ -245,7 +270,7 @@ def _pins(text: str) -> Iterator[tuple[re.Match[str], str, str]]:
 def action_pins(_runner: Runner, root: Path, gh: GitHub) -> list[Item]:
     """Workflow action pins below the action's latest release."""
     items: dict[tuple[str, str, str], Item] = {}
-    for path in _workflows(root):
+    for path in filter(lambda p: _own(root, p), _workflows(root)):
         for match, repo, tag in _pins(path.read_text(encoding="utf-8")):
             latest = gh.latest(repo)
             if newer(tag, latest):
@@ -257,7 +282,14 @@ def action_pins(_runner: Runner, root: Path, gh: GitHub) -> list[Item]:
 
 
 def _protected_pins_uv(root: Path) -> bool:
-    """Whether a protected workflow pins uv (then ``required-version`` stays put)."""
+    """Whether a workflow outside this repository's control pins uv.
+
+    Then ``required-version`` stays put: it must not outrun the version those pin.
+    """
+    if _managed(root) and any(
+        (root / ".github" / "workflows" / name).is_file() for name in KIT_WORKFLOWS
+    ):
+        return True
     return any(
         path.is_file() and bool(_UV_PIN.search(path.read_text(encoding="utf-8")))
         for path in (
@@ -322,7 +354,7 @@ def _write(path: Path, text: str) -> None:
 
 def _apply_pins(root: Path, gh: GitHub) -> None:
     for path in _workflows(root):
-        if path.name not in settings(root).protected_workflows:
+        if _own(root, path) and path.name not in settings(root).protected_workflows:
             text = path.read_text(encoding="utf-8")
             _write(path, _PIN.sub(lambda match: _repin(match, gh), text))
 
@@ -331,7 +363,7 @@ def _apply_uv(item: Item, root: Path) -> None:
     pyproject = root / "pyproject.toml"
     text = pyproject.read_text(encoding="utf-8")
     _write(pyproject, _REQUIRED.sub(rf"\g<1>{item.new}\g<3>", text))
-    for path in _workflows(root):
+    for path in filter(lambda p: _own(root, p), _workflows(root)):
         text = path.read_text(encoding="utf-8")
         _write(path, _UV_PIN.sub(rf'\g<1>"{item.new}"', text))
 
@@ -375,7 +407,8 @@ def apply(runner: Runner = run, root: Path = ROOT) -> tuple[list[str], list[Item
     elif names := [item.name for item in deps if not item.protected]:
         runner(["uv", "lock", *(f"--upgrade-package={name}" for name in names)], root)
         runner(["uv", "sync", *cfg.sync_args], root)
-    _write(root / PRE_COMMIT, _prek(runner, root, dry_run=False)[1])
+    if not _managed(root):
+        _write(root / PRE_COMMIT, _prek(runner, root, dry_run=False)[1])
     protected += [item for item in action_pins(runner, root, gh) if item.protected]
     _apply_pins(root, gh)
     for item in uv_version(runner, root, gh):
@@ -413,8 +446,15 @@ def main(argv: Sequence[str] | None = None) -> int:
     mode.add_argument("--check", action="store_true", help="list outdated items")
     mode.add_argument("--apply", action="store_true", help="upgrade them")
     mode.add_argument("--pin", action="store_true", help="move the configured pin")
+    parser.add_argument(
+        "--include-managed",
+        action="store_true",
+        help="also upgrade the files the template ships (the template's own job)",
+    )
     parser.add_argument("--root", type=Path, default=ROOT, help=argparse.SUPPRESS)
     args = parser.parse_args(argv)
+    global INCLUDE_MANAGED
+    INCLUDE_MANAGED = args.include_managed
     try:
         if args.check:
             items = check(run, args.root)
