@@ -284,16 +284,16 @@ def _message_to_payload(message: Message) -> MessagePayload:
 
 
 def _part_to_payload(part: ContentPart) -> PartPayload:
-    match part:
-        case TextPart(text=text):
-            return {"type": "text", "text": text}
-        case AudioPart(source=source, sample_rate=rate):
-            if isinstance(source, Path):
-                return {"type": "audio", "path": str(source), "sample_rate": rate}
-            encoded = base64.b64encode(source).decode("ascii")
-            return {"type": "audio", "data": encoded, "sample_rate": rate}
-        case _ as unreachable:
-            assert_never(unreachable)
+    if isinstance(part, TextPart):
+        return {"type": "text", "text": part.text}
+    if isinstance(part.source, Path):
+        return {
+            "type": "audio",
+            "path": str(part.source),
+            "sample_rate": part.sample_rate,
+        }
+    encoded = base64.b64encode(part.source).decode("ascii")
+    return {"type": "audio", "data": encoded, "sample_rate": part.sample_rate}
 
 
 def _turns_from_payload(payload: object, base_dir: Path) -> tuple[Turn, ...]:
