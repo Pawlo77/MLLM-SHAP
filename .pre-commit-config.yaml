@@ -21,9 +21,15 @@ minimum_prek_version: "0.5.0"
 
 ci:
   autofix_commit_msg: |
+<<<<<<< before updating
     [prek] auto fixes from pre-commit hooks
   autoupdate_commit_msg: |
     [prek] pre-commit autoupdate
+=======
+    chore: apply prek autofixes
+  autoupdate_commit_msg: |
+    chore: prek autoupdate
+>>>>>>> after updating
 
 repos:
   - repo: builtin
@@ -43,6 +49,10 @@ repos:
       - id: check-case-conflict
       - id: check-added-large-files
         args: [--maxkb=1000]
+<<<<<<< before updating
+=======
+        exclude: ^papers/
+>>>>>>> after updating
       - id: detect-private-key
       - id: check-executables-have-shebangs
       - id: check-shebang-scripts-are-executable
@@ -74,12 +84,17 @@ repos:
         entry: uv run python scripts/strip_watermarks.py
         language: system
         types: [text]
+<<<<<<< before updating
         exclude: ^(scripts/strip_watermarks\.py|tests/scripts/test_strip_watermarks\.py)$
+=======
+        exclude: ^scripts/strip_watermarks\.py$
+>>>>>>> after updating
 
       - id: memory-content-guard
         name: memory files contain no secrets or personal data
         entry: uv run python scripts/hooks/check_memory_files.py
         language: system
+<<<<<<< before updating
         files: ^(\.remember/|knowledge/).*\.md$
 
       - id: knowledge-build
@@ -93,6 +108,20 @@ repos:
       - id: vault-check
         name: vault consistency (notes, links, tags, generated notes)
         entry: bash -c 'uv run python scripts/check_vault.py --quiet --strict-tags && uv run python scripts/build_knowledge.py --check'
+=======
+        files: \.md$  # the script keeps to .remember/ and the vault-dirs of pyproject.toml
+
+      - id: knowledge-build
+        name: rebuild generated knowledge notes
+        entry: make knowledge
+        language: system
+        files: ^(src/|experiments/|pyproject\.toml|tests/benchmarks/(baselines?|mutation-results)\.json|docs/release_notes\.rst|knowledge/(issues|decisions|architecture|concepts)/|\.claude/jit-context/)
+        pass_filenames: false
+
+      - id: vault-check
+        name: vault consistency (notes, links, generated notes)
+        entry: make vault-check
+>>>>>>> after updating
         language: system
         always_run: true
         pass_filenames: false
@@ -127,9 +156,15 @@ repos:
 
       - id: skills-ref
         name: skills follow the Agent Skills spec
+<<<<<<< before updating
         entry: uv run pytest -q -p no:cacheprovider tests/test_skill_frontmatter.py
         language: system
         files: ^(\.agents/skills/|\.claude/agents/|tests/test_skill_frontmatter\.py)
+=======
+        entry: make skills-check
+        language: system
+        files: ^(\.agents/skills/|\.claude/agents/|tests/hooks/test_(skill_frontmatter|agents)\.py)
+>>>>>>> after updating
         pass_filenames: false
 
       - id: mypy
@@ -170,7 +205,11 @@ repos:
         always_run: true
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
+<<<<<<< before updating
     rev: v0.16.10
+=======
+    rev: v0.17.0
+>>>>>>> after updating
     hooks:
       - id: ruff-check
         types_or: [python, pyi]
@@ -182,7 +221,11 @@ repos:
     rev: v1.30.1
     hooks:
       - id: zizmor
+<<<<<<< before updating
         args: [-q, --min-severity=medium]
+=======
+        args: [-q, --min-severity=medium, --config, .github/zizmor.yml]
+>>>>>>> after updating
         files: ^\.github/workflows/[^/]+\.ya?ml$
 
   - repo: https://github.com/PyCQA/bandit
@@ -193,11 +236,19 @@ repos:
         exclude: ^tests/
 
   - repo: https://github.com/codespell-project/codespell
+<<<<<<< before updating
     rev: v2.4.2
     hooks:
       - id: codespell
         args:
           - --ignore-words-list=nlp,shapley,shap,explainability,pyproject,toml,venv,prek,autosummary,intersphinx,napoleon,myst,pydata,sdist,wheel,readonly,kwargs,args,init,utils,backend,frontend,untracked,workflow,workflows,pytest,cov
+=======
+    rev: v2.4.3
+    hooks:
+      - id: codespell
+        # The words codespell accepts: [tool.codespell] in pyproject.toml.
+        args: [--toml, pyproject.toml]
+>>>>>>> after updating
         exclude: |
           (?x)^(
             uv\.lock|
