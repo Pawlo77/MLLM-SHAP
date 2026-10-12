@@ -25,7 +25,7 @@ cd MLLM-SHAP
 make install
 ```
 
-`make install` installs Python 3.12, syncs all dependency groups and extras into `.venv` and installs the [prek](https://github.com/j178/prek) hooks (pre-commit, commit-msg, pre-push). The pre-push hook runs `make agent-check`, the same checks CI runs. Change dependencies with `uv add` and `uv lock`, never `pip install`; a new runtime dependency needs a justification in `pyproject.toml`.
+`make install` installs Python 3.12, syncs all dependency groups and extras into `.venv` and installs the [prek](https://github.com/j178/prek) hooks (pre-commit, commit-msg, pre-push) in the main checkout; in a git worktree it only syncs the environment, because the hooks are shared and tied to the main checkout's venv. The pre-push hook runs `make agent-check`, the same checks CI runs. Change dependencies with `uv add` and `uv lock`, never `pip install`; a new runtime dependency needs a justification in `pyproject.toml`.
 
 Jupyter kernel: `make kernel` (`mllm-shap (uv)`).
 
