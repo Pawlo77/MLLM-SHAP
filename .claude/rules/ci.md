@@ -7,6 +7,7 @@ paths:
 
 # CI
 
+<<<<<<< before updating
 ## Workflows
 
 | File | Trigger | Purpose |
@@ -22,6 +23,10 @@ paths:
 | `publish.yaml` | tag `v*.*.*`, pushed by skill `release` after the merge | tag must equal `uv version --short`; build, smoke test, `uv publish`, GitHub Release; `make upgrade` never edits it |
 
 Required on `main`: `prek`, `tests-passed`, `CodeQL`, `title`; keep job names stable. Repository settings and the branch-protection command: `.agents/skills/ci/reference.md`.
+=======
+The workflows of this repository, their triggers and the required checks:
+`ci-workflows.mdc`. Settings and branch protection: `.agents/skills/ci/reference.md`.
+>>>>>>> after updating
 
 ## Conventions
 
@@ -31,6 +36,10 @@ Required on `main`: `prek`, `tests-passed`, `CodeQL`, `title`; keep job names st
 - uv `version: "0.12.23"` in every workflow, equal to `required-version` in `pyproject.toml`.
 - Pass `${{ ... }}` into `run:` through `env:`, never inline.
 - No `paths:` filter on a workflow with a required check: a skipped workflow never reports.
+<<<<<<< before updating
 - The test matrix sets `UV_PYTHON`, because `uv run` honours `.python-version`.
 - The notebook comparison step is advisory (`continue-on-error`); the execute step blocks.
 - Secrets: only the optional `CODECOV_TOKEN`; PyPI uses trusted publishing.
+=======
+- Keep job names stable: branch protection requires them by name.
+>>>>>>> after updating

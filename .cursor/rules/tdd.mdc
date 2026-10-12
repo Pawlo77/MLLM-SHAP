@@ -1,6 +1,11 @@
 ---
+<<<<<<< before updating
 description: Test-driven development for mllm-shap
 globs: src/mllm_shap/**/*.py,tests/**/*.py
+=======
+description: Test-driven development
+globs: "**/*.py"
+>>>>>>> after updating
 alwaysApply: false
 ---
 
@@ -9,6 +14,7 @@ alwaysApply: false
 New behavior or bug fixes: **test first**, then implement.
 
 1. **Red** — write failing test in `tests/` (`test_*.py`, mirror `src/` layout)
+<<<<<<< before updating
 2. **Green** — minimal implementation in `src/mllm_shap/`
 3. **Refactor** — run `make agent-check`; keep green
 4. **Validate** — re-read the diff; run full checks; fix style, coverage, docs, and consistency issues before hand-off
@@ -18,4 +24,14 @@ New behavior or bug fixes: **test first**, then implement.
 - Bug fix → regression test reproducing failure before the fix
 - Test real behavior, not trivial constants or mock theater
 - `@pytest.mark.bench` for local perf tests only — see `benchmarks.mdc`
+=======
+2. **Green** — minimal implementation in the package under `src/`
+3. **Refactor** — run `make check`; keep green
+4. **Validate** — re-read the diff; run full checks; fix style, coverage, docs, and consistency issues before hand-off
+5. **Performance** — analyze hot paths for time/memory scaling; implement the fastest low-resource correct version before hand-off
+
+- No `from __future__ import annotations` unless required — use `Self` or quoted forward refs
+- Bug fix → regression test reproducing failure before the fix
+- Test real behavior, not trivial constants or mock theater
+>>>>>>> after updating
 - Scaffold/config-only work: skip TDD only when user explicitly asks
