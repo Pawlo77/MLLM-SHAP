@@ -11,6 +11,7 @@ Stdlib only.
 """
 
 import argparse
+import fnmatch
 import shlex
 import subprocess  # nosec B404 - argv from the committed answers file, no shell
 import sys
@@ -22,6 +23,41 @@ ROOT = Path(__file__).resolve().parents[1]
 ANSWERS = ".copier-answers.yml"
 SKIP = {ANSWERS}
 """Rendered files that are bookkeeping, not content."""
+
+OWNED = (
+    "pyproject.toml",
+    "Makefile",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "README.md",
+    "LICENSE",
+    ".gitignore",
+    ".python-version",
+    ".agents/skills/VENDORED.md",
+    "src/**",
+    "docs/**",
+    "examples/**",
+    "configs/**",
+    "notebooks/**",
+    "outputs/**",
+    "report/**",
+    "tests/conftest.py",
+    "tests/test_*.py",
+    "tests/benchmarks/**",
+    ".github/workflows/test.yaml",
+    ".github/workflows/deploy-docs.yaml",
+    ".github/workflows/publish.yaml",
+    ".cursor/rules/benchmarks.mdc",
+    ".cursor/rules/examples.mdc",
+    ".cursor/rules/package-boundaries.mdc",
+    ".cursor/rules/experiment-boundaries.mdc",
+    ".cursor/rules/performance.mdc",
+    ".cursor/rules/python-quality.mdc",
+)
+"""Scaffold files the template writes once; they belong to the project afterwards.
+
+Keep in step with ``_skip_if_exists`` in the template's ``copier.yml`` (kit CI checks).
+"""
 
 Renderer = Callable[[dict[str, str], Path], None]
 
@@ -56,12 +92,17 @@ def make_renderer(copier: list[str]) -> Renderer:
     return render
 
 
+def _owned(rel: str) -> bool:
+    """Return whether a rendered path is a once-written scaffold file."""
+    return any(fnmatch.fnmatch(rel, pat.replace("/**", "/*")) for pat in OWNED)
+
+
 def drift(root: Path, rendered: Path) -> list[str]:
     """Return repository paths whose content differs from the rendered template."""
     found = []
     for path in sorted(rendered.rglob("*")):
         rel = path.relative_to(rendered).as_posix()
-        if not path.is_file() or rel in SKIP or ".git/" in f"{rel}/":
+        if not path.is_file() or rel in SKIP or ".git/" in f"{rel}/" or _owned(rel):
             continue
         mine = root / rel
         if not mine.is_file():
