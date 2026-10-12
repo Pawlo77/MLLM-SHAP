@@ -8,6 +8,10 @@
     ],
     "beforeShellExecution": [
       {
+        "command": "bash scripts/hooks/shell_guard.sh",
+        "failClosed": true
+      },
+      {
         "command": "bash scripts/hooks/merge_gate.sh",
         "failClosed": true
       }
