@@ -245,6 +245,18 @@ markers = [
   "practical(feature): real model on a GPU (make practical TIER=quick|deep FEATURE=<glob>)",
 ]
 
+[tool.agent-kit]
+# Read by scripts/hooks/*: names the project and extends the shell guard's "ask" rules.
+name = "mllm-shap"
+
+[tool.agent-kit.shell-guard]
+ask-scripts = []
+ask-patterns = [
+  '^(uv\s+publish|twine\s+upload)\b',
+  '^gh\s+release\s+create\b',
+  '^gh\s+api\b.*(-X|--method)[\s=]+DELETE\b',
+]
+
 [tool.mutmut]
 # ``make mutate`` (slow, on demand, not CI): mutate the estimation package and
 # run only its tests against each mutant.

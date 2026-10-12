@@ -55,6 +55,11 @@
         "hooks": [
           {
             "type": "command",
+            "command": "\"${CLAUDE_PROJECT_DIR:-.}\"/scripts/hooks/shell_guard.sh",
+            "timeout": 10
+          },
+          {
+            "type": "command",
             "command": "\"${CLAUDE_PROJECT_DIR:-.}\"/scripts/hooks/merge_gate.sh",
             "timeout": 10
           }
