@@ -21,7 +21,7 @@ tags: [generated]
 | [[src/mllm_shap/alignment/segments.py]] | Transcript tokens aligned to audio time ranges. | alignment | [[knowledge/architecture/alignment]] | 66 | [[alignment]] |
 | [[src/mllm_shap/alignment/sgpa.py]] | Spectrogram-guided alignment of transcript tokens to speech (SGPA). | alignment | [[knowledge/architecture/alignment]] | 279 | [[alignment]] |
 | [[src/mllm_shap/backends/__init__.py]] | Backend plugin implementations. | backends | [[knowledge/architecture/backends]] | 9 | [[backends]] |
-| [[src/mllm_shap/backends/_chat.py]] | Conversation helpers shared by chat-style backends. | backends | [[knowledge/architecture/backends]] | 50 | [[backends]] |
+| [[src/mllm_shap/backends/_chat.py]] | Conversation helpers shared by chat-style backends. | backends | [[knowledge/architecture/backends]] | 41 | [[backends]] |
 | [[src/mllm_shap/backends/api/__init__.py]] | OpenAI-compatible HTTP API backend plugin. | backends | [[knowledge/architecture/backends]] | 10 | [[backends]] |
 | [[src/mllm_shap/backends/api/backend.py]] | OpenAI-compatible HTTP generative backend. | backends | [[knowledge/architecture/backends]] | 213 | [[backends]] |
 | [[src/mllm_shap/backends/api/payload.py]] | Chat-completions request and response helpers. | backends | [[knowledge/architecture/backends]] | 97 | [[backends]] |
