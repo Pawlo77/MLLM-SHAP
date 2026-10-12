@@ -14,18 +14,19 @@ tags: [generated]
 
 | Benchmark | Median (ms) |
 |---|---|
-| `test_archive_round_trip_10k` | 61.198 |
-| `test_complementary_aggregation_n12` | 5.854 |
-| `test_dedup_key_throughput_10k` | 51.987 |
-| `test_exact_aggregation_full_table_n12` | 4.011 |
-| `test_import_bench` | 448.809 |
-| `test_mask_pack_unpack_10k` | 34.473 |
-| `test_payload_cache_key_hashing` | 25.226 |
-| `test_pipeline_mock_exact_n10` | 215.920 |
-| `test_prefix_cache_hits_10k` | 30.086 |
-| `test_scheduler_1000_noop_jobs` | 8.669 |
-| `test_stratified_marginals_m2000` | 3.788 |
-| `test_tfidf_fit_and_score_4096` | 580.937 |
+| `test_archive_round_trip_10k` | 51.055 |
+| `test_complementary_aggregation_n12` | 3.812 |
+| `test_dedup_key_throughput_10k` | 32.238 |
+| `test_exact_aggregation_full_table_n12` | 2.613 |
+| `test_import_bench` | 277.964 |
+| `test_mask_pack_unpack_10k` | 21.556 |
+| `test_mock_audio_generate_ten_seconds` | 0.633 |
+| `test_payload_cache_key_hashing` | 16.830 |
+| `test_pipeline_mock_exact_n10` | 137.553 |
+| `test_prefix_cache_hits_10k` | 18.733 |
+| `test_scheduler_1000_noop_jobs` | 5.940 |
+| `test_stratified_marginals_m2000` | 2.325 |
+| `test_tfidf_fit_and_score_4096` | 364.982 |
 
 The baseline machine is named in the runtime guide (`docs/guides/runtime.rst`). The latest local `make bench` report (`.pytest_benchmark/benchmark.json`) is machine-local and git-ignored, so it is not copied here.
 
