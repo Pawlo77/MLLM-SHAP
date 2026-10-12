@@ -49,7 +49,7 @@ def plot_audio_segments(
     waveform, rate = decode_audio(audio.data())
     plt = _import_pyplot()
     apply_attribution_theme()
-    figure, (wave, energy) = cast(Any, plt).subplots(
+    figure, (wave, energy) = plt.subplots(
         2, 1, figsize=(10, 4.2), sharex=True, height_ratios=(3, 1)
     )
     seconds = np.arange(len(waveform)) / rate
