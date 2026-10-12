@@ -30,6 +30,11 @@ $1" '{additional_context: $t}'; exit 0
   else printf '%s\n' "$1" >&2; exit 2
   fi
 }
+emit_ask() { # <reason>: hand the decision to the user
+  if is_cursor; then jq -n --arg r "$1" '{permission: "ask", user_message: $r, agent_message: $r}'
+  else jq -n --arg r "$1" '{hookSpecificOutput: {hookEventName: "PreToolUse", permissionDecision: "ask", permissionDecisionReason: $r}}'
+  fi
+}
 emit_deny() { # <reason>
   if is_cursor; then jq -n --arg r "$1" '{permission: "deny", user_message: $r, agent_message: $r}'
   else jq -n --arg r "$1" '{hookSpecificOutput: {hookEventName: "PreToolUse", permissionDecision: "deny", permissionDecisionReason: $r}}'
