@@ -29,17 +29,8 @@ def message_chat_text(message: Message) -> str:
 
 
 def chat_role(role: Role) -> str:
-    """Return the chat-template role name of ``role``."""
-    match role:
-        case Role.SYSTEM:
-            return "system"
-        case Role.USER:
-            return "user"
-        case Role.ASSISTANT:
-            return "assistant"
-        case _ as unsupported:
-            msg = f"unsupported message role: {unsupported!r}"
-            raise ValueError(msg)
+    """Return the chat-template role name (``Role`` values are those names)."""
+    return role.value
 
 
 def snapshot_to_chat_messages(snapshot: ConversationSnapshot) -> list[dict[str, str]]:
