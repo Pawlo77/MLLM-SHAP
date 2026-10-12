@@ -37,15 +37,44 @@ def _project_rules() -> tuple[list[re.Pattern[str]], tuple[str, ...]]:
         ]
     except (ImportError, OSError, KeyError, ValueError):
         return [], ASK_SCRIPTS
-    patterns = [re.compile(p) for p in cfg.get("ask-patterns", [])]
+    patterns = []
+    for pattern in cfg.get("ask-patterns", []):
+        try:
+            patterns.append(re.compile(pattern))
+        except re.error:
+            continue  # a bad project pattern must not disable the built-in rules
     return patterns, tuple(cfg.get("ask-scripts", ASK_SCRIPTS))
 
 
+INTERPRETER = re.compile(r"\b(bash|sh|zsh|dash|python3?|node|perl|ruby|eval|source)\b")
+WRAPPER = re.compile(
+    r"^(?:[({]\s*|(?:env|command|time|nice|sudo|exec)\s+(?:-\S+\s+)*)+"
+)
+SUBSTITUTION = re.compile(r"\$\(([^()]*)\)|`([^`]*)`")
+SHELL_C = re.compile(r"^(?:bash|sh|zsh|dash)\s+(?:-\w+\s+)*-\w*c\w*\s+")
+VALUE_FLAGS = "mFCct"  # short options that take a value, ending a flag cluster
+GIT_GLOBAL_WITH_VALUE = {"-C", "-c", "--git-dir", "--work-tree", "--namespace"}
+
+
+def _heredoc(match: re.Match[str]) -> str:
+    """Drop a heredoc body, but keep it when it feeds an interpreter."""
+    text = match.string
+    line = text[text.rfind("\n", 0, match.start()) + 1 : match.start()]
+    return f"\n{match.group(2)}\n" if INTERPRETER.search(line) else ""
+
+
 def segments(command: str) -> list[str]:
-    """Return top-level commands without heredoc bodies and env assignments."""
-    flat = HEREDOC.sub("", command)
-    parts = (ENV_ASSIGN.sub("", part.strip()) for part in SEGMENT.split(flat))
-    return [part for part in parts if part]
+    """Return top-level commands without data heredocs, wrappers and env assignments."""
+    flat = HEREDOC.sub(_heredoc, command)
+    result = []
+    for raw in SEGMENT.split(flat):
+        part = ENV_ASSIGN.sub("", raw.strip())
+        grouped = part.startswith(("(", "{"))
+        part = ENV_ASSIGN.sub("", WRAPPER.sub("", part))
+        part = part.rstrip(" )}") if grouped else part
+        if part:
+            result.append(part)
+    return result
 
 
 def commit_message(command: str) -> str | None:
@@ -61,15 +90,57 @@ def commit_message(command: str) -> str | None:
     return "\n\n".join(parts) if parts else None
 
 
+def _git_split(words: list[str]) -> tuple[list[str], str, list[str]]:
+    """Split ``git [global options] <subcommand> [args]`` into its three parts."""
+    index, global_opts = 1, []
+    while index < len(words) and words[index].startswith("-"):
+        global_opts.append(words[index])
+        if words[index] in GIT_GLOBAL_WITH_VALUE and index + 1 < len(words):
+            index += 1
+            global_opts.append(words[index])
+        index += 1
+    sub = words[index] if index < len(words) else ""
+    return global_opts, sub, words[index + 1 :]
+
+
+def _short_flags(args: list[str]) -> set[str]:
+    """Return the single-letter flags before any value-taking flag of each cluster."""
+    flags: set[str] = set()
+    skip = False
+    for arg in args:
+        if skip:
+            skip = False
+        elif re.fullmatch(r"-[A-Za-z]+", arg):
+            for char in arg[1:]:
+                flags.add(char)
+                if char in VALUE_FLAGS:
+                    skip = arg.endswith(char)
+                    break
+        elif arg in {"--message", "--file", "--author", "--date"}:
+            skip = True
+    return flags
+
+
 def _git_decision(part: str, command: str) -> tuple[str, str] | None:
-    if re.search(r"(^|\s)--no-verify(\s|$)", part):
+    try:
+        words = shlex.split(part)
+    except ValueError:
+        if "<<" not in command:
+            return "ask", "Cannot parse this git command; confirm it is intended."
+        words = part.split()  # a heredoc split the quoted message across segments
+    global_opts, sub, args = _git_split(words)
+    if any(opt.lower().startswith("core.hookspath") for opt in global_opts):
+        return "deny", "Overriding core.hooksPath is not allowed."
+    if "--no-verify" in args or (sub == "commit" and "n" in _short_flags(args)):
         return "deny", "--no-verify is not allowed; fix the failing hook instead."
-    if re.match(r"git\s+push\b", part) and re.search(
-        r"\s(--force|-f|--force-with-lease)(\s|=|$)|\s\+\S", part
+    if sub == "push" and (
+        any(arg.startswith(("--force", "--mirror")) for arg in args)
+        or "f" in _short_flags(args)
+        or any(arg.startswith("+") for arg in args)
     ):
         return "deny", "Force pushes are not allowed; push a new commit instead."
-    if re.match(r"git\s+commit\b", part):
-        if re.search(r"\s--amend(\s|$)", part):
+    if sub == "commit":
+        if "--amend" in args:
             return "deny", "git commit --amend is not allowed; create a new commit."
         message = commit_message(command)
         error = validate_commit_message(message) if message is not None else None
@@ -99,13 +170,30 @@ def _uploads(part: str) -> bool:
     return bool(targets) and ":" in targets[-1]
 
 
-def classify(command: str) -> tuple[str, str]:
+def _nested(command: str, part: str, depth: int) -> tuple[str, str] | None:
+    """Classify ``$(...)``, backtick and ``bash -c`` payloads; first non-allow wins."""
+    payloads = [a or b for a, b in SUBSTITUTION.findall(command)]
+    if SHELL_C.match(part):
+        try:
+            payloads.append(shlex.split(part)[-1])
+        except ValueError:
+            return "ask", "Cannot parse this shell payload; confirm it is intended."
+    for payload in payloads:
+        result = classify(payload, depth + 1)
+        if result[0] != "allow":
+            return result
+    return None
+
+
+def classify(command: str, depth: int = 0) -> tuple[str, str]:
     """Return ``(permission, reason)`` for one shell command line."""
     asks: list[str] = []
     patterns, scripts = _project_rules()
+    if depth > 3:
+        return "ask", "Shell nesting is too deep to inspect; confirm it is intended."
     for part in segments(command):
-        decision = _git_decision(part, command) if part.startswith("git") else None
-        decision = decision or _pr_decision(part)
+        decision = _git_decision(part, command) if re.match(r"git\b", part) else None
+        decision = decision or _pr_decision(part) or _nested(part, part, depth)
         if decision:
             return decision
         if CLUSTER_JOB.search(part):
