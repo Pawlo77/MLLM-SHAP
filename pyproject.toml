@@ -327,6 +327,39 @@ patterns = ["docs/*.rst", "docs/*.md"]
 words = 1200
 sentences = true
 
+[tool.agent-kit.configs]
+delivery = "autopilot"
+plugins = [
+  "property-based-testing@trailofbits",
+  "mutation-testing@trailofbits",
+  "differential-review@trailofbits",
+  "second-opinion@trailofbits",
+  "claude-jit-context@dpt-plugins",
+]
+allow = [
+  "Bash(make agent-check*)",
+  "Bash(make docs*)",
+  "Bash(make notebooks*)",
+  "Bash(make bench*)",
+  "Bash(uv run python scripts/*)",
+  "Edit(docs/**)",
+  "Edit(examples/**)",
+  "Edit(knowledge/**)",
+  "Write(knowledge/**)",
+  "Bash(make knowledge*)",
+]
+deny = [
+  "Read(./.pypirc)",
+  "Read(**/id_rsa)",
+  "Read(.smart-env/**)",
+  "Read(.obsidian/plugins/realclaudian/data.json)",
+  "Read(.claude/jit-context/.discovery/**)",
+]
+
+[tool.agent-kit.configs.marketplaces]
+trailofbits = "trailofbits/skills"
+dpt-plugins = "Digital-Process-Tools/claude-marketplace"
+
 [tool.mutmut]
 # ``make mutate`` (slow, on demand, not CI): mutate the estimation package and
 # run only its tests against each mutant.
