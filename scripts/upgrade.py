@@ -2,12 +2,21 @@
 
 ``--check`` prints one line per outdated item and exits 1 when there is any;
 ``--apply`` upgrades every item that is not protected and prints the changed files.
+<<<<<<< before updating
 ``publish.yaml`` is protected, so its action pins and the uv version (which
 ``required-version`` must not outrun) are reported, never edited. External commands
 (``uv``, ``prek``, ``gh``) go through an injectable :data:`Runner`. Stdlib only.
 
 @see [[.agents/AGENTS.md]]
 @tested-by [[tests/scripts/test_upgrade.py]]
+=======
+Protected items are reported, never edited: the workflows listed under
+``protected-workflows`` (their action pins and the uv version, which
+``required-version`` must not outrun) and the package ``pin``, which only ``--pin``
+moves, on its own review branch. Both come from ``[tool.agent-kit.upgrade]`` (see
+:class:`Settings`). External commands (``uv``, ``prek``, ``gh``) go through an
+injectable :data:`Runner`. Stdlib only.
+>>>>>>> after updating
 """
 
 import argparse
@@ -20,13 +29,29 @@ from collections.abc import Callable, Iterator, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
+<<<<<<< before updating
 from install_obsidian_plugins import REPOSITORIES, pinned_version
+=======
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from kit_config import load as load_config
+
+try:
+    from install_obsidian_plugins import REPOSITORIES, pinned_version
+except ImportError:  # a repository without the Obsidian plugin installer
+    REPOSITORIES: dict[str, str] = {}  # type: ignore[no-redef]
+    pinned_version = None  # type: ignore[assignment]
+>>>>>>> after updating
 
 ROOT = Path(__file__).resolve().parents[1]
 """Repository root."""
 
+<<<<<<< before updating
 PROTECTED = "publish.yaml"
 """Workflow whose pins the upgrade never edits (``scripts/pr_policy.py``)."""
+=======
+SYNC_ARGS = "--all-groups"
+"""Default ``uv sync`` arguments after an upgrade."""
+>>>>>>> after updating
 
 PRE_COMMIT = ".pre-commit-config.yaml"
 PREK = ("uv", "run", "prek", "update", "--color", "never", "--no-progress")
@@ -52,6 +77,36 @@ class UpgradeError(RuntimeError):
 
 
 @dataclass(frozen=True)
+<<<<<<< before updating
+=======
+class Settings:
+    """Per-repository settings, read from ``[tool.agent-kit.upgrade]``.
+
+    ``protected-workflows``: workflow file names whose pins are report-only;
+    ``pin``: a locked package only ``--pin`` moves, ``pin-git``: the name of the git
+    repository behind it (as in ``.../NAME.git``); ``sync-args``: ``uv sync`` arguments.
+    """
+
+    protected_workflows: tuple[str, ...] = ()
+    pin: str = ""
+    pin_git: str = ""
+    sync_args: tuple[str, ...] = tuple(SYNC_ARGS.split())
+
+
+def settings(root: Path = ROOT) -> Settings:
+    """Return the settings of the repository at ``root`` (defaults when unset)."""
+    raw = load_config(root).get("upgrade", {})
+    table = raw if isinstance(raw, dict) else {}
+    return Settings(
+        protected_workflows=tuple(table.get("protected-workflows", ())),
+        pin=str(table.get("pin", "")),
+        pin_git=str(table.get("pin-git", "")),
+        sync_args=tuple(str(table.get("sync-args", SYNC_ARGS)).split()),
+    )
+
+
+@dataclass(frozen=True)
+>>>>>>> after updating
 class Item:
     """One outdated pin."""
 
@@ -144,9 +199,31 @@ class GitHub:
 
 
 def python_deps(runner: Runner, root: Path, _gh: GitHub) -> list[Item]:
+<<<<<<< before updating
     """Locked packages ``uv lock --upgrade`` would update."""
     out = runner(["uv", "lock", "--upgrade", "--dry-run"], root)
     return [Item("python", n, o, v, "uv.lock") for n, o, v in _LOCK.findall(out)]
+=======
+    """Locked packages ``uv lock --upgrade`` would update; the pin is protected."""
+    cfg = settings(root)
+    out = runner(["uv", "lock", "--upgrade", "--dry-run"], root)
+    items = [
+        Item("python", n, o, v, "uv.lock", protected=bool(cfg.pin) and n == cfg.pin)
+        for n, o, v in _LOCK.findall(out)
+    ]
+    if cfg.pin and cfg.pin_git and (root / "uv.lock").is_file():
+        git = re.escape(cfg.pin_git)
+        moved = re.search(rf"Updated \S*/{git}\.git \((?P<sha>[0-9a-f]{{40}})\)", out)
+        text = (root / "uv.lock").read_text(encoding="utf-8")
+        locked = re.search(
+            rf'(?m)^source = \{{ git = "\S*/{git}\.git\S*#(?P<sha>\w+)', text
+        )
+        listed = any(item.name == cfg.pin for item in items)
+        if locked and moved and locked["sha"] != moved["sha"] and not listed:
+            old, new = locked["sha"][:7], moved["sha"][:7]
+            items.append(Item("python", cfg.pin, old, new, "uv.lock", protected=True))
+    return items
+>>>>>>> after updating
 
 
 def _prek(runner: Runner, root: Path, *, dry_run: bool) -> tuple[str, str]:
@@ -200,15 +277,31 @@ def action_pins(_runner: Runner, root: Path, gh: GitHub) -> list[Item]:
             latest = gh.latest(repo)
             if newer(tag, latest):
                 where = path.relative_to(root).as_posix()
+<<<<<<< before updating
                 protected = path.name == PROTECTED
+=======
+                protected = path.name in settings(root).protected_workflows
+>>>>>>> after updating
                 item = Item("action", match["action"], tag, latest, where, protected)
                 items[where, item.name, tag] = item
     return list(items.values())
 
 
+<<<<<<< before updating
 def _publish_pins_uv(root: Path) -> bool:
     path = root / ".github" / "workflows" / PROTECTED
     return path.is_file() and bool(_UV_PIN.search(path.read_text(encoding="utf-8")))
+=======
+def _protected_pins_uv(root: Path) -> bool:
+    """Whether a protected workflow pins uv (then ``required-version`` stays put)."""
+    return any(
+        path.is_file() and bool(_UV_PIN.search(path.read_text(encoding="utf-8")))
+        for path in (
+            root / ".github" / "workflows" / name
+            for name in settings(root).protected_workflows
+        )
+    )
+>>>>>>> after updating
 
 
 def uv_version(_runner: Runner, root: Path, gh: GitHub) -> list[Item]:
@@ -220,13 +313,22 @@ def uv_version(_runner: Runner, root: Path, gh: GitHub) -> list[Item]:
     if not newer(match[2], latest):
         return []
     where = "pyproject.toml, .github/workflows"
+<<<<<<< before updating
     return [Item("uv", "uv", match[2], latest, where, _publish_pins_uv(root))]
+=======
+    return [Item("uv", "uv", match[2], latest, where, _protected_pins_uv(root))]
+>>>>>>> after updating
 
 
 def obsidian_plugins(_runner: Runner, root: Path, gh: GitHub) -> list[Item]:
     """Pinned Obsidian plugin manifests below the plugin's latest release."""
     items = []
     for plugin, repo in REPOSITORIES.items():
+<<<<<<< before updating
+=======
+        if pinned_version is None:
+            break
+>>>>>>> after updating
         manifest = root / ".obsidian" / "plugins" / plugin / "manifest.json"
         if not manifest.is_file():
             continue
@@ -264,7 +366,11 @@ def _write(path: Path, text: str) -> None:
 
 def _apply_pins(root: Path, gh: GitHub) -> None:
     for path in _workflows(root):
+<<<<<<< before updating
         if path.name != PROTECTED:
+=======
+        if path.name not in settings(root).protected_workflows:
+>>>>>>> after updating
             text = path.read_text(encoding="utf-8")
             _write(path, _PIN.sub(lambda match: _repin(match, gh), text))
 
@@ -285,12 +391,31 @@ def _apply_plugin(item: Item, root: Path) -> None:
     _write(manifest, re.sub(pattern, rf'\g<1>{item.new}"', text, count=1))
 
 
+<<<<<<< before updating
+=======
+def _snapshot(root: Path) -> dict[Path, bytes]:
+    """Contents of every file an upgrade may change."""
+    watched = [root / name for name in ("pyproject.toml", "uv.lock", PRE_COMMIT)]
+    watched += _workflows(root) + sorted(root.glob(".obsidian/plugins/*/manifest.json"))
+    return {p: p.read_bytes() for p in watched if p.is_file()}
+
+
+def _changed(root: Path, before: dict[Path, bytes]) -> list[str]:
+    return [
+        p.relative_to(root).as_posix()
+        for p in before
+        if p.is_file() and p.read_bytes() != before[p]
+    ]
+
+
+>>>>>>> after updating
 def apply(runner: Runner = run, root: Path = ROOT) -> tuple[list[str], list[Item]]:
     """Upgrade everything that is not protected.
 
     Returns:
         The changed files and the protected items left for the maintainer.
     """
+<<<<<<< before updating
     gh = GitHub(runner, root)
     watched = [root / name for name in ("pyproject.toml", "uv.lock", PRE_COMMIT)]
     watched += _workflows(root) + sorted(root.glob(".obsidian/plugins/*/manifest.json"))
@@ -299,6 +424,21 @@ def apply(runner: Runner = run, root: Path = ROOT) -> tuple[list[str], list[Item
     runner(["uv", "sync", "--all-groups", "--all-extras"], root)
     _write(root / PRE_COMMIT, _prek(runner, root, dry_run=False)[1])
     protected = [item for item in action_pins(runner, root, gh) if item.protected]
+=======
+    cfg = settings(root)
+    gh = GitHub(runner, root)
+    before = _snapshot(root)
+    deps = python_deps(runner, root, gh)
+    protected = [item for item in deps if item.protected]
+    if not cfg.pin:
+        runner(["uv", "lock", "--upgrade"], root)
+        runner(["uv", "sync", *cfg.sync_args], root)
+    elif names := [item.name for item in deps if not item.protected]:
+        runner(["uv", "lock", *(f"--upgrade-package={name}" for name in names)], root)
+        runner(["uv", "sync", *cfg.sync_args], root)
+    _write(root / PRE_COMMIT, _prek(runner, root, dry_run=False)[1])
+    protected += [item for item in action_pins(runner, root, gh) if item.protected]
+>>>>>>> after updating
     _apply_pins(root, gh)
     for item in uv_version(runner, root, gh):
         if item.protected:
@@ -310,8 +450,27 @@ def apply(runner: Runner = run, root: Path = ROOT) -> tuple[list[str], list[Item
         _apply_plugin(item, root)
     if plugins:
         runner([*INSTALL_PLUGINS, "--force"], root)
+<<<<<<< before updating
     changed = [p for p in watched if p.is_file() and p.read_bytes() != before.get(p)]
     return [p.relative_to(root).as_posix() for p in changed], protected
+=======
+    return _changed(root, before), protected
+
+
+def move_pin(runner: Runner = run, root: Path = ROOT) -> list[str]:
+    """Move the configured pin to its branch head; return the changed files.
+
+    Raises:
+        UpgradeError: When no ``pin`` is configured.
+    """
+    cfg = settings(root)
+    if not cfg.pin:
+        raise UpgradeError("no pin configured in [tool.agent-kit.upgrade]")  # noqa: TRY003
+    before = _snapshot(root)
+    runner(["uv", "lock", f"--upgrade-package={cfg.pin}"], root)
+    runner(["uv", "sync", *cfg.sync_args], root)
+    return _changed(root, before)
+>>>>>>> after updating
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -320,6 +479,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--check", action="store_true", help="list outdated items")
     mode.add_argument("--apply", action="store_true", help="upgrade them")
+<<<<<<< before updating
+=======
+    mode.add_argument("--pin", action="store_true", help="move the configured pin")
+>>>>>>> after updating
     parser.add_argument("--root", type=Path, default=ROOT, help=argparse.SUPPRESS)
     args = parser.parse_args(argv)
     try:
@@ -327,7 +490,15 @@ def main(argv: Sequence[str] | None = None) -> int:
             items = check(run, args.root)
             print("\n".join(map(str, items)) if items else "everything is current")
             return int(bool(items))
+<<<<<<< before updating
         changed, protected = apply(run, args.root)
+=======
+        protected: list[Item] = []
+        if args.pin:
+            changed = move_pin(run, args.root)
+        else:
+            changed, protected = apply(run, args.root)
+>>>>>>> after updating
     except UpgradeError as exc:
         print(f"upgrade: {exc}", file=sys.stderr)
         return 2

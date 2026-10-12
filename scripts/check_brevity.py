@@ -8,7 +8,15 @@ Usage::
 Words exclude frontmatter, HTML comments and fenced or literal blocks. Files named in
 ``.agents/skills/VENDORED.md`` and ``.claude/agents/VENDORED.md`` are exempt.
 
+<<<<<<< before updating
 @domain tooling
+=======
+The budgets every repository shares are :data:`BASE_BUDGETS`; a repository adds its own
+(``[[tool.agent-kit.brevity.budget]]``), grandfathered caps (``existing``), skipped
+folders (``skip-dirs``, ``skip-paths``), release-note files (``bullet-files``) and the
+folders of notebooks (``notebook-dirs``, default ``examples``) in
+``[tool.agent-kit.brevity]``.
+>>>>>>> after updating
 """
 
 import argparse
@@ -21,6 +29,12 @@ from dataclasses import dataclass
 from fnmatch import fnmatch
 from pathlib import Path
 
+<<<<<<< before updating
+=======
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from kit_config import load as load_config
+
+>>>>>>> after updating
 ROOT = Path(__file__).resolve().parent.parent
 """Repository root."""
 
@@ -39,15 +53,22 @@ class Budget:
     """Allow at most two sentences over ``LONG_SENTENCE`` words."""
 
 
+<<<<<<< before updating
 BUDGETS = (
     Budget(("AGENTS.md",), words=500, lines=80),
     Budget(("*/AGENTS.md",), lines=60),
+=======
+BASE_BUDGETS = (
+    Budget(("AGENTS.md",), words=500, lines=80),
+    Budget(("*/AGENTS.md",), lines=15),
+>>>>>>> after updating
     Budget((".claude/rules/always.md",), words=700),
     Budget((".agents/skills/*/SKILL.md",), words=500, lines=100),
     Budget((".agents/skills/*.md",), words=400),
     Budget((".cursor/rules/*.mdc",), words=400, lines=60),
     Budget((".claude/agents/*.md",), words=400, lines=40),
     Budget((".cursor/commands/*.md",), lines=15),
+<<<<<<< before updating
     Budget(("knowledge/issues/Fixed issues.md",), 800, sentences=True),
     Budget(("knowledge/decisions/*.md",), 700, sentences=True),
     Budget(("knowledge/issues/*.md",), 350, sentences=True),
@@ -63,6 +84,14 @@ BUDGETS = (
 
 SKIP_DIRS = {"node_modules", "__pycache__", "_build"}
 SKIP_PATHS = {"docs/handbook", "docs/notebooks", "knowledge/generated"}
+=======
+    Budget(("README.md",), words=900, sentences=True),
+    Budget(("CONTRIBUTING.md",), words=1500, sentences=True),
+)
+"""Budgets of the rule that every repository shares; a project's come first."""
+
+SKIP_DIRS = {"node_modules", "__pycache__", "_build"}
+>>>>>>> after updating
 HIDDEN_KEPT = {".agents", ".claude", ".cursor"}
 UNIT_START = re.compile(r"^\s*(?:[-*+]\s|\d+[.)]\s|#|\.\.\s|[=\-~^\"'`*+]{3,}\s*$)")
 SENTENCE_END = re.compile(r"(?<=[.!?])\s+")
@@ -93,6 +122,49 @@ class Measure:
         return f"{self.path}: {self.count} {sign} {self.budget} ({self.kind})"
 
 
+<<<<<<< before updating
+=======
+@dataclass(frozen=True)
+class Settings:
+    """Per-repository additions, read from ``[tool.agent-kit.brevity]``."""
+
+    budgets: tuple[Budget, ...] = BASE_BUDGETS
+    existing: dict[tuple[str, str], int] | None = None
+    skip_dirs: frozenset[str] = frozenset(SKIP_DIRS)
+    skip_paths: frozenset[str] = frozenset()
+    bullet_files: frozenset[str] = frozenset()
+    notebook_dirs: tuple[str, ...] = ("examples/",)
+
+
+def settings(root: Path = ROOT) -> Settings:
+    """Return the budgets and skips of the repository at ``root``."""
+    raw = load_config(root).get("brevity", {})
+    table = raw if isinstance(raw, dict) else {}
+    own = tuple(
+        Budget(
+            tuple(item["patterns"]),
+            words=item.get("words"),
+            lines=item.get("lines"),
+            sentences=bool(item.get("sentences", False)),
+        )
+        for item in table.get("budget", [])
+    )
+    existing = {
+        (key.rsplit("|", 1)[0], key.rsplit("|", 1)[1]): int(value)
+        for key, value in table.get("existing", {}).items()
+    }
+    folders = table.get("notebook-dirs", ["examples"])
+    return Settings(
+        budgets=own + BASE_BUDGETS,
+        existing=existing,
+        skip_dirs=frozenset(SKIP_DIRS | set(table.get("skip-dirs", ()))),
+        skip_paths=frozenset(table.get("skip-paths", ())),
+        bullet_files=frozenset(table.get("bullet-files", ())),
+        notebook_dirs=tuple(f"{folder.strip('/')}/" for folder in folders),
+    )
+
+
+>>>>>>> after updating
 def frontmatter_lines(text: str) -> int:
     """Return the number of lines of a leading ``---`` frontmatter block."""
     lines = text.splitlines()
@@ -114,6 +186,12 @@ def prose(text: str, suffix: str) -> str:
     for line in lines[len(out) :]:
         stripped = line.lstrip()
         indent = len(line) - len(stripped)
+<<<<<<< before updating
+=======
+        if stripped.startswith("$$"):  # display math is not prose
+            out.append("")
+            continue
+>>>>>>> after updating
         # RST section underlines start with ``~~~``; fences exist only in Markdown.
         if fence or (suffix != ".rst" and stripped.startswith(("```", "~~~"))):
             if not fence:
@@ -218,7 +296,13 @@ def docstring(rel: str, text: str) -> list[Measure]:
     return [Measure(rel, span, 12, "module docstring lines")]
 
 
+<<<<<<< before updating
 def by_budget(rel: str, text: str, budget: Budget) -> list[Measure]:
+=======
+def by_budget(
+    rel: str, text: str, budget: Budget, bullet_files: frozenset[str] = frozenset()
+) -> list[Measure]:
+>>>>>>> after updating
     """Measure a text file against its budget."""
     body = prose(text, Path(rel).suffix)
     found: list[Measure] = []
@@ -229,7 +313,11 @@ def by_budget(rel: str, text: str, budget: Budget) -> list[Measure]:
         found.append(Measure(rel, count, budget.lines, "lines"))
     if budget.sentences:
         found.append(Measure(rel, long_sentences(body), 2, "sentences over 35 words"))
+<<<<<<< before updating
     if rel == "docs/release_notes.rst":
+=======
+    if rel in bullet_files:
+>>>>>>> after updating
         found.extend(bullets(rel, body))
     return found
 
@@ -255,19 +343,32 @@ def vendored(root: Path) -> set[str]:
     return prefixes
 
 
+<<<<<<< before updating
 def files(root: Path) -> Iterator[Path]:
     """Yield the repository files, skipping caches, builds and generated trees."""
+=======
+def files(root: Path, cfg: Settings | None = None) -> Iterator[Path]:
+    """Yield the repository files, skipping caches, builds and generated trees."""
+    cfg = cfg or settings(root)
+>>>>>>> after updating
     for folder, dirs, names in root.walk():
         dirs[:] = [
             name
             for name in dirs
+<<<<<<< before updating
             if name not in SKIP_DIRS
             and (not name.startswith(".") or name in HIDDEN_KEPT)
             and (folder / name).relative_to(root).as_posix() not in SKIP_PATHS
+=======
+            if name not in cfg.skip_dirs
+            and (not name.startswith(".") or name in HIDDEN_KEPT)
+            and (folder / name).relative_to(root).as_posix() not in cfg.skip_paths
+>>>>>>> after updating
         ]
         yield from (folder / name for name in names if not (folder / name).is_symlink())
 
 
+<<<<<<< before updating
 def measure(root: Path) -> list[Measure]:
     """Return every measure for the files under ``root``."""
     exempt = tuple(vendored(root))
@@ -287,6 +388,45 @@ def measure(root: Path) -> list[Measure]:
             if budget is not None:
                 found.extend(by_budget(rel, path.read_text(encoding="utf-8"), budget))
     return found
+=======
+def grandfathered(item: Measure, existing: dict[tuple[str, str], int]) -> Measure:
+    """Return ``item`` with its ``existing`` cap as budget when it has one."""
+    cap = existing.get((item.path, item.kind))
+    if cap is None:
+        return item
+    return Measure(item.path, item.count, cap, f"{item.kind}, existing size")
+
+
+def measure(root: Path) -> list[Measure]:
+    """Return every measure for the files under ``root``."""
+    cfg = settings(root)
+    exempt = tuple(vendored(root))
+    found: list[Measure] = []
+    for path in sorted(files(root, cfg)):
+        rel = path.relative_to(root).as_posix()
+        if rel.startswith(exempt) or path.name == "VENDORED.md":
+            continue
+        in_notebooks = rel.startswith(cfg.notebook_dirs)
+        if path.suffix == ".py" and not in_notebooks:
+            found.extend(docstring(rel, path.read_text(encoding="utf-8")))
+        elif path.suffix == ".ipynb" and in_notebooks:
+            found.extend(notebook(rel, path.read_text(encoding="utf-8")))
+        else:
+            budget = next(
+                (b for b in cfg.budgets if any(fnmatch(rel, p) for p in b.patterns)),
+                None,
+            )
+            text = (
+                path.read_text(encoding="utf-8")
+                if budget or rel in cfg.bullet_files
+                else ""
+            )
+            if budget is not None:
+                found.extend(by_budget(rel, text, budget, cfg.bullet_files))
+            elif rel in cfg.bullet_files:
+                found.extend(bullets(rel, prose(text, path.suffix)))
+    return [grandfathered(item, cfg.existing or {}) for item in found]
+>>>>>>> after updating
 
 
 def main(argv: list[str] | None = None) -> int:
