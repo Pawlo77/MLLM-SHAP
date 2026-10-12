@@ -3,6 +3,7 @@
 @see [[tests/AGENTS.md]]
 """
 
+import os
 from dataclasses import dataclass, field
 
 import pytest
@@ -11,6 +12,18 @@ from mllm_shap.domain.conversation import ConversationSnapshot, Message, Turn
 from mllm_shap.domain.enums import Role
 from mllm_shap.domain.estimands import Estimand
 from mllm_shap.pipeline.manifest import RunManifest
+
+
+@pytest.fixture(autouse=True)
+def _isolate_from_git_hooks(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Keep tests that run git in a temporary repository off this repository.
+
+    Git hooks (the pre-push ``make agent-check``) run with ``GIT_DIR``,
+    ``GIT_INDEX_FILE`` and similar set; a test's ``git commit`` would then write
+    to this repository's index.
+    """
+    for name in [name for name in os.environ if name.startswith("GIT_")]:
+        monkeypatch.delenv(name)
 
 
 @pytest.fixture
