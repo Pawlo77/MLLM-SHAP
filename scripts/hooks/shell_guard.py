@@ -53,6 +53,7 @@ WRAPPER = re.compile(
 SUBSTITUTION = re.compile(r"\$\(([^()]*)\)|`([^`]*)`")
 SHELL_C = re.compile(r"^(?:bash|sh|zsh|dash)\s+(?:-\w+\s+)*-\w*c\w*\s+")
 VALUE_FLAGS = "mFCct"  # short options that take a value, ending a flag cluster
+GIT_CONFIG_ENV = re.compile(r"\bGIT_CONFIG_(COUNT|KEY_\d+|PARAMETERS)=", re.IGNORECASE)
 GIT_GLOBAL_WITH_VALUE = {"-C", "-c", "--git-dir", "--work-tree", "--namespace"}
 
 
@@ -121,6 +122,15 @@ def _short_flags(args: list[str]) -> set[str]:
     return flags
 
 
+def _long(args: list[str], option: str) -> bool:
+    """Return whether ``option`` is given, also as git's unambiguous abbreviation."""
+    for arg in args:
+        name = arg.split("=", 1)[0]
+        if name.startswith("--") and len(name) >= 5 and option.startswith(name):
+            return True
+    return False
+
+
 def _git_decision(part: str, command: str) -> tuple[str, str] | None:
     try:
         words = shlex.split(part)
@@ -129,18 +139,20 @@ def _git_decision(part: str, command: str) -> tuple[str, str] | None:
             return "ask", "Cannot parse this git command; confirm it is intended."
         words = part.split()  # a heredoc split the quoted message across segments
     global_opts, sub, args = _git_split(words)
-    if any(opt.lower().startswith("core.hookspath") for opt in global_opts):
-        return "deny", "Overriding core.hooksPath is not allowed."
-    if "--no-verify" in args or (sub == "commit" and "n" in _short_flags(args)):
+    hooks_override = any("hookspath" in word.lower() for word in global_opts)
+    hooks_override |= sub == "config" and any("hookspath" in a.lower() for a in args)
+    if hooks_override or GIT_CONFIG_ENV.search(command):
+        return "deny", "Overriding git hooks through config is not allowed."
+    if _long(args, "--no-verify") or (sub == "commit" and "n" in _short_flags(args)):
         return "deny", "--no-verify is not allowed; fix the failing hook instead."
     if sub == "push" and (
-        any(arg.startswith(("--force", "--mirror")) for arg in args)
+        any(_long(args, opt) for opt in ("--force", "--mirror", "--force-with-lease"))
         or "f" in _short_flags(args)
         or any(arg.startswith("+") for arg in args)
     ):
         return "deny", "Force pushes are not allowed; push a new commit instead."
     if sub == "commit":
-        if "--amend" in args:
+        if _long(args, "--amend"):
             return "deny", "git commit --amend is not allowed; create a new commit."
         message = commit_message(command)
         error = validate_commit_message(message) if message is not None else None
