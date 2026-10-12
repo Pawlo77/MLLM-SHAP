@@ -26,7 +26,7 @@ _AI = (
 )
 _AI_TRAILER = (
     rf"(?:{_AI}|grok|deepseek|jules|mistral|qwen|llama|kimi|cline|junie|kiro|augment|"
-    r"sourcegraph|\[bot\]|noreply@(?:anthropic|openai|cursor|x)\.)"
+    r"sourcegraph|(?<!dependabot)(?<!renovate)\[bot\]|noreply@(?:anthropic|openai|cursor|x)\.)"
 )
 """Names accepted after a trailer key, where a person's name is not expected."""
 _VERB = r"(generated|written|created|made|drafted|authored|produced|co-authored)"

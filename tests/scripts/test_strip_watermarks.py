@@ -49,6 +49,8 @@ def test_watermark_lines(strip: ModuleType, line: str) -> None:
     "line",
     [
         "Co-Authored-By: Jane Doe <jane@example.org>",
+        "Signed-off-by: dependabot[bot] <support@github.com>",
+        "Signed-off-by: renovate[bot] <bot@renovateapp.com>",
         "Commits carry no `Co-Authored-By: Claude` trailer (rule `git-commits`).",
         "Notebooks are generated with Jupyter.",
         "Claude reviews its own work before a PR (skill `review`).",
