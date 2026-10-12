@@ -32,6 +32,12 @@ class PluginRegistry:
         """Create an empty registry."""
         self._factories: dict[str, dict[str, PluginFactory]] = {}
 
+    def copy(self) -> "PluginRegistry":
+        """Return a registry with the same factories, independent of this one."""
+        clone = PluginRegistry()
+        clone._factories = {group: dict(f) for group, f in self._factories.items()}
+        return clone
+
     def register(
         self,
         group: PluginGroup | str,

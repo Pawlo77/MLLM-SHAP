@@ -22,6 +22,9 @@ functions are independent of the estimand (Shapley or Banzhaf) and the estimator
    * - ``logprob``
      - Mean log probability of the output's own tokens; needs a backend that
        returns them
+   * - ``reference_wer``
+     - ``1 - min(1, WER)`` of the output against ``plugin_options.reference``
+       (such as a transcript), or against the base generation without one
 
 :doc:`migrating_from_mllm_shap` maps these to the U1–U4 utility labels used by
 legacy MLLM-Shap.
@@ -121,6 +124,26 @@ still arrives without logprobs (an HTTP server that ignores the request) raises
 :exc:`~mllm_shap.errors.LogprobsUnavailableError`. Archives store logprobs per
 coalition, and :meth:`~mllm_shap.ExplainRunner.reanalyze` refuses ``logprob`` on
 an archive whose rows have none. Backend support: :doc:`backends`.
+
+Word error rate and deletion curves
+-----------------------------------
+
+``reference_wer`` scores how correct an answer is: with
+``plugin_options: {reference_wer: {reference: "i had that curiosity"}}`` a
+transcription prompt earns 1 for the exact transcript, ignoring case and
+punctuation. :func:`~mllm_shap.value.wer.word_error_rate` is the metric alone.
+
+:func:`~mllm_shap.deletion_curve` tests an attribution's faithfulness. It removes
+the ``k`` highest-ranked players at once, for each ``k``, and rescores the
+coalition left. A lower :attr:`~mllm_shap.DeletionCurve.area` means the value
+falls sooner. Score the curve with a different value function than the
+explanation, or the check is circular. Pass the explained run's ``backend`` to
+reuse its model:
+
+.. code-block:: python
+
+   curve = await deletion_curve(wer_config, snapshot, output.result.values)
+   print(curve.removed, curve.values, round(curve.area, 3))
 
 Attribution normalizers
 -----------------------

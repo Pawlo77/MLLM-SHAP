@@ -5,11 +5,12 @@ domain: pipeline
 parent: "[[mllm-shap]]"
 tags: [architecture, pipeline]
 created: 2026-10-07
-updated: 2026-10-11
+updated: 2026-10-12
 related-code:
   - "[[src/mllm_shap/pipeline/__init__.py]]"
   - "[[src/mllm_shap/pipeline/config.py]]"
   - "[[src/mllm_shap/pipeline/context.py]]"
+  - "[[src/mllm_shap/pipeline/faithfulness.py]]"
   - "[[src/mllm_shap/pipeline/manifest.py]]"
   - "[[src/mllm_shap/pipeline/orchestrator.py]]"
   - "[[src/mllm_shap/pipeline/reanalyze.py]]"
@@ -36,6 +37,7 @@ Signatures: [[Public API]]; configuration keys: [[Config keys]].
 - `reanalyze_sync` ([[Reanalyze]]): for a run scored with backend embeddings and a `RequiresEmbeddings` value function it logs a `WARNING`, or raises `ReanalyzeMismatchError` with `strict`; a `RequiresLogprobs` value function on rows without logprobs raises `ReanalyzeMismatchError`.
 - `ExplainResult`; `ExplainRunOutput` with `to_dict()` (`ExplainRunPayload`; each label adds `speaker` and `label`, the span's `display_label`); `player_set` is `None` after `reanalyze`.
 - `RunManifest`, `parse_manifest`, `MANIFEST_SCHEMA_VERSION` 4 ([[Manifest]]): `embedding_source` is `"none"`, `"hash"` or `"backend"`; wrong field types raise `ArchiveCorruptError`.
+- `deletion_curve(config, snapshot, attributions, ks=None, registry=None, backend=None)` (async): ranks players, runs the pipeline with a private estimator that samples `N - top_k` per `k` on a registry copy, and returns `DeletionCurve` (`values`, `drops`, trapezoid `area` over `k / n`).
 - `ExplainContext`: resolved inputs of one run; `plugin_context()` builds the `PluginContext`.
 
 ## Data flow
@@ -71,6 +73,7 @@ Signatures: [[Public API]]; configuration keys: [[Config keys]].
 - [[tests/pipeline/test_orchestrator.py]]
 - [[tests/pipeline/test_pipeline_axioms.py]]
 - [[tests/pipeline/test_reanalyze.py]]
+- [[tests/pipeline/test_faithfulness.py]]
 - [[tests/pipeline/test_capabilities.py]]
 - [[tests/pipeline/test_config.py]]
 - [[tests/pipeline/test_budget_evaluations.py]]

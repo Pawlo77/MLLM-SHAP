@@ -36,6 +36,11 @@ scenarios:
     tier: default
     turns: *france
     expect: {top_player: France, efficiency: 1.0e-9}
+  estimator.loo:
+    tier: default
+    turns: *france
+    overrides: {explanation: {estimator: loo}}
+    expect: {top_player: France}
   estimator.mc:
     # Plain coalition sampling is noisier than the paired samplers: at 16 of the 32
     # coalitions 9 of 100 seeds met these bounds, at 28 85 of 100 (seed 0 included).
@@ -85,6 +90,14 @@ scenarios:
         - {role: user, text: "What is the capital of France? Answer with one word."}
     overrides: {explanation: {value_fn: logprob, players: messages}}
     expect: {contradiction: 1, sign: -1}
+  value.reference_wer:
+    # Deletion curve of the tfidf_cosine exact ranking, scored by reference_wer
+    # against the full answer: a utility other than the explanation's. Measured
+    # on Qwen2.5-1.5B: area 0.10 for the ranking, 0.30 for its reverse.
+    tier: default
+    turns: *france
+    overrides: {explanation: {value_fn: reference_wer}}
+    expect: {explained_by: value.tfidf_cosine}
   value.normalizers:
     tier: fast
     turns: *france

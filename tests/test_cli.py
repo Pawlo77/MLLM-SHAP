@@ -127,7 +127,7 @@ def test_cli_plugins_lists_every_group(tmp_path: Path) -> None:
     completed = _cli("plugins", cwd=tmp_path)
 
     assert completed.returncode == 0
-    assert "mllm_shap.estimators: complementary, exact, mc, neyman_cc" in (
+    assert "mllm_shap.estimators: complementary, exact, loo, mc, neyman_cc" in (
         completed.stdout
     )
     assert (
