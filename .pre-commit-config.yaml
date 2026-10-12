@@ -118,6 +118,13 @@ repos:
         files: ^(\.claude/agents/.*\.md|\.codex/agents/.*\.toml|scripts/sync_agents\.py)$
         pass_filenames: false
 
+      - id: configs-sync
+        name: agent tool configs match scripts/sync_configs.py
+        entry: uv run python scripts/sync_configs.py --check
+        language: system
+        files: ^(\.claude/settings\.json|\.codex/(hooks\.json|config\.toml)|\.cursor/hooks\.json|scripts/sync_configs\.py|pyproject\.toml)$
+        pass_filenames: false
+
       - id: skills-ref
         name: skills follow the Agent Skills spec
         entry: uv run pytest -q -p no:cacheprovider tests/test_skill_frontmatter.py
