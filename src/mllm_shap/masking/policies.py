@@ -11,7 +11,7 @@ from ..domain.coalition import CoalitionMask
 from ..domain.conversation import ConversationSnapshot
 from ..domain.players import PlayerSet, PlayerSpan
 from ..protocols.plugin import PluginOptions
-from .audio import render_audio
+from .audio import hide_text, render_audio
 from .tokens import render_spans
 
 if TYPE_CHECKING:
@@ -24,6 +24,17 @@ def _require_spans(players: PlayerSet, mask: CoalitionMask) -> tuple[PlayerSpan,
         msg = "player set has no spans; build it with a partitioner"
         raise ValueError(msg)
     return players.spans
+
+
+def _render_audio(
+    rendered: ConversationSnapshot,
+    players: PlayerSet,
+    mask: CoalitionMask,
+    cut: bool,
+) -> ConversationSnapshot:
+    """Edit absent audio samples, then hide transcripts used only for alignment."""
+    audio = render_audio(rendered, players.spans, mask.present, cut=cut)
+    return hide_text(audio, players.hidden_text)
 
 
 class PadOptions(PluginOptions):
@@ -74,7 +85,7 @@ class DeletePolicy:
                 for span, present in zip(spans, mask.present, strict=True)
             ],
         )
-        return render_audio(rendered, spans, mask.present, cut=True)
+        return _render_audio(rendered, players, mask, cut=True)
 
 
 class PadPolicy:
@@ -115,7 +126,7 @@ class PadPolicy:
                 for span, present in zip(spans, mask.present, strict=True)
             ],
         )
-        return render_audio(rendered, spans, mask.present, cut=False)
+        return _render_audio(rendered, players, mask, cut=False)
 
 
 class NeutralPolicy:
@@ -159,4 +170,4 @@ class NeutralPolicy:
                 for span, present in zip(spans, mask.present, strict=True)
             ],
         )
-        return render_audio(rendered, spans, mask.present, cut=False)
+        return _render_audio(rendered, players, mask, cut=False)

@@ -162,7 +162,9 @@ def _explain(args: argparse.Namespace) -> int:
     config = _load_config(args.config)
     snapshot_text = _read_input(args.snapshot, "snapshot")
     try:
-        snapshot = ConversationSnapshot.from_json(snapshot_text)
+        snapshot = ConversationSnapshot.from_json(
+            snapshot_text, base_dir=args.snapshot.parent
+        )
     except (ValueError, TypeError) as exc:
         msg = f"invalid snapshot {args.snapshot}: {exc}"
         raise ConfigError(msg) from exc

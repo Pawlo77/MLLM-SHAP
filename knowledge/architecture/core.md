@@ -5,7 +5,7 @@ domain: core
 parent: "[[mllm-shap]]"
 tags: [architecture, core]
 created: 2026-10-07
-updated: 2026-10-11
+updated: 2026-10-12
 related-code:
   - "[[src/mllm_shap/__init__.py]]"
   - "[[src/mllm_shap/_logging.py]]"
@@ -38,7 +38,7 @@ related-code:
 ## Data flow
 
 - Importing `mllm_shap` imports [[domain]], [[estimation]], [[masking]], [[pipeline]], [[plugins]], [[runtime]], [[value]] and the backend classes (their heavy dependencies are imported lazily), then calls `bootstrap_logging()`.
-- `cli.main` reads YAML (`explain_config_from_yaml`) and snapshot JSON (`ConversationSnapshot.from_json`), runs `ExplainRunner.explain_sync` or `reanalyze`, and writes `ExplainRunOutput.to_dict()` as JSON; `--png` renders through [[viz]].
+- `cli.main` reads YAML (`explain_config_from_yaml`) and snapshot JSON (`ConversationSnapshot.from_json`, audio paths relative to the snapshot file), runs `ExplainRunner.explain_sync` or `reanalyze`, and writes `ExplainRunOutput.to_dict()` as JSON; `--png` renders through [[viz]].
 - `__version__` comes from installed package metadata (`0.0.0+unknown` when not installed).
 
 ## Invariants

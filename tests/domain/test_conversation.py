@@ -3,7 +3,9 @@
 @see [[src/mllm_shap/domain/conversation.py]]
 """
 
+import base64
 import json
+from pathlib import Path
 
 import pytest
 
@@ -100,21 +102,99 @@ def test_snapshot_json_omits_content_derived_id() -> None:
     assert ConversationSnapshot.from_json(snapshot.to_json()) == snapshot
 
 
+def _parts_snapshot(*content: TextPart | AudioPart) -> ConversationSnapshot:
+    return ConversationSnapshot.from_turns((
+        Turn(messages=(Message(role=Role.USER, content=content, speaker="ann"),)),
+    ))
+
+
+def test_snapshot_json_round_trips_text_and_audio_parts(tmp_path: Path) -> None:
+    """Multi-part messages use ``"content"``; audio goes by path or base64 data."""
+    clip = tmp_path / "clip.wav"
+    clip.write_bytes(b"RIFF-path")
+    snapshot = _parts_snapshot(
+        TextPart("say it"),
+        AudioPart(clip, 16_000),
+        AudioPart(b"RIFF-bytes", 8_000),
+    )
+    payload = json.loads(snapshot.to_json())
+    assert payload["turns"][0]["messages"][0] == {
+        "role": "user",
+        "speaker": "ann",
+        "content": [
+            {"type": "text", "text": "say it"},
+            {"type": "audio", "path": str(clip), "sample_rate": 16_000},
+            {
+                "type": "audio",
+                "data": base64.b64encode(b"RIFF-bytes").decode("ascii"),
+                "sample_rate": 8_000,
+            },
+        ],
+    }
+    assert ConversationSnapshot.from_json(snapshot.to_json()) == snapshot
+
+
+def test_snapshot_json_resolves_audio_paths_against_base_dir(tmp_path: Path) -> None:
+    (tmp_path / "clip.wav").write_bytes(b"RIFF")
+    text = json.dumps({
+        "turns": [
+            {
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "audio", "path": "clip.wav", "sample_rate": 16000}
+                        ],
+                    }
+                ]
+            }
+        ]
+    })
+    snapshot = ConversationSnapshot.from_json(text, base_dir=tmp_path)
+    (part,) = snapshot.messages()[0].content
+    assert part == AudioPart(tmp_path / "clip.wav", 16_000)
+    assert snapshot == _audio_only(tmp_path / "clip.wav")
+
+
+def _audio_only(path: Path) -> ConversationSnapshot:
+    message = Message(role=Role.USER, content=(AudioPart(path, 16_000),))
+    return ConversationSnapshot.from_turns((Turn(messages=(message,)),))
+
+
 @pytest.mark.parametrize(
-    "content",
+    ("message", "error", "match"),
     [
-        (TextPart("one"), TextPart("two")),
-        (TextPart("hi"), AudioPart(b"\x00", 16_000)),
+        ({"role": "user", "text": "a", "content": []}, TypeError, "exactly one"),
+        ({"role": "user", "content": "a"}, TypeError, "list"),
+        ({"role": "user", "text": 5}, TypeError, '"text" must be a string'),
+        ({"role": "user", "content": [{"type": "video"}]}, ValueError, "video"),
+        (
+            {"role": "user", "content": [{"type": "audio", "path": "x.wav"}]},
+            TypeError,
+            "sample_rate",
+        ),
+        (
+            {"role": "user", "content": [{"type": "audio", "sample_rate": 1}]},
+            TypeError,
+            "path",
+        ),
+        ({"role": "user", "content": [{"type": "text"}]}, TypeError, "text"),
+        (
+            {
+                "role": "user",
+                "content": [{"type": "audio", "data": "%%", "sample_rate": 1}],
+            },
+            ValueError,
+            "base64",
+        ),
     ],
 )
-def test_snapshot_to_json_rejects_multi_part_and_audio_messages(
-    content: tuple[TextPart | AudioPart, ...],
+def test_snapshot_json_rejects_bad_content_parts(
+    message: dict[str, object], error: type, match: str
 ) -> None:
-    snapshot = ConversationSnapshot.from_turns((
-        Turn(messages=(Message(role=Role.USER, content=content),)),
-    ))
-    with pytest.raises(ValueError, match="single text part"):
-        snapshot.to_json()
+    text = json.dumps({"turns": [{"messages": [message]}]})
+    with pytest.raises(error, match=match):
+        ConversationSnapshot.from_json(text)
 
 
 def test_snapshot_from_json_rejects_non_string_snapshot_id() -> None:

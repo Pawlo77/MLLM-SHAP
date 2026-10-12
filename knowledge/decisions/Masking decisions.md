@@ -4,17 +4,25 @@ type: decision-log
 domain: masking
 parent: "[[mllm-shap]]"
 created: 2026-10-08
-updated: 2026-10-10
+updated: 2026-10-12
 tags: [decisions, masking]
 related-code:
   - "[[src/mllm_shap/masking/partitions.py]]"
   - "[[src/mllm_shap/masking/policies.py]]"
+  - "[[src/mllm_shap/masking/audio.py]]"
 ---
 
 # Masking decisions
 
 Architecture: [[masking]]. Related: [[Player span]].
 
+## 2026-10-12 — Alignment-only transcripts are hidden by the policies
+
+Decision: `PlayerSet.hidden_text` lists messages whose text every absence policy drops after rendering; `sgpa_segments` fills it under `transcript: align_only`.
+
+Why: Spectrogram-Guided Phonetic Alignment ([[SGPA]]) needs the transcript to place word boundaries, but a model that reads it next to the audio mixes reading and hearing in the values.
+
+Consequences: every coalition, the grand one included, sends audio only for those messages, so `v(N)` and `v(∅)` use the same rendering. Rejected: removing the text in the partitioner (players need its character spans), a per-backend switch (each backend would need it).
 
 ## 2026-10-10 — Audio players are sample ranges on the player span
 

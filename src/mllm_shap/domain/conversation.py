@@ -5,6 +5,8 @@
 @tested-by [[tests/domain/test_conversation.py]]
 """
 
+import base64
+import binascii
 import hashlib
 import json
 from dataclasses import dataclass
@@ -141,14 +143,36 @@ class Turn:
             raise ValueError(msg)
 
 
+class PartPayload(TypedDict):
+    """JSON form of one content part."""
+
+    type: str
+    """``"text"`` or ``"audio"``."""
+
+    text: NotRequired[str]
+    """Text of a text part."""
+
+    path: NotRequired[str]
+    """Audio file of an audio part, relative to the snapshot's ``base_dir``."""
+
+    data: NotRequired[str]
+    """Base64 audio bytes of an audio part, instead of ``path``."""
+
+    sample_rate: NotRequired[int]
+    """Sample rate of an audio part in hertz."""
+
+
 class MessagePayload(TypedDict):
-    """JSON form of a text message."""
+    """JSON form of a message: ``text`` for one text part, else ``content``."""
 
     role: str
     """Message role, one of ``"user"``, ``"assistant"`` and ``"system"``."""
 
-    text: str
-    """Message text."""
+    text: NotRequired[str]
+    """Message text, when the message is a single text part."""
+
+    content: NotRequired[list[PartPayload]]
+    """Ordered content parts, for messages with audio or several parts."""
 
     speaker: NotRequired[str]
     """Speaker name; omitted when the message has none."""
@@ -200,12 +224,16 @@ class ConversationSnapshot:
         return tuple(message for turn in self.turns for message in turn.messages)
 
     @classmethod
-    def from_json(cls, text: str) -> Self:
+    def from_json(cls, text: str, base_dir: Path | None = None) -> Self:
         """Parse ``{"turns": [{"messages": [{"role": ..., "text": ...}]}]}``.
 
-        A message may add ``"speaker"``. An optional top-level ``"snapshot_id"``
-        sets the id; without it the id is derived from the content, as in
-        :meth:`from_turns`.
+        A message may add ``"speaker"``, and gives either ``"text"`` or a
+        ``"content"`` list of ``{"type": "text", "text": ...}`` and
+        ``{"type": "audio", "path" or "data": ..., "sample_rate": ...}`` parts;
+        relative audio paths resolve against ``base_dir`` (default: the working
+        directory) and ``"data"`` is base64. An optional top-level
+        ``"snapshot_id"`` sets the id; without it the id is derived from the
+        content, as in :meth:`from_turns`.
 
         Raises:
             ValueError: If ``text`` is not valid JSON, a role is unknown, or a
@@ -217,7 +245,7 @@ class ConversationSnapshot:
         except json.JSONDecodeError as exc:
             msg = f"snapshot is not valid JSON: {exc}"
             raise ValueError(msg) from exc
-        turns = _turns_from_payload(payload)
+        turns = _turns_from_payload(payload, base_dir or Path())
         snapshot_id = payload.get("snapshot_id")
         if snapshot_id is None:
             return cls.from_turns(turns)
@@ -227,13 +255,11 @@ class ConversationSnapshot:
         return cls(turns=turns, snapshot_id=snapshot_id)
 
     def to_json(self, indent: int | None = 2) -> str:
-        """Serialize a text-only snapshot in the :meth:`from_json` format.
+        """Serialize the snapshot in the :meth:`from_json` format.
 
         ``"snapshot_id"`` is written only when it differs from the id derived from
-        the content, so :meth:`from_json` restores the same id either way.
-
-        Raises:
-            ValueError: If a message holds anything but a single text part.
+        the content, so :meth:`from_json` restores the same id either way. Audio
+        held in memory is written as base64 ``"data"``, audio files as ``"path"``.
         """
         payload: SnapshotPayload = {
             "turns": [
@@ -247,16 +273,30 @@ class ConversationSnapshot:
 
 
 def _message_to_payload(message: Message) -> MessagePayload:
-    if len(message.content) != 1 or not isinstance(message.content[0], TextPart):
-        msg = "only messages with a single text part can be written as snapshot JSON"
-        raise ValueError(msg)
-    payload: MessagePayload = {"role": message.role.value, "text": message.text}
+    payload: MessagePayload = {"role": message.role.value}
+    if len(message.content) == 1 and isinstance(message.content[0], TextPart):
+        payload["text"] = message.text
+    else:
+        payload["content"] = [_part_to_payload(part) for part in message.content]
     if message.speaker is not None:
         payload["speaker"] = message.speaker
     return payload
 
 
-def _turns_from_payload(payload: object) -> tuple[Turn, ...]:
+def _part_to_payload(part: ContentPart) -> PartPayload:
+    if isinstance(part, TextPart):
+        return {"type": "text", "text": part.text}
+    if isinstance(part.source, Path):
+        return {
+            "type": "audio",
+            "path": str(part.source),
+            "sample_rate": part.sample_rate,
+        }
+    encoded = base64.b64encode(part.source).decode("ascii")
+    return {"type": "audio", "data": encoded, "sample_rate": part.sample_rate}
+
+
+def _turns_from_payload(payload: object, base_dir: Path) -> tuple[Turn, ...]:
     if not isinstance(payload, dict) or not isinstance(payload.get("turns"), list):
         msg = 'snapshot JSON needs a "turns" list'
         raise TypeError(msg)
@@ -266,17 +306,22 @@ def _turns_from_payload(payload: object) -> tuple[Turn, ...]:
             msg = f'turn {turn_index} needs a "messages" list'
             raise TypeError(msg)
         messages: list[Message] = []
-        messages = [_message_from_payload(m, turn_index) for m in turn["messages"]]
+        messages = [
+            _message_from_payload(m, turn_index, base_dir) for m in turn["messages"]
+        ]
         turns.append(Turn(messages=tuple(messages)))
     return tuple(turns)
 
 
-def _message_from_payload(message: object, turn_index: int) -> Message:
+def _message_from_payload(message: object, turn_index: int, base_dir: Path) -> Message:
     fields = message if isinstance(message, dict) else {}
     role, text = fields.get("role"), fields.get("text")
-    speaker = fields.get("speaker")
-    if not isinstance(role, str) or not isinstance(text, str):
-        msg = f'turn {turn_index}: each message needs string "role" and "text"'
+    content, speaker = fields.get("content"), fields.get("speaker")
+    if not isinstance(role, str) or (text is None) == (content is None):
+        msg = (
+            f'turn {turn_index}: each message needs a string "role" and exactly one '
+            'of "text" and "content"'
+        )
         raise TypeError(msg)
     if speaker is not None and not isinstance(speaker, str):
         msg = f'turn {turn_index}: message "speaker" must be a string'
@@ -286,7 +331,43 @@ def _message_from_payload(message: object, turn_index: int) -> Message:
     except ValueError as exc:
         msg = f"turn {turn_index}: unknown role {role!r}"
         raise ValueError(msg) from exc
-    return Message(role=parsed_role, text=text, speaker=speaker)
+    if content is None:
+        if not isinstance(text, str):
+            msg = f'turn {turn_index}: message "text" must be a string'
+            raise TypeError(msg)
+        return Message(role=parsed_role, text=text, speaker=speaker)
+    if not isinstance(content, list):
+        msg = f'turn {turn_index}: message "content" must be a list of parts'
+        raise TypeError(msg)
+    parts = tuple(_part_from_payload(part, turn_index, base_dir) for part in content)
+    return Message(role=parsed_role, content=parts, speaker=speaker)
+
+
+def _part_from_payload(part: object, turn_index: int, base_dir: Path) -> ContentPart:
+    fields = part if isinstance(part, dict) else {}
+    kind = fields.get("type")
+    if kind == "text":
+        if not isinstance(fields.get("text"), str):
+            msg = f'turn {turn_index}: a text part needs a string "text"'
+            raise TypeError(msg)
+        return TextPart(fields["text"])
+    if kind != "audio":
+        msg = f"turn {turn_index}: unknown content part type {kind!r}"
+        raise ValueError(msg)
+    rate, path, data = fields.get("sample_rate"), fields.get("path"), fields.get("data")
+    if not isinstance(rate, int) or isinstance(rate, bool):
+        msg = f'turn {turn_index}: an audio part needs an integer "sample_rate"'
+        raise TypeError(msg)
+    if isinstance(path, str) and data is None:
+        return AudioPart(base_dir / path, rate)
+    if isinstance(data, str) and path is None:
+        try:
+            return AudioPart(base64.b64decode(data, validate=True), rate)
+        except binascii.Error as exc:
+            msg = f'turn {turn_index}: audio "data" is not valid base64'
+            raise ValueError(msg) from exc
+    msg = f'turn {turn_index}: an audio part needs exactly one of "path" and "data"'
+    raise TypeError(msg)
 
 
 def _digest_turns(turns: tuple[Turn, ...]) -> str:

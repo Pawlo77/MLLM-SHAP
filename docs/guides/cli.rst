@@ -57,6 +57,19 @@ it as a top-level ``"snapshot_id"`` key.
 
 .. guide-result:: cli_snapshot
 
+A message with audio, or with several parts, gives a ``"content"`` list instead of
+``"text"``. An audio part names a file with ``"path"`` (relative to the snapshot
+file) or carries base64 bytes in ``"data"``:
+
+.. code-block:: json
+
+   {"turns": [{"messages": [{"role": "user", "content": [
+     {"type": "text", "text": "I had that curiosity beside me at this moment"},
+     {"type": "audio", "path": "voices_sp0307.wav", "sample_rate": 16000}
+   ]}]}]}
+
+Audio needs a backend that hears it (:doc:`audio_backends`).
+
 Explain
 -------
 
