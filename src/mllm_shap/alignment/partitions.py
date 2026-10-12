@@ -6,7 +6,7 @@
 """
 
 import re
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, ClassVar, Literal
 
 from pydantic import Field
 
@@ -43,6 +43,11 @@ class SgpaOptions(PluginOptions):
     text_roles: list[RoleName] = Field(default_factory=list)
     """Roles whose text-only messages also give one player per word, so typed and
     spoken words are explained in one run; none by default."""
+
+    transcript: Literal["send", "align_only"] = "send"
+    """``send`` gives the model each audio message's transcript with its audio;
+    ``align_only`` uses the transcript to build the players and sends audio only,
+    so values reflect what the model hears, not what it reads."""
 
 
 class SgpaSegmentPartitioner:
@@ -84,6 +89,7 @@ class SgpaSegmentPartitioner:
         """
         ids: list[str] = []
         spans: list[PlayerSpan] = []
+        hidden: list[int] = []
         message_index = 0
         for turn_index, turn in enumerate(snapshot.turns):
             for local_index, message in enumerate(turn.messages):
@@ -91,11 +97,17 @@ class SgpaSegmentPartitioner:
                 for token_index, span in self._players(message, message_index):
                     ids.append(f"{prefix}:{token_index}")
                     spans.append(span)
+                if self._options.transcript == "align_only" and any(
+                    isinstance(part, AudioPart) for part in message.content
+                ):
+                    hidden.append(message_index)
                 message_index += 1
         if not ids:
             msg = "sgpa_segments needs a message with an AudioPart and its transcript"
             raise ValueError(msg)
-        return PlayerSet(player_ids=tuple(ids), spans=tuple(spans))
+        return PlayerSet(
+            player_ids=tuple(ids), spans=tuple(spans), hidden_text=tuple(hidden)
+        )
 
     def _players(
         self, message: Message, message_index: int
