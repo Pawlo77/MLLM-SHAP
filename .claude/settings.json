@@ -5,6 +5,7 @@
         "source": "github",
         "repo": "astral-sh/claude-code-plugins"
       }
+<<<<<<< before updating
     },
     "trailofbits": {
       "source": {
@@ -17,6 +18,8 @@
         "source": "github",
         "repo": "Digital-Process-Tools/claude-marketplace"
       }
+=======
+>>>>>>> after updating
     }
   },
   "enabledPlugins": {
@@ -26,12 +29,16 @@
     "context7@claude-plugins-official": true,
     "skill-creator@claude-plugins-official": true,
     "remember@claude-plugins-official": true,
+<<<<<<< before updating
     "astral@astral-sh": true,
     "property-based-testing@trailofbits": true,
     "mutation-testing@trailofbits": true,
     "differential-review@trailofbits": true,
     "second-opinion@trailofbits": true,
     "claude-jit-context@dpt-plugins": true
+=======
+    "astral@astral-sh": true
+>>>>>>> after updating
   },
   "env": {
     "ENABLE_STOP_REVIEW": "0",
@@ -61,7 +68,11 @@
           {
             "type": "command",
             "command": "\"${CLAUDE_PROJECT_DIR:-.}\"/scripts/hooks/merge_gate.sh",
+<<<<<<< before updating
             "timeout": 10
+=======
+            "timeout": 30
+>>>>>>> after updating
           }
         ]
       }
@@ -95,17 +106,24 @@
   "permissions": {
     "allow": [
       "Bash(make check*)",
+<<<<<<< before updating
       "Bash(make agent-check*)",
       "Bash(make tests*)",
       "Bash(make docs*)",
       "Bash(make notebooks*)",
       "Bash(make bench*)",
+=======
+      "Bash(make tests*)",
+>>>>>>> after updating
       "Bash(make prek*)",
       "Bash(uv run pytest*)",
       "Bash(uv run ruff*)",
       "Bash(uv run mypy*)",
       "Bash(uv run prek*)",
+<<<<<<< before updating
       "Bash(uv run python scripts/*)",
+=======
+>>>>>>> after updating
       "Bash(uv run python .agents/skills/*)",
       "Bash(uv lock*)",
       "Bash(uv sync*)",
@@ -118,6 +136,7 @@
       "Bash(git add *)",
       "Bash(gh pr view*)",
       "Bash(gh pr diff*)",
+<<<<<<< before updating
       "Bash(git commit*)",
       "Bash(git push origin *)",
       "Bash(git push -u origin *)",
@@ -135,6 +154,10 @@
       "Bash(make upgrade*)",
       "Bash(uv lock --upgrade*)",
       "Bash(uv run prek update*)",
+=======
+      "Bash(gh pr checks*)",
+      "Bash(git pull --ff-only*)",
+>>>>>>> after updating
       "Bash(gh run list*)",
       "Bash(gh run view*)",
       "Bash(gh run watch*)",
@@ -146,6 +169,7 @@
       "Read(**)",
       "Edit(src/**)",
       "Edit(tests/**)",
+<<<<<<< before updating
       "Edit(docs/**)",
       "Edit(examples/**)",
       "Edit(.agents/skills/**)",
@@ -155,6 +179,12 @@
       "Edit(plans/**)",
       "Bash(make vault-check*)",
       "Bash(make knowledge*)"
+=======
+      "Edit(.agents/skills/**)",
+      "Edit(.remember/**)",
+      "Edit(plans/**)",
+      "Bash(make vault-check*)"
+>>>>>>> after updating
     ],
     "deny": [
       "Read(**/.env)",
@@ -165,20 +195,29 @@
       "Read(**/.env.dev*)",
       "Read(**/.env.test*)",
       "Read(**/.env.secret*)",
+<<<<<<< before updating
       "Read(./.pypirc)",
+=======
+>>>>>>> after updating
       "Read(**/.pypirc)",
       "Read(**/*.pem)",
       "Read(**/*.key)",
       "Read(**/credentials.json)",
       "Read(**/secrets.json)",
+<<<<<<< before updating
       "Read(**/id_rsa)",
+=======
+>>>>>>> after updating
       "Read(**/id_rsa*)",
       "Read(**/id_ed25519*)",
       "Read(**/.netrc)",
       "Read(**/.git-credentials)",
+<<<<<<< before updating
       "Read(.smart-env/**)",
       "Read(.obsidian/plugins/realclaudian/data.json)",
       "Read(.claude/jit-context/.discovery/**)",
+=======
+>>>>>>> after updating
       "Bash(git push --force*)",
       "Bash(git push -f*)",
       "Bash(git push --mirror*)",
