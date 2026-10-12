@@ -56,6 +56,10 @@ class PlayerSet:
     Absence policies and label helpers need them; estimators do not.
     """
 
+    hidden_text: tuple[int, ...] = ()
+    """Message indices whose text parts absence policies drop from every coalition:
+    a transcript used only to align the audio, which the model must not read."""
+
     def __post_init__(self) -> None:
         """Reject empty, duplicated or span-misaligned player sets."""
         if not self.player_ids:

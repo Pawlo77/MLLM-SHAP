@@ -150,7 +150,7 @@ scenarios:
     tier: audio
     turns:
       - [{role: user, text: "I had that curiosity beside me at this moment"}]
-    # 64 of 512 coalitions (complementary) keep the run near 70 s on an Apple M4 (16 GB);
+    # 64 of 512 coalitions (complementary) take about 60 s per run on an Apple M4 (16 GB);
     # measured efficiency gap 0.15 (all nine values 0.04 to 0.18), so the test
     # checks the values, not efficiency.
     overrides:
@@ -162,6 +162,8 @@ scenarios:
           sgpa_segments:
             model_id: facebook/wav2vec2-base-960h
             revision: 22aad52d435eb6dbaf354bdad9b0da84ce7d6156
+    variants:  # the model hears the words but does not read the transcript
+      - {explanation: {plugin_options: {sgpa_segments: {transcript: align_only}}}}
     expect:
       audio: examples/voices_sp0307.wav
       ask: can you transcribe the speech into a written format?

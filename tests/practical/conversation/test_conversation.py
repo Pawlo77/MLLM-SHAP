@@ -121,7 +121,7 @@ def test_audio_model_hears_the_recording_and_explains_its_words(
     audio_model: PracticalModel,
     practical_record: dict[str, Any],
 ) -> None:
-    """Granite Speech transcribes the clip from audio alone; spoken words get values."""
+    """Granite transcribes the clip from audio alone; spoken words get values."""
     pytest.importorskip("librosa")
     pytest.importorskip("torchaudio")
     require_weights(MODELS["alignment"])
@@ -140,17 +140,24 @@ def test_audio_model_hears_the_recording_and_explains_its_words(
     transcript = scenario.snapshot.messages()[0].text
     spoken = Message(role=Role.USER, content=(TextPart(transcript), audio))
     snapshot = ConversationSnapshot.from_turns((Turn(messages=(spoken,)),))
-    output = ExplainRunner(config, backend=backend).explain_sync(snapshot)
-    result = output.result
-    gap = sum(result.values) - (result.grand_value - result.base_value)
-    practical_record["properties"] = {"heard": heard.text, "efficiency_gap": gap}
-    assert output.player_set is not None
-    spans = output.player_set.spans
-    practical_record["numbers"] = {
-        span.text: value for span, value in zip(spans, result.values, strict=True)
-    }
-
+    practical_record["properties"] = {"heard": heard.text}
+    practical_record["numbers"] = {}
     assert scenario.expect["heard"] in heard.text.lower()
-    assert len(spans) == len(transcript.split())
-    assert all(span.samples is not None for span in spans)
-    assert max(abs(value) for value in result.values) > 0.0
+    # The base config sends the transcript too; the variant (align_only) sends audio.
+    for variant in [{}, *scenario.variants]:
+        run_config = scenario.config(MODELS[scenario.tier], variant)
+        output = ExplainRunner(run_config, backend=backend).explain_sync(snapshot)
+        result = output.result
+        assert output.player_set is not None
+        spans = output.player_set.spans
+        mode = "align_only" if variant else "send"
+        practical_record["numbers"][mode] = {
+            span.text: value for span, value in zip(spans, result.values, strict=True)
+        }
+        practical_record["properties"][f"{mode}_efficiency_gap"] = sum(
+            result.values
+        ) - (result.grand_value - result.base_value)
+
+        assert len(spans) == len(transcript.split())
+        assert all(span.samples is not None for span in spans)
+        assert max(abs(value) for value in result.values) > 0.0
