@@ -264,6 +264,69 @@ ask-patterns = [
   '^gh\s+api\b.*(-X|--method)[\s=]+DELETE\b',
 ]
 
+[tool.agent-kit.pr-policy]
+routine-types = "chore ci build docs test style"
+review-paths = ["src/mllm_shap/*"]
+protected = [".github/workflows/publish.yaml"]
+generated = ["uv.lock", ".obsidian/plugins/*/main.js", ".obsidian/plugins/*/styles.css"]
+release = true
+
+[tool.agent-kit.upgrade]
+protected-workflows = ["publish.yaml"]
+sync-args = "--all-groups --all-extras"
+
+[tool.agent-kit.obsidian-plugins]
+code-graph = "mrjw717/obsidian-code-graph"
+mermaid-tools = "dartungar/obsidian-mermaid"
+templater-obsidian = "silentvoid13/Templater"
+
+[tool.agent-kit.brevity]
+bullet-files = ["docs/release_notes.rst"]
+skip-paths = ["docs/handbook", "docs/notebooks", "knowledge/generated"]
+
+[[tool.agent-kit.brevity.budget]]
+patterns = ["*/AGENTS.md"]
+lines = 60
+
+[[tool.agent-kit.brevity.budget]]
+patterns = ["knowledge/issues/Fixed issues.md"]
+words = 800
+sentences = true
+
+[[tool.agent-kit.brevity.budget]]
+patterns = ["knowledge/decisions/*.md"]
+words = 700
+sentences = true
+
+[[tool.agent-kit.brevity.budget]]
+patterns = ["knowledge/issues/*.md"]
+words = 350
+sentences = true
+
+[[tool.agent-kit.brevity.budget]]
+patterns = ["knowledge/architecture/*.md", "knowledge/handbook/*.md"]
+words = 700
+sentences = true
+
+[[tool.agent-kit.brevity.budget]]
+patterns = ["knowledge/mllm-shap.md"]
+words = 600
+sentences = true
+
+[[tool.agent-kit.brevity.budget]]
+patterns = ["knowledge/*.md", "docs/release_notes.rst"]
+sentences = true
+
+[[tool.agent-kit.brevity.budget]]
+patterns = ["examples/README.md"]
+words = 400
+sentences = true
+
+[[tool.agent-kit.brevity.budget]]
+patterns = ["docs/*.rst", "docs/*.md"]
+words = 1200
+sentences = true
+
 [tool.mutmut]
 # ``make mutate`` (slow, on demand, not CI): mutate the estimation package and
 # run only its tests against each mutant.
