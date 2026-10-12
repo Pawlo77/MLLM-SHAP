@@ -53,7 +53,11 @@ WRAPPER = re.compile(
 SUBSTITUTION = re.compile(r"\$\(([^()]*)\)|`([^`]*)`")
 SHELL_C = re.compile(r"^(?:bash|sh|zsh|dash)\s+(?:-\w+\s+)*-\w*c\w*\s+")
 VALUE_FLAGS = "mFCct"  # short options that take a value, ending a flag cluster
-GIT_CONFIG_ENV = re.compile(r"\bGIT_CONFIG_(COUNT|KEY_\d+|PARAMETERS)=", re.IGNORECASE)
+GIT_CONFIG_ENV = re.compile(
+    r"\bGIT_CONFIG(_GLOBAL|_SYSTEM|_COUNT|_KEY_\d+|_VALUE_\d+|_PARAMETERS)?=",
+    re.IGNORECASE,
+)
+HOOK_CONFIG = ("hookspath", "include.path", "includeif")
 GIT_GLOBAL_WITH_VALUE = {"-C", "-c", "--git-dir", "--work-tree", "--namespace"}
 
 
@@ -126,7 +130,7 @@ def _long(args: list[str], option: str) -> bool:
     """Return whether ``option`` is given, also as git's unambiguous abbreviation."""
     for arg in args:
         name = arg.split("=", 1)[0]
-        if name.startswith("--") and len(name) >= 5 and option.startswith(name):
+        if name.startswith("--") and len(name) >= 4 and option.startswith(name):
             return True
     return False
 
@@ -139,8 +143,8 @@ def _git_decision(part: str, command: str) -> tuple[str, str] | None:
             return "ask", "Cannot parse this git command; confirm it is intended."
         words = part.split()  # a heredoc split the quoted message across segments
     global_opts, sub, args = _git_split(words)
-    hooks_override = any("hookspath" in word.lower() for word in global_opts)
-    hooks_override |= sub == "config" and any("hookspath" in a.lower() for a in args)
+    config_words = global_opts + (args if sub == "config" else [])
+    hooks_override = any(key in w.lower() for w in config_words for key in HOOK_CONFIG)
     if hooks_override or GIT_CONFIG_ENV.search(command):
         return "deny", "Overriding git hooks through config is not allowed."
     if _long(args, "--no-verify") or (sub == "commit" and "n" in _short_flags(args)):
