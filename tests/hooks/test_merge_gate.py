@@ -11,10 +11,8 @@ from pathlib import Path
 
 import pytest
 
+from scripts import pr_policy
 from tests.hooks._hookrun import CLAUDE, CURSOR, HAVE_TOOLS, ROOT, git, scratch_repo
-
-# pr_policy.py belongs to the adopting repository (not template-managed yet).
-pr_policy = pytest.importorskip("scripts.pr_policy")
 
 pytestmark = pytest.mark.skipif(not HAVE_TOOLS, reason="needs bash and jq")
 
@@ -28,7 +26,8 @@ FAKE_UV = (
 def repo(tmp_path: Path) -> Path:
     """Scratch repo on a ``docs:`` branch with pr_policy.py; a fake uv sits in bin/."""
     root = scratch_repo(tmp_path)
-    shutil.copy2(ROOT / "scripts" / "pr_policy.py", root / "scripts" / "pr_policy.py")
+    for name in ("pr_policy.py", "kit_config.py"):
+        shutil.copy2(ROOT / "scripts" / name, root / "scripts" / name)
     (root / ".gitignore").write_text(".remember/tmp/\n", encoding="utf-8")
     git(root, "add", "-A")
     git(root, "commit", "-qm", "chore: policy")
