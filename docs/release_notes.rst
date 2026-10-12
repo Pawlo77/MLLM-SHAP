@@ -8,6 +8,16 @@ Changes in each published ``mllm-shap`` version. Newest first.
 Unreleased
 ----------
 
+Added
+~~~~~
+
+- Snapshot JSON carries audio: a message may give a ``"content"`` list of text and
+  audio parts (``"path"`` relative to the snapshot file, or base64 ``"data"``), so
+  ``mllm-shap explain`` runs on recordings (:doc:`guides/cli`).
+- ``sgpa_segments`` option ``transcript: align_only`` uses the transcript only to
+  build the players and sends every coalition's audio alone, so the values
+  reflect what the model hears, not what it reads.
+
 .. _release-0-4-1:
 
 0.4.1 (2026-10-11)

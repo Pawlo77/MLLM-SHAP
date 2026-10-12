@@ -32,7 +32,7 @@ Open the multi-root workspace file before audio-track or port work.
 1. **Gather logic, rewrite modules**: reference legacy; never bulk-copy files or god-classes
 2. **One phase, one tag, one PyPI publish**: do not batch phases
 3. **Dropped:** `shap/hierarchical/*`; do not implement or reference
-4. **Audio track** (Phases 15 to 21; next is Phase 20)
+4. **Audio track** (Phases 15 to 21; next is Phase 21)
 5. **Deps:** torch / torchaudio / transformers in extras only
 6. **Imports:** relative inside `src/mllm_shap/`; absolute `from mllm_shap...` in tests and examples
 7. **No `from __future__ import annotations`** unless required (`python-types.mdc`)
@@ -55,8 +55,8 @@ skill `release` for the version bump, tag and publish.
 | 17 | v0.2.1 | audio players `sgpa_segments` (done) |
 | 18 | v0.4.0 | mock audio backend `mock_audio` (done) |
 | 19 | v0.4.1 | audio input: transformers processor, `api` `input_audio`, `lmstudio` transcript (done) |
-| 20 | next minor | audio E2E pipeline on any audio backend |
-| 21 | later | audio value fns + SGPA Audio smoke |
+| 20 | v0.5.0 | audio E2E: snapshot JSON audio + CLI, `transcript: align_only` (done) |
+| 21 | next minor | audio value fns + SGPA Audio smoke |
 
 ## Workflow
 
