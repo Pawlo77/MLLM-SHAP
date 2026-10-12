@@ -15,14 +15,14 @@ from mllm_shap.pipeline.manifest import RunManifest
 
 
 @pytest.fixture(autouse=True)
-def _isolate_from_git_hooks(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Keep tests that run git in a temporary repository off this repository.
+def isolate_git_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Hide the git hook environment, so test repos never touch the real index.
 
-    Git hooks (the pre-push ``make agent-check``) run with ``GIT_DIR``,
-    ``GIT_INDEX_FILE`` and similar set; a test's ``git commit`` would then write
-    to this repository's index.
+    Under ``git push`` or ``git commit`` hooks, ``GIT_DIR``/``GIT_INDEX_FILE`` point at
+    the real repository (absolute in a worktree); a ``git add`` in a temp repo would
+    otherwise overwrite it.
     """
-    for name in [name for name in os.environ if name.startswith("GIT_")]:
+    for name in [key for key in os.environ if key.startswith("GIT_")]:
         monkeypatch.delenv(name)
 
 
