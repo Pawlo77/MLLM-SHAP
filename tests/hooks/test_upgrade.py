@@ -315,3 +315,49 @@ def test_move_pin_needs_a_configured_pin(
 ) -> None:
     with pytest.raises(upgrade.UpgradeError, match="no pin"):
         upgrade.move_pin(fake, repo)
+
+
+@pytest.fixture
+def managed_repo(pin_repo: Path) -> Path:
+    """A repository from the template: ``prek.yaml`` and the prek config are shipped."""
+    (pin_repo / ".copier-answers.yml").write_text("_commit: v1\n", encoding="utf-8")
+    (pin_repo / ".github/workflows/prek.yaml").write_text(WORKFLOW, encoding="utf-8")
+    return pin_repo
+
+
+def test_check_leaves_the_template_files_to_the_template(
+    upgrade: ModuleType, managed_repo: Path, fake: FakeRunner
+) -> None:
+    """No hook revisions, no pins of shipped workflows; uv waits for the template."""
+    items = upgrade.check(fake, managed_repo)
+    assert not [i for i in items if i.kind == "hook"]
+    assert {i.where for i in items if i.kind == "action"} == {
+        ".github/workflows/test.yaml"
+    }
+    assert [i.protected for i in items if i.kind == "uv"] == [True]
+
+
+def test_apply_edits_only_what_the_repository_owns(
+    upgrade: ModuleType, managed_repo: Path, fake: FakeRunner
+) -> None:
+    shipped = (managed_repo / ".github/workflows/prek.yaml").read_text()
+    config = (managed_repo / ".pre-commit-config.yaml").read_text()
+    changed, _ = upgrade.apply(fake, managed_repo)
+    assert (managed_repo / ".github/workflows/prek.yaml").read_text() == shipped
+    assert (managed_repo / ".pre-commit-config.yaml").read_text() == config
+    workflow = (managed_repo / ".github/workflows/test.yaml").read_text()
+    assert workflow.count("actions/checkout@v7.1.0") == 2
+    assert 'version: "0.12.23"' in workflow  # uv follows the template's workflows
+    assert ".github/workflows/prek.yaml" not in changed
+
+
+def test_the_template_job_upgrades_the_shipped_files(
+    upgrade: ModuleType,
+    managed_repo: Path,
+    fake: FakeRunner,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(upgrade, "INCLUDE_MANAGED", True)
+    changed, _ = upgrade.apply(fake, managed_repo)
+    assert ".github/workflows/prek.yaml" in changed
+    assert "rev: v2.4.3" in (managed_repo / ".pre-commit-config.yaml").read_text()
