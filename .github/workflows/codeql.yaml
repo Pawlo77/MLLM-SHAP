@@ -19,7 +19,7 @@ concurrency:
 
 jobs:
   analyze:
-    # Job name is a required status check on main.
+    # Job name `CodeQL`; whether it is a required check on main is a repository setting.
     name: CodeQL
     # Code scanning on a private repository needs paid GitHub Code Security; a skipped
     # job still reports, so the required check passes until the repository is public.

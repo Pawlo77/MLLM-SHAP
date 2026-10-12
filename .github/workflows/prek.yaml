@@ -36,10 +36,17 @@ jobs:
         run: uv python install 3.12
 
       - name: Sync dependencies
-        run: uv sync --locked --all-groups --extra api --extra viz
+        run: |
+          source scripts/hooks/kit_conf.sh
+          # shellcheck disable=SC2046
+          uv sync --locked --all-groups $(kit_conf ci-sync-args)
 
       - name: Run prek hooks
         run: uv run prek run --all-files
 
-      - name: Vault check (strict)
-        run: uv run python scripts/check_vault.py --strict --strict-tags
+      - name: Vault check
+        run: |
+          source scripts/hooks/kit_conf.sh
+          args="$(kit_conf vault-ci-args)"
+          # shellcheck disable=SC2086
+          [ -z "$args" ] || uv run python scripts/check_vault.py $args

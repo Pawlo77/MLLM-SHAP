@@ -13,7 +13,7 @@ from tests.hooks._hookrun import CLAUDE, CURSOR, HAVE_TOOLS, run_hook, scratch_r
 pytestmark = pytest.mark.skipif(not HAVE_TOOLS, reason="needs bash and jq")
 
 HANDOFF = "Handoff marker: next run Phase 6."
-IDENTITY = "Identity marker: engineering partner on mllm-shap."
+IDENTITY = "Identity marker: engineering partner on demo-kit."
 
 
 def _repo_with_memory(tmp_path: Path) -> Path:
@@ -39,7 +39,7 @@ def test_cursor_gets_state_and_memory(tmp_path: Path) -> None:
     """Cursor context carries version, handoff, identity and memory tails."""
     repo = _repo_with_memory(tmp_path)
     ctx = json.loads(_start(repo, CURSOR))["additional_context"]
-    assert "mllm-shap 9.8.7" in ctx
+    assert "## demo-kit session state" in ctx
     assert "make check" in ctx
     assert HANDOFF in ctx
     assert IDENTITY in ctx
@@ -88,9 +88,9 @@ def test_claude_gets_plain_text_without_memory(tmp_path: Path) -> None:
     is neither inlined memory nor a pointer line, and no hooks summary."""
     repo = _repo_with_memory(tmp_path)
     out = _start(repo, CLAUDE)
-    assert out.startswith("## mllm-shap session state")
-    assert "mllm-shap 9.8.7" in out
-    assert "make check (filtered pytest + prek-all + vault-check)" in out
+    assert out.startswith("## demo-kit session state")
+    assert "exit criterion: make check" in out
+    assert "session key" in out
     assert HANDOFF not in out
     assert "- memory:" not in out
     assert "- hooks:" not in out
@@ -104,3 +104,16 @@ def test_dirty_files_capped_at_five(tmp_path: Path) -> None:
     out = _start(repo, CLAUDE)
     assert "uncommitted changes (9 files; first 5):" in out
     assert sum(1 for line in out.splitlines() if line.startswith("    ?? ")) == 5
+
+
+def test_project_extension_adds_state_and_memory(tmp_path: Path) -> None:
+    """The project-owned ``project_state.sh`` adds banner lines and memory items."""
+    repo = _repo_with_memory(tmp_path)
+    (repo / "scripts" / "hooks" / "project_state.sh").write_text(
+        'project_state() { echo "- extra: state line"; }\n'
+        'project_memory() { mem_item "Extra" "x.md" 100 "extra memory"; }\n',
+        encoding="utf-8",
+    )
+    assert "- extra: state line" in _start(repo, CLAUDE)
+    ctx = json.loads(_start(repo, CURSOR))["additional_context"]
+    assert "extra memory" in ctx

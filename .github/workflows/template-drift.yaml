@@ -1,0 +1,48 @@
+# Fails when a template-managed file was edited here instead of in python-kit-template.
+# Needs the secret TEMPLATE_SYNC_TOKEN to read the private template; without it the job
+# only reports that it was skipped (Dependabot pull requests have no access to it).
+name: Template drift
+
+on:
+  pull_request:
+  schedule:
+    - cron: "43 5 * * 1"
+
+permissions: {}
+
+concurrency:
+  group: template-drift-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read  # private repository checkout
+    env:
+      TEMPLATE_TOKEN: ${{ secrets.TEMPLATE_SYNC_TOKEN }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v10.3.0
+        with:
+          version: "0.12.23"
+
+      - name: Compare with the template
+        run: |
+          set -euo pipefail
+          if [ -z "$TEMPLATE_TOKEN" ]; then
+            echo "::notice::TEMPLATE_SYNC_TOKEN is not set; template drift not checked."
+            exit 0
+          fi
+          if [ ! -f .copier-answers.yml ]; then
+            echo "::notice::No .copier-answers.yml; nothing to compare."
+            exit 0
+          fi
+          git config --global "url.https://x-access-token:${TEMPLATE_TOKEN}@github.com/.insteadOf" https://github.com/
+          python3 scripts/template_drift.py

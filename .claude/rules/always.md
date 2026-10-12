@@ -33,13 +33,13 @@ Chat replies only:
 # Git commits and pull requests
 
 - Commits, pushes and PRs happen inside skill `ship` (it classifies the branch and merges routine changes itself); outside it, never without the user's explicit permission.
-- One logical change per commit. When a change spans unrelated concerns, propose a numbered commit plan and ask which commits to run.
+- One logical change per commit; when a change spans unrelated concerns, propose a numbered commit plan.
 - Message: `type: summary` (`feat`, `fix`, `docs`, `test`, `refactor`, `chore`, `ci`, `build`, `perf`), imperative, no period, ≤ 72 characters; an optional body says what changed and why.
 - Before committing: the exit criteria in `AGENTS.md`, then `git status`, `git diff` and `git log -5`; stage only that commit's files.
-- No AI attribution (`Co-Authored-By: Claude`, `Generated with …`) anywhere; `scripts/strip_watermarks.py` strips it (prek, edit hooks, skill `ship`), `pr-title.yaml` rejects it.
-- Never `--no-verify`, amend or force-push; push a feature branch, never `main`; never draft or WIP PRs. Enforced by each tool's permission settings (`.claude/settings.json` deny rules, Cursor's command list, Codex's approval policy), the prek `commit-msg` hook and `pr-title.yaml`.
-- After pushing: `gh run watch <run-id> --exit-status` until every workflow is green; fix a failure in a follow-up commit.
-- PRs are ready for review: no draft, no WIP title or label. Title in commit style; body from `.github/pull_request_template.md` (agent `pr-writer`, command `/pr`).
+- No AI attribution (`Co-Authored-By: Claude`, `Generated with …`) anywhere; `scripts/strip_watermarks.py` and `pr-title.yaml` enforce it.
+- Never `--no-verify`, amend or force-push; push a feature branch, never `main`; never draft or WIP PRs (the shell guard denies them).
+- After pushing, run `uv run python scripts/pr_follow.py` until it exits 0 (desktop app: `ccd_pr` `get_status` while checks run). It lists red checks, a stale branch, open threads and every comment (Codecov, Copilot): fix red checks in new commits, merge `origin/main` when behind, fix or answer each comment; never hand off on red.
+- PRs open ready for review, titled in commit style, with the body of `.github/pull_request_template.md`.
 - After `gh pr create`: `gh pr edit <n> --add-assignee Pawlo77 --add-label <label>`, with `bug` for `fix`, `documentation` for `docs` and `enhancement` otherwise.
 
 <!-- Generated from .cursor/rules/minimal-diff.mdc by scripts/sync_rules.py; do not edit. -->
@@ -52,7 +52,7 @@ Chat replies only:
 - New behaviour needs tests first (`tdd.mdc`); no tests of the obvious.
 - No new markdown files unless requested.
 - If two approaches work, pick the simpler one that matches the repository.
-- From MLLM-Shap-legacy (`../MLLM-Shap-legacy/mllm_shap/src/mllm_shap/`), port only the slice the task needs.
+- When porting from another repository, bring over only the slice the task needs.
 
 <!-- Generated from .cursor/rules/package-boundaries.mdc by scripts/sync_rules.py; do not edit. -->
 

@@ -1,5 +1,5 @@
 # The PR title appears in the merge commit and drives the label (assign-author.yaml), so it
-# follows the commit convention (AGENTS.md). No drafts, WIP titles or WIP labels: PRs are
+# follows the commit convention (rule `git-commits`). No drafts, WIP titles or WIP labels: PRs are
 # opened ready for review. The body and the commit messages carry no AI attribution (scripts/strip_watermarks.py), and
 # every commit subject follows the same convention (scripts/hooks/commit_msg.py).
 name: PR title

@@ -64,14 +64,15 @@ session_key() {
   printf '%s' "$id"
 }
 
-# Content hash of src/ and tests/: every tracked or untracked (not ignored) file there,
+# Content hash of the tree-dirs of [tool.agent-kit] (default src tests): every tracked or
+# untracked (not ignored) file there,
 # by path and blob hash. Catches edits made through the shell (sed, heredocs, scripts)
 # that the edit hooks never see, and stays the same across staging and commits. Run from
 # $ROOT. The hash of the last green stop-gate run (seeded at session start) is kept in
 # .remember/tmp/tests-ok.<key>.
 tree_hash() {
   local files
-  files="$(git ls-files --cached --others --exclude-standard -- src tests 2>/dev/null \
+  files="$(git ls-files --cached --others --exclude-standard -- $(kit_conf tree-dirs 'src tests') 2>/dev/null \
     | while IFS= read -r f; do [ -f "$f" ] && printf '%s\n' "$f"; done)"
   {
     printf '%s\n' "$files"
