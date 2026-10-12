@@ -3,24 +3,47 @@
 @see [[scripts/pr_policy.py]]
 """
 
+import importlib.util
 import json
 import subprocess
-from collections.abc import Callable
 from pathlib import Path
 from types import ModuleType
 
 import pytest
 
-PYPROJECT = (
+from tests.hooks._hookrun import ROOT
+
+CONFIG = """
+[tool.agent-kit.pr-policy]
+routine-types = "chore ci build docs test style"
+review-paths = ["src/demo/*", "experiments/*/configs/*", "scripts/cluster/*"]
+protected = [".github/workflows/publish.yaml"]
+pin = "demo-lib"
+release = true
+"""
+PYPROJECT_BASE = (
     '[project]\nname = "demo"\nversion = "1.0.0"\ndependencies = ["numpy>=2"]\n\n'
     '[dependency-groups]\ndev = ["pytest>=8"]\n'
+)
+PYPROJECT = PYPROJECT_BASE + CONFIG
+LOCK = (
+    'version = 1\n\n[[package]]\nname = "demo-lib"\nversion = "0.2.1"\n'
+    'source = {{ git = "https://example.org/demo-lib.git#{sha}" }}\n\n'
+    '[[package]]\nname = "numpy"\nversion = "{numpy}"\n'
 )
 
 
 @pytest.fixture(scope="module")
-def policy(script: Callable[[str], ModuleType]) -> ModuleType:
+def policy() -> ModuleType:
     """Load scripts/pr_policy.py."""
-    return script("pr_policy")
+    spec = importlib.util.spec_from_file_location(
+        "pr_policy", ROOT / "scripts" / "pr_policy.py"
+    )
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def _git(repo: Path, *args: str) -> str:
@@ -46,11 +69,9 @@ def _commit(repo: Path, subject: str, files: dict[str, str]) -> None:
     _git(repo, "commit", "-qm", subject)
 
 
-@pytest.fixture
-def repo(tmp_path: Path) -> Path:
-    """A repository with a ``main`` base commit and a checked-out feature branch."""
+def _make_repo(tmp_path: Path, pyproject: str) -> Path:
     root = tmp_path / "repo"
-    root.mkdir()
+    root.mkdir(parents=True)
     _git(root, "init", "-q", "-b", "main")
     _commit(
         root,
@@ -58,14 +79,20 @@ def repo(tmp_path: Path) -> Path:
         {
             ".gitignore": ".remember/tmp/\n",
             "README.md": "# Demo\n",
-            "pyproject.toml": PYPROJECT,
-            "uv.lock": "version = 1\n",
-            "src/mllm_shap/__init__.py": '"""Demo."""\n',
+            "pyproject.toml": pyproject,
+            "uv.lock": LOCK.format(sha="a" * 40, numpy="2.0.0"),
+            "src/demo/__init__.py": '"""Demo."""\n',
             "scripts/hooks/merge_gate.sh": "# Guard.\n",
         },
     )
     _git(root, "switch", "-qc", "feat/x")
     return root
+
+
+@pytest.fixture
+def repo(tmp_path: Path) -> Path:
+    """A repository with a ``main`` base commit and a checked-out feature branch."""
+    return _make_repo(tmp_path, PYPROJECT)
 
 
 def test_docs_only_branch_is_routine(policy: ModuleType, repo: Path) -> None:
@@ -82,7 +109,37 @@ def test_docs_only_branch_is_routine(policy: ModuleType, repo: Path) -> None:
     [
         ("fix: correct the readme", {"README.md": "# Fixed\n"}, "fix"),
         ("feat!: break it", {"README.md": "# Broken\n"}, "feat!"),
-        ("chore: touch src", {"src/mllm_shap/x.py": '"""X."""\n'}, "src/mllm_shap/"),
+        ("chore: touch src", {"src/demo/x.py": '"""X."""\n'}, "src/demo/"),
+        (
+            "chore: retune a suite",
+            {"experiments/tv/configs/suites/a.yaml": "seed: 1\n"},
+            "experiments/*/configs/",
+        ),
+        (
+            "chore: tweak a job",
+            {"scripts/cluster/helios/run.sbatch": "#!/bin/bash\n"},
+            "scripts/cluster/",
+        ),
+        (
+            "build: move the library pin",
+            {"uv.lock": LOCK.format(sha="b" * 40, numpy="2.0.0")},
+            "demo-lib pin",
+        ),
+        (
+            "ci: touch the publish workflow",
+            {".github/workflows/publish.yaml": "name: x\n"},
+            ".github/workflows/publish.yaml",
+        ),
+        (
+            "ci: touch the template sync",
+            {".github/workflows/template-sync.yaml": "name: x\n"},
+            "template-sync.yaml",
+        ),
+        (
+            "chore: tweak the shell guard",
+            {"scripts/hooks/shell_guard.py": "# x\n"},
+            "scripts/hooks/shell_guard.py",
+        ),
         (
             "chore: tweak the guard",
             {"scripts/hooks/merge_gate.sh": "# Guard 2.\n"},
@@ -128,7 +185,11 @@ def test_review_cases(
 
 def test_lock_and_dev_group_changes_are_routine(policy: ModuleType, repo: Path) -> None:
     """A uv.lock refresh and a [dependency-groups] change are routine builds."""
-    _commit(repo, "build: refresh the lock", {"uv.lock": "version = 2\n"})
+    _commit(
+        repo,
+        "build: refresh the lock",
+        {"uv.lock": LOCK.format(sha="a" * 40, numpy="2.1.0")},
+    )
     _commit(
         repo,
         "build: bump pytest",
@@ -172,7 +233,11 @@ def test_specifier_and_release_changes_are_routine(
 
 def test_lock_lines_do_not_count(policy: ModuleType, repo: Path) -> None:
     """uv.lock is generated: a large lock refresh stays within the line cap."""
-    _commit(repo, "build: upgrade the lock", {"uv.lock": "line\n" * 900})
+    _commit(
+        repo,
+        "build: upgrade the lock",
+        {"uv.lock": LOCK.format(sha="a" * 40, numpy="2.0.0") + "line\n" * 900},
+    )
     assert policy.classify("main", repo).kind == "routine"
 
 
@@ -367,3 +432,49 @@ def test_merge_ok(
     policy.write_marker("main", "k2", repo, pr=7)  # a review branch
     assert policy.main(["--root", str(repo), "--merge-ok", "--session", "k2"]) == 1
     assert "marker is review" in capsys.readouterr().out
+
+
+def test_style_commits_follow_the_configured_routine_types(
+    policy: ModuleType, repo: Path, tmp_path: Path
+) -> None:
+    """``style`` is routine here; with the default types it needs the maintainer."""
+    _commit(repo, "style: format the readme", {"README.md": "# Demo\n\nFormatted.\n"})
+    assert policy.classify("main", repo).kind == "routine"
+    strict = _make_repo(tmp_path / "strict", PYPROJECT_BASE)
+    _commit(strict, "style: format the readme", {"README.md": "# Demo\n\nFormatted.\n"})
+    result = policy.classify("main", strict)
+    assert result.kind == "review"
+    assert any("'style' is not routine" in r for r in result.reasons)
+
+
+def test_version_change_needs_review_unless_releases_are_enabled(
+    policy: ModuleType, tmp_path: Path
+) -> None:
+    """A release commit may change the version only when ``release = true``."""
+    plain = PYPROJECT_BASE + CONFIG.replace("release = true", "release = false")
+    repo = _make_repo(tmp_path / "plain", plain)
+    _commit(
+        repo,
+        "chore: release v1.0.1",
+        {"pyproject.toml": plain.replace("1.0.0", "1.0.1")},
+    )
+    result = policy.classify("main", repo)
+    assert result.kind == "review"
+    assert any("[project] version" in r for r in result.reasons)
+
+
+def test_unconfigured_repository_has_no_pin_and_no_review_paths(
+    policy: ModuleType, tmp_path: Path
+) -> None:
+    """Without settings, only the commit types, protected files and caps apply."""
+    repo = _make_repo(tmp_path / "bare", PYPROJECT_BASE)
+    _commit(
+        repo,
+        "chore: touch src and the lock",
+        {
+            "src/demo/x.py": '"""X."""\n',
+            "uv.lock": LOCK.format(sha="b" * 40, numpy="2.0.0"),
+        },
+    )
+    assert policy.classify("main", repo).kind == "routine"
+    assert policy.settings(repo).pin == ""

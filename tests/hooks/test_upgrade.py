@@ -3,14 +3,22 @@
 @see [[scripts/upgrade.py]]
 """
 
+import importlib.util
 import json
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
 from pathlib import Path
 from types import ModuleType
 
 import pytest
 
+from tests.hooks._hookrun import ROOT
+
 OLD_SHA, NEW_SHA, TAG_SHA = "a" * 40, "b" * 40, "c" * 40
+PIN_OLD, PIN_NEW = "d" * 40, "e" * 40
+PIN_LOCK = (
+    'version = 1\n\n[[package]]\nname = "demo-lib"\nversion = "0.2.1"\n'
+    'source = {{ git = "https://github.com/o/DEMO-LIB.git?branch=main#{sha}" }}\n'
+)
 LOCK_OUT = (
     "Resolved 3 packages in 1s\nUpdate numpy v2.5.1 -> v2.5.3\nAdd cloudpickle v3.1.2\n"
     "Would update pydantic v2.13.4 -> v2.14.0\n"
@@ -19,6 +27,7 @@ PREK_OUT = (
     "https://github.com/codespell-project/codespell\n"
     "  would update rev `v2.4.2` -> `v2.4.3`\n"
 )
+PIN_LOCK_OUT = f"Updated https://github.com/o/DEMO-LIB.git ({PIN_NEW})\n" + LOCK_OUT
 LATEST = {
     "actions/checkout": "v7.1.0",
     "astral-sh/setup-uv": "v10.3.0",
@@ -46,17 +55,36 @@ PUBLISH = """jobs:
 """
 
 
+SHAP_LIKE = """
+[tool.agent-kit.upgrade]
+protected-workflows = ["publish.yaml"]
+sync-args = "--all-groups --all-extras"
+"""
+PIN_LIKE = """
+[tool.agent-kit.upgrade]
+pin = "demo-lib"
+pin-git = "DEMO-LIB"
+"""
+
+
 @pytest.fixture(scope="module")
-def upgrade(script: Callable[[str], ModuleType]) -> ModuleType:
+def upgrade() -> ModuleType:
     """Load scripts/upgrade.py."""
-    return script("upgrade")
+    spec = importlib.util.spec_from_file_location(
+        "upgrade", ROOT / "scripts" / "upgrade.py"
+    )
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 @pytest.fixture
 def repo(tmp_path: Path) -> Path:
     """A repository with every kind of pin, one version behind."""
     files = {
-        "pyproject.toml": '[tool.uv]\nrequired-version = ">=0.12.23"\n',
+        "pyproject.toml": '[tool.uv]\nrequired-version = ">=0.12.23"\n' + SHAP_LIKE,
         "uv.lock": "version = 1\n",
         ".pre-commit-config.yaml": (
             "repos:\n  - repo: https://github.com/codespell-project/codespell\n"
@@ -86,10 +114,16 @@ class FakeRunner:
     def __call__(self, argv: Sequence[str], cwd: Path) -> str:
         argv = list(argv)
         self.calls.append(argv)
+        pinned = "demo-lib" in (cwd / "uv.lock").read_text(encoding="utf-8")
         if argv[:2] == ["uv", "lock"]:
             if "--dry-run" in argv:
-                return LOCK_OUT
-            (cwd / "uv.lock").write_text("version = 2\n", encoding="utf-8")
+                return PIN_LOCK_OUT if pinned else LOCK_OUT
+            if pinned:
+                moved = "--upgrade-package=demo-lib" in argv
+                text = PIN_LOCK.format(sha=PIN_NEW if moved else PIN_OLD)
+                (cwd / "uv.lock").write_text(text + "# upgraded\n", encoding="utf-8")
+            else:
+                (cwd / "uv.lock").write_text("version = 2\n", encoding="utf-8")
         elif argv[:3] == ["uv", "run", "prek"]:
             if "--dry-run" in argv:
                 return PREK_OUT
@@ -214,3 +248,70 @@ def test_main_exit_codes(
     monkeypatch.setattr(upgrade, "run", broken)
     assert upgrade.main(["--check", "--root", str(repo)]) == 2
     assert "gh api failed" in capsys.readouterr().err
+
+
+@pytest.fixture
+def pin_repo(tmp_path: Path) -> Path:
+    """A repository whose ``demo-lib`` commit is pinned; no protected workflow."""
+    files = {
+        "pyproject.toml": '[tool.uv]\nrequired-version = ">=0.12.23"\n' + PIN_LIKE,
+        "uv.lock": PIN_LOCK.format(sha=PIN_OLD),
+        ".pre-commit-config.yaml": (
+            "repos:\n  - repo: https://github.com/codespell-project/codespell\n"
+            "    rev: v2.4.2\n"
+        ),
+        ".github/workflows/test.yaml": WORKFLOW,
+    }
+    for rel, text in files.items():
+        path = tmp_path / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+    return tmp_path
+
+
+def test_check_reports_the_pin_as_protected(
+    upgrade: ModuleType, pin_repo: Path, fake: FakeRunner
+) -> None:
+    """The pinned commit shows up as report-only; uv is not protected here."""
+    found = {
+        (i.kind, i.name, i.old, i.new, i.protected)
+        for i in upgrade.check(fake, pin_repo)
+    }
+    assert ("python", "demo-lib", PIN_OLD[:7], PIN_NEW[:7], True) in found
+    assert ("python", "numpy", "2.5.1", "2.5.3", False) in found
+    assert ("uv", "uv", "0.12.23", "0.13.0", False) in found
+
+
+def test_apply_upgrades_all_but_the_pin(
+    upgrade: ModuleType, pin_repo: Path, fake: FakeRunner
+) -> None:
+    """Packages, hooks, action pins and uv move; the pinned commit stays."""
+    changed, protected = upgrade.apply(fake, pin_repo)
+    assert PIN_OLD in (pin_repo / "uv.lock").read_text()
+    assert 'version: "0.13.0"' in (pin_repo / ".github/workflows/test.yaml").read_text()
+    assert sorted(changed) == [
+        ".github/workflows/test.yaml",
+        ".pre-commit-config.yaml",
+        "pyproject.toml",
+        "uv.lock",
+    ]
+    assert [i.name for i in protected] == ["demo-lib"]
+    lock = ["uv", "lock", "--upgrade-package=numpy", "--upgrade-package=pydantic"]
+    assert lock in fake.calls
+    assert ["uv", "sync", "--all-groups"] in fake.calls
+
+
+def test_move_pin_only_moves_the_pin(
+    upgrade: ModuleType, pin_repo: Path, fake: FakeRunner
+) -> None:
+    """``--pin`` upgrades that one package and nothing else."""
+    assert upgrade.move_pin(fake, pin_repo) == ["uv.lock"]
+    assert PIN_NEW in (pin_repo / "uv.lock").read_text()
+    assert ["uv", "lock", "--upgrade-package=demo-lib"] in fake.calls
+
+
+def test_move_pin_needs_a_configured_pin(
+    upgrade: ModuleType, repo: Path, fake: FakeRunner
+) -> None:
+    with pytest.raises(upgrade.UpgradeError, match="no pin"):
+        upgrade.move_pin(fake, repo)
