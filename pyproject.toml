@@ -1,6 +1,6 @@
 [project]
 name = "mllm-shap"
-version = "0.4.0"
+version = "0.4.1"
 description = "Shapley-value attributions for conversational language models."
 readme = "README.md"
 requires-python = ">=3.12"  # no upper bound: CI tests 3.12 to 3.14; optional extras may lag
@@ -98,9 +98,13 @@ token_bar = "mllm_shap.viz.token_bar:TokenBarRenderer"
 lmstudio = [
     "lmstudio>=1.5.0",
 ]
+# torchaudio and peft: audio language models; Granite Speech's feature extractor
+# needs torchaudio and its audio LoRA adapter needs peft.
 transformers = [
     "accelerate>=1.0.0",
+    "peft>=0.17.0",
     "torch>=2.5.0",
+    "torchaudio>=2.9.0",
     "transformers>=4.56.0",
 ]
 api = [

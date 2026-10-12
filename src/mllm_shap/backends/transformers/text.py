@@ -1,4 +1,4 @@
-"""Hugging Face causal language model backend (text-only).
+"""Hugging Face language model backend for text and, with a processor, audio.
 
 @domain backends
 @see [[knowledge/architecture/backends]]
@@ -21,6 +21,7 @@ from ...runtime.kv_cache import CroppableCache, PrefixCacheManager
 from ...value.generation_records import generation_record_from_text
 from .._chat import snapshot_has_audio, snapshot_to_chat_messages
 from ._torch import import_torch
+from .audio import processor_inputs
 from .chat import render_prompt
 from .embeddings import contextual_embedding, static_embedding
 from .options import TorchDtype, parse_transformers_options
@@ -32,7 +33,12 @@ logger = logging.getLogger(__name__)
 
 
 class TransformersTextBackend:
-    """Generate text with a local Hugging Face causal language model."""
+    """Generate text with a local Hugging Face language model.
+
+    A checkpoint ``AutoModelForCausalLM`` cannot load (or any
+    ``backend.options.model_class``) loads its own class with ``AutoProcessor``
+    and also takes audio parts (see ``audio.processor_inputs``).
+    """
 
     options_model: ClassVar[type[PluginOptions]] = PluginOptions
     """Accepts no ``explanation.plugin_options``."""
@@ -47,6 +53,7 @@ class TransformersTextBackend:
         self._config = context.config.backend
         self._options = parse_transformers_options(self._config.options)
         self._tokenizer: Any | None = None
+        self._processor: Any | None = None
         self._model: Any | None = None
         self._device: Any | None = None
         self._prefix_cache: PrefixCacheManager | None = None
@@ -96,11 +103,18 @@ class TransformersTextBackend:
         snapshot: ConversationSnapshot,
         generation: GenerationConfig,
     ) -> GenerationRecord:
-        """Generate assistant text for ``snapshot`` with optional prefix caching."""
-        if snapshot_has_audio(snapshot):
-            msg = "audio snapshots are not supported by the transformers text backend"
-            raise ValueError(msg)
+        """Generate assistant text for ``snapshot`` with optional prefix caching.
+
+        Raises:
+            ValueError: If ``snapshot`` has audio and the model has no processor.
+        """
         await self._ensure_loaded()
+        if snapshot_has_audio(snapshot) and self._processor is None:
+            msg = (
+                f"audio snapshots need an audio model; {self._config.model_id!r} "
+                "loaded as a text-only causal language model"
+            )
+            raise ValueError(msg)
         return await asyncio.to_thread(
             self._generate_sync,
             snapshot,
@@ -110,6 +124,7 @@ class TransformersTextBackend:
     async def aclose(self) -> None:
         """Release loaded model references."""
         self._tokenizer = None
+        self._processor = None
         self._model = None
         self._device = None
         if self._prefix_cache is not None:
@@ -126,23 +141,40 @@ class TransformersTextBackend:
                 msg = "transformers backend requires the transformers optional extra"
                 raise BackendUnavailableError(msg) from exc
             device, dtype = _device_and_dtype(torch, self._options.dtype)
+            model_id, revision = self._config.model_id, self._options.revision
+            load_kwargs: dict[str, Any] = {"revision": revision, "dtype": dtype}
+            if self._options.attn_implementation is not None:
+                load_kwargs["attn_implementation"] = self._options.attn_implementation
+            processor = None
             try:
-                tokenizer = transformers.AutoTokenizer.from_pretrained(
-                    self._config.model_id,
-                    revision=self._options.revision,
+                config = transformers.AutoConfig.from_pretrained(
+                    model_id, revision=revision
                 )
-                model = transformers.AutoModelForCausalLM.from_pretrained(
-                    self._config.model_id,
-                    revision=self._options.revision,
-                    dtype=dtype,
-                )
+                model_class = self._options.model_class
+                if model_class is None and (
+                    type(config) in transformers.MODEL_FOR_CAUSAL_LM_MAPPING
+                ):
+                    tokenizer = transformers.AutoTokenizer.from_pretrained(
+                        model_id, revision=revision
+                    )
+                    model_type = transformers.AutoModelForCausalLM
+                else:
+                    processor = transformers.AutoProcessor.from_pretrained(
+                        model_id, revision=revision
+                    )
+                    tokenizer = processor.tokenizer
+                    model_type = getattr(
+                        transformers, model_class or config.architectures[0]
+                    )
+                model = model_type.from_pretrained(model_id, **load_kwargs)
             except Exception as exc:
-                msg = f"failed to load transformers model {self._config.model_id!r}"
+                msg = f"failed to load transformers model {model_id!r}"
                 raise BackendUnavailableError(msg) from exc
             model.to(device)
             model.eval()
             _ensure_pad_token(tokenizer)
             self._tokenizer = tokenizer
+            self._processor = processor
             self._model = model
             self._device = device
 
@@ -156,22 +188,19 @@ class TransformersTextBackend:
         if tokenizer is None or model is None:
             msg = "transformers backend is not loaded"
             raise BackendUnavailableError(msg)
-        messages = snapshot_to_chat_messages(snapshot)
         torch = import_torch()
         # Fast tokenizers are not thread-safe ("Already borrowed"), so tokenizing
         # and decoding share the model lock with generation.
         with self._model_lock, torch.no_grad():
-            prompt = render_prompt(tokenizer, messages)
-            encoded = tokenizer.encode(prompt, add_special_tokens=True)
-            token_ids = [int(token_id) for token_id in encoded]
-            if not token_ids:
-                msg = "transformers backend received an empty prompt"
-                raise BackendUnavailableError(msg)
-            input_ids = torch.tensor([token_ids], dtype=torch.long, device=self._device)
+            inputs = self._encode(torch, model, tokenizer, snapshot)
+            input_ids = inputs["input_ids"]
             generate_kwargs = _generate_kwargs(torch, tokenizer, input_ids, generation)
-            self._attach_prefix_cache(model, input_ids, token_ids, generate_kwargs)
+            generate_kwargs.update(inputs)
+            if len(inputs) == 1:
+                token_ids = [int(token_id) for token_id in input_ids[0].tolist()]
+                self._attach_prefix_cache(model, input_ids, token_ids, generate_kwargs)
             generated = model.generate(**generate_kwargs)
-            new_ids = generated.sequences[0, len(token_ids) :]
+            new_ids = generated.sequences[0, input_ids.shape[1] :]
             new_token_ids = [int(token_id) for token_id in new_ids.cpu().tolist()]
             text = tokenizer.decode(new_token_ids, skip_special_tokens=True).strip()
             record = dataclasses.replace(
@@ -185,6 +214,33 @@ class TransformersTextBackend:
                 embedding=static_embedding(model, new_token_ids),
                 contextual_embedding=contextual_embedding(model, new_token_ids),
             )
+
+    def _encode(
+        self, torch: Any, model: Any, tokenizer: Any, snapshot: ConversationSnapshot
+    ) -> dict[str, Any]:
+        """Return the model inputs; only text prompts give ``input_ids`` alone.
+
+        Audio prompts carry processor features (cast to the model's dtype) and
+        skip the prefix cache: cached prompt tokens do not cover the audio.
+        """
+        if self._processor is not None and snapshot_has_audio(snapshot):
+            encoded = processor_inputs(self._processor, snapshot)
+            return {
+                key: value.to(self._device, dtype=model.dtype)
+                if value.is_floating_point()
+                else value.to(self._device)
+                for key, value in dict(encoded).items()
+            }
+        prompt = render_prompt(tokenizer, snapshot_to_chat_messages(snapshot))
+        token_ids = [int(t) for t in tokenizer.encode(prompt, add_special_tokens=True)]
+        if not token_ids:
+            msg = "transformers backend received an empty prompt"
+            raise BackendUnavailableError(msg)
+        return {
+            "input_ids": torch.tensor(
+                [token_ids], dtype=torch.long, device=self._device
+            )
+        }
 
     def _attach_prefix_cache(
         self,

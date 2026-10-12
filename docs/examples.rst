@@ -138,6 +138,13 @@ open the ``.ipynb`` on GitHub or browse the full catalog in
      - *(core)*
      - `GitHub <https://github.com/Pawlo77/MLLM-SHAP/blob/main/examples/mock_audio_backend.ipynb>`__
 
+   * - :doc:`notebooks/audio_explain_transformers`
+     - Granite Speech hears a recorded sentence through the ``transformers``
+       backend, then ``sgpa_segments`` attributes its answer to the spoken words;
+       the ``lmstudio`` audio refusal.
+     - ``[audio]``, ``[transformers]``
+     - `GitHub <https://github.com/Pawlo77/MLLM-SHAP/blob/main/examples/audio_explain_transformers.ipynb>`__
+
 .. toctree::
    :hidden:
    :maxdepth: 1
@@ -155,3 +162,4 @@ open the ``.ipynb`` on GitHub or browse the full catalog in
    notebooks/text_explain_e2e
    notebooks/audio_alignment
    notebooks/mock_audio_backend
+   notebooks/audio_explain_transformers

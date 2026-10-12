@@ -69,7 +69,8 @@ def test_tier_selection(spec: str, feature: str, selected: bool) -> None:
 
 def test_models_are_pinned_small_and_typed() -> None:
     """In-process tiers pin a commit sha: chat tiers float16 (quick < 4 GB, deep_hf
-    < 8 GB), the CTC model float32 under 1 GB. The deep tier is an LM Studio key."""
+    < 8 GB), the audio model bfloat16 (its training dtype) under 8 GB, the CTC model
+    float32 under 1 GB. The deep tier is an LM Studio key."""
     assert set(MODELS) == {
         "default",
         "fast",
@@ -77,14 +78,18 @@ def test_models_are_pinned_small_and_typed() -> None:
         "deep_judge",
         "deep_hf",
         "alignment",
+        "audio",
     }
     assert MODELS["deep"].kind == "api"
     for name, spec in MODELS.items():
         if spec.kind == "api":
             continue
         assert re.fullmatch(r"[0-9a-f]{40}", spec.revision)
-        assert spec.dtype == ("float32" if name == "alignment" else "float16")
-        assert spec.size_gb < {"deep_hf": 8.0, "alignment": 1.0}.get(name, 4.0)
+        dtypes = {"alignment": "float32", "audio": "bfloat16"}
+        assert spec.dtype == dtypes.get(name, "float16")
+        assert spec.size_gb < {"deep_hf": 8.0, "audio": 8.0, "alignment": 1.0}.get(
+            name, 4.0
+        )
 
 
 def test_deep_scenarios_use_the_deep_tiers() -> None:

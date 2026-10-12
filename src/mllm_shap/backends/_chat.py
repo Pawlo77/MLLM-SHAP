@@ -28,20 +28,14 @@ def message_chat_text(message: Message) -> str:
     return f"{message.speaker}: {message.text}"
 
 
+def chat_role(role: Role) -> str:
+    """Return the chat-template role name (``Role`` values are those names)."""
+    return role.value
+
+
 def snapshot_to_chat_messages(snapshot: ConversationSnapshot) -> list[dict[str, str]]:
     """Convert a conversation snapshot into OpenAI-style chat messages."""
-    messages: list[dict[str, str]] = []
-    for turn in snapshot.turns:
-        for message in turn.messages:
-            match message.role:
-                case Role.SYSTEM:
-                    role = "system"
-                case Role.USER:
-                    role = "user"
-                case Role.ASSISTANT:
-                    role = "assistant"
-                case _ as unsupported:
-                    msg = f"unsupported message role: {unsupported!r}"
-                    raise ValueError(msg)
-            messages.append({"role": role, "content": message_chat_text(message)})
-    return messages
+    return [
+        {"role": chat_role(message.role), "content": message_chat_text(message)}
+        for message in snapshot.messages()
+    ]

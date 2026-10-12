@@ -21,4 +21,4 @@ Full note: `knowledge/architecture/domain.md`; update it in the same change (ski
 
 ## Known issues
 
-- No backend accepts audio yet (D02 - Audio backend (`knowledge/issues/D02 - Audio backend.md`)).
+- Audio parts reach the `transformers` audio models, the `api` backend and `mock_audio` (backends (`knowledge/architecture/backends.md`)).

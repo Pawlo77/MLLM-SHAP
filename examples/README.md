@@ -33,3 +33,4 @@ What each notebook demonstrates, and the extras it needs: [docs gallery](https:/
 - `text_explain_e2e.ipynb`
 - `audio_alignment.ipynb`
 - `mock_audio_backend.ipynb`
+- `audio_explain_transformers.ipynb`

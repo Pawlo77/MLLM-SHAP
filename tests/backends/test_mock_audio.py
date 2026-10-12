@@ -94,3 +94,22 @@ def test_explain_runs_on_a_multimodal_snapshot() -> None:
     result = output.result
     assert len(result.values) == 2
     assert sum(result.values) == pytest.approx(result.grand_value - result.base_value)
+
+
+def test_silent_audio_adds_no_token() -> None:
+    assert _heard(_snapshot(_wav([0, 0]))) == ["say", "it"]
+
+
+def test_non_16_bit_wav_goes_through_the_audio_extra() -> None:
+    """8-bit WAV uses ``decode_audio``; its runs are heard like 16-bit ones."""
+    pytest.importorskip("soundfile")
+    t = np.arange(CHUNK) / RATE
+    burst = 0.6 * np.sin(2 * np.pi * 300 * t)
+    waveform = np.concatenate([burst, np.zeros(CHUNK), burst])
+    buffer = io.BytesIO()
+    with wave.open(buffer, "wb") as writer:
+        writer.setnchannels(1)
+        writer.setsampwidth(1)
+        writer.setframerate(RATE)
+        writer.writeframes((waveform * 127 + 128).astype(np.uint8).tobytes())
+    assert len(_heard(_snapshot(buffer.getvalue()))) == 4

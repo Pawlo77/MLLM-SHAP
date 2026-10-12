@@ -22,7 +22,7 @@ Built-in backends
      - Tests, CI and offline demos; no model involved
    * - ``mock_audio``
      - *(core)*
-     - Audio runs in tests and demos: answers to what it hears
+     - Audio runs in tests and demos (:doc:`audio_backends`)
    * - ``api``
      - ``[api]``
      - Remote or local OpenAI-compatible HTTP servers (OpenAI, vLLM, LM Studio's
@@ -32,7 +32,8 @@ Built-in backends
      - Local models through the LM Studio SDK, with automatic download
    * - ``transformers``
      - ``[transformers]``
-     - Hugging Face causal language models in-process, with prefix-cache reuse
+     - Hugging Face language models in-process, with prefix-cache reuse;
+       audio language models hear audio parts (:doc:`audio_backends`)
 
 Settings shared by all backends are the top-level ``backend`` keys (see the
 reference in :doc:`config`); settings that only one backend understands go under
@@ -82,12 +83,7 @@ test the plumbing, not a model.
      kind: mock
      model_id: stub
 
-:class:`~mllm_shap.backends.mock.audio.MockAudioBackend` (``mock_audio``) echoes the
-words of each message, then adds one token per voiced run of each audio part: a
-stretch louder than 1% of full scale, split by at least 10 ms of silence. A
-token hashes its run's samples, so silencing or cutting a spoken word drops only
-its token. It reads 16-bit WAV without any extra; other formats need ``[audio]``.
-Notebook: :doc:`/notebooks/mock_audio_backend`.
+``mock_audio`` hears audio parts; see :doc:`audio_backends`.
 
 HTTP API
 --------
@@ -159,7 +155,8 @@ Hugging Face transformers
 -------------------------
 
 :class:`~mllm_shap.backends.transformers.TransformersTextBackend` loads
-``model_id`` with ``AutoModelForCausalLM`` on the first call, on CUDA or Apple MPS
+``model_id`` on the first call (``AutoModelForCausalLM``, or a processor and the
+checkpoint's class for audio models, :doc:`audio_backends`), on CUDA or Apple MPS
 when available, otherwise on CPU. ``backend.options.dtype`` picks the weight
 dtype: ``auto`` (default) uses ``bfloat16`` on accelerators that support it,
 ``float16`` on other accelerators and ``float32`` on CPU; ``float32``,

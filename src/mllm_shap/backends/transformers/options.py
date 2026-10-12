@@ -28,6 +28,16 @@ class TransformersOptions(BaseModel):
     """Weight dtype; ``auto`` picks bfloat16 on accelerators that support it,
     float16 on other accelerators and float32 on CPU."""
 
+    model_class: str | None = None
+    """``transformers`` class to load with the checkpoint's processor, for example
+    ``Gemma3nForConditionalGeneration``. ``None`` uses ``AutoModelForCausalLM`` when
+    it knows the checkpoint, else the checkpoint's architecture."""
+
+    attn_implementation: str | None = None
+    """Attention kernel passed to ``from_pretrained`` (``eager``, ``sdpa``, ...);
+    ``None`` keeps the model's default. Granite Speech on Apple MPS needs
+    ``eager``: its projector fails under the default kernel."""
+
 
 def parse_transformers_options(options: Mapping[str, object]) -> TransformersOptions:
     """Validate ``backend.options`` for the transformers backend.
