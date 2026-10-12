@@ -246,8 +246,13 @@ markers = [
 ]
 
 [tool.agent-kit]
-# Read by scripts/hooks/*: names the project and extends the shell guard's "ask" rules.
+# Settings of the shared agent tooling (python-kit-template); read by scripts/ and hooks.
 name = "mllm-shap"
+tree-dirs = "src tests"  # the stop gate hashes these folders
+vault-dirs = "knowledge"  # Markdown scanned for secrets and personal data
+vault-check-args = "--quiet --strict-tags"  # session banner
+vault-ci-args = "--strict --strict-tags"  # Prek Checks workflow
+ci-sync-args = "--extra api --extra viz"  # extras the Prek Checks workflow installs
 
 [tool.agent-kit.shell-guard]
 ask-scripts = []
