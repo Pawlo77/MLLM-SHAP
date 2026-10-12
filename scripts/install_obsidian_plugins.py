@@ -4,11 +4,8 @@ Usage:
     uv run python scripts/install_obsidian_plugins.py [--force | --check]
 
 Downloads ``main.js`` and ``styles.css`` of the release pinned by each committed
-``manifest.json`` (Obsidian disables a plugin whose ``main.js`` is missing).
-
-@domain tooling
-@see [[knowledge/handbook/Onboarding]]
-@tested-by [[tests/scripts/test_install_obsidian_plugins.py]]
+``manifest.json`` (Obsidian disables a plugin whose ``main.js`` is missing). Plugin id
+to GitHub repository: ``dataview`` plus the ``[tool.agent-kit.obsidian-plugins]`` table.
 """
 
 import argparse
@@ -18,16 +15,23 @@ import urllib.request
 from collections.abc import Callable
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from kit_config import load as load_config
+
 ROOT = Path(__file__).resolve().parent.parent
 OBSIDIAN = ROOT / ".obsidian"
 
-# Plugin id -> GitHub repository, as listed in obsidianmd/obsidian-releases.
-REPOSITORIES: dict[str, str] = {
-    "code-graph": "mrjw717/obsidian-code-graph",
-    "dataview": "blacksmithgu/obsidian-dataview",
-    "mermaid-tools": "dartungar/obsidian-mermaid",
-    "templater-obsidian": "silentvoid13/Templater",
-}
+
+def repositories(root: Path = ROOT) -> dict[str, str]:
+    """Plugin id -> GitHub repository, as listed in obsidianmd/obsidian-releases."""
+    extra = load_config(root).get("obsidian-plugins", {})
+    return {
+        "dataview": "blacksmithgu/obsidian-dataview",
+        **{str(key): str(value) for key, value in extra.items()},
+    }
+
+
+REPOSITORIES: dict[str, str] = repositories()
 ASSETS = ("main.js", "styles.css")
 Fetch = Callable[[str], bytes]
 
