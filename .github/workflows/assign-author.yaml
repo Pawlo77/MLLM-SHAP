@@ -37,4 +37,6 @@ jobs:
               gh pr edit "$PR" --remove-label "$other" 2>/dev/null || true
             fi
           done
-          gh pr edit "$PR" --add-assignee "$AUTHOR" --add-label "$label"
+          # A concurrent manual assignment (skill `ship`) can make the first call fail.
+          gh pr edit "$PR" --add-assignee "$AUTHOR" --add-label "$label" \
+            || { sleep 5; gh pr edit "$PR" --add-assignee "$AUTHOR" --add-label "$label"; }
