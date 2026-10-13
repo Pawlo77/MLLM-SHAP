@@ -1,5 +1,6 @@
 # Changes here will be overwritten by Copier; run `copier update` instead.
-_commit: v0.8.1
+_commit: v0.10.2
 _src_path: gh:Pawlo77/python-kit-template
 owner: Pawlo77
 scaffold: none
+vault: false
