@@ -125,7 +125,7 @@ viz = [
 ]
 
 [build-system]
-requires = ["uv_build>=0.12.23,<0.13.0"]
+requires = ["uv_build>=0.12.23,<0.14.0"]
 build-backend = "uv_build"
 
 [dependency-groups]
@@ -247,6 +247,9 @@ markers = [
   "practical(feature): real model on a GPU (make practical TIER=quick|deep FEATURE=<glob>)",
 ]
 
+[tool.codespell]
+ignore-words-list = "nlp,shapley,shap,explainability,pyproject,toml,venv,prek,autosummary,intersphinx,napoleon,myst,pydata,sdist,wheel,readonly,kwargs,args,init,utils,backend,frontend,untracked,workflow,workflows,pytest,cov"
+
 [tool.agent-kit]
 # Settings of the shared agent tooling (python-kit-template); read by scripts/ and hooks.
 name = "mllm-shap"
@@ -326,6 +329,39 @@ sentences = true
 patterns = ["docs/*.rst", "docs/*.md"]
 words = 1200
 sentences = true
+
+[tool.agent-kit.configs]
+delivery = "autopilot"
+plugins = [
+  "property-based-testing@trailofbits",
+  "mutation-testing@trailofbits",
+  "differential-review@trailofbits",
+  "second-opinion@trailofbits",
+  "claude-jit-context@dpt-plugins",
+]
+allow = [
+  "Bash(make agent-check*)",
+  "Bash(make docs*)",
+  "Bash(make notebooks*)",
+  "Bash(make bench*)",
+  "Bash(uv run python scripts/*)",
+  "Edit(docs/**)",
+  "Edit(examples/**)",
+  "Edit(knowledge/**)",
+  "Write(knowledge/**)",
+  "Bash(make knowledge*)",
+]
+deny = [
+  "Read(./.pypirc)",
+  "Read(**/id_rsa)",
+  "Read(.smart-env/**)",
+  "Read(.obsidian/plugins/realclaudian/data.json)",
+  "Read(.claude/jit-context/.discovery/**)",
+]
+
+[tool.agent-kit.configs.marketplaces]
+trailofbits = "trailofbits/skills"
+dpt-plugins = "Digital-Process-Tools/claude-marketplace"
 
 [tool.mutmut]
 # ``make mutate`` (slow, on demand, not CI): mutate the estimation package and

@@ -1,0 +1,27 @@
+---
+description: Workflows of MLLM-SHAP and their triggers
+globs: .github/**
+alwaysApply: false
+---
+
+# CI workflows
+
+| File | Trigger | Purpose |
+|------|---------|---------|
+| `prek.yaml` | push/PR to `main` | job `prek`: `prek run --all-files`, then `check_vault.py --strict --strict-tags` (full history) |
+| `test.yaml` | push/PR to `main` | matrix `test` (3.12-3.14, coverage 85%, Codecov; `slow` on 3.12), `notebooks`, summary `tests-passed` |
+| `codeql.yaml` | push/PR, weekly | job `CodeQL`; skipped while the repository is private |
+| `deploy-docs.yaml` | push to `main` (docs, examples, knowledge, src), manual | `make -C docs html`, GitHub Pages artifact |
+| `benchmarks.yaml` | weekly, manual | `make bench`, JSON report as an artifact (informational) |
+| `pr-title.yaml` | PR events | job `title` (required): `type: summary`; drafts and WIP fail |
+| `assign-author.yaml` | PR opened, reopened, title edited | assignee and label from the title type |
+| `template-sync.yaml`, `template-drift.yaml` | weekly, dispatch / PR | update from and compare with python-kit-template |
+| skill `ship` (local) | finished branch | opens the PR with Copilot review, fixes its threads; routine changes (`scripts/pr_policy.py`) merge themselves, others wait for the maintainer |
+| `publish.yaml` | tag `v*.*.*`, pushed by skill `release` after the merge | tag must equal `uv version --short`; build, smoke test, `uv publish`, GitHub Release; `make upgrade` never edits it |
+
+Required on `main`: `prek`, `tests-passed`, `CodeQL`, `title`.
+
+Also here: the test matrix sets `UV_PYTHON`, because `uv run` honours `.python-version`; the
+notebook comparison step is advisory (`continue-on-error`), the execute step blocks;
+secrets: only the optional `CODECOV_TOKEN` (PyPI uses trusted publishing), plus
+`TEMPLATE_SYNC_TOKEN` for the template workflows.

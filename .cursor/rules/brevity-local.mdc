@@ -1,0 +1,10 @@
+---
+description: Brevity budgets that only MLLM-SHAP has
+alwaysApply: true
+---
+
+# Brevity: this repository
+
+Budgets (`scripts/check_brevity.py`): nested AGENTS.md ≤ 60 lines; docs page ≤ 1200 words; release-note bullet ≤ 60; issue note ≤ 350 (`Fixed issues` table ≤ 800); decision log ≤ 700 (≤ 120 per decision); architecture/handbook note ≤ 700.
+
+Notebooks: markdown cell ≤ 150 words, code cell ≤ 40 lines, ≤ 900 markdown words per notebook; read a notebook with `jupyter nbconvert --to script --stdout`, never the raw file.

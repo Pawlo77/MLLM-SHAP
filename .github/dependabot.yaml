@@ -1,15 +1,7 @@
 version: 2
 updates:
-  - package-ecosystem: github-actions
-    directory: /
-    schedule:
-      interval: weekly
-    groups:
-      actions:
-        patterns: ["*"]
-    commit-message:
-      prefix: "ci"
-    labels: [dependencies]
+  # Action pins and hook revisions of the shipped files move in python-kit-template
+  # (its Upgrade pins job); scripts/upgrade.py covers the workflows this repository owns.
   - package-ecosystem: uv
     directory: /
     schedule:
