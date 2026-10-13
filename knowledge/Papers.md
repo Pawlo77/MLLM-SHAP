@@ -17,7 +17,6 @@ related-code:
   - "[[src/mllm_shap/masking/partitions.py]]"
   - "[[src/mllm_shap/value/tfidf.py]]"
 ---
-
 # Papers
 
 Papers the library and its theory pages cite, by first author; digital object identifier (DOI) or arXiv links only, never PDFs.

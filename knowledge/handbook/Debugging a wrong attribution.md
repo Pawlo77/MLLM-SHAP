@@ -7,7 +7,6 @@ tags: [handbook, debugging]
 created: 2026-10-07
 updated: 2026-10-08
 ---
-
 # Debugging a wrong attribution
 
 Background: [[How a run works]], `docs/theory/shapley_values.rst`.

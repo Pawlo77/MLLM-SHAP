@@ -10,7 +10,6 @@ related-code:
   - "[[src/mllm_shap/alignment/ctc.py]]"
   - "[[src/mllm_shap/alignment/sgpa.py]]"
 ---
-
 # Alignment decisions
 
 Architecture: [[alignment]]. Related: [[SGPA]].

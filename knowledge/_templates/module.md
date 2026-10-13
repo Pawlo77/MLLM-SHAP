@@ -9,7 +9,6 @@ updated: <% tp.date.now("YYYY-MM-DD") %>
 related-code:
   - "<% '[' + '[src/mllm_shap/' + tp.file.title + '/__init__.py]' + ']' %>"
 ---
-
 # <% tp.file.title %>
 
 ## Responsibility

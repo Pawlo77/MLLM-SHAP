@@ -7,7 +7,6 @@ tags: [handbook, roadmap]
 created: 2026-10-07
 updated: 2026-10-12
 ---
-
 # Roadmap
 
 Detailed plans live outside this repository.

@@ -6,7 +6,6 @@ tags: [moc, mllm-shap]
 created: 2026-10-07
 updated: 2026-10-10
 ---
-
 # mllm-shap
 
 mllm-shap explains the output of a conversational language model. The prompt's tokens are players of a cooperative game, and each player gets a share of the change in a value function between masked and unmasked generations. The library separates what is measured (the estimand: Shapley value or Banzhaf index), how coalitions are sampled (the estimator) and how a generation is scored (the value function). Every coalition evaluation goes into a run archive that can be re-scored later.

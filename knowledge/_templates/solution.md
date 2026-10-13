@@ -9,7 +9,6 @@ pr: "<% tp.system.prompt("Pull request URL?") %>"
 plan-task: "<% tp.system.prompt("Plan task (plans/<file>.md, Task n.m)?") %>"
 related-code: []
 ---
-
 # <% tp.file.title.split(' - ').slice(1).join(' - ') %>
 
 Solved in the pull request above; plan: <% "[" + "[<plan file>]" + "]" %>.

@@ -9,7 +9,6 @@ updated: 2026-10-08
 related-code:
   - "[[src/mllm_shap/pipeline/runner.py]]"
 ---
-
 # Run id
 
 The run id names one explain run and its archive directory: `{snapshot_id[:16]}-{digest}`, where the digest covers the configuration (without its archive section) and the effective model id, so different configurations never share an archive and a re-run of the same configuration finds its own.

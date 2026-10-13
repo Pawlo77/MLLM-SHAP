@@ -16,7 +16,6 @@ related-code:
   - "[[src/mllm_shap/value/wer.py]]"
   - "[[src/mllm_shap/value/tfidf.py]]"
 ---
-
 # value
 
 ## Responsibility
