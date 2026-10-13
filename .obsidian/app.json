@@ -1,18 +1,19 @@
 {
+  "alwaysUpdateLinks": true,
   "userIgnoreFilters": [
     ".venv/",
-    "docs/_build/",
+    "dist/",
     ".pytest_cache/",
     ".ruff_cache/",
     ".mypy_cache/",
-    "dist/",
-    "src/mllm_shap.egg-info/",
     ".remember/logs/",
     ".remember/tmp/",
     "knowledge/_templates/",
-    "docs/",
     "/^(README|CONTRIBUTING|AGENTS|CLAUDE)\\.md$/",
-    "examples/README.md",
-    "/(^|/)(AGENTS|CLAUDE)\\.md$/"
+    "/(^|\\/)(AGENTS|CLAUDE)\\.md$/",
+    "docs/_build/",
+    "src/mllm_shap.egg-info/",
+    "docs/",
+    "examples/README.md"
   ]
 }

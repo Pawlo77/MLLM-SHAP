@@ -193,8 +193,7 @@ convention = "google"
 "src/mllm_shap/pipeline/orchestrator.py" = ["PLR0915"]
 "src/mllm_shap/pipeline/reanalyze.py" = ["PLR0915"]
 "src/mllm_shap/estimation/complementary.py" = ["PLR0915"]
-"scripts/check_vault.py" = ["C901"]
-"scripts/build_knowledge.py" = ["C901"]
+"scripts/knowledge_extra.py" = ["C901"]
 ".agents/skills/plugin/scripts/new_plugin.py" = ["PLR0915"]
 
 [tool.ruff.format]
@@ -397,3 +396,38 @@ stream = "ext://sys.stderr"
 level = "WARNING"
 handlers = ["console"]
 propagate = false
+
+[tool.agent-kit.vault]
+notes = ["knowledge"]
+plans = ["plans"]
+memory = [".remember"]
+flat = ["plans", ".remember"]
+isolated = ["knowledge"]
+
+[tool.agent-kit.vault.schema]
+dirs = ["knowledge"]
+required = ["title", "type", "domain", "created", "parent"]
+types = [
+  "map", "dashboard", "module", "decision-log", "issue", "concept", "paper-list",
+  "handbook", "solution", "plan", "generated",
+]
+link-fields = ["related-code"]
+sections-exempt = ["Fixed issues"]
+
+[tool.agent-kit.vault.schema.exempt]
+parent = ["map"]
+created = ["generated"]
+
+[tool.agent-kit.vault.schema.statuses]
+issue = ["open", "fixed", "wontfix", "deferred"]
+plan = ["draft", "ready", "in progress", "done", "superseded"]
+
+[tool.agent-kit.vault.schema.sections]
+module = ["Responsibility", "Public surface", "Data flow", "Invariants", "Tests"]
+issue = ["Symptom", "Cause", "Repro", "Fix"]
+solution = ["Problem", "What was tried", "What worked", "Reusable rule"]
+
+[tool.agent-kit.knowledge]
+package = "src/mllm_shap"
+generators = ["modules", "public-api"]
+parent = "[[mllm-shap]]"

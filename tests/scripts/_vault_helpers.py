@@ -9,6 +9,21 @@ MC:
   expansion: Monte Carlo
 """
 
+
+def _vault_tables() -> str:
+    """Return the ``[tool.agent-kit.vault*]`` tables of the repository's pyproject."""
+    text = (Path(__file__).resolve().parents[2] / "pyproject.toml").read_text(
+        encoding="utf-8"
+    )
+    blocks = text.split("\n[")
+    keep = [
+        b
+        for b in blocks
+        if b.startswith(("tool.agent-kit.vault", "[tool.agent-kit.vault"))
+    ]
+    return "\n".join(f"[{b.removeprefix('[')}" for b in keep) + "\n"
+
+
 PYPROJECT = """\
 [project]
 name = "demo"
@@ -16,7 +31,7 @@ authors = [{ name = "Maintainer", email = "maintainer@example.org" }]
 
 [project.entry-points."mllm_shap.estimators"]
 exact = "mllm_shap.estimation.exact:ExactEstimator"
-"""
+""" + _vault_tables()
 
 
 def write(root: Path, rel: str, text: str) -> Path:

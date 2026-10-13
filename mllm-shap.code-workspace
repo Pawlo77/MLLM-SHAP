@@ -1,0 +1,19 @@
+{
+  // Multi-root workspace: this repository plus the legacy sibling (skill agent-setup).
+  "folders": [
+    {
+      "name": "mllm-shap",
+      "path": "."
+    },
+    {
+      "name": "MLLM-Shap-legacy",
+      "path": "../MLLM-Shap-legacy"
+    }
+  ],
+  "settings": {
+    "python.defaultInterpreterPath": "${workspaceFolder:mllm-shap}/.venv/bin/python",
+    "files.exclude": {
+      "**/__pycache__": true
+    }
+  }
+}

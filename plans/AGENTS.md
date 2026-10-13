@@ -6,4 +6,4 @@
 - `status` (also the status line under the title): `draft`, `in progress`, `done` or `superseded by <file>`.
 - Tick a step (`- [ ]`) only when it is done and `make check` passed; update the plan in the pull request that executes it.
 - Never delete a plan: mark it `done` or `superseded`.
-- Why: plans lived in chat or outside the repository, where agents could not read or tick them; `make vault-check` validates plan frontmatter and headers, and the Dashboard lists plans by status.
+- `make vault-check` validates plan frontmatter and headers; the Dashboard lists plans by status.

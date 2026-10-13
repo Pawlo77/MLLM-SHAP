@@ -13,7 +13,7 @@ audio work is ordinary feature work. This skill covers audio and multimodal work
 ## External references (siblings, not in this repository)
 
 Required layout (clone commands: skill `agent-setup`; workspace file
-`MLLM-SHAP.code-workspace`):
+`mllm-shap.code-workspace`):
 
 ```text
 <parent>/MLLM-SHAP/              # this package
