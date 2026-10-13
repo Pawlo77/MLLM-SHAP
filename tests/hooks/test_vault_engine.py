@@ -89,6 +89,15 @@ def test_layout_comes_from_pyproject(checker: ModuleType, vault: Path) -> None:
     assert any("isolated note" in line for line in _errors(checker, vault))
 
 
+def test_link_dirs_are_link_targets_only(checker: ModuleType, vault: Path) -> None:
+    _write(vault, "venues/Venue.md", "A venue note with no frontmatter.\n")
+    _write(vault, "knowledge/Note.md", NOTE.format("Note", "concept", "[[Venue]]"))
+    assert any("broken link [[Venue]]" in line for line in _errors(checker, vault))
+    table = '[tool.agent-kit.vault]\nlink-dirs = ["venues"]\n'
+    _write(vault, "pyproject.toml", "[project]\nname = 'demo'\n" + table)
+    assert _errors(checker, vault) == []
+
+
 def test_secrets_scan_can_be_turned_off(checker: ModuleType, vault: Path) -> None:
     _write(
         vault,

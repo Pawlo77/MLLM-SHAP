@@ -42,6 +42,7 @@ DEFAULTS: dict[str, Any] = {
     "skip-dirs": ["_templates"],
     "skip-names": ["AGENTS.md", "CLAUDE.md"],
     "isolated": ["knowledge"],
+    "link-dirs": [],
     "stray-skip": [],
     "secrets": True,
 }
@@ -132,7 +133,8 @@ class Vault:
         vault.plans = _collect(root, cfg["plans"], cfg)
         vault.memory = _collect(root, cfg["memory"], cfg)
         stems: dict[str, list[Path]] = defaultdict(list)
-        for path in vault.notes + vault.plans:
+        targets = _collect(root, cfg["link-dirs"], cfg)  # linkable, not checked
+        for path in vault.notes + vault.plans + targets:
             stems[path.stem].append(path)
         vault.by_stem = dict(stems)
         return vault
