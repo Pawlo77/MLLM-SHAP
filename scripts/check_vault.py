@@ -343,10 +343,10 @@ def check_schema(vault: Vault, path: Path, text: str) -> list[Finding]:
     return findings
 
 
-def check_secrets(
+def check_privacy(
     vault: Vault, path: Path, text: str, emails: set[str]
 ) -> list[Finding]:
-    """Return secret and personal-data findings for one file."""
+    """Return personal-data and credential findings for one file."""
     return [Finding(vault.rel(path), n, rule) for n, rule in scan_text(text, emails)]
 
 
@@ -495,12 +495,12 @@ def run(
         findings += check_markdown_links(vault, path, text)
         findings += check_schema(vault, path, text)
         if vault.cfg["secrets"] and path in vault.notes:
-            findings += check_secrets(vault, path, text, emails)
+            findings += check_privacy(vault, path, text, emails)
         if rules is not None:
             findings += rules.check_file(vault, path, text)
     for path in vault.memory if vault.cfg["secrets"] else []:
         text = path.read_text(encoding="utf-8")
-        findings += check_secrets(vault, path, text, emails)
+        findings += check_privacy(vault, path, text, emails)
     findings += check_duplicates(vault) + check_isolation(vault)
     count = 0
     if rules is not None:
