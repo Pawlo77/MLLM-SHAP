@@ -21,7 +21,7 @@ from kit_config import words
 
 ROOT = Path(__file__).resolve().parents[2]
 
-SECRET_RULES: tuple[tuple[str, re.Pattern[str]], ...] = (
+LINE_RULES: tuple[tuple[str, re.Pattern[str]], ...] = (
     (
         "credential assignment",
         re.compile(r"(?i)(api[_-]?key|secret|token|password)\s*[:=]\s*\S{8,}"),
@@ -61,7 +61,7 @@ def _email_allowed(address: str, allowed: set[str]) -> bool:
     return (
         lowered in allowed
         or local == "noreply"
-        or domain.endswith("users.noreply.github.com")
+        or domain == "users.noreply.github.com"
         or domain in {"example.com", "example.org"}
     )
 
@@ -75,7 +75,7 @@ def _ip_allowed(octets: tuple[str, ...]) -> bool:
 
 def check_line(line: str, allowed_emails: set[str]) -> list[str]:
     """Return the rule names a single line violates."""
-    found = [name for name, pattern in SECRET_RULES if pattern.search(line)]
+    found = [name for name, pattern in LINE_RULES if pattern.search(line)]
     found.extend(
         f"e-mail address {match.group(0)}"
         for match in EMAIL.finditer(line)

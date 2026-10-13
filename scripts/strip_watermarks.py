@@ -39,7 +39,7 @@ WATERMARK = re.compile(
 """Matches a normalised line that is nothing but an AI attribution."""
 
 _LEAD = re.compile(r"""^(?:#+|//+|/\*+|\*+|<!--|--|;+|%+|["']|-\s|>)\s*""")
-_TAIL = re.compile(r"""(?:\\n)?["']?,?\s*(?:-->|\*/)?\s*$""")
+_TAIL = re.compile(r"""(?:\\n)?["']?,?\s*(?:--!?>|\*/)?\s*$""")
 
 
 def is_watermark(line: str) -> bool:
