@@ -53,6 +53,10 @@ class CtcModel(Protocol):
         """Return ``[frames, labels]`` log-probabilities for a mono waveform."""
 
 
+_TRAINING_ONLY_KEYS = {"wav2vec2.masked_spec_embed"}
+"""Weights SpecAugment masks use in training; inference never reads them."""
+
+
 class Wav2Vec2Ctc:
     """A Hugging Face ``Wav2Vec2ForCTC`` checkpoint (``transformers`` extra)."""
 
@@ -68,7 +72,20 @@ class Wav2Vec2Ctc:
         self._processor = transformers.Wav2Vec2Processor.from_pretrained(
             model_id, revision=revision
         )
-        model = transformers.Wav2Vec2ForCTC.from_pretrained(model_id, revision=revision)
+        hf_logging = require("transformers.utils.logging")
+        verbosity = hf_logging.get_verbosity()
+        # Its load report always lists the training-only masked_spec_embed as missing.
+        hf_logging.set_verbosity_error()
+        try:
+            model, info = transformers.Wav2Vec2ForCTC.from_pretrained(
+                model_id, revision=revision, output_loading_info=True
+            )
+        finally:
+            hf_logging.set_verbosity(verbosity)
+        if unexpected := set(info["missing_keys"]) - _TRAINING_ONLY_KEYS:
+            logger.warning(
+                "%s: weights missing from checkpoint: %s", model_id, sorted(unexpected)
+            )
         self._model = model.to(device).eval()
         self._device = device
         tokenizer = self._processor.tokenizer
