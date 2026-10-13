@@ -48,7 +48,7 @@ def _errors(checker: ModuleType, root: Path) -> list[str]:
 def test_solution_note_is_valid(checker: ModuleType, clean_vault: Path) -> None:
     """A linked solution note with every required section passes."""
     _add_solution(clean_vault, SECTIONS)
-    assert "solution" in checker.NOTE_TYPES
+    assert "solution" in checker.settings(clean_vault)["schema"]["types"]
     assert _errors(checker, clean_vault) == []
 
 
