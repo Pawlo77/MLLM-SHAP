@@ -91,7 +91,10 @@ def test_delivery_switch_controls_commit_push_and_merge(
     assert not set(SHIP) & set(ask)
     table = '[tool.agent-kit.configs]\ndelivery = "autopilot"\n'
     auto = configs.claude_settings(_root(tmp_path / "auto", table))
-    assert set(SHIP) <= set(auto["permissions"]["allow"])
+    allow = auto["permissions"]["allow"]
+    assert set(SHIP) <= set(allow)
+    assert "Bash(gh api *)" not in allow  # repo settings and deletes stay confirmed
+    assert "Bash(gh api graphql*)" in allow
 
 
 def test_secrets_and_force_pushes_are_always_denied(
