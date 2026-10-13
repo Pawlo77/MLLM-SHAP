@@ -14,7 +14,6 @@ related-code:
   - "[[src/mllm_shap/alignment/segments.py]]"
   - "[[src/mllm_shap/alignment/sgpa.py]]"
 ---
-
 # alignment
 
 Concept: [[SGPA]]. Decisions: [[Alignment decisions]].

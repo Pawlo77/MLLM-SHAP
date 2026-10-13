@@ -10,7 +10,6 @@ related-code:
   - "[[src/mllm_shap/pipeline/runner.py]]"
   - "[[src/mllm_shap/pipeline/orchestrator.py]]"
 ---
-
 # How a run works
 
 Code: [[pipeline]]. State: release 0.1.18. The user guide has a longer version for people who do not use the vault.

@@ -12,7 +12,6 @@ tags: [issue, deferred, papers]
 related-code:
   - "[[src/mllm_shap/alignment/sgpa.py]]"
 ---
-
 # D06 - SGPA paper not in the papers list
 
 Package: [[alignment]]. Concept: [[SGPA]].

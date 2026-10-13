@@ -17,7 +17,6 @@ related-code:
   - "[[src/mllm_shap/pipeline/result.py]]"
   - "[[src/mllm_shap/pipeline/runner.py]]"
 ---
-
 # pipeline
 
 Walkthrough: [[How a run works]].

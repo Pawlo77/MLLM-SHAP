@@ -10,7 +10,6 @@ related-code:
   - "[[src/mllm_shap/pipeline/config.py]]"
   - "[[src/mllm_shap/runtime/kv_cache.py]]"
 ---
-
 # Runtime decisions
 
 Architecture: [[runtime]]. Concept: [[Prefix hash]].

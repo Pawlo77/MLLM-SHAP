@@ -14,7 +14,6 @@ related-code:
   - "[[src/mllm_shap/estimation/estimands/_weights.py]]"
   - "[[src/mllm_shap/pipeline/orchestrator.py]]"
 ---
-
 # Estimation decisions
 
 Architecture: [[estimation]]. Theory: `docs/theory/approximation.rst`.
