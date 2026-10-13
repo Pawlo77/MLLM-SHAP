@@ -30,8 +30,7 @@ skill `notes`; the vault rules are in `knowledge/AGENTS.md`), plus `plans/` and
 - **Change in Obsidian, then commit**: `.obsidian/plugins/code-graph/data.json`.
 - **Never read or commit**: `.smart-env/`, `.obsidian/plugins/realclaudian/data.json`
   (optional local plugins that may hold keys; both git-ignored).
-- Plugin code (`main.js`, `styles.css`) is committed next to each manifest at the pinned
-  version (`make obsidian-plugins` re-downloads it); only `wasm/` caches are git-ignored.
+- Plugin code (`main.js`, `styles.css`) is git-ignored: `make obsidian-plugins` downloads the release pinned by each committed manifest; only `wasm/` caches and workspace state are ignored too.
 
 ## Links and Code Graph
 

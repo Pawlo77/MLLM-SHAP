@@ -1,4 +1,4 @@
-"""Every enabled community plugin of this vault is pinned and installed.
+"""Every enabled community plugin of this vault is pinned by a committed manifest.
 
 @see [[scripts/install_obsidian_plugins.py]]
 """
@@ -8,8 +8,8 @@ import importlib.util
 from tests.hooks._hookrun import ROOT
 
 
-def test_every_enabled_repository_plugin_is_pinned_and_installed() -> None:
-    """The committed vault ships main.js for every enabled community plugin."""
+def test_every_enabled_repository_plugin_is_pinned() -> None:
+    """Every enabled community plugin has a repository and a pinned manifest."""
     spec = importlib.util.spec_from_file_location(
         "install_obsidian_plugins", ROOT / "scripts" / "install_obsidian_plugins.py"
     )
@@ -19,4 +19,6 @@ def test_every_enabled_repository_plugin_is_pinned_and_installed() -> None:
     spec.loader.exec_module(installer)
     for plugin in installer.enabled_plugins():
         assert plugin in installer.REPOSITORIES, plugin
-        assert installer.missing(plugin) == [], plugin
+        assert (ROOT / ".obsidian" / "plugins" / plugin / "manifest.json").is_file(), (
+            plugin
+        )

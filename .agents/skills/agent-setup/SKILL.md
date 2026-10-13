@@ -21,7 +21,7 @@ mkdir -p <parent> && cd <parent>
 for r in MLLM-SHAP MLLM-Shap-legacy; do git clone https://github.com/Pawlo77/$r.git; done
 ```
 
-Open `<parent>/MLLM-SHAP/MLLM-SHAP.code-workspace`; its paths are relative to `MLLM-SHAP/`.
+Open `<parent>/MLLM-SHAP/mllm-shap.code-workspace`; its paths are relative to `MLLM-SHAP/`.
 
 ## Tool matrix
 

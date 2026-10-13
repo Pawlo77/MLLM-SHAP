@@ -1,11 +1,11 @@
 cff-version: 1.2.0
-message: "If you use mllm-shap in research, please cite it."
+message: "If you use this work in research, please cite it."
 title: "mllm-shap: Shapley-value explainability for conversational language models"
 type: software
 authors:
-  - family-names: Pozorski
-    given-names: Paweł
-    email: pozorski.paul@gmail.com
+  - family-names: "Pozorski"
+    given-names: "Paweł"
+    email: "pozorski.paul@gmail.com"
 version: 0.6.0
 date-released: "2026-10-12"
 license: Apache-2.0
