@@ -136,6 +136,21 @@ def test_docs_only_branch_is_routine(policy: ModuleType, repo: Path) -> None:
             "template-sync.yaml",
         ),
         (
+            "chore: tweak the hook config",
+            {".pre-commit-config.yaml": "repos: []\n"},
+            ".pre-commit-config.yaml",
+        ),
+        (
+            "chore: tweak the shared make targets",
+            {"kit.mk": "# x\n"},
+            "kit.mk",
+        ),
+        (
+            "chore: tweak the config generator",
+            {"scripts/sync_configs.py": "# x\n"},
+            "scripts/sync_configs.py",
+        ),
+        (
             "chore: tweak the shell guard",
             {"scripts/hooks/shell_guard.py": "# x\n"},
             "scripts/hooks/shell_guard.py",

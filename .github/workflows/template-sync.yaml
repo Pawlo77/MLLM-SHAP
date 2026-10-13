@@ -62,6 +62,11 @@ jobs:
           args=(--trust --defaults --conflict inline)
           [ -z "$REF" ] || args+=(--vcs-ref "$REF")
           uvx --from copier==9.18.2 copier update "${args[@]}"
+          # The derived files depend on the project's pyproject.toml, which Copier's
+          # scratch render does not have: regenerate them here.
+          for sync in sync_rules sync_agents sync_configs; do
+            uv run --no-project --with pyyaml python "scripts/${sync}.py"
+          done
           if [ -z "$(git status --porcelain)" ]; then
             echo "Up to date with the template."
             exit 0
@@ -96,5 +101,12 @@ jobs:
           gh pr create --base "$BASE" --head "$branch" \
             --title "chore: update from python-kit-template ${ref}" \
             --body-file "$RUNNER_TEMP/body.md"
+          # A newer release supersedes the still-open update pull requests of older ones.
+          new="$(gh pr view "$branch" --json number --jq .number)"
+          gh pr list --state open --json number,headRefName \
+            | jq -r --arg keep "$branch" '.[] | select((.headRefName | startswith("chore/template-update-")) and .headRefName != $keep) | .number' \
+            | while read -r old; do
+                gh pr close "$old" --delete-branch --comment "Superseded by #${new}."
+              done
         env:
           TEMPLATE_TOKEN_SET: ${{ secrets.TEMPLATE_SYNC_TOKEN && 'yes' || '' }}
