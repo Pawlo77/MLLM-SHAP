@@ -20,7 +20,7 @@ before hand-off.
 
 ## Frontmatter
 
-- `title`, `type` (`map`, `dashboard`, `module`, `decision-log`, `issue`, `concept`, `paper-list`, `handbook`, `solution`, `plan`, `generated`), `domain` (a package or `index`, `vault`, `theory`), `parent` (the wikilink of the note one level up, `"[[mllm-shap]]"`; none on the map and generated notes), `tags` (a YAML list without `#`), `created` (`YYYY-MM-DD`), `updated` when the content changes.
+- `title`, `type` (`map`, `dashboard`, `module`, `decision-log`, `issue`, `concept`, `paper-list`, `handbook`, `solution`, `plan`, `generated`), `domain` (a package or `index`, `vault`, `theory`), `parent` (the wikilink of the note one level up, `"[[mllm-shap]]"`; none on the map), `tags` (a YAML list without `#`), `created` (`YYYY-MM-DD`), `updated` when the content changes.
 - `status`: required on issues (`open`, `fixed`, `wontfix`, `deferred`) and plans (`draft`, `ready`, `in progress`, `done`, `superseded`).
 - `related-code`: wikilinks to code by vault path with extension, for example `"[[src/mllm_shap/estimation/exact.py]]"`; they become Code Graph edges. `aliases`: other names.
 

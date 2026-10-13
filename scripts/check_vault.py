@@ -83,9 +83,9 @@ AGENT_FILES = {"AGENTS.md", "CLAUDE.md"}
 
 REQUIRED_FIELDS = ("title", "type", "domain", "created", "parent")
 """Frontmatter keys every knowledge note needs (``created`` optional when generated,
-``parent`` absent on the map and generated notes)."""
+``parent`` absent on the map)."""
 
-ROOTLESS_TYPES = {"map", "generated"}
+ROOTLESS_TYPES = {"map"}
 """Note types without a ``parent`` link."""
 
 PLAN_HEADER = ("**Goal:**", "**Architecture:**", "**Tech Stack:**")
