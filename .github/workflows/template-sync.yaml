@@ -62,6 +62,11 @@ jobs:
           args=(--trust --defaults --conflict inline)
           [ -z "$REF" ] || args+=(--vcs-ref "$REF")
           uvx --from copier==9.18.2 copier update "${args[@]}"
+          # The derived files depend on the project's pyproject.toml, which Copier's
+          # scratch render does not have: regenerate them here.
+          for sync in sync_rules sync_agents sync_configs; do
+            uv run --no-project --with pyyaml python "scripts/${sync}.py"
+          done
           if [ -z "$(git status --porcelain)" ]; then
             echo "Up to date with the template."
             exit 0
