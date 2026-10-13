@@ -116,7 +116,7 @@ open the ``.ipynb`` on GitHub or browse the full catalog in
      - `GitHub <https://github.com/Pawlo77/MLLM-SHAP/blob/main/examples/attribution_viz.ipynb>`__
 
    * - :doc:`notebooks/text_explain_e2e`
-     - One refund prompt on the LM Studio, transformers (KV cache, ``dtype``,
+     - One refund question, guarded by a system prompt, on the LM Studio, transformers (KV cache, ``dtype``,
        pinned ``revision``) and HTTP API backends from the ``config/``
        presets, then visualized with :func:`~mllm_shap.render_attribution`;
        LM Studio is skipped when no server runs.
