@@ -5,7 +5,7 @@ domain: alignment
 parent: "[[mllm-shap]]"
 tags: [architecture, alignment]
 created: 2026-10-10
-updated: 2026-10-12
+updated: 2026-10-13
 related-code:
   - "[[src/mllm_shap/alignment/__init__.py]]"
   - "[[src/mllm_shap/alignment/ctc.py]]"
@@ -27,7 +27,7 @@ Concept: [[SGPA]]. Decisions: [[Alignment decisions]].
 ## Public surface
 
 - `SpectrogramGuidedAligner(model=None, energy_weight=0.8, flux_weight=0.2, separator="|")`; `align(transcript, audio: AudioPart, attach_audio=False) -> list[AudioSegment]`.
-- `CtcModel` protocol (`sample_rate`, `blank_id`, `vocab`, `log_probs(waveform)`); `Wav2Vec2Ctc(model_id="facebook/wav2vec2-base-960h", revision=None, device="cpu")` implements it.
+- `CtcModel` protocol (`sample_rate`, `blank_id`, `vocab`, `log_probs(waveform)`); `Wav2Vec2Ctc(model_id="facebook/wav2vec2-base-960h", revision=None, device="cpu")` implements it. Its load report is silenced; only a missing weight other than the training-only `masked_spec_embed` logs a warning.
 - `SgpaSegmentPartitioner` (`sgpa_segments`, options `SgpaOptions`: `model_id`, `revision`, `device`, `energy_weight`, `flux_weight`, `text_roles` for word players of typed messages, `transcript: send|align_only`): one player per spellable word of every message with an `AudioPart` and a transcript; ids `"{snapshot_id}:{turn}:{message}:{token}"`; spans carry the word's text range and `samples`; the default aligner loads on the first `partition`; `align_only` lists audio messages in `PlayerSet.hidden_text`, so the model hears them without their transcript.
 - `AudioSegment(token, token_index, start_time, end_time, ctc_start_time, ctc_end_time, confidence, boundary_refined, sample_rate, start_sample, end_sample, audio=b"")` with `duration`.
 - `decode_audio(data, sample_rate=None)` (mono float32, optional resampling) and `encode_wav(waveform, sample_rate)` (16-bit PCM).
