@@ -7,7 +7,6 @@ tags: [handbook, onboarding]
 created: 2026-10-07
 updated: 2026-10-08
 ---
-
 # Onboarding
 
 Next: [[How a run works]].

@@ -7,7 +7,6 @@ tags: [moc, dashboard]
 created: 2026-10-07
 updated: 2026-10-08
 ---
-
 # Dashboard
 
 Live tables built by the Dataview plugin from note frontmatter; they render only in Obsidian.

@@ -11,7 +11,6 @@ fixed_in: ""
 tags: [issue]
 related-code: []
 ---
-
 # <% tp.file.title %>
 
 Package: <% "[" + "[<package architecture note>]" + "]" %>.

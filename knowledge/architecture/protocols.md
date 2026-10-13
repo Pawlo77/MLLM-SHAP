@@ -19,7 +19,6 @@ related-code:
   - "[[src/mllm_shap/protocols/renderer.py]]"
   - "[[src/mllm_shap/protocols/value.py]]"
 ---
-
 # protocols
 
 ## Responsibility

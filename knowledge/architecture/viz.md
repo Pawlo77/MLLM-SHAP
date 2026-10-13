@@ -17,7 +17,6 @@ related-code:
   - "[[src/mllm_shap/viz/token_bar.py]]"
   - "[[src/mllm_shap/viz/token_text.py]]"
 ---
-
 # viz
 
 ## Responsibility

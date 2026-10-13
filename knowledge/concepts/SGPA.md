@@ -7,7 +7,6 @@ tags: [concept]
 created: 2026-10-07
 aliases: [Spectrogram-Guided Phonetic Alignment]
 ---
-
 # SGPA
 
 SGPA (Spectrogram-Guided Phonetic Alignment) aligns an audio signal to phonetic units so that audio segments, rather than individual frames, become players; it makes Shapley explanations of speech input feasible. [[alignment]] implements the alignment (`SpectrogramGuidedAligner`); the partitioner that makes segments players is planned.

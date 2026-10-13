@@ -11,7 +11,6 @@ related-code:
   - "[[src/mllm_shap/domain/players.py]]"
   - "[[src/mllm_shap/backends/_chat.py]]"
 ---
-
 # Domain decisions
 
 Architecture: [[domain]]. Related: [[backends]], [[Message]].
