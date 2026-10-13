@@ -15,7 +15,11 @@ No DataviewJS or inline JS.
 
 ```dataview
 TABLE WITHOUT ID file.link AS Log, domain AS Domain, updated AS Updated
+<<<<<<< before updating
 FROM "knowledge/decisions"
+=======
+FROM "notes/decisions"
+>>>>>>> after updating
 WHERE type = "decision-log" AND domain != "process"
 SORT updated DESC
 ```
@@ -36,7 +40,11 @@ SORT updated DESC
 ```yaml
 filters:
   and:
+<<<<<<< before updating
     - file.inFolder("knowledge/decisions")
+=======
+    - file.inFolder("notes/decisions")
+>>>>>>> after updating
     - 'type == "decision-log"'
 properties: {domain: {displayName: Domain}}
 views:
@@ -60,7 +68,11 @@ JSON Canvas; pixels, `y` down. Grid (400 px columns, 200 px rows), no overlaps.
 {
   "nodes": [
     {"id": "g1", "type": "group", "x": -20, "y": -60, "width": 440, "height": 300, "label": "Estimators"},
+<<<<<<< before updating
     {"id": "n1", "type": "file", "file": "knowledge/decisions/<Domain> decisions.md", "x": 0, "y": 0, "width": 380, "height": 200},
+=======
+    {"id": "n1", "type": "file", "file": "notes/decisions/<Domain> decisions.md", "x": 0, "y": 0, "width": 380, "height": 200},
+>>>>>>> after updating
     {"id": "t1", "type": "text", "text": "**Complementary contribution**", "x": 0, "y": 320, "width": 380, "height": 100, "color": "4"}
   ],
   "edges": [{"id": "e1", "fromNode": "n1", "fromSide": "bottom", "toNode": "t1", "toSide": "top", "label": "→"}]
