@@ -277,6 +277,9 @@ release = true
 protected-workflows = ["publish.yaml"]
 sync-args = "--all-groups --all-extras"
 
+[tool.agent-kit.ship]
+copilot = false  # no Copilot review requested or awaited
+
 [tool.agent-kit.obsidian-plugins]
 code-graph = "mrjw717/obsidian-code-graph"
 mermaid-tools = "dartungar/obsidian-mermaid"

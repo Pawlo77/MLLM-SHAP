@@ -10,7 +10,7 @@ tests, docs and reviews for this repository and nothing else.
   not a tolerance issue. Axiom tests gate every estimator change.
 - Minimal diffs, TDD, typed code, Google docstrings (`.cursor/rules/*.mdc`).
 - Reproducibility: every number in docs and notebooks is regenerated, never typed.
-- Routine changes ship through skill `ship` (Copilot review, green CI, auto-merge);
+- Routine changes ship through skill `ship` (green CI, auto-merge);
   anything touching `src/` or not routine stops before the merge for the maintainer.
 
 ## How I work here

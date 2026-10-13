@@ -33,7 +33,7 @@ maintainer; how they are handled here: `local.md` in this folder.
 5. Housekeeping (`local.md`) as its own commit, `chore: prune <what>`; skip it when
    nothing is stale.
 6. Run skill `ship`; `scripts/pr_policy.py` classifies it routine (`build:`/`ci:` commits,
-   lock, hook revisions, pins, same package set) and it merges after Copilot and CI.
+   lock, hook revisions, pins, same package set) and it merges after CI.
 
 ## Weekly cadence
 

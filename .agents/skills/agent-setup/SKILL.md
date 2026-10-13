@@ -8,8 +8,8 @@ description: >-
 # mllm-shap agent setup
 
 Delivery runs through skill `ship`: routine changes (`scripts/pr_policy.py`) merge after
-Copilot's review, others stop before the merge. Copilot code review must be enabled on the
-repository (Settings, Copilot, Code review).
+green CI, others stop before the merge. Copilot review is off (`[tool.agent-kit.ship]` in
+`pyproject.toml`); turn it on there and in the repository settings (Copilot, Code review).
 
 ## Sibling repository
 

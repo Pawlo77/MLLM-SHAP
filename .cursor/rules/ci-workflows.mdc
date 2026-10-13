@@ -16,7 +16,7 @@ alwaysApply: false
 | `pr-title.yaml` | PR events | job `title` (required): `type: summary`; drafts and WIP fail |
 | `assign-author.yaml` | PR opened, reopened, title edited | assignee and label from the title type |
 | `template-sync.yaml`, `template-drift.yaml` | weekly, dispatch / PR | update from and compare with python-kit-template |
-| skill `ship` (local) | finished branch | opens the PR with Copilot review, fixes its threads; routine changes (`scripts/pr_policy.py`) merge themselves, others wait for the maintainer |
+| skill `ship` (local) | finished branch | opens the PR, follows it to green and fixes review threads; routine changes (`scripts/pr_policy.py`) merge themselves, others wait for the maintainer |
 | `publish.yaml` | tag `v*.*.*`, pushed by skill `release` after the merge | tag must equal `uv version --short`; build, smoke test, `uv publish`, GitHub Release; `make upgrade` never edits it |
 
 Required on `main`: `prek`, `tests-passed`, `CodeQL`, `title`.
