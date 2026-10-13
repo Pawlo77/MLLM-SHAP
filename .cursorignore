@@ -1,4 +1,7 @@
-# Secrets and credentials — hard-block Agent / Tab / @-mention
+# Agent tools do not honor .gitignore: block secrets and credentials.
+# Keep in step with the Read denies of .claude/settings.json (scripts/sync_configs.py).
+
+# Secrets and credentials
 .env
 .env.*
 .pypirc
@@ -8,8 +11,15 @@
 **/secrets.json
 **/id_rsa
 **/id_rsa.pub
+**/id_ed25519*
+.netrc
+.git-credentials
+
 # Obsidian AI plugins: local embeddings and agent settings (may hold keys)
 .smart-env/
+
+# Project-specific entries below
+
+# Obsidian AI plugin settings and jit-context session markers
 .obsidian/plugins/realclaudian/data.json
-# jit-context plugin logs and per-session markers
 .claude/jit-context/.discovery/

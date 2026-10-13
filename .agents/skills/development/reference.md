@@ -40,10 +40,10 @@ New estimator, estimand, backend, value_fn, normalizer, partition, absence_polic
 
 ## Sibling repos
 
-Clone as siblings of `mllm-shap/` (skill `agent-setup`; workspace file `MLLM-SHAP.code-workspace`):
+Clone as siblings of `mllm-shap/` (skill `agent-setup`; workspace file `mllm-shap.code-workspace`):
 
 | Repo | Clone URL | Path from `MLLM-SHAP/` |
 |------|-----------|------------------------|
 | Legacy MLLM-Shap-legacy | `https://github.com/Pawlo77/MLLM-Shap-legacy.git` | `../MLLM-Shap-legacy/mllm_shap/src/mllm_shap/` |
 
-Open `<parent>/MLLM-SHAP/MLLM-SHAP.code-workspace` after cloning.
+Open `<parent>/MLLM-SHAP/mllm-shap.code-workspace` after cloning.

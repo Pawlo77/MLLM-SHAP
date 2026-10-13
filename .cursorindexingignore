@@ -1,24 +1,28 @@
-# Index skip only — files stay @-readable
+# Index skip only: files stay @-readable.
 uv.lock
 docs/_build/
-docs/_static/guide_outputs/
-examples/runs/
-runs/
-.pytest_benchmark/
 htmlcov/
 dist/
 build/
 *.egg-info/
-scripts/hooks/__pycache__/
+
 .obsidian/
-knowledge/sources/
 .remember/logs/
 .remember/tmp/
-.cursor/context/
-.claude/context/
 # Generated copies; their sources are indexed
 knowledge/generated/
-.claude/jit-context/
 .claude/rules/
 .codex/agents/
+
+# Project-specific entries below
+
+docs/_static/guide_outputs/
+examples/runs/
+runs/
+.pytest_benchmark/
+scripts/hooks/__pycache__/
+knowledge/sources/
+.cursor/context/
+.claude/context/
+.claude/jit-context/
 mutants/

@@ -1,6 +1,1 @@
-[
-  "mermaid-tools",
-  "dataview",
-  "code-graph",
-  "templater-obsidian"
-]
+["dataview", "templater-obsidian", "mermaid-tools", "code-graph"]

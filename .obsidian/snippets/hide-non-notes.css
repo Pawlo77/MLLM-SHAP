@@ -1,19 +1,19 @@
-/* Hide folders and files that hold no notes meant for people: code, docs, examples,
-   templates and agent instructions. The vault root is the repository, so Obsidian still
-   indexes them: `related-code` links and Code Graph keep working. Keep this list in step
-   with userIgnoreFilters in app.json (search and graph). */
-.nav-folder:has(> .nav-folder-title[data-path="config"]),
-.nav-folder:has(> .nav-folder-title[data-path="docs"]),
-.nav-folder:has(> .nav-folder-title[data-path="examples"]),
-.nav-folder:has(> .nav-folder-title[data-path="scripts"]),
+/* Hide folders and files that hold no notes meant for people: code, templates and agent
+   instructions. The vault root is the repository, so Obsidian still indexes them and
+   `related-code` links keep working. Keep this list in step with userIgnoreFilters in
+   app.json (search and graph); list a new non-note folder in both. */
 .nav-folder:has(> .nav-folder-title[data-path="src"]),
 .nav-folder:has(> .nav-folder-title[data-path="tests"]),
+.nav-folder:has(> .nav-folder-title[data-path="scripts"]),
 .nav-folder:has(> .nav-folder-title[data-path="knowledge/_templates"]),
 .nav-file:has(> .nav-file-title[data-path="README.md"]),
 .nav-file:has(> .nav-file-title[data-path="CONTRIBUTING.md"]),
 .nav-file:has(> .nav-file-title[data-path="AGENTS.md"]),
 .nav-file:has(> .nav-file-title[data-path="CLAUDE.md"]),
 .nav-file:has(> .nav-file-title[data-path$="/AGENTS.md"]),
-.nav-file:has(> .nav-file-title[data-path$="/CLAUDE.md"]) {
+.nav-file:has(> .nav-file-title[data-path$="/CLAUDE.md"]),
+.nav-folder:has(> .nav-folder-title[data-path="config"]),
+.nav-folder:has(> .nav-folder-title[data-path="docs"]),
+.nav-folder:has(> .nav-folder-title[data-path="examples"]) {
   display: none;
 }

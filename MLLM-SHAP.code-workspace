@@ -1,9 +1,8 @@
 {
-  // Multi-root workspace: MLLM-SHAP plus the legacy MLLM-Shap-legacy sibling.
-  // Layout and clone commands: skill agent-setup (.agents/skills/agent-setup).
+  // Multi-root workspace: this repository plus the legacy sibling (skill agent-setup).
   "folders": [
     {
-      "name": "MLLM-SHAP",
+      "name": "mllm-shap",
       "path": "."
     },
     {
@@ -12,7 +11,7 @@
     }
   ],
   "settings": {
-    "python.defaultInterpreterPath": "${workspaceFolder:MLLM-SHAP}/.venv/bin/python",
+    "python.defaultInterpreterPath": "${workspaceFolder:mllm-shap}/.venv/bin/python",
     "files.exclude": {
       "**/__pycache__": true
     }

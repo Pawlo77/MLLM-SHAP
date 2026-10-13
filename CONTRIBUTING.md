@@ -3,6 +3,7 @@
 ## Security
 
 Report a vulnerability through GitHub's private reporting or by email to the maintainer.
+Never commit secrets, tokens or personal data.
 
 ## What to contribute
 
@@ -67,6 +68,20 @@ Pytest markers select tests that need extra resources and are excluded from `mak
 
 Write tests first for new behaviour and bug fixes.
 
+## Project rules
+
+- **Brevity:** one home per fact, link instead of restating; file budgets are enforced by `scripts/check_brevity.py`.
+- **Generated files:** never edit `.claude/rules/`, `.codex/agents/` or `knowledge/generated/`; change the source and rerun `scripts/sync_rules.py`, `scripts/sync_agents.py` or `make knowledge`.
+- **Template files:** files that come from [python-kit-template](https://github.com/Pawlo77/python-kit-template) change there, not here.
+
+## Branches, commits and pull requests
+
+- Branch from `main` with a type prefix (`feat/`, `fix/`, `docs/`, `test/`, `refactor/`, `chore/`, `ci/`, `perf/`); `main` is protected.
+- Commit subjects are `type: summary` (`feat`, `fix`, `docs`, `test`, `refactor`, `chore`, `ci`, `build`, `perf`): imperative, no trailing period, at most 72 characters, one concern per commit. A `commit-msg` hook enforces it; never bypass hooks with `--no-verify` or force-push shared branches.
+- The PR title uses the same format (workflow `pr-title`). Fill in the pull request template; open it ready for review (no draft or WIP) and keep it focused.
+- The `assign-author.yaml` workflow assigns the author and labels the PR from the title type (`fix` is `bug`, `docs` is `documentation`, the rest `enhancement`); if it did not run: `gh pr edit <n> --add-assignee Pawlo77 --add-label <label>`.
+- Required checks: `prek`, `tests-passed`, `title`; CodeQL also runs on every PR. Resolve every review thread before asking for a merge. The maintainer merges with a merge commit.
+
 ## Project layout
 
 | Path | Role |
@@ -89,14 +104,6 @@ Write tests first for new behaviour and bug fixes.
 ## Adding a plugin
 
 Estimators, estimands, value functions, normalizers, backends, partitions, absence policies and renderers are entry-point plugins. Implement the protocol, register the entry point and test through `PluginRegistry` as the [extending guide](docs/guides/extending.rst) describes; a backend also needs a benchmark and a notebook.
-
-## Branches, commits and pull requests
-
-- Branch from `main` with a type prefix (`feat/`, `fix/`, `docs/`, `test/`, `refactor/`, `chore/`, `ci/`, `perf/`); `main` is protected.
-- Commit subjects are `type: summary` (`feat`, `fix`, `docs`, `test`, `refactor`, `chore`, `ci`, `build`, `perf`): imperative, no trailing period, at most 72 characters, one concern per commit. A `commit-msg` hook enforces it; never bypass hooks with `--no-verify` or force-push shared branches.
-- The PR title uses the same format (workflow `pr-title`). Fill in the pull request template; open it ready for review (no draft or WIP) and keep it focused.
-- The `assign-author.yaml` workflow assigns the author and labels the PR from the title type (`fix` is `bug`, `docs` is `documentation`, the rest `enhancement`); if it did not run: `gh pr edit <n> --add-assignee Pawlo77 --add-label <label>`.
-- Required checks: `prek`, `tests-passed`, `CodeQL`, `title`. The maintainer merges with a merge commit.
 
 ## Review automation
 
