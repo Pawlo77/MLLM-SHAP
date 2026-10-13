@@ -232,14 +232,13 @@ def claude_settings(root: Path = ROOT) -> dict[str, Any]:
 def codex_hooks(root: Path = ROOT) -> dict[str, Any]:
     """Return the content of ``.codex/hooks.json``."""
     cfg = _table(root)
-    name = load_config(root).get("name", root.name)
     post = [_command(_codex("format_after_edit.sh"), 30, "Formatting with Ruff")]
     post += [
         _command(_codex(n), POST_EDIT_TIMEOUT) for n in cfg.get("post-edit-hooks", [])
     ]
     return {
         "description": (
-            f"{name} project hooks for Codex. Same scripts and Claude-shaped JSON as "
+            "Project hooks for Codex. Same scripts and Claude-shaped JSON as "
             ".claude/settings.json; Codex has no TaskCompleted, PostToolUseFailure or "
             "FileChanged events."
         ),

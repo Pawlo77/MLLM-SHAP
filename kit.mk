@@ -69,7 +69,7 @@ check: ## Tests, all quality hooks and the vault check
 	$(MAKE) vault-check
 
 vault-check: ## Vault consistency: notes, links, generated notes, brevity
-	uv run python scripts/check_vault.py $(VAULT_ARGS)
+	@test ! -f scripts/check_vault.py || uv run python scripts/check_vault.py $(VAULT_ARGS)
 	uv run python scripts/check_brevity.py
 	@test ! -f scripts/build_knowledge.py || uv run python scripts/build_knowledge.py --check
 	$(VAULT_CHECK_EXTRA)
