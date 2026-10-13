@@ -22,7 +22,7 @@ Required layout (clone commands: skill `agent-setup`; workspace file
 
 | What | Path from `MLLM-SHAP/` |
 |------|----------------------|
-| Canonical plan | the private research repository, cloned as `../mllm-xai/` (`plans/infrastructure/mllm-shap Package Rewrite.md`); it depends on this package, never the reverse |
+| Canonical plan | the private research repository, cloned as `../mllm-xai/` (`plans/infrastructure/2026-10-01-mllm-shap-package-rewrite.md`); it depends on this package, never the reverse |
 | Legacy reference | `../MLLM-Shap-legacy/mllm_shap/src/mllm_shap/`: gather logic, rewrite; never bulk-copy |
 
 Open the multi-root workspace file before audio-track or port work.

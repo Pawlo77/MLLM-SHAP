@@ -415,7 +415,7 @@ link-fields = ["related-code"]
 sections-exempt = ["Fixed issues"]
 
 [tool.agent-kit.vault.schema.exempt]
-parent = ["map", "generated"]
+parent = ["map"]
 created = ["generated"]
 
 [tool.agent-kit.vault.schema.statuses]
@@ -430,3 +430,4 @@ solution = ["Problem", "What was tried", "What worked", "Reusable rule"]
 [tool.agent-kit.knowledge]
 package = "src/mllm_shap"
 generators = ["modules", "public-api"]
+parent = "[[mllm-shap]]"
