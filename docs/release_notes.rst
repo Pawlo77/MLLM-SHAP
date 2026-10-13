@@ -8,6 +8,12 @@ Changes in each published ``mllm-shap`` version. Newest first.
 Unreleased
 ----------
 
+Fixed
+~~~~~
+
+- :class:`~mllm_shap.alignment.Wav2Vec2Ctc` no longer prints the Transformers load report for the
+  training-only ``masked_spec_embed`` weight; any other missing weight is logged as a warning.
+
 .. _release-0-6-0:
 
 0.6.0 (2026-10-12)
