@@ -37,6 +37,7 @@ Plugins list in `local.md` before other work:
 - Link code and other files by vault path with extension.
 - Inside Markdown tables escape the alias pipe: `[[Note\|text]]`.
 - Never use `#` in note file names (it starts a heading link).
+- Start a note with its properties block directly followed by the first heading: no blank line between the closing `---` and the heading.
 - After renaming a note, fix every `[[Old name` link; `make vault-check` lists them.
 - Every new note needs a link from an existing note (the checker flags isolated notes).
 - Agents cannot see renders (callouts, Mermaid, math): say so and ask the user to check
