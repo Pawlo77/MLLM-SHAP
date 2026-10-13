@@ -16,7 +16,7 @@ REPO = Path(__file__).resolve().parents[2]
 @pytest.fixture(scope="module")
 def builder(script: Callable[[str], ModuleType]) -> ModuleType:
     """Load scripts/build_knowledge.py."""
-    return script("build_knowledge")
+    return script("knowledge_extra")
 
 
 @pytest.fixture
