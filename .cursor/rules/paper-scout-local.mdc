@@ -1,0 +1,14 @@
+---
+description: What the paper-scout agent needs to know about mllm-shap
+alwaysApply: false
+---
+
+# Paper scout: mllm-shap
+
+- **Covered set**: DOIs, arXiv ids and normalised titles of the `knowledge/Papers.md`
+  sections, plus concept titles and their `aliases`.
+- **Venues**: ACL, NeurIPS, ICML, ICLR, AISTATS, JMLR, TMLR.
+- **Relevance**: method, estimand, and what mllm-shap could take from it.
+- **Attaches to**: an existing architecture or concept note (`[[estimation]]`,
+  `[[Prefix hash]]`) or `new concept: <term>`.
+- **Already covered**: name the existing `Papers.md` section.
