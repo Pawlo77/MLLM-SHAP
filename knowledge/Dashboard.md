@@ -10,7 +10,7 @@ updated: 2026-10-08
 
 # Dashboard
 
-Live tables built by the Dataview plugin from note frontmatter; they render only in Obsidian. The embedded generated notes at the end render everywhere.
+Live tables built by the Dataview plugin from note frontmatter; they render only in Obsidian.
 
 ## Issues by status and severity
 
@@ -85,14 +85,4 @@ WHERE type = "solution"
 SORT created DESC
 ```
 
-## Generated
-
-![[Open issues]]
-
-![[Decisions]]
-
-![[Release history]]
-
-![[Benchmarks]]
-
-Code tables: [[Modules]], [[Public API]], [[Config keys]], [[Plugins]]. Cited papers: [[Papers]].
+Cited papers: [[Papers]]. Map of the library: [[mllm-shap]].

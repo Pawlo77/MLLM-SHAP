@@ -33,7 +33,7 @@ Start here: [[Onboarding]], then [[How a run works]]. Live tables: [[Dashboard]]
 | [[viz]] | Token attribution renderers |
 | [[alignment]] | Spectrogram-guided alignment of transcript tokens to speech segments |
 
-Generated from the code: [[Modules]], [[Public API]], [[Config keys]], [[Plugins]].
+Generated from the code: [[Modules]], [[Public API]], [[Config keys]], [[Plugins]], [[Release history]], [[Benchmarks]].
 
 ## Plugin groups
 
