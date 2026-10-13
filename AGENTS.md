@@ -21,13 +21,13 @@ Optional, not part of `make check`: `make tests-all`, `make bench`, `make practi
 - Chat in caveman ultra (rule `.cursor/rules/caveman.mdc`; Codex reads that file once per
   session). Files, code, commits, PR bodies and subagent reports stay normal prose.
 - Delivery goes through skill `ship` after `make check`: it commits, pushes, opens the PR,
-  gets Copilot's review and addresses it; routine changes (`scripts/pr_policy.py`) merge
+  follows it to green and addresses review threads; routine changes (`scripts/pr_policy.py`) merge
   by themselves, everything else stops before the merge with the PR link. Outside `ship`
   and `release`, no commit, push, tag or PR; never draft or WIP PRs, force pushes, amends
   or pushes to `main` (rule `git-commits`).
 - Upgrades and releases go through skills `upgrade`, `release` and `ship`.
 - Claude reviews its own work before a PR (skill `review`, agent `reviewer`) and answers
-  Copilot's threads on its own PR; it never reviews other PRs on GitHub.
+  review threads on its own PR; it never reviews other PRs on GitHub.
 - Subagents default to Sonnet, Haiku for mechanical work; pass `model: opus` or `fable`
   when depth pays: estimator math, hard bugs, security or design review, a failed Sonnet run.
 - No new markdown or doc expansion unless it is requested or crucial new information.

@@ -36,7 +36,7 @@ already solved, with their reusable rules) before anything else.
    merge or average them, and fix only what you can confirm with a test.
 7. **Bug-hunt**: run skill `bugspot` probes when `estimation/`,
    `pipeline/`, `runtime/` or a backend changed.
-8. **Ship**: run skill `ship` (commits, PR, Copilot review loop, merge or hand-off).
+8. **Ship**: run skill `ship` (commits, PR, follow-up loop, merge or hand-off).
    Finish with `/remember`.
 9. **Compound** (after the merge, inside `ship` for routine changes): write
    `knowledge/handbook/Solutions/<YYYY-MM-DD> - <title>.md` with skill

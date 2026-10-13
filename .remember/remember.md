@@ -12,8 +12,8 @@ The repository is public; `main` is protected (`prek`, `tests-passed`, `CodeQL`,
 Weekly local task: `mllm-shap-upgrade` (Mon 08:00).
 
 ## User-only
-- Copilot code review reports "quota limit"; skill `ship` merges routine PRs without it
-  and says so.
+- Copilot review is off by default (`[tool.agent-kit.ship] copilot`); skill `ship` follows
+  CI and the threads of any reviewer.
 - Done means every CI check green, the Codecov report comment green (CI has no torch,
   so test new transformers code with stubs) and the PR mergeable with `main`.
 
