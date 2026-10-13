@@ -79,6 +79,79 @@ def test_wav2vec2_load_prints_no_report(capfd: pytest.CaptureFixture[str]) -> No
     assert "LOAD REPORT" not in capfd.readouterr().err
 
 
+class _HfLogging:
+    level = 30
+
+    def get_verbosity(self) -> int:
+        return self.level
+
+    def set_verbosity_error(self) -> None:
+        self.level = 40
+
+    def set_verbosity(self, level: int) -> None:
+        self.level = level
+
+
+class _Model:
+    def to(self, device: str) -> "_Model":
+        return self
+
+    def eval(self) -> "_Model":
+        return self
+
+
+def _fake_hub(monkeypatch: pytest.MonkeyPatch, missing: set[str]) -> _HfLogging:
+    """Replace the optional imports of ``Wav2Vec2Ctc`` with in-memory fakes."""
+    from types import SimpleNamespace
+
+    from mllm_shap.alignment import sgpa
+
+    hf_logging = _HfLogging()
+    tokenizer = SimpleNamespace(get_vocab=lambda: {"<pad>": 0}, pad_token_id=0)
+    processor = SimpleNamespace(
+        tokenizer=tokenizer, feature_extractor=SimpleNamespace(sampling_rate=RATE)
+    )
+    transformers = SimpleNamespace(
+        Wav2Vec2Processor=SimpleNamespace(from_pretrained=lambda *_, **__: processor),
+        Wav2Vec2ForCTC=SimpleNamespace(
+            from_pretrained=lambda *_, **__: (_Model(), {"missing_keys": missing})
+        ),
+    )
+    modules = {
+        "transformers": transformers,
+        "torch": object(),
+        "transformers.utils.logging": hf_logging,
+    }
+    monkeypatch.setattr(sgpa, "require", modules.__getitem__)
+    return hf_logging
+
+
+def test_wav2vec2_load_ignores_the_training_only_weight(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    """The expected missing key is silent and the Transformers verbosity returns."""
+    from mllm_shap.alignment.sgpa import Wav2Vec2Ctc
+
+    hf_logging = _fake_hub(monkeypatch, {"wav2vec2.masked_spec_embed"})
+    model = Wav2Vec2Ctc("any")
+    assert (model.blank_id, model.sample_rate) == (0, RATE)
+    assert not caplog.records
+    assert hf_logging.level == 30
+
+
+def test_wav2vec2_load_warns_about_other_missing_weights(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    """A missing weight that inference needs is still reported."""
+    from mllm_shap.alignment.sgpa import Wav2Vec2Ctc
+
+    _fake_hub(monkeypatch, {"wav2vec2.masked_spec_embed", "lm_head.weight"})
+    with caplog.at_level("WARNING"):
+        Wav2Vec2Ctc("any")
+    assert "lm_head.weight" in caplog.text
+    assert "masked_spec_embed" not in caplog.text
+
+
 def test_loud_audio_keeps_unrefined_boundaries() -> None:
     """Without a quiet point the boundary stays at the middle of the CTC gap."""
     noise = np.random.default_rng(0).uniform(-0.6, 0.6, len(FRAMES) * FRAME)
