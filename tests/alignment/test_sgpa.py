@@ -69,6 +69,16 @@ def test_wav2vec2_log_probs_are_normalised_per_frame() -> None:
     assert np.exp(lp).sum(axis=1) == pytest.approx(1.0, abs=1e-4)
 
 
+@pytest.mark.gpu
+def test_wav2vec2_load_prints_no_report(capfd: pytest.CaptureFixture[str]) -> None:
+    """The expected missing ``masked_spec_embed`` does not print a load report."""
+    pytest.importorskip("transformers")
+    from mllm_shap.alignment.sgpa import Wav2Vec2Ctc
+
+    Wav2Vec2Ctc("hf-internal-testing/tiny-random-wav2vec2", revision="main")
+    assert "LOAD REPORT" not in capfd.readouterr().err
+
+
 def test_loud_audio_keeps_unrefined_boundaries() -> None:
     """Without a quiet point the boundary stays at the middle of the CTC gap."""
     noise = np.random.default_rng(0).uniform(-0.6, 0.6, len(FRAMES) * FRAME)
