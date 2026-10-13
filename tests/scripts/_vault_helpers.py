@@ -37,7 +37,7 @@ def note(
 ) -> str:
     """Return a note with frontmatter."""
     created_line = "created: 2026-10-07\n" if created else ""
-    parent = "" if kind in ("map", "generated") else 'parent: "[[Map]]"\n'
+    parent = "" if kind == "map" else 'parent: "[[Map]]"\n'
     return (
         f'---\ntitle: "{title}"\ntype: {kind}\ndomain: demo\n{parent}tags: [demo]\n'
         f"{created_line}{extra}---\n\n# {title}\n\n{body}"
