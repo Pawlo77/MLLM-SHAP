@@ -13,7 +13,6 @@ related-code:
   - "[[src/mllm_shap/pipeline/orchestrator.py]]"
   - "[[src/mllm_shap/pipeline/reanalyze.py]]"
 ---
-
 # Value decisions
 
 Architecture: [[value]]. Related: [[backends]], [[pipeline]], [[Reanalyze]].

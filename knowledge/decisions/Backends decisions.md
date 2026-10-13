@@ -13,7 +13,6 @@ related-code:
   - "[[src/mllm_shap/backends/mock/audio.py]]"
   - "[[src/mllm_shap/backends/transformers/audio.py]]"
 ---
-
 # Backends decisions
 
 Architecture: [[backends]]. Related: [[value]], [[Capability protocol]].

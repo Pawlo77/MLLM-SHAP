@@ -15,7 +15,6 @@ related-code:
   - "[[src/mllm_shap/estimation/_shared.py]]"
   - "[[src/mllm_shap/runtime/archive.py]]"
 ---
-
 # Pipeline decisions
 
 Architecture: [[pipeline]]. Concepts: [[Manifest]], [[Run id]], [[Run archive]].

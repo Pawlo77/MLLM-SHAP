@@ -17,7 +17,6 @@ related-code:
   - "[[src/mllm_shap/domain/generation.py]]"
   - "[[src/mllm_shap/domain/players.py]]"
 ---
-
 # domain
 
 ## Responsibility

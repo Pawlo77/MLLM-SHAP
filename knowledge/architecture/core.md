@@ -12,7 +12,6 @@ related-code:
   - "[[src/mllm_shap/cli.py]]"
   - "[[src/mllm_shap/errors.py]]"
 ---
-
 # Package root
 
 ## Responsibility

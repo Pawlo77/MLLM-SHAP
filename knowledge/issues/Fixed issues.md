@@ -9,7 +9,6 @@ created: 2026-10-08
 fixed_in: "0.1.18"
 tags: [issue, fixed]
 ---
-
 # Fixed issues
 
 Fixed bugs, one row each; open and deferred issues keep their own notes ([[Open issues]]). Release dates: [[Release history]].

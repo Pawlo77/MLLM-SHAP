@@ -15,7 +15,6 @@ related-code:
   - "[[src/mllm_shap/plugins/options.py]]"
   - "[[src/mllm_shap/plugins/registry.py]]"
 ---
-
 # plugins
 
 Registered plugins: [[Plugins]].
