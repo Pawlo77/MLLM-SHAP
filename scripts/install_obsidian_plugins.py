@@ -44,8 +44,10 @@ def _fetch(url: str) -> bytes:
 
 
 def enabled_plugins(obsidian: Path = OBSIDIAN) -> list[str]:
-    """Return the community plugin ids enabled in the vault."""
-    return list(json.loads((obsidian / "community-plugins.json").read_text()))
+    """Enabled plugin ids, from the example list until the vault has its own."""
+    live = obsidian / "community-plugins.json"
+    source = live if live.is_file() else obsidian / "community-plugins.example.json"
+    return list(json.loads(source.read_text()))
 
 
 def pinned_version(plugin: str, obsidian: Path = OBSIDIAN) -> str:
