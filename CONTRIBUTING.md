@@ -30,6 +30,16 @@ make install
 
 Jupyter kernel: `make kernel` (`mllm-shap (uv)`).
 
+## Obsidian vault setup
+
+Obsidian rewrites its settings on every open, so the live files under `.obsidian/` are not committed. The committed `*.example.json` files hold the community plugin list and the default settings. On a fresh clone, copy them once (existing files are kept):
+
+```bash
+find .obsidian -name '*.example.json' -exec sh -c 'cp -n "$1" "${1%.example.json}.json"' _ {} \;
+```
+
+Then open the folder as a vault and run `make obsidian-plugins`. To share a setting with the team, edit its `.example.json` by hand; never commit a live `.json` file.
+
 ## Quality gates
 
 Run these before you open a pull request. CI runs the same checks.

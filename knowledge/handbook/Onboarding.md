@@ -19,7 +19,7 @@ Next: [[How a run works]].
 
 ## Open the vault
 
-- Open the repository folder as a vault in Obsidian (`open -a Obsidian .` on macOS); accept the community plugins listed in `.obsidian/community-plugins.json` (Code Graph, Dataview, Templater, Mermaid Tools). Their code (`main.js`, `styles.css`) is committed next to each manifest, so the vault works on a fresh clone; after a version bump in a manifest run `make obsidian-plugins` to download that release. Obsidian drops an entry from `community-plugins.json` whose `main.js` is missing; restore the list after a failed download.
+- Open the repository folder as a vault in Obsidian (`open -a Obsidian .` on macOS); copy the `.example.json` files as CONTRIBUTING.md (Obsidian vault setup) describes, then accept the community plugins listed in `.obsidian/community-plugins.json` (Code Graph, Dataview, Templater, Mermaid Tools). Their code (`main.js`, `styles.css`) is committed next to each manifest, so the vault works on a fresh clone; after a version bump in a manifest run `make obsidian-plugins` to download that release. Obsidian drops an entry from `community-plugins.json` whose `main.js` is missing; restore the list after a failed download.
 - Code Graph colours each package of `src/mllm_shap`; its settings are committed in `.obsidian/plugins/code-graph/data.json`.
 - Without Obsidian, read the same notes on GitHub or in the documentation site's handbook section.
 - Tool-specific hook behaviour found during the session-start smoke test: [[Fixed issues|T01]].

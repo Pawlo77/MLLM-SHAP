@@ -90,13 +90,20 @@ dmypy.json
 # PyPI configuration
 .pypirc
 
-# Obsidian: per-machine UI state and plugin caches. Plugin settings and manifests are
+# Obsidian: per-machine UI state and plugin caches. Plugin manifests and snippets are
 # committed; `make obsidian-plugins` downloads the pinned releases (main.js, styles.css).
 .obsidian/workspace*.json
 .obsidian/graph.json
 .obsidian/plugins/*/main.js
 .obsidian/plugins/*/styles.css
 .obsidian/plugins/*/wasm/
+# Per-machine settings (Obsidian rewrites them): copy the committed *.example.json (CONTRIBUTING.md)
+.obsidian/app.json
+.obsidian/appearance.json
+.obsidian/community-plugins.json
+.obsidian/core-plugins.json
+.obsidian/templates.json
+.obsidian/plugins/*/data.json
 .smart-env/
 
 # Agent tooling: user-local Claude Code settings
