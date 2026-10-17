@@ -156,7 +156,9 @@
       "Edit(examples/**)",
       "Edit(knowledge/**)",
       "Write(knowledge/**)",
-      "Bash(make knowledge*)"
+      "Bash(make knowledge*)",
+      "Bash(gh *)",
+      "Bash(grep *)"
     ],
     "deny": [
       "Read(**/.env)",
