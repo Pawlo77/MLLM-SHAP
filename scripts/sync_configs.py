@@ -52,6 +52,7 @@ ALLOW = (
     "Bash(git status*)",
     "Bash(git diff*)",
     "Bash(git log*)",
+    "Bash(grep *)",
     "Bash(git branch*)",
     "Bash(git checkout -b *)",
     "Bash(git switch -c *)",

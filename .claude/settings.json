@@ -107,6 +107,7 @@
       "Bash(git status*)",
       "Bash(git diff*)",
       "Bash(git log*)",
+      "Bash(grep *)",
       "Bash(git branch*)",
       "Bash(git checkout -b *)",
       "Bash(git switch -c *)",
@@ -157,8 +158,7 @@
       "Edit(knowledge/**)",
       "Write(knowledge/**)",
       "Bash(make knowledge*)",
-      "Bash(gh *)",
-      "Bash(grep *)"
+      "Bash(gh *)"
     ],
     "deny": [
       "Read(**/.env)",
