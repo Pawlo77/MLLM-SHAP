@@ -125,7 +125,7 @@ listed roles:
 Resolve plugins from config
 ---------------------------
 
-Built-in plugins register the ``tokens`` and ``messages`` partitions and the ``delete`` / ``pad`` /
+Built-in plugins register the ``tokens``, ``sentences`` and ``messages`` partitions and the ``delete`` / ``pad`` /
 ``neutral`` absence policies. :class:`~mllm_shap.ExplainRunner` resolves them from
 ``explanation.players`` and ``explanation.absence_policy``:
 

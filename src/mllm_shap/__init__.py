@@ -44,6 +44,8 @@ from .errors import (
 from .estimation.complementary import ComplementaryEstimator
 from .estimation.estimands import BanzhafAggregator, ShapleyAggregator
 from .estimation.exact import ExactEstimator
+from .estimation.kernel_banzhaf import KernelBanzhafEstimator
+from .estimation.leverage import LeverageEstimator
 from .estimation.loo import LeaveOneOutEstimator
 from .estimation.monte_carlo import MonteCarloEstimator
 from .estimation.neyman import NeymanEstimator
@@ -53,11 +55,13 @@ from .estimation.normalizers import (
     MinMaxNormalizer,
     PowerShiftNormalizer,
 )
+from .estimation.proxy import ProxyEstimator
 from .masking import (
     DeletePolicy,
     MessagePartitioner,
     NeutralPolicy,
     PadPolicy,
+    SentencePartitioner,
     TokenPartitioner,
 )
 from .pipeline import (
@@ -66,6 +70,7 @@ from .pipeline import (
     ExplainResult,
     ExplainRunner,
     ExplainRunOutput,
+    HierarchicalRunOutput,
     RunManifest,
     deletion_curve,
     explain_config_from_yaml,
@@ -132,9 +137,12 @@ __all__ = [
     "ExplainRunOutput",
     "ExplainRunner",
     "GenerationRecord",
+    "HierarchicalRunOutput",
     "IdentityNormalizer",
     "InMemoryObservabilitySink",
+    "KernelBanzhafEstimator",
     "LeaveOneOutEstimator",
+    "LeverageEstimator",
     "LmStudioBackend",
     "LogprobValue",
     "LogprobsUnavailableError",
@@ -159,10 +167,12 @@ __all__ = [
     "PluginNotFoundError",
     "PluginRegistry",
     "PowerShiftNormalizer",
+    "ProxyEstimator",
     "ReanalyzeMismatchError",
     "ReferenceWerValue",
     "Role",
     "RunManifest",
+    "SentencePartitioner",
     "SgpaSegmentPartitioner",
     "ShapleyAggregator",
     "TextPart",

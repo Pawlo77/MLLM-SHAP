@@ -1,0 +1,3 @@
+groups kept: (4, 8)
+coarse calls: 40
+fine calls: 64 (flat game: 320)

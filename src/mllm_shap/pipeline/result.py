@@ -153,3 +153,18 @@ class ExplainRunOutput:
             }
             for player_id in self.manifest.player_ids
         ]
+
+
+@dataclass(frozen=True, slots=True)
+class HierarchicalRunOutput:
+    """Both games of a hierarchical run."""
+
+    coarse: ExplainRunOutput
+    """Attribution of the groups (paragraphs or messages)."""
+
+    fine: ExplainRunOutput
+    """Attribution of the sentences of the kept groups, the rest held present.
+    Its values are per-level Shapley or Banzhaf values, not the flat game's."""
+
+    kept_groups: tuple[int, ...]
+    """Indices into the coarse players of the groups that were refined."""

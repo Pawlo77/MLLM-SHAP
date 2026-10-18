@@ -18,6 +18,7 @@ from ..domain.generation import GenerationRecord
 from ..domain.players import PlayerSet
 from ..errors import ConfigError
 from ..estimation._shared import budget_fraction
+from ..estimation.normalizers import apply_efficiency
 from ..masking.builder import MaskBuilder
 from ..masking.codec import MaskCodec
 from ..plugins.groups import PluginGroup
@@ -196,7 +197,9 @@ class ExplainOrchestrator:
                                 budget_fraction(
                                     player_set.num_players,
                                     explanation.budget.fraction,
-                                    explanation.budget.evaluations,
+                                    explanation.budget.evaluations_for(
+                                        player_set.num_players
+                                    ),
                                 ),
                                 explanation.include_minimal_masks,
                                 explanation.seed,
@@ -306,6 +309,9 @@ class ExplainOrchestrator:
                 with telemetry.span("orchestrator.aggregate"):
                     raw_values = estimator.estimate_attributions(
                         masks, payoffs, aggregator
+                    )
+                    raw_values = apply_efficiency(
+                        explanation.efficiency, raw_values, grand_value, base_value
                     )
                     normalized = normalizer.normalize(raw_values)
                 aggregation_ms = (time.perf_counter() - aggregation_started) * 1000.0

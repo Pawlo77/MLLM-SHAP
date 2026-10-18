@@ -7,6 +7,8 @@
 from .complementary import ComplementaryEstimator
 from .estimands import BanzhafAggregator, ShapleyAggregator
 from .exact import ExactEstimator
+from .kernel_banzhaf import KernelBanzhafEstimator
+from .leverage import LeverageEstimator
 from .loo import LeaveOneOutEstimator
 from .monte_carlo import MonteCarloEstimator
 from .neyman import NeymanEstimator
@@ -23,7 +25,9 @@ __all__ = [
     "ComplementaryEstimator",
     "ExactEstimator",
     "IdentityNormalizer",
+    "KernelBanzhafEstimator",
     "LeaveOneOutEstimator",
+    "LeverageEstimator",
     "MinMaxNormalizer",
     "MonteCarloEstimator",
     "NeymanEstimator",

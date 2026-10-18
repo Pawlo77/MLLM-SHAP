@@ -11,7 +11,7 @@ from .config import (
 )
 from .faithfulness import DeletionCurve, deletion_curve
 from .manifest import RunManifest, RunManifestPayload, parse_manifest
-from .result import ExplainResult, ExplainRunOutput
+from .result import ExplainResult, ExplainRunOutput, HierarchicalRunOutput
 from .runner import ExplainRunner
 
 __all__ = [
@@ -20,6 +20,7 @@ __all__ = [
     "ExplainResult",
     "ExplainRunOutput",
     "ExplainRunner",
+    "HierarchicalRunOutput",
     "RunManifest",
     "RunManifestPayload",
     "deletion_curve",

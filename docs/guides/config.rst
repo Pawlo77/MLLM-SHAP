@@ -16,8 +16,13 @@ off by default; ``max_players`` refuses, before any model call, runs whose budge
 plans more than :math:`2^{\text{max\_players}}` coalitions (``budget.fraction``
 times :math:`2^n` for :math:`n` players, so every full-table run on more than
 ``max_players`` players). ``budget.evaluations`` replaces ``budget.fraction``
-with an absolute number of coalition evaluations; set one of the two, never
-both:
+with an absolute number of coalition evaluations and ``budget.per_player`` with
+a multiple of the player count (``per_player: 4`` plans :math:`\lceil 4n \rceil`);
+set one of the three, never two. ``explanation.efficiency: additive`` shifts
+Shapley values so they sum to ``grand_value - base_value``;
+``explanation.hierarchical`` configures
+:meth:`~mllm_shap.ExplainRunner.explain_hierarchical` (needs
+``players: sentences``):
 
 .. code-block:: yaml
 

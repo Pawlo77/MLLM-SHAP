@@ -1,9 +1,9 @@
 Using approximate estimators
 ============================
 
-Approximate estimators sample coalitions under a budget fraction and aggregate
-payoffs into attributions. Monte Carlo delegates to estimand plugins; complementary
-and Neyman estimators use complementary-contribution (CC) aggregation. Every
+Approximate estimators sample coalitions under a budget and aggregate payoffs into
+attributions. Monte Carlo delegates to estimand plugins; complementary and Neyman
+estimators use complementary-contribution (CC) aggregation. Every
 estimator takes the same ``estimate_attributions(masks, payoffs, aggregator)``
 call; CC estimators accept the Shapley aggregator only. See
 :doc:`../theory/approximation` for what each estimator computes from a partial
@@ -69,8 +69,8 @@ Monte Carlo
 .. guide-result:: approximation_monte_carlo
 
 The same masks aggregated with :class:`~mllm_shap.BanzhafAggregator` give the
-Banzhaf estimate instead; Monte Carlo is the only built-in sampler that supports
-both estimands.
+Banzhaf estimate instead; Monte Carlo and ``proxy`` support both estimands,
+``kernel_banzhaf`` Banzhaf only.
 
 Complementary pairs
 -------------------
@@ -172,6 +172,45 @@ the names are the values ``explanation.estimator`` accepts:
 
 .. guide-result:: approximation_plugins
 
+Regression estimators and long prompts
+--------------------------------------
+
+``leverage`` (Shapley), ``kernel_banzhaf`` (Banzhaf) and ``proxy`` (both; extra
+``mllm-shap[proxy]``) fit a regression to the masks and payoffs, so a budget of a
+few multiples of :math:`n` suffices (:doc:`../theory/regression_estimators`). Give
+them ``budget.per_player``. For prompts of many paragraphs, ``players: sentences``
+with ``explain_hierarchical`` attributes paragraphs first and only the sentences
+of the top ones afterwards:
+
+.. code-block:: python
+
+   from mllm_shap import (
+       ConversationSnapshot, ExplainConfig, ExplainRunner, Message, Role, Turn,
+   )
+
+   text = "\n\n".join(
+       " ".join(f"Point {p}.{k} is made here." for k in range(8)) for p in range(10)
+   )
+   snapshot = ConversationSnapshot.from_turns(
+       (Turn(messages=(Message(role=Role.USER, text=text),)),)
+   )
+   config = ExplainConfig.model_validate({
+       "backend": {"kind": "mock", "model_id": "mock"},
+       "generation": {"max_new_tokens": 8},
+       "explanation": {
+           "estimator": "leverage",
+           "players": "sentences",
+           "budget": {"per_player": 4},
+           "hierarchical": {"keep_fraction": 0.2},
+       },
+   })
+   output = ExplainRunner(config).explain_hierarchical_sync(snapshot)
+   print("groups kept:", output.kept_groups)
+   print("coarse calls:", output.coarse.metrics.requested)
+   print("fine calls:", output.fine.metrics.requested, "(flat game: 320)")
+
+.. guide-result:: approximation_hierarchical
+
 Choosing an estimator
 ---------------------
 
@@ -186,19 +225,23 @@ Choosing an estimator
    * - Monte Carlo (``mc``)
      - You need Banzhaf, or Shapley at low and medium budgets
      - Shapley, Banzhaf
-     - Lowest error from fraction 0.2 up on the benchmark game of
-       :ref:`theory-choosing-a-budget`
-     - Not efficient below the full table; sizes without pairs are skipped
+     - Next to the regression estimators in :doc:`estimator_benchmark`
+     - Not efficient below the full table; strata without both means are skipped
    * - Complementary (``complementary``)
      - Every coalition should be scored together with its complement
      - Shapley only
-     - Converges more slowly than Monte Carlo on the benchmark
+     - Converges more slowly than Monte Carlo from a budget of :math:`8n`
      - Not efficient below the full table
    * - Neyman (``neyman_cc``)
      - Generous budgets where payoff variance differs by coalition size
      - Shapley only (two-phase)
      - Close to complementary while phase one uses the whole budget
      - Phase-two allocation needs enough phase-one samples per size
+   * - ``leverage``, ``kernel_banzhaf``, ``proxy``
+     - Budgets of :math:`8n` and more
+     - Shapley; Banzhaf; both
+     - Lowest error in :doc:`estimator_benchmark`
+     - ``leverage`` is efficient at every budget; ``proxy`` needs scikit-learn
 
 :doc:`choosing_an_estimator` turns this into a decision table, and
 ``examples/estimator_comparison.ipynb`` (on :doc:`../examples`) measures the error

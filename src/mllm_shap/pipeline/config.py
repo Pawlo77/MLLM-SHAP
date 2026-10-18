@@ -9,6 +9,7 @@ pipeline; they are re-exported here.
 @tested-by [[tests/pipeline/test_config.py]]
 """
 
+import math
 from typing import Any, Literal, Self
 
 import yaml
@@ -35,6 +36,7 @@ __all__ = [
     "ExplainConfig",
     "ExplanationConfig",
     "GenerationConfig",
+    "HierarchicalConfig",
     "KvCacheConfig",
     "NeymanConfig",
     "explain_config_from_yaml",
@@ -86,9 +88,9 @@ class BackendConfig(BaseModel):
 class BudgetConfig(BaseModel):
     """Coalition budget: a fraction of the ``2^n`` coalitions or an absolute count.
 
-    Set at most one of ``fraction`` and ``evaluations``; with neither the budget
-    is the full table (``fraction: 1.0``). Only the key that is set is
-    serialised, so configurations without ``evaluations`` keep their run id.
+    Set at most one of ``fraction``, ``evaluations`` and ``per_player``; with
+    none the budget is the full table (``fraction: 1.0``). Only the key that is
+    set is serialised, so older configurations keep their run id.
     """
 
     model_config = ConfigDict(extra="forbid", frozen=True)
@@ -102,20 +104,30 @@ class BudgetConfig(BaseModel):
     ``complementary`` and ``neyman_cc``, which also round down to whole pairs)
     and capped at ``2^n``."""
 
+    per_player: float | None = Field(default=None, gt=0.0)
+    """Coalition evaluations as a multiple of the player count, ``ceil(per_player * n)``
+    for ``n`` players, treated like ``evaluations`` afterwards."""
+
+    def evaluations_for(self, num_players: int) -> int | None:
+        """Return the absolute evaluation count for ``num_players``, if one is set."""
+        if self.per_player is None:
+            return self.evaluations
+        return math.ceil(self.per_player * num_players)
+
     @model_validator(mode="before")
     @classmethod
     def _one_budget(cls, data: Any) -> Any:
         if not isinstance(data, dict):
             return data
-        fraction = data.get("fraction")
-        evaluations = data.get("evaluations")
-        if fraction is not None and evaluations is not None:
+        keys = ("fraction", "evaluations", "per_player")
+        given = {key: data[key] for key in keys if data.get(key) is not None}
+        if len(given) > 1:
             msg = (
-                "set exactly one of budget.fraction and budget.evaluations, "
-                f"got fraction {fraction} and evaluations {evaluations}"
+                "set exactly one of budget.fraction, budget.evaluations and "
+                f"budget.per_player, got {given}"
             )
             raise ConfigError(msg)
-        if fraction is None and evaluations is None:
+        if not given:
             return {**data, "fraction": 1.0}
         return data
 
@@ -155,6 +167,18 @@ class NeymanConfig(BaseModel):
     """Explicit phase-one pair budget overriding ``initial_fraction``; at least 1."""
 
 
+class HierarchicalConfig(BaseModel):
+    """Two-level run: attribute groups, then the sentences of the kept groups."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    keep_fraction: float = Field(default=0.25, gt=0.0, le=1.0)
+    """Share of the groups, by absolute coarse value, refined at the second level."""
+
+    group_by: Literal["paragraph", "message"] = "paragraph"
+    """Coarse players are paragraphs of a message or whole messages."""
+
+
 class ExplanationConfig(BaseModel):
     """Explanation algorithm and runtime controls."""
 
@@ -172,6 +196,10 @@ class ExplanationConfig(BaseModel):
     normalizer: str = "identity"
     """Registered normalizer applied after estimand aggregation."""
 
+    efficiency: Literal["none", "additive"] = "none"
+    """``additive`` shifts every Shapley value equally so they sum to
+    ``v(N) - v(empty)``, before the normalizer; only written when set."""
+
     players: str = "tokens"
     """Registered partition plugin that defines explainability players."""
 
@@ -186,6 +214,10 @@ class ExplanationConfig(BaseModel):
 
     neyman: NeymanConfig = NeymanConfig()
     """Neyman-CC controls applied when the Neyman estimator is selected."""
+
+    hierarchical: HierarchicalConfig | None = None
+    """Settings of :meth:`~mllm_shap.ExplainRunner.explain_hierarchical`; needs the
+    ``sentences`` players and is only written when set."""
 
     max_inflight: int = Field(default=2, ge=1)
     """Maximum concurrent coalition evaluations."""
@@ -213,8 +245,27 @@ class ExplanationConfig(BaseModel):
     plugin_options: dict[str, dict[str, object]] = {}
     """Per-plugin options keyed by plugin name, passed as ``PluginContext.options``."""
 
+    @model_serializer(mode="wrap")
+    def _drop_unset_options(
+        self, handler: SerializerFunctionWrapHandler
+    ) -> dict[str, Any]:
+        dumped: dict[str, Any] = handler(self)
+        if dumped.get("efficiency") == "none":
+            del dumped["efficiency"]
+        if dumped.get("hierarchical") is None:
+            dumped.pop("hierarchical", None)
+        return dumped
+
     @model_validator(mode="after")
     def _check_estimator_settings(self) -> Self:
+        if self.efficiency == "additive" and (
+            self.estimand is not Estimand.SHAPLEY or self.estimator == "loo"
+        ):
+            msg = (
+                "explanation.efficiency 'additive' needs the shapley estimand and "
+                "an estimator other than 'loo'"
+            )
+            raise ConfigError(msg)
         if self.estimator == "exact" and self.budget.fraction != 1.0:
             msg = (
                 "estimator 'exact' enumerates every coalition; set budget.fraction: 1.0"
@@ -228,6 +279,15 @@ class ExplanationConfig(BaseModel):
                 f"estimator {self.estimator!r} estimates the shapley estimand only; "
                 "use estimator 'mc' or 'exact' for banzhaf"
             )
+            raise ConfigError(msg)
+        if self.hierarchical is not None and self.players != "sentences":
+            msg = "explanation.hierarchical needs explanation.players: sentences"
+            raise ConfigError(msg)
+        if self.estimator == "leverage" and self.estimand is not Estimand.SHAPLEY:
+            msg = "estimator 'leverage' estimates the shapley estimand only"
+            raise ConfigError(msg)
+        if self.estimator == "kernel_banzhaf" and self.estimand is not Estimand.BANZHAF:
+            msg = "estimator 'kernel_banzhaf' estimates the banzhaf estimand only"
             raise ConfigError(msg)
         if self.estimator == "neyman_cc" and self.include_minimal_masks:
             msg = "estimator 'neyman_cc' does not support include_minimal_masks: true"

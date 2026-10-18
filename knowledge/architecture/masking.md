@@ -5,8 +5,9 @@ domain: masking
 parent: "[[mllm-shap]]"
 tags: [architecture, masking]
 created: 2026-10-07
-updated: 2026-10-12
+updated: 2026-10-18
 related-code:
+  - "[[src/mllm_shap/masking/hierarchy.py]]"
   - "[[src/mllm_shap/masking/__init__.py]]"
   - "[[src/mllm_shap/masking/audio.py]]"
   - "[[src/mllm_shap/masking/builder.py]]"
@@ -26,6 +27,7 @@ related-code:
 ## Public surface
 
 - `TokenPartitioner` (`tokens`): one player per whitespace token of every message whose role is in `RolesOptions.roles` (default all; other messages stay present); returns `PlayerSet(player_ids, spans)` built by `tokens.token_spans` (spans carry the message's speaker); player ids `"{snapshot_id}:{turn}:{message}:{token}"`.
+- `SentencePartitioner` (`sentences`): one player per sentence (ends at `.`, `!`, `?` before whitespace, or at a paragraph end); ids `"{snapshot_id}:{turn}:{message}:{sentence}"`. `hierarchy.group_players`, `coarse_player_set` and `refined_player_set` build the two levels of `explain_hierarchical`; text no player covers stays present.
 - `MessagePartitioner` (`messages`): one player per non-empty message of the roles in `MessagesOptions.roles` (an alias of `RolesOptions`; default all); span = whole text, label `"<role>[/<speaker>] <n>: "` plus the first `LABEL_PREVIEW_CHARS` (30) characters; ids `"{snapshot_id}:{turn}:{message}"` ([[Masking decisions#2026-10-08 — Message players keep their slot when deleted|message players]]).
 - `DeletePolicy` (`delete`): removes absent spans together with the whitespace that separated them.
 - `PadPolicy` (`pad`): replaces absent spans with `placeholder` (default `[MASK]`, plugin option `PadOptions.placeholder`).
@@ -60,4 +62,5 @@ related-code:
 - [[tests/masking/test_tokens.py]]
 - [[tests/masking/test_builder.py]]
 - [[tests/masking/test_codec.py]]
+- [[tests/masking/test_hierarchy.py]]
 - [[tests/masking/test_space.py]]

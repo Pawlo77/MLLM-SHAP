@@ -6,12 +6,19 @@
 import numpy as np
 import pytest
 
+from mllm_shap.domain.players import PlayerSet
+from mllm_shap.estimation._shared import budget_fraction
+from mllm_shap.estimation.complementary import ComplementaryEstimator
+from mllm_shap.estimation.estimands import ShapleyAggregator
+from mllm_shap.estimation.monte_carlo import MonteCarloEstimator
 from mllm_shap.estimation.normalizers import (
     AbsSumNormalizer,
     IdentityNormalizer,
     MinMaxNormalizer,
     PowerShiftNormalizer,
+    additive_efficiency,
 )
+from tests.estimation._games import Game, reference_games
 
 
 @pytest.fixture
@@ -72,3 +79,23 @@ def test_min_max_normalizer_uniform_for_equal_values() -> None:
     normalizer = MinMaxNormalizer()
     normalized = normalizer.normalize((3.0, 3.0, 3.0))
     assert normalized == pytest.approx([1 / 3, 1 / 3, 1 / 3])
+
+
+@pytest.mark.parametrize("game", reference_games(10), ids=lambda game: game.name)
+def test_additive_efficiency_never_increases_the_error(game: Game) -> None:
+    """The shift projects onto the efficiency hyperplane, which holds the truth."""
+    players = PlayerSet(player_ids=tuple(f"p{i}" for i in range(10)))
+    fraction = budget_fraction(10, None, 40)
+    for estimator_type in (MonteCarloEstimator, ComplementaryEstimator):
+        for seed in range(20):
+            estimator = estimator_type()
+            masks = list(estimator.sample_masks(players, fraction, False, seed))
+            payoffs = [game.payoff(mask.present) for mask in masks]
+            values = estimator.estimate_attributions(
+                masks, payoffs, ShapleyAggregator()
+            )
+            fixed = additive_efficiency(values, payoffs[0], payoffs[1])
+            assert sum(fixed) == pytest.approx(payoffs[0] - payoffs[1])
+            assert np.linalg.norm(np.array(fixed) - game.shapley) <= (
+                np.linalg.norm(np.array(values) - game.shapley) + 1e-12
+            )

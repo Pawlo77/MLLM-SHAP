@@ -5,7 +5,7 @@ domain: pipeline
 parent: "[[mllm-shap]]"
 tags: [architecture, pipeline]
 created: 2026-10-07
-updated: 2026-10-12
+updated: 2026-10-18
 related-code:
   - "[[src/mllm_shap/pipeline/__init__.py]]"
   - "[[src/mllm_shap/pipeline/config.py]]"
@@ -29,19 +29,19 @@ Walkthrough: [[How a run works]].
 
 Signatures: [[Public API]]; configuration keys: [[Config keys]].
 
-- `ExplainConfig`: `backend`, `generation` and `explanation` sections. `BudgetConfig` takes `fraction` or `evaluations`, never both; only the key that is set is serialised, so a fraction-only configuration keeps its [[Run id]] ([[Pipeline decisions#2026-10-08 — Absolute budget passed to samplers as an exact fraction|Absolute budget passed to samplers as an exact fraction]]).
-- `ExplanationConfig` cross-field rules raise `ConfigError`: `exact` needs `budget.fraction: 1.0`, `complementary` and `neyman_cc` need the Shapley estimand, `neyman_cc` refuses `include_minimal_masks`. `explain_config_from_yaml` raises `ConfigError` for an invalid, empty or non-mapping document.
-- `ExplainRunner`: `explain`, `explain_sync` (a `RuntimeError` inside a running loop), `reanalyze`; `close`, `aclose` and both context managers close an injected backend and the runner's own event loop.
-- `ExplainOrchestrator.run()`: the data flow below. `score_coalitions` fits a `FittableValueFunction` on base plus coalitions and scores each coalition; `reanalyze` uses it too.
+- `ExplainConfig`: `backend`, `generation` and `explanation` sections. `BudgetConfig` takes one of `fraction`, `evaluations` and `per_player`. Unset keys, `efficiency: none` and an unset `hierarchical` are not serialised, so older configurations keep their [[Run id]] ([[Pipeline decisions#2026-10-08 — Absolute budget passed to samplers as an exact fraction|Absolute budget passed to samplers as an exact fraction]]).
+- `ExplanationConfig` cross-field rules raise `ConfigError`: `exact` needs `budget.fraction: 1.0`, `complementary`, `neyman_cc` and `leverage` need the Shapley estimand and `kernel_banzhaf` Banzhaf. `efficiency: additive` needs Shapley without `loo`, `hierarchical` the `sentences` players, `neyman_cc` no `include_minimal_masks`. `explain_config_from_yaml` raises `ConfigError` for an invalid, empty or non-mapping document.
+- `ExplainRunner`: `explain`, `explain_sync` (a `RuntimeError` inside a running loop), `explain_hierarchical` (returns `HierarchicalRunOutput`), `reanalyze`. `close`, `aclose` and the context managers close an injected backend and the runner's loop.
+- `ExplainOrchestrator.run()`: see Data flow. `score_coalitions` fits a `FittableValueFunction` on base plus coalitions and scores each coalition; `reanalyze` uses it too.
 - `reanalyze_sync` ([[Reanalyze]]): for a run scored with backend embeddings and a `RequiresEmbeddings` value function it logs a `WARNING`, or raises `ReanalyzeMismatchError` with `strict`; a `RequiresLogprobs` value function on rows without logprobs raises `ReanalyzeMismatchError`.
 - `ExplainResult`; `ExplainRunOutput` with `to_dict()` (`ExplainRunPayload`; each label adds `speaker` and `label`, the span's `display_label`); `player_set` is `None` after `reanalyze`.
 - `RunManifest`, `parse_manifest`, `MANIFEST_SCHEMA_VERSION` 4 ([[Manifest]]): `embedding_source` is `"none"`, `"hash"` or `"backend"`; wrong field types raise `ArchiveCorruptError`.
-- `deletion_curve(config, snapshot, attributions, ks=None, registry=None, backend=None)` (async): ranks players, runs the pipeline with a private estimator that samples `N - top_k` per `k` on a registry copy, and returns `DeletionCurve` (`values`, `drops`, trapezoid `area` over `k / n`).
+- `deletion_curve(config, snapshot, attributions, ks=None, registry=None, backend=None)` (async): ranks players, runs the pipeline with a private estimator sampling `N - top_k` per `k` on a registry copy, and returns `DeletionCurve` (`values`, `drops`, trapezoid `area` over `k / n`).
 - `ExplainContext`: resolved inputs of one run; `plugin_context()` builds the `PluginContext`.
 
 ## Data flow
 
-1. `ExplainRunner._build_context` checks plugin options, resolves the partitioner, refuses a plan above `2 ** max_players` coalitions and sets the [[Run id]] from the configuration without its archive section plus the model id.
+1. `ExplainRunner._partition` and `_build_context` check plugin options, resolve the partitioner, refuse a plan above `2 ** max_players` coalitions and set the [[Run id]] from the configuration without its archive section plus the model id.
 2. Without an injected backend the runner builds one through [[plugins]] `instantiate_backend` and closes it after the call.
 3. The orchestrator resolves the plugins. A `RequiresLogprobs` value function on a backend without `SupportsLogprobs` raises `ConfigError` ([[Value decisions#2026-10-08 — Logprob value is the coalition's own mean token logprob|logprob value]]). A `RequiresEmbeddings` value function switches `generation.compute_embeddings` on; the archive opens with the manifest.
 4. It generates the [[Base generation]] and writes it to the archive first.
@@ -76,6 +76,7 @@ Signatures: [[Public API]]; configuration keys: [[Config keys]].
 - [[tests/pipeline/test_capabilities.py]]
 - [[tests/pipeline/test_config.py]]
 - [[tests/pipeline/test_budget_evaluations.py]]
+- [[tests/pipeline/test_hierarchical.py]]
 - [[tests/pipeline/test_dev_configs.py]]
 - [[tests/pipeline/test_manifest.py]]
 - [[tests/pipeline/test_result.py]]

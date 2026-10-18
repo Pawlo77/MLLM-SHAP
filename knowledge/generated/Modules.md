@@ -12,7 +12,7 @@ parent: "[[mllm-shap]]"
 
 | Module | Summary | Domain | See | Lines | Architecture note |
 |---|---|---|---|---|---|
-| [[src/mllm_shap/__init__.py]] | Shapley-value attributions for conversational language models. | core | [[knowledge/architecture/core]] | 192 | [[core]] |
+| [[src/mllm_shap/__init__.py]] | Shapley-value attributions for conversational language models. | core | [[knowledge/architecture/core]] | 202 | [[core]] |
 | [[src/mllm_shap/_logging.py]] | Central logging bootstrap for mllm_shap. | core | [[knowledge/architecture/core]] | 149 | [[core]] |
 | [[src/mllm_shap/alignment/__init__.py]] | Spectrogram-guided alignment of transcript tokens to speech (``audio`` extra). | alignment | [[knowledge/architecture/alignment]] | 18 | [[alignment]] |
 | [[src/mllm_shap/alignment/ctc.py]] | CTC forced alignment (Viterbi over the blank-extended target sequence). | alignment | [[knowledge/architecture/alignment]] | 82 | [[alignment]] |
@@ -51,38 +51,42 @@ parent: "[[mllm-shap]]"
 | [[src/mllm_shap/domain/generation.py]] | Generation payloads scored by value functions. | domain | [[knowledge/architecture/domain]] | 31 | [[domain]] |
 | [[src/mllm_shap/domain/players.py]] | Player indexing for cooperative-game explainability. | domain | [[knowledge/architecture/domain]] | 78 | [[domain]] |
 | [[src/mllm_shap/errors.py]] | Typed errors raised by mllm-shap pipeline components. | core | [[knowledge/architecture/core]] | 68 | [[core]] |
-| [[src/mllm_shap/estimation/__init__.py]] | Estimation algorithms for cooperative-game attribution. | estimation | [[knowledge/architecture/estimation]] | 32 | [[estimation]] |
-| [[src/mllm_shap/estimation/_shared.py]] | Shared estimator base class and sampling utilities. | estimation | [[knowledge/architecture/estimation]] | 332 | [[estimation]] |
-| [[src/mllm_shap/estimation/complementary.py]] | Complementary pair sampling estimator. | estimation | [[knowledge/architecture/estimation]] | 169 | [[estimation]] |
+| [[src/mllm_shap/estimation/__init__.py]] | Estimation algorithms for cooperative-game attribution. | estimation | [[knowledge/architecture/estimation]] | 36 | [[estimation]] |
+| [[src/mllm_shap/estimation/_shared.py]] | Shared estimator base class and sampling utilities. | estimation | [[knowledge/architecture/estimation]] | 342 | [[estimation]] |
+| [[src/mllm_shap/estimation/complementary.py]] | Complementary pair sampling estimator. | estimation | [[knowledge/architecture/estimation]] | 194 | [[estimation]] |
 | [[src/mllm_shap/estimation/estimands/__init__.py]] | Estimand aggregation plugins. | estimation | [[knowledge/architecture/estimation]] | 10 | [[estimation]] |
-| [[src/mllm_shap/estimation/estimands/_weights.py]] | Shared helpers for estimand aggregation. | estimation | [[knowledge/architecture/estimation]] | 184 | [[estimation]] |
+| [[src/mllm_shap/estimation/estimands/_weights.py]] | Shared helpers for estimand aggregation. | estimation | [[knowledge/architecture/estimation]] | 178 | [[estimation]] |
 | [[src/mllm_shap/estimation/estimands/banzhaf.py]] | Banzhaf estimand aggregation. | estimation | [[knowledge/architecture/estimation]] | 43 | [[estimation]] |
 | [[src/mllm_shap/estimation/estimands/shapley.py]] | Shapley estimand aggregation. | estimation | [[knowledge/architecture/estimation]] | 50 | [[estimation]] |
 | [[src/mllm_shap/estimation/exact.py]] | Exact coalition enumeration estimator. | estimation | [[knowledge/architecture/estimation]] | 62 | [[estimation]] |
+| [[src/mllm_shap/estimation/kernel_banzhaf.py]] | Kernel Banzhaf: paired uniform sampling with a centred linear regression. | estimation | [[knowledge/architecture/estimation]] | 88 | [[estimation]] |
+| [[src/mllm_shap/estimation/leverage.py]] | Leverage SHAP: paired, leverage-score sampling with a constrained regression. | estimation | [[knowledge/architecture/estimation]] | 198 | [[estimation]] |
 | [[src/mllm_shap/estimation/loo.py]] | Leave-one-out attribution: each player's drop from the full coalition. | estimation | [[knowledge/architecture/estimation]] | 56 | [[estimation]] |
-| [[src/mllm_shap/estimation/monte_carlo.py]] | Monte Carlo coalition sampling estimator. | estimation | [[knowledge/architecture/estimation]] | 80 | [[estimation]] |
-| [[src/mllm_shap/estimation/neyman.py]] | Neyman complementary allocation estimator. | estimation | [[knowledge/architecture/estimation]] | 426 | [[estimation]] |
-| [[src/mllm_shap/estimation/normalizers.py]] | Post-aggregation attribution normalizers. | estimation | [[knowledge/architecture/estimation]] | 134 | [[estimation]] |
-| [[src/mllm_shap/masking/__init__.py]] | Coalition masking codecs, views, and absence policies. | masking | [[knowledge/architecture/masking]] | 25 | [[masking]] |
+| [[src/mllm_shap/estimation/monte_carlo.py]] | Monte Carlo coalition sampling estimator. | estimation | [[knowledge/architecture/estimation]] | 93 | [[estimation]] |
+| [[src/mllm_shap/estimation/neyman.py]] | Neyman complementary allocation estimator. | estimation | [[knowledge/architecture/estimation]] | 433 | [[estimation]] |
+| [[src/mllm_shap/estimation/normalizers.py]] | Post-aggregation attribution normalizers. | estimation | [[knowledge/architecture/estimation]] | 151 | [[estimation]] |
+| [[src/mllm_shap/estimation/proxy.py]] | ProxySHAP (order 1): a boosted-tree proxy with exact values and a residual fix. | estimation | [[knowledge/architecture/estimation]] | 143 | [[estimation]] |
+| [[src/mllm_shap/masking/__init__.py]] | Coalition masking codecs, views, and absence policies. | masking | [[knowledge/architecture/masking]] | 31 | [[masking]] |
 | [[src/mllm_shap/masking/audio.py]] | Render audio players: cut or silence absent samples, hide alignment transcripts. | masking | [[knowledge/architecture/masking]] | 82 | [[masking]] |
 | [[src/mllm_shap/masking/builder.py]] | View-based masked snapshots with structural sharing. | masking | [[knowledge/architecture/masking]] | 83 | [[masking]] |
 | [[src/mllm_shap/masking/codec.py]] | Packed bitset encoding and stable hashing for coalition masks. | masking | [[knowledge/architecture/masking]] | 66 | [[masking]] |
-| [[src/mllm_shap/masking/partitions.py]] | Player partition plugins: whitespace tokens and whole messages. | masking | [[knowledge/architecture/masking]] | 133 | [[masking]] |
+| [[src/mllm_shap/masking/hierarchy.py]] | Two-level players: sentence groups (paragraphs or messages) and their members. | masking | [[knowledge/architecture/masking]] | 75 | [[masking]] |
+| [[src/mllm_shap/masking/partitions.py]] | Player partition plugins: whitespace tokens, sentences and whole messages. | masking | [[knowledge/architecture/masking]] | 200 | [[masking]] |
 | [[src/mllm_shap/masking/policies.py]] | Absence policies for rendering masked conversation snapshots. | masking | [[knowledge/architecture/masking]] | 173 | [[masking]] |
 | [[src/mllm_shap/masking/space.py]] | Mask-space utilities for explainable feature indexing. | masking | [[knowledge/architecture/masking]] | 61 | [[masking]] |
 | [[src/mllm_shap/masking/tokens.py]] | Whitespace token spans and span-based snapshot rendering. | masking | [[knowledge/architecture/masking]] | 124 | [[masking]] |
-| [[src/mllm_shap/pipeline/__init__.py]] | Explain pipeline types and orchestration. | pipeline | [[knowledge/architecture/pipeline]] | 29 | [[pipeline]] |
-| [[src/mllm_shap/pipeline/config.py]] | Explain pipeline configuration schema. | pipeline | [[knowledge/architecture/pipeline]] | 282 | [[pipeline]] |
+| [[src/mllm_shap/pipeline/__init__.py]] | Explain pipeline types and orchestration. | pipeline | [[knowledge/architecture/pipeline]] | 30 | [[pipeline]] |
+| [[src/mllm_shap/pipeline/config.py]] | Explain pipeline configuration schema. | pipeline | [[knowledge/architecture/pipeline]] | 342 | [[pipeline]] |
 | [[src/mllm_shap/pipeline/context.py]] | Shared state for one explain pipeline run. | pipeline | [[knowledge/architecture/pipeline]] | 57 | [[pipeline]] |
 | [[src/mllm_shap/pipeline/faithfulness.py]] | Deletion curves: how fast a ranking of players destroys the answer. | pipeline | [[knowledge/architecture/pipeline]] | 143 | [[pipeline]] |
 | [[src/mllm_shap/pipeline/manifest.py]] | Versioned run manifest persisted next to every run archive. | pipeline | [[knowledge/architecture/pipeline]] | 246 | [[pipeline]] |
-| [[src/mllm_shap/pipeline/orchestrator.py]] | Explain pipeline orchestration. | pipeline | [[knowledge/architecture/pipeline]] | 590 | [[pipeline]] |
-| [[src/mllm_shap/pipeline/reanalyze.py]] | Reanalyze archived coalition generations without backend calls. | pipeline | [[knowledge/architecture/pipeline]] | 284 | [[pipeline]] |
-| [[src/mllm_shap/pipeline/result.py]] | Explain pipeline result types. | pipeline | [[knowledge/architecture/pipeline]] | 155 | [[pipeline]] |
-| [[src/mllm_shap/pipeline/runner.py]] | Public explain pipeline entry point. | pipeline | [[knowledge/architecture/pipeline]] | 268 | [[pipeline]] |
+| [[src/mllm_shap/pipeline/orchestrator.py]] | Explain pipeline orchestration. | pipeline | [[knowledge/architecture/pipeline]] | 596 | [[pipeline]] |
+| [[src/mllm_shap/pipeline/reanalyze.py]] | Reanalyze archived coalition generations without backend calls. | pipeline | [[knowledge/architecture/pipeline]] | 291 | [[pipeline]] |
+| [[src/mllm_shap/pipeline/result.py]] | Explain pipeline result types. | pipeline | [[knowledge/architecture/pipeline]] | 170 | [[pipeline]] |
+| [[src/mllm_shap/pipeline/runner.py]] | Public explain pipeline entry point. | pipeline | [[knowledge/architecture/pipeline]] | 334 | [[pipeline]] |
 | [[src/mllm_shap/plugins/__init__.py]] | Plugin registry exports. | plugins | [[knowledge/architecture/plugins]] | 22 | [[plugins]] |
 | [[src/mllm_shap/plugins/backends.py]] | Backend plugin construction helpers. | plugins | [[knowledge/architecture/plugins]] | 22 | [[plugins]] |
-| [[src/mllm_shap/plugins/builtin.py]] | Built-in plugin registration and the default registry. | plugins | [[knowledge/architecture/plugins]] | 105 | [[plugins]] |
+| [[src/mllm_shap/plugins/builtin.py]] | Built-in plugin registration and the default registry. | plugins | [[knowledge/architecture/plugins]] | 116 | [[plugins]] |
 | [[src/mllm_shap/plugins/context.py]] | Context handed to every plugin factory. | plugins | [[knowledge/architecture/plugins]] | 59 | [[plugins]] |
 | [[src/mllm_shap/plugins/groups.py]] | Plugin group identifiers for entry-point loading. | plugins | [[knowledge/architecture/plugins]] | 36 | [[plugins]] |
 | [[src/mllm_shap/plugins/options.py]] | Lookup and validation of ``explanation.plugin_options``. | plugins | [[knowledge/architecture/plugins]] | 143 | [[plugins]] |

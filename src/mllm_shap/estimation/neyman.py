@@ -67,6 +67,7 @@ class NeymanEstimator(ComplementaryEstimator):
         self._initial_num_splits = 0
         self._position_i = 0
         self._position_j = 0
+        self._in_pass = False
         self._m_hat: np.ndarray | None = None
         self._c_matrix: np.ndarray | None = None
         self._c_squared: np.ndarray | None = None
@@ -119,6 +120,7 @@ class NeymanEstimator(ComplementaryEstimator):
         self._position_i = 0
         # Sizes 0 and n are empty/grand and are never yielded; start at size 1.
         self._position_j = 1 if num_players >= 2 else 0
+        self._in_pass = False
         self._m_hat = None
         self._c_matrix = None
         self._c_squared = None
@@ -152,33 +154,32 @@ class NeymanEstimator(ComplementaryEstimator):
 
         Return True when initial sampling completes.
 
-        Cells are visited size by size and, within a size, player by player.
-        Empty (size 0) and grand (size n) columns are ignored: the ``(N, empty)``
-        pair is sampled once up front. Every other cell targets
-        ``initial_num_splits`` capped by the number of distinct coalitions that
-        can fill it, so phase one always terminates.
+        A pass draws once for every player at one size, so the mixture of
+        "uniform among size-``j`` coalitions containing player ``i``" stays uniform
+        over all size-``j`` coalitions (a partial pass would favour its players).
+        A pass starts at the smallest size with an incomplete cell, and the walk
+        ends only between passes. Empty (size 0) and grand (size n) columns are
+        ignored: the ``(N, empty)`` pair is sampled once up front. Every other cell
+        targets ``initial_num_splits`` capped by the number of distinct coalitions
+        that can fill it, so phase one always terminates.
         """
         m_counts = self._m_counts
         if m_counts is None:
             msg = "M matrix must be initialized before sampling."
             raise RuntimeError(msg)
+        num_players = m_counts.shape[0]
+        if self._in_pass and self._position_i + 1 < num_players:
+            self._position_i += 1
+            return False
+        self._in_pass = False
         incomplete = m_counts < self._cell_targets()
         incomplete[:, 0] = False
         incomplete[:, -1] = False
         if not np.any(incomplete):
             return True
-
-        # Walk the grid size by size, round-robin over players, so a budget that
-        # truncates phase one leaves the same strata empty for every player.
-        num_players = m_counts.shape[0]
-        flat = incomplete.T.reshape(-1)
-        start_index = self._position_j * num_players + self._position_i + 1
-        next_indices = np.flatnonzero(flat[start_index:])
-        if next_indices.size == 0:
-            next_indices = np.flatnonzero(flat)
-            start_index = 0
-        next_index = int(next_indices[0]) + start_index
-        self._position_j, self._position_i = divmod(next_index, num_players)
+        self._position_j = int(np.flatnonzero(incomplete.any(axis=0))[0])
+        self._position_i = 0
+        self._in_pass = True
         return False
 
     def _next_initial_split(self) -> tuple[bool, ...]:
@@ -305,24 +306,23 @@ class NeymanEstimator(ComplementaryEstimator):
             for mask in self._yield_complementary_pair(singleton):
                 generated += 1
                 yield mask
-        stale_attempts = 0
-        # One unproductive visit per grid cell in a row ends phase one.
-        max_stale = m_counts.size
-        # The cursor starts on cell (size 1, player 0), which the singletons
-        # filled, and advances before every draw. It only stops on cells of
-        # sizes 1 to n - 1, so a draw is never the empty or grand coalition.
+        # A pass needs room for every player's pair, so the budget never cuts one
+        # short; the leftover pairs go to the Neyman allocation. A pass that adds
+        # nothing means the remaining cells cannot be filled.
+        produced = 1
         while generated < self._total_num_splits:
             if self._update_m_position():
                 return
+            if self._position_i == 0:
+                if produced == 0 or generated + 2 * num_players > (
+                    self._total_num_splits
+                ):
+                    return
+                produced = 0
             pair = list(self._yield_complementary_pair(self._next_initial_split()))
-            if pair:
-                generated += len(pair)
-                stale_attempts = 0
-                yield from pair
-                continue
-            stale_attempts += 1
-            if stale_attempts >= max_stale:
-                return
+            generated += len(pair)
+            produced += len(pair)
+            yield from pair
 
     def begin_allocation(
         self,
@@ -399,10 +399,17 @@ class NeymanEstimator(ComplementaryEstimator):
         k_right = complement_indices.astype(np.float64)
         sigma_left = sigma_squared[:, coalition_indices]
         sigma_right = sigma_squared[:, complement_indices]
-        inner = np.sqrt(
-            np.sum(sigma_left / (k_left + 1.0), axis=0)
-            + np.sum(sigma_right / (k_right + 1.0), axis=0)
+        # A size-k coalition holds k players, so a cell's count grows as k/n per
+        # pair and its variance term is sigma^2 / k; the complement side holds
+        # n - k. At k = n/2 both sides are one column, counted once.
+        inner_squared = np.sum(sigma_left / k_left, axis=0) + np.sum(
+            sigma_right / k_right, axis=0
         )
+        self_complement = complement_indices == coalition_indices
+        inner_squared[self_complement] = (
+            np.sum(sigma_left, axis=0)[self_complement] / self._num_players
+        )
+        inner = np.sqrt(inner_squared)
         capacity = self._unseen_pairs_by_size()[left:right]
         allocation = np.zeros(right - left, dtype=np.int64)
         remaining = min(remaining_pairs, int(capacity.sum()))

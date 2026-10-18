@@ -48,7 +48,13 @@ def test_exact_reference(
 
 @pytest.mark.parametrize(
     "scenario",
-    scenario_cases("estimator.mc", "estimator.complementary", "estimator.neyman_cc"),
+    scenario_cases(
+        "estimator.mc",
+        "estimator.complementary",
+        "estimator.neyman_cc",
+        "estimator.leverage",
+        "estimator.proxy",
+    ),
 )
 def test_sampled_estimators_track_exact(
     scenario: Scenario, default_model: PracticalModel, practical_record: dict[str, Any]
@@ -99,3 +105,19 @@ def test_banzhaf_exact_and_sampled(
     nearest = top_by_magnitude(estimate, expect["mc_top_k"])
     assert names.index(expect["top_player"]) in nearest
     assert distance <= expect["max_l1"]
+
+
+@pytest.mark.parametrize("scenario", scenario_cases("estimator.kernel_banzhaf"))
+def test_kernel_banzhaf_tracks_exact_banzhaf(
+    scenario: Scenario, default_model: PracticalModel, practical_record: dict[str, Any]
+) -> None:
+    """Regression Banzhaf keeps the exact top player and a bounded L1 distance."""
+    exact = default_model.explain(SCENARIOS["estimand.banzhaf"])
+    output = default_model.explain(scenario)
+    names, reference = labels(exact), exact.result.values
+    distance = normalised_l1(output.result.values, reference)
+    practical_record["numbers"] = {"exact": summary(exact), "estimate": summary(output)}
+    practical_record["properties"] = {"normalised_l1": distance}
+
+    assert scenario.expect["top_player"] in top_players(names, output.result.values)
+    assert distance <= scenario.expect["max_l1"]

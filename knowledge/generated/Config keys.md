@@ -27,16 +27,19 @@ Keys of `ExplainConfig` as written in YAML (`explain_config_from_yaml`); defined
 | `explanation.estimator` | `str` | `'neyman_cc'` | Registered estimator plugin used to sample coalitions. |
 | `explanation.value_fn` | `str` | `'tfidf_cosine'` | Registered value-function plugin used to score outputs. |
 | `explanation.normalizer` | `str` | `'identity'` | Registered normalizer applied after estimand aggregation. |
+| `explanation.efficiency` | `Literal['none', 'additive']` | `'none'` | ``additive`` shifts every Shapley value equally so they sum to |
 | `explanation.players` | `str` | `'tokens'` | Registered partition plugin that defines explainability players. |
 | `explanation.absence_policy` | `str` | `'delete'` | Registered absence policy used to render masked snapshots. |
 | `explanation.budget` | `BudgetConfig` | | Estimator budget controls. |
 | `explanation.budget.fraction` | `float \| None` | `Field(default=None, gt=0.0, le=1.0)` | Share of the ``2^n`` coalitions evaluated; 1.0 when ``evaluations`` is unset. |
 | `explanation.budget.evaluations` | `int \| None` | `Field(default=None, ge=1, strict=True)` | Coalition evaluations in total, empty and grand included, instead of |
+| `explanation.budget.per_player` | `float \| None` | `Field(default=None, gt=0.0)` | Coalition evaluations as a multiple of the player count, ``ceil(per_player * n)`` |
 | `explanation.include_minimal_masks` | `bool` | `False` | Whether minimal coalitions are included in estimator sampling. |
 | `explanation.neyman` | `NeymanConfig` | | Neyman-CC controls applied when the Neyman estimator is selected. |
 | `explanation.neyman.use_standard_method` | `bool` | `False` | Whether phase-one sampling uses unstructured random coalitions. |
 | `explanation.neyman.initial_fraction` | `float \| None` | `Field(default=None, gt=0, le=1)` | Fraction of the total budget used during phase-one initialization, in (0, 1]. |
 | `explanation.neyman.initial_num_samples` | `int \| None` | `Field(default=None, ge=1)` | Explicit phase-one pair budget overriding ``initial_fraction``; at least 1. |
+| `explanation.hierarchical` | `HierarchicalConfig \| None` | `None` | Settings of :meth:`~mllm_shap.ExplainRunner.explain_hierarchical`; needs the |
 | `explanation.max_inflight` | `int` | `Field(default=2, ge=1)` | Maximum concurrent coalition evaluations. |
 | `explanation.max_players` | `int` | `Field(default=24, ge=1, le=62)` | Runs planning more than 2^max_players coalitions (fraction * 2^n, or |
 | `explanation.archive` | `ArchiveConfig` | | Run archive persistence settings. |

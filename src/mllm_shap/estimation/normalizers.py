@@ -17,6 +17,23 @@ if TYPE_CHECKING:
     from ..plugins.context import PluginContext
 
 
+def additive_efficiency(
+    values: Sequence[float], grand_value: float, base_value: float
+) -> list[float]:
+    """Shift every value equally so they sum to ``v(N) - v(empty)``."""
+    shift = (grand_value - base_value - sum(values)) / len(values)
+    return [value + shift for value in values]
+
+
+def apply_efficiency(
+    mode: str, values: Sequence[float], grand_value: float, base_value: float
+) -> list[float]:
+    """Return ``values`` after the ``explanation.efficiency`` correction ``mode``."""
+    if mode == "additive":
+        return additive_efficiency(values, grand_value, base_value)
+    return list(values)
+
+
 class IdentityNormalizer:
     """Return attributions unchanged."""
 

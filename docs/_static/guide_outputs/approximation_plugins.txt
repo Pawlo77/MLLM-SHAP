@@ -1,1 +1,1 @@
-('complementary', 'exact', 'loo', 'mc', 'neyman_cc')
+('complementary', 'exact', 'kernel_banzhaf', 'leverage', 'loo', 'mc', 'neyman_cc', 'proxy')

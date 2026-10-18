@@ -5,6 +5,7 @@
 @tested-by [[tests/estimation/test_shared.py]]
 """
 
+import logging
 import math
 from collections.abc import Iterator, Sequence
 from typing import TYPE_CHECKING, ClassVar
@@ -18,6 +19,8 @@ from ..protocols.plugin import PluginOptions
 
 if TYPE_CHECKING:
     from ..plugins.context import PluginContext
+
+logger = logging.getLogger(__name__)
 
 
 class _SnapshotEstimator:
@@ -247,6 +250,13 @@ def aggregate_complementary_shapley(
     m_work = m_counts[:, 1:]
     c_work = c_matrix[:, 1:]
     num_players = m_counts.shape[0]
+    empty_sizes = (np.flatnonzero((m_work == 0).any(axis=0)) + 1).tolist()
+    if empty_sizes:
+        logger.warning(
+            "complementary strata are empty for coalition sizes %s and count as 0, "
+            "which biases the values; raise the budget",
+            empty_sizes,
+        )
     values = np.zeros(num_players, dtype=np.float64)
     for player_index in range(num_players):
         counts = m_work[player_index]

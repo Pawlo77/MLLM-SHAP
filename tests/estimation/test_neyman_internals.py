@@ -8,6 +8,8 @@ the order in which the steps are combined.
 @see [[src/mllm_shap/estimation/neyman.py]]
 """
 
+import math
+
 import numpy as np
 import pytest
 
@@ -114,28 +116,33 @@ def _walk(estimator: NeymanEstimator, steps: int) -> list[tuple[int, int, bool]]
     return visited
 
 
-def test_cursor_walks_size_by_size_round_robin_over_players() -> None:
-    # Cells (size, player) in size-major order; sizes 0 and n = 3 are skipped,
-    # and the walk wraps around to the first incomplete cell.
+def test_cursor_walks_complete_passes_over_players_size_by_size() -> None:
+    # A pass visits every player at one size, then the walk restarts at the
+    # smallest size that still has an incomplete cell (nothing is filled here).
     assert _walk(_cursor_estimator(), 7) == [
-        (1, 1, False),
-        (1, 2, False),
-        (2, 0, False),
-        (2, 1, False),
-        (2, 2, False),
         (1, 0, False),
         (1, 1, False),
+        (1, 2, False),
+        (1, 0, False),
+        (1, 1, False),
+        (1, 2, False),
+        (1, 0, False),
     ]
 
 
-def test_cursor_skips_complete_cells() -> None:
+def test_cursor_visits_every_player_even_when_their_cell_is_complete() -> None:
     estimator = _cursor_estimator()
     m_counts = estimator._m_counts
     assert m_counts is not None
     m_counts[:, 1] = 1  # size 1 complete for everyone
-    m_counts[1, 2] = 2  # size 2 complete for player 1
+    m_counts[1, 2] = 2  # size 2 complete for player 1 only
     estimator._position_j, estimator._position_i = 1, 2
-    assert _walk(estimator, 3) == [(2, 0, False), (2, 2, False), (2, 0, False)]
+    assert _walk(estimator, 4) == [
+        (2, 0, False),
+        (2, 1, False),
+        (2, 2, False),
+        (2, 0, False),
+    ]
 
 
 def test_cursor_reports_done_when_inner_cells_are_complete() -> None:
@@ -148,7 +155,7 @@ def test_cursor_reports_done_when_inner_cells_are_complete() -> None:
     assert estimator._update_m_position() is True
     m_counts[2, 2] = 1  # one inner cell open again
     assert estimator._update_m_position() is False
-    assert (estimator._position_j, estimator._position_i) == (2, 2)
+    assert (estimator._position_j, estimator._position_i) == (2, 0)
 
 
 def test_cursor_requires_sampling_state() -> None:
@@ -177,11 +184,12 @@ def _allocation_estimator() -> NeymanEstimator:
 
     Phase two samples the larger side k of a pair, k = 3, 4, 5, paired with
     the complement size 6 - k. The Neyman weight is
-    sqrt(sum sigma^2[:, k] / (k + 1) + sum sigma^2[:, 6 - k] / (7 - k)):
+    sqrt(sum sigma^2[:, k] / k + sum sigma^2[:, 6 - k] / (6 - k)), with the
+    single column of k = n / 2 counted once as sum sigma^2 / n:
 
-    - k = 3: sqrt((1/32) / 4 + (1/32) / 4) = 1/8
-    - k = 4: sqrt((5/32) / 5 + (3/32) / 3) = 1/4
-    - k = 5: sqrt((3/4) / 6 + (1/4) / 2) = 1/2
+    - k = 3: sqrt((1/32) / 6) = sqrt(1/192) ~ 0.0722
+    - k = 4: sqrt((5/32) / 4 + (3/32) / 2) = sqrt(11/128) ~ 0.2931
+    - k = 5: sqrt((3/4) / 5 + (1/4) / 1) = sqrt(2/5) ~ 0.6325
 
     Unseen pairs: size 3 has (C(6, 3) - 4 seen) / 2 = 8 (both sides have size
     3), size 4 has C(6, 4) - 3 = 12 and size 5 has C(6, 5) - 5 = 1.
@@ -245,12 +253,12 @@ def _m_hat(estimator: NeymanEstimator) -> list[float]:
 
 
 def test_estimate_m_hat_water_fills_by_neyman_weight() -> None:
-    # Weights w = (1/8, 1/4, 1/2), sum 7/8; capacity (8, 12, 1); 19 pairs.
-    # Pass 1: floor(19 * w / (7/8)) = floor(19/7, 38/7, 76/7) = (2, 5, 10),
-    #   capped by capacity -> (2, 5, 1); 11 pairs left.
-    # Pass 2: size 5 is full; floor(11 * (1/8, 1/4) / (3/8)) = floor(3.67, 7.33)
-    #   = (3, 7) -> (5, 12, 1); 1 pair left.
-    # Pass 3: only size 3 has room: floor(1 * 1) = 1 -> (6, 12, 1).
+    # Weights w = (0.0722, 0.2931, 0.6325), sum 0.9978; capacity (8, 12, 1); 19 pairs.
+    # Pass 1: floor(19 * w / 0.9978) = floor(1.37, 5.58, 12.04) = (1, 5, 12),
+    #   capped by capacity -> (1, 5, 1); 12 pairs left.
+    # Pass 2: size 5 is full; floor(12 * (0.0722, 0.2931) / 0.3653) = (2, 9),
+    #   capped by spare capacity (7, 7) -> (3, 12, 1); 3 pairs left.
+    # Pass 3: only size 3 has room: floor(3 * 1) = 3 -> (6, 12, 1).
     estimator = _allocation_estimator()
     estimator._estimate_m_hat(19)
     assert _m_hat(estimator) == [0.0, 0.0, 0.0, 6.0, 12.0, 1.0]
@@ -264,10 +272,10 @@ def test_estimate_m_hat_weights_follow_stratum_variances() -> None:
     #   C=1, C2=0 -> -0.5, clipped to 0.
     # - size 5: player 4, M=2, C=2, C2=4 -> 2; player 5, M=3, C=0, C2=0.5 ->
     #   0.5 / 2 = 1/4.
-    # Weights: size 3 sqrt(2/4 + 2/4) = 1; size 4 sqrt(0/5 + (1/8)/3)
-    # = sqrt(1/24) ~ 0.2041; size 5 sqrt((9/4)/6 + 0/2) = sqrt(3/8) ~ 0.6124.
-    # 9 pairs: floor(9 * w / 1.8165) = floor(4.955, 1.011, 3.034) = (4, 1, 3);
-    # the last pair goes to the largest weight (size 3) -> (5, 1, 3).
+    # Weights (n = 6): size 3 is its own complement, sqrt(2 / 6) ~ 0.5774;
+    # size 4 sqrt(0/4 + (1/8)/2) = 1/4; size 5 sqrt((9/4)/5 + 0/1) ~ 0.6708.
+    # 9 pairs: floor(9 * w / 1.4982) = floor(3.47, 1.50, 4.03) = (3, 1, 4);
+    # the last pair goes to the largest weight (size 5) -> (3, 1, 5).
     estimator = _six_player_estimator(
         {
             (5, 1): (1, 0.5, 0.25),
@@ -280,7 +288,7 @@ def test_estimate_m_hat_weights_follow_stratum_variances() -> None:
         set(),
     )
     estimator._estimate_m_hat(9)
-    assert _m_hat(estimator) == [0.0, 0.0, 0.0, 5.0, 1.0, 3.0]
+    assert _m_hat(estimator) == [0.0, 0.0, 0.0, 3.0, 1.0, 5.0]
 
 
 def test_estimate_m_hat_is_capped_by_unseen_pairs() -> None:
@@ -392,30 +400,30 @@ def _masks(bitmasks: str) -> list[int]:
     [
         (
             {},
-            f"{OPENING} 33 30 18 45 12 51 10 53 35 28 50 13 9 54 20 43 48 15",
-            [0.0, 0.0, 0.0, 8.0, 8.0, 0.0],
             (
-                "44 19 41 22 7 56 14 49 26 37 21 42 52 11 38 25 "
-                "27 36 60 3 57 6 39 24 23 40 58 5 29 34 46 17"
+                f"{OPENING} 33 30 18 45 12 51 10 53 3 60 5 58 40 23 24 39 48 15 "
+                "25 38 26 37 44 19 56 7 50 13 41 22"
             ),
+            [0.0, 0.0, 0.0, 4.0, 6.0, 0.0],
+            "35 28 14 49 21 42 52 11 43 20 29 34 57 6 54 9 27 36 46 17",
         ),
         (
             {"use_standard_method": True},
-            f"{OPENING} 24 39 34 29 33 30 12 51 44 19 50 13 9 54 6 57 5 58 36 27 20 43",
-            [0.0, 0.0, 0.0, 8.0, 6.0, 0.0],
             (
-                "56 7 42 21 22 41 14 49 37 26 38 25 52 11 35 28 45 18 "
-                "15 48 60 3 46 17 23 40 53 10"
+                f"{OPENING} 24 39 34 29 33 30 12 51 40 23 36 27 48 15 17 46 18 45 "
+                "7 56 49 14 38 25 42 21 44 19"
             ),
+            [0.0, 0.0, 0.0, 5.0, 6.0, 0.0],
+            ("22 41 50 13 52 11 26 37 28 35 57 6 54 9 60 3 53 10 43 20 58 5"),
         ),
         (
             {"initial_num_samples": 3},
             (
-                f"{OPENING} 33 30 18 45 12 51 10 53 35 28 50 13 52 11 27 36 "
-                "9 54 3 60 20 43 24 39 48 15"
+                f"{OPENING} 33 30 18 45 12 51 10 53 3 60 5 58 40 23 24 39 48 15 "
+                "9 54 36 27 41 22 50 13 38 25"
             ),
-            [0.0, 0.0, 0.0, 7.0, 5.0, 0.0],
-            "49 14 7 56 38 25 42 21 44 19 22 41 26 37 46 17 29 34 57 6 58 5 23 40",
+            [0.0, 0.0, 0.0, 7.0, 4.0, 0.0],
+            "7 56 49 14 42 21 44 19 52 11 26 37 28 35 57 6 46 17 29 34 43 20",
         ),
     ],
 )
@@ -431,11 +439,11 @@ def test_seeded_two_phase_run_is_pinned(
 
 
 def test_seeded_partial_budget_run_is_pinned() -> None:
-    """Five players at fraction 0.75 (24 masks): phase one fills its grid with 22."""
+    """Five players at fraction 0.75 (24 masks): phase one ends after full passes."""
     assert _run(5, 0.75) == (
-        _masks("31 0 1 30 2 29 4 27 8 23 16 15 17 14 10 21 12 19 18 13 5 26"),
-        [0.0, 0.0, 0.0, 1.0, 0.0],
-        [25, 6],
+        _masks("31 0 1 30 2 29 4 27 8 23 16 15 17 14 10 21 12 19 18 13"),
+        [0.0, 0.0, 0.0, 2.0, 0.0],
+        [25, 6, 28, 3],
     )
 
 
@@ -455,3 +463,78 @@ def test_phase_one_at_the_budget_floor(
         _players(num_players), fraction, False, seed=0
     )
     assert [present_to_mask_int(mask.present) for mask in sampled] == masks
+
+
+def _estimator_with_variances(sigma_squared: np.ndarray) -> NeymanEstimator:
+    """Six players whose phase-one stratum variances equal ``sigma_squared``."""
+    cells = {
+        (player, size): (2, 0.0, float(sigma_squared[player, size]))
+        for player in range(6)
+        for size in range(1, 6)
+    }
+    return _six_player_estimator(cells, set())
+
+
+def _brute_force_allocation(sigma_squared: np.ndarray, pairs: int) -> list[int]:
+    """Return the allocation over larger-side sizes 3, 4, 5 minimising the variance.
+
+    A pair with larger side ``j`` puts a player in a size-``j`` coalition with
+    probability ``j / n`` and in a size-``n - j`` one otherwise, so cell
+    ``(i, c)`` is observed ``m_j * P`` times; the estimator variance is
+    ``sum sigma^2_ic / M_ic``.
+    """
+    num_players = 6
+    capacity = (10, 15, 6)
+    best: tuple[float, list[int]] = (float("inf"), [])
+    for m3 in range(1, pairs - 1):
+        for m4 in range(1, pairs - m3):
+            allocation = [m3, m4, pairs - m3 - m4]
+            if any(m > cap for m, cap in zip(allocation, capacity, strict=True)):
+                continue
+            variance = 0.0
+            for m, size in zip(allocation, (3, 4, 5), strict=True):
+                other = num_players - size
+                if size == other:
+                    variance += sigma_squared[:, size].sum() / m
+                    continue
+                variance += sigma_squared[:, size].sum() / (m * size / num_players)
+                variance += sigma_squared[:, other].sum() / (m * other / num_players)
+            best = min(best, (variance, allocation))
+    return best[1]
+
+
+@pytest.mark.parametrize("seed", range(4))
+def test_allocation_matches_the_variance_minimising_allocation(seed: int) -> None:
+    sigma_squared = np.random.default_rng(seed).uniform(0.1, 3.0, (6, 7))
+    estimator = _estimator_with_variances(sigma_squared)
+    estimator._estimate_m_hat(30)
+    allocation = [int(value) for value in _m_hat(estimator)[3:6]]
+    optimum = _brute_force_allocation(sigma_squared, 30)
+    assert max(abs(a - b) for a, b in zip(allocation, optimum, strict=True)) <= 1
+
+
+def test_phase_one_draws_are_uniform_within_each_size() -> None:
+    """Chi-square over 10,000 size-3 draws: every coalition is hit equally often."""
+    num_players = 8
+    counts: dict[int, int] = {}
+    draws = 0
+    seed = 0
+    while draws < 10_000:
+        estimator = NeymanEstimator(initial_num_samples=4)
+        sampled = estimator.sample_masks(_players(num_players), 1.0, False, seed)
+        masks = [present_to_mask_int(mask.present) for mask in sampled]
+        seed += 1
+        # After the boundary and singleton pairs, size 3 comes from size-3 draws
+        # and from the complements of size-5 draws.
+        for mask in masks[2 + 2 * num_players :]:
+            if mask.bit_count() == 3:
+                counts[mask] = counts.get(mask, 0) + 1
+                draws += 1
+    expected = draws / math.comb(num_players, 3)
+    statistic = sum(
+        (counts.get(mask, 0) - expected) ** 2 / expected
+        for mask in range(1 << num_players)
+        if mask.bit_count() == 3
+    )
+    # 55 degrees of freedom: the 99.9% quantile is about 93.2.
+    assert statistic < 93.2

@@ -1,2 +1,2 @@
-phase one: 24 phase two: 0
-neyman: (1.5417, 1.4917, 1.9, -0.875, 0.65)
+phase one: 18 phase two: 6
+neyman: (2.075, 1.725, 2.075, -1.225, 0.1)

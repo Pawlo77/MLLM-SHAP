@@ -14,6 +14,8 @@ Newest first.
 
 | Date | Domain | Decision | Status |
 |---|---|---|---|
+| 2026-10-18 | estimation | [[Estimation decisions#2026-10-18 — Stratified aggregation for mc\|Stratified aggregation for mc]] | accepted |
+| 2026-10-18 | estimation | [[Estimation decisions#2026-10-18 — Regression estimators and hierarchical runs\|Regression estimators and hierarchical runs]] | accepted |
 | 2026-10-12 | estimation | [[Estimation decisions#2026-10-12 — Leave-one-out bypasses the estimand\|Leave-one-out bypasses the estimand]] | accepted |
 | 2026-10-12 | masking | [[Masking decisions#2026-10-12 — Alignment-only transcripts are hidden by the policies\|Alignment-only transcripts are hidden by the policies]] | accepted |
 | 2026-10-11 | backends | [[Backends decisions#2026-10-11 — Audio input through the transformers processor\|Audio input through the transformers processor]] | accepted |
@@ -29,7 +31,6 @@ Newest first.
 | 2026-10-07 | backends | [[Backends decisions#2026-10-07 — Embeddings computed only when the value function needs them\|Embeddings computed only when the value function needs them]] | accepted |
 | 2026-10-07 | estimation | [[Estimation decisions#2026-10-07 — Singleton-first complementary sampling\|Singleton-first complementary sampling]] | accepted |
 | 2026-10-07 | estimation | [[Estimation decisions#2026-10-07 — Empty and grand pair in CC sampling\|Empty and grand pair in CC sampling]] | accepted |
-| 2026-10-07 | estimation | [[Estimation decisions#2026-10-07 — Stratified mean for partial samples\|Stratified mean for partial samples]] | accepted |
 | 2026-10-07 | estimation | [[Estimation decisions#2026-10-07 — Full coalition table\|Full coalition table]] | accepted |
 | 2026-10-07 | pipeline | [[Pipeline decisions#2026-10-07 — Run id config digest and archive policy\|Run id config digest and archive policy]] | accepted |
 | 2026-10-07 | pipeline | [[Pipeline decisions#2026-10-07 — Manifest schema version 2\|Manifest schema version 2]] | accepted |

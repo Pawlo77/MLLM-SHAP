@@ -12,7 +12,9 @@ from types import TracebackType
 from typing import Self, cast
 
 from ..domain.conversation import ConversationSnapshot
+from ..domain.players import PlayerSet
 from ..errors import ConfigError
+from ..masking.hierarchy import coarse_player_set, group_players, refined_player_set
 from ..plugins import (
     PluginContext,
     PluginGroup,
@@ -29,7 +31,7 @@ from .config import ArchiveConfig, ExplainConfig, explain_config_to_yaml
 from .context import ExplainContext
 from .orchestrator import ExplainOrchestrator
 from .reanalyze import reanalyze_sync
-from .result import ExplainRunOutput
+from .result import ExplainRunOutput, HierarchicalRunOutput
 
 
 class ExplainRunner:
@@ -84,6 +86,58 @@ class ExplainRunner:
         finally:
             if isinstance(backend, SupportsAclose):
                 await backend.aclose()
+
+    async def explain_hierarchical(
+        self, snapshot: ConversationSnapshot
+    ) -> HierarchicalRunOutput:
+        """Attribute groups, then the sentences of the top groups.
+
+        The coarse game has one player per paragraph or message
+        (``explanation.hierarchical.group_by``). The groups with the largest
+        absolute values, ``keep_fraction`` of them, are refined: their sentences
+        are the players of a second game and all other text stays present. Both
+        games use ``explanation.budget`` for their own player counts and are
+        archived under their own run ids.
+
+        Raises:
+            ConfigError: If ``explanation.hierarchical`` is not set.
+        """
+        settings = self._config.explanation.hierarchical
+        if settings is None:
+            msg = "explain_hierarchical needs explanation.hierarchical to be set"
+            raise ConfigError(msg)
+        sentences = self._partition(snapshot)
+        groups = group_players(snapshot, sentences, settings.group_by)
+        coarse_context = self._build_context(
+            snapshot, coarse_player_set(snapshot, sentences, groups), "coarse"
+        )
+        backend = self._backend or instantiate_backend(coarse_context.plugin_context())
+        try:
+            coarse = await ExplainOrchestrator(coarse_context, backend).run()
+            count = max(1, math.ceil(settings.keep_fraction * len(groups)))
+            ranked = sorted(
+                range(len(groups)), key=lambda g: (-abs(coarse.result.values[g]), g)
+            )
+            kept = tuple(sorted(ranked[:count]))
+            fine_context = self._build_context(
+                snapshot, refined_player_set(sentences, groups, kept), "fine"
+            )
+            fine = await ExplainOrchestrator(fine_context, backend).run()
+        finally:
+            if self._backend is None and isinstance(backend, SupportsAclose):
+                await backend.aclose()
+        return HierarchicalRunOutput(coarse=coarse, fine=fine, kept_groups=kept)
+
+    def explain_hierarchical_sync(
+        self, snapshot: ConversationSnapshot
+    ) -> HierarchicalRunOutput:
+        """Run :meth:`explain_hierarchical` to completion from synchronous code."""
+        _raise_inside_running_loop("explain_hierarchical_sync", "explain_hierarchical")
+        if self._backend is None:
+            return asyncio.run(self.explain_hierarchical(snapshot))
+        if self._loop_runner is None:
+            self._loop_runner = asyncio.Runner()
+        return self._loop_runner.run(self.explain_hierarchical(snapshot))
 
     async def aclose(self) -> None:
         """Close the injected backend and the loop of :meth:`explain_sync`.
@@ -179,7 +233,7 @@ class ExplainRunner:
             strict=strict,
         )
 
-    def _build_context(self, snapshot: ConversationSnapshot) -> ExplainContext:
+    def _partition(self, snapshot: ConversationSnapshot) -> PlayerSet:
         check_plugin_options(self._config, self._registry)
         partitioner = cast(
             PlayerPartitioner,
@@ -196,18 +250,30 @@ class ExplainRunner:
                 "player set without spans"
             )
             raise ConfigError(msg)
+        return player_set
+
+    def _build_context(
+        self,
+        snapshot: ConversationSnapshot,
+        player_set: PlayerSet | None = None,
+        level: str = "",
+    ) -> ExplainContext:
+        if player_set is None:
+            player_set = self._partition(snapshot)
         explanation = self._config.explanation
         num_players = player_set.num_players
         budget = explanation.budget
         # Every builtin estimator plans about fraction * 2^n coalitions, or the
         # absolute count capped at 2^n; compare in log2 so huge player counts do
         # not overflow a float.
-        if budget.evaluations is None:
+        evaluations = budget.evaluations_for(num_players)
+        if evaluations is None:
             planned_log2 = num_players + math.log2(budget.fraction or 1.0)
             setting = f"budget.fraction {budget.fraction}"
         else:
-            planned_log2 = min(math.log2(budget.evaluations), num_players)
-            setting = f"budget.evaluations {budget.evaluations}"
+            planned_log2 = min(math.log2(evaluations), num_players)
+            key = "per_player" if budget.per_player is not None else "evaluations"
+            setting = f"budget.{key} {getattr(budget, key)}"
         if planned_log2 > explanation.max_players:
             msg = (
                 f"snapshot has {num_players} players; {setting} plans about "
@@ -234,7 +300,7 @@ class ExplainRunner:
             else self._config.backend.model_id
         )
         digest = hashlib.sha256(
-            (explain_config_to_yaml(identity) + model_id).encode("utf-8")
+            (explain_config_to_yaml(identity) + model_id + level).encode("utf-8")
         ).hexdigest()[:12]
         run_id = f"{snapshot.snapshot_id[:16]}-{digest}"
         return ExplainContext(

@@ -86,7 +86,7 @@ def test_builtin_registers_exact_estimator() -> None:
 
 
 def test_builtin_registers_approximate_estimators() -> None:
-    """Built-in registration exposes MC, complementary, and Neyman estimators."""
+    """Built-in registration exposes every estimator."""
     registry = PluginRegistry()
     register_builtin_plugins(registry)
     registry.load_entry_points(PluginGroup.ESTIMATORS)
@@ -94,9 +94,12 @@ def test_builtin_registers_approximate_estimators() -> None:
     assert registry.names(PluginGroup.ESTIMATORS) == (
         "complementary",
         "exact",
+        "kernel_banzhaf",
+        "leverage",
         "loo",
         "mc",
         "neyman_cc",
+        "proxy",
     )
     assert isinstance(
         registry.resolve(PluginGroup.ESTIMATORS, "mc", _context(registry)),
