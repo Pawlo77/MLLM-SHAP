@@ -364,6 +364,8 @@ allow = [
   "Edit(knowledge/**)",
   "Write(knowledge/**)",
   "Bash(make knowledge*)",
+  "Bash(gh *)",
+  "Bash(grep *)",
 ]
 deny = [
   "Read(./.pypirc)",
