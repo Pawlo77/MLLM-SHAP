@@ -58,6 +58,24 @@ scenarios:
     turns: *france
     overrides: {explanation: {estimator: neyman_cc, budget: {evaluations: 16}}}
     expect: {top_k_signs: 3, max_l1: 0.35}
+  # Thresholds of the three estimators below are those of neyman_cc, not yet
+  # measured on a GPU; record the measured numbers on the first practical run.
+  estimator.leverage:
+    tier: default
+    turns: *france
+    overrides: {explanation: {estimator: leverage, budget: {evaluations: 16}}}
+    expect: {top_k_signs: 3, max_l1: 0.35}
+  estimator.proxy:
+    tier: default
+    turns: *france
+    overrides: {explanation: {estimator: proxy, budget: {evaluations: 16}}}
+    expect: {top_k_signs: 3, max_l1: 0.35}
+  estimator.kernel_banzhaf:
+    tier: default
+    turns: *france
+    overrides:
+      explanation: {estimator: kernel_banzhaf, estimand: banzhaf, budget: {evaluations: 16}}
+    expect: {top_player: France, max_l1: 0.35}
   estimand.banzhaf:
     tier: default
     turns: *france
@@ -125,6 +143,12 @@ scenarios:
     tier: default
     turns: *france
     expect: {labels: [The, capital, of, France, is]}
+  partition.sentences:
+    tier: default
+    turns:
+      - [{role: user, text: "My name is Ola. What is my name?"}]
+    overrides: {explanation: {players: sentences}}
+    expect: {labels: ["My name is Ola.", "What is my name?"]}
   partition.messages:
     tier: default
     turns:

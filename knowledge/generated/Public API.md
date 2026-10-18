@@ -38,9 +38,12 @@ parent: "[[mllm-shap]]"
 | `ExplainRunOutput` | [[src/mllm_shap/pipeline/result.py]] | Explain pipeline output including scheduler metrics. |
 | `ExplainRunner` | [[src/mllm_shap/pipeline/runner.py]] | Run the explain pipeline for a conversation snapshot. |
 | `GenerationRecord` | [[src/mllm_shap/domain/generation.py]] | Concrete generation output consumed by built-in value functions. |
+| `HierarchicalRunOutput` | [[src/mllm_shap/pipeline/result.py]] | Both games of a hierarchical run. |
 | `IdentityNormalizer` | [[src/mllm_shap/estimation/normalizers.py]] | Return attributions unchanged. |
 | `InMemoryObservabilitySink` | [[src/mllm_shap/runtime/telemetry.py]] | Collect span records in memory for tests and diagnostics. |
+| `KernelBanzhafEstimator` | [[src/mllm_shap/estimation/kernel_banzhaf.py]] | Sample uniform complementary pairs and fit the Banzhaf regression. |
 | `LeaveOneOutEstimator` | [[src/mllm_shap/estimation/loo.py]] | Attribute ``v(N) - v(N - {i})`` to player ``i`` from ``n + 1`` coalitions. |
+| `LeverageEstimator` | [[src/mllm_shap/estimation/leverage.py]] | Sample complementary pairs by leverage and solve the Kernel SHAP regression. |
 | `LmStudioBackend` | [[src/mllm_shap/backends/lmstudio/backend.py]] | Generate text through a local LM Studio API server. |
 | `LogprobValue` | [[src/mllm_shap/value/logprob.py]] | Score a coalition by the model's confidence in its own generation. |
 | `LogprobsUnavailableError` | [[src/mllm_shap/errors.py]] | Raised when a value function needs token logprobs a generation lacks. |
@@ -65,10 +68,12 @@ parent: "[[mllm-shap]]"
 | `PluginNotFoundError` | [[src/mllm_shap/errors.py]] | Raised when no plugin is registered under the requested group and name. |
 | `PluginRegistry` | [[src/mllm_shap/plugins/registry.py]] | Register and resolve pipeline plugins by group and name. |
 | `PowerShiftNormalizer` | [[src/mllm_shap/estimation/normalizers.py]] | Shift to non-negative values, apply a power, then scale to sum one. |
+| `ProxyEstimator` | [[src/mllm_shap/estimation/proxy.py]] | Leverage-sampled coalitions, a tree proxy, and a residual correction. |
 | `ReanalyzeMismatchError` | [[src/mllm_shap/errors.py]] | Raised when reanalyze settings disagree with the archived run. |
 | `ReferenceWerValue` | [[src/mllm_shap/value/wer.py]] | Score ``1 - min(1, WER)`` of a coalition's answer against a reference. |
 | `Role` | [[src/mllm_shap/domain/enums.py]] | Participant role attached to a message or token. |
 | `RunManifest` | [[src/mllm_shap/pipeline/manifest.py]] | Top-level metadata persisted alongside a run archive. |
+| `SentencePartitioner` | [[src/mllm_shap/masking/partitions.py]] | Partition a snapshot into sentences, never crossing a blank line. |
 | `SgpaSegmentPartitioner` | [[src/mllm_shap/alignment/partitions.py]] | Make each spellable word of every audio message's transcript a player. |
 | `ShapleyAggregator` | [[src/mllm_shap/estimation/estimands/shapley.py]] | Aggregate coalition samples with Shapley coalition weights. |
 | `TextPart` | [[src/mllm_shap/domain/conversation.py]] | Text content of a message. |

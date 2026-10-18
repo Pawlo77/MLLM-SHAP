@@ -94,15 +94,16 @@ def aggregate_from_marginals(
     payoffs: Sequence[float],
     weight_fn: Callable[[int, int], float],
 ) -> list[float]:
-    """Estimate per-player values from observed marginal contributions.
+    """Estimate per-player values from sampled coalitions, using every one.
 
-    Each observed pair ``(S, S | {i})`` with ``i not in S`` contributes the
-    marginal ``v(S | {i}) - v(S)`` to the stratum ``|S|``. Under Shapley weights
-    every stratum carries weight ``1/n``; under Banzhaf weights stratum ``k``
-    carries ``C(n-1, k) / 2^(n-1)``. The estimate is the probability-weighted
-    mean of the per-stratum mean marginals, renormalized over the strata that
-    have observations. On a complete table it equals the exact value. A player
-    with no observed marginal gets 0 and a WARNING is logged.
+    For player ``i`` and stratum ``l`` (coalition size without ``i``) the
+    estimate is the mean payoff of the sampled coalitions that contain ``i`` and
+    have size ``l + 1`` minus the mean payoff of those that exclude ``i`` and have
+    size ``l`` (Stratified SVARM, Kolpaczki et al. 2024). The strata are combined
+    with the semivalue's probabilities (``1/n`` for Shapley, ``C(n-1, l)/2^(n-1)``
+    for Banzhaf), renormalized over the strata that have both means. Each sample
+    updates every player, and a complete table gives the exact value. A player
+    with no stratum observed on both sides gets 0 and a WARNING is logged.
 
     Args:
         masks: Coalition membership rows with shape ``(m, n)``.
@@ -133,52 +134,45 @@ def aggregate_from_marginals(
     payoff_lookup: dict[int, float] = {}
     for mask, payoff in zip(masks, payoffs, strict=True):
         payoff_lookup[present_to_mask_int(mask)] = payoff
+    unique = np.array(
+        [[(key >> i) & 1 for i in range(num_players)] for key in payoff_lookup],
+        dtype=np.float64,
+    )
+    pay = np.fromiter(payoff_lookup.values(), dtype=np.float64)
+    onehot = np.eye(num_players + 1)[unique.sum(axis=1).astype(np.int64)]
+    with_sum, with_count = (unique * pay[:, None]).T @ onehot, unique.T @ onehot
+    absent = 1.0 - unique
+    without_sum, without_count = (absent * pay[:, None]).T @ onehot, absent.T @ onehot
 
-    values = [0.0] * num_players
-    unobserved: list[int] = []
-    for player_index in range(num_players):
-        player_bit = 1 << player_index
-        stratum_sum = np.zeros(num_players, dtype=np.float64)
-        stratum_count = np.zeros(num_players, dtype=np.int64)
-        for mask_int, payoff in payoff_lookup.items():
-            if mask_int & player_bit:
-                continue
-            extended_payoff = payoff_lookup.get(mask_int | player_bit)
-            if extended_payoff is None:
-                continue
-            size = mask_int.bit_count()
-            stratum_sum[size] += extended_payoff - payoff
-            stratum_count[size] += 1
-
-        observed = stratum_count > 0
-        if not observed.any():
-            unobserved.append(player_index)
-            continue
-        stratum_mean = stratum_sum[observed] / stratum_count[observed]
-        # p_k = weight(k, n) * C(n-1, k) is the semivalue's probability of stratum
-        # k (1/n each for Shapley, C(n-1, k)/2^(n-1) for Banzhaf). With every
-        # stratum observed this is an unbiased stratified mean; renormalizing over
-        # the observed strata drops the missing ones, which biases the estimate
-        # whenever their mean marginal differs from the observed ones.
-        probabilities = np.array(
-            [
-                weight_fn(int(size), num_players)
-                * math.comb(num_players - 1, int(size))
-                for size in np.flatnonzero(observed)
-            ],
-            dtype=np.float64,
-        )
-        values[player_index] = float(
-            (probabilities * stratum_mean).sum() / probabilities.sum()
-        )
-
+    # Stratum l pairs the size-(l + 1) coalitions with i and the size-l without.
+    valid = (with_count[:, 1:] > 0) & (without_count[:, :-1] > 0)
+    difference = np.divide(
+        with_sum[:, 1:], with_count[:, 1:], where=valid, out=np.zeros_like(valid, float)
+    ) - np.divide(
+        without_sum[:, :-1],
+        without_count[:, :-1],
+        where=valid,
+        out=np.zeros_like(valid, float),
+    )
+    # p_l = weight(l, n) * C(n-1, l) is the semivalue's probability of stratum l.
+    probabilities = np.array([
+        weight_fn(size, num_players) * math.comb(num_players - 1, size)
+        for size in range(num_players)
+    ])
+    mass = (valid * probabilities).sum(axis=1)
+    unobserved = np.flatnonzero(mass == 0).tolist()
+    values = np.divide(
+        (valid * probabilities * difference).sum(axis=1),
+        mass,
+        where=mass > 0,
+        out=np.zeros(num_players),
+    )
     if unobserved:
         logger.warning(
-            "%d of %d players have no observed marginal (no sampled pair S, "
-            "S | {i}); their values are 0. Raise budget.fraction or set "
-            "include_minimal_masks. Players: %s",
+            "%d of %d players have no stratum sampled with and without them; "
+            "their values are 0. Raise the budget. Players: %s",
             len(unobserved),
             num_players,
             unobserved,
         )
-    return values
+    return [float(value) for value in values]

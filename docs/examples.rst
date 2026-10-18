@@ -100,9 +100,9 @@ open the ``.ipynb`` on GitHub or browse the full catalog in
      - `GitHub <https://github.com/Pawlo77/MLLM-SHAP/blob/main/examples/exact_estimation.ipynb>`__
 
    * - :doc:`notebooks/estimator_comparison`
-     - Monte Carlo, complementary and Neyman-CC against exact Shapley values;
-       relative L1 error as the budget fraction grows.
-     - ``[viz]``
+     - Every built-in estimator against exact Shapley and Banzhaf values on five
+       games at budgets of ``2n`` to ``32n`` coalitions.
+     - ``[viz]``, ``[proxy]``
      - `GitHub <https://github.com/Pawlo77/MLLM-SHAP/blob/main/examples/estimator_comparison.ipynb>`__
 
    * - :doc:`notebooks/attribution_viz`

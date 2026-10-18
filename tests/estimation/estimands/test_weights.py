@@ -93,40 +93,39 @@ PARTIAL = [mask for mask in GAME if mask != (False, False, True)]
 
 
 def test_aggregate_from_marginals_partial_table_shapley() -> None:
-    # Player 0: strata 0, 1, 2 observed once: 1, 5 - 2 = 3, 11 - 6 = 5.
-    #   (1/3 * 1 + 1/3 * 3 + 1/3 * 5) / 1 = 3.
-    # Player 1: 2, 5 - 1 = 4, 11 - 7 = 4: (2 + 4 + 4) / 3 = 10/3.
-    # Player 2: stratum 0 empty; stratum 1 has two marginals, 7 - 1 = 6 and
-    #   6 - 2 = 4, mean 5; stratum 2: 11 - 5 = 6.
-    #   (1/3 * 5 + 1/3 * 6) / (2/3) = 5.5.
+    # Stratum l: mean v of sampled size-(l + 1) coalitions with i minus mean v of
+    # sampled size-l coalitions without i.
+    # Player 0: 1 - 0; (5 + 7) / 2 - 2 = 4; 11 - 6 = 5: (1 + 4 + 5) / 3 = 10/3.
+    # Player 1: 2; (5 + 6) / 2 - 1 = 4.5; 11 - 7 = 4: 10.5 / 3 = 3.5.
+    # Player 2: stratum 0 has no size-1 coalition with it; (7 + 6) / 2 - (1 + 2) / 2
+    #   = 5; 11 - 5 = 6: (5 + 6) / 2 = 5.5.
     assert _aggregate(PARTIAL, shapley_weight) == pytest.approx(
-        [3.0, 10 / 3, 5.5], abs=1e-12
+        [10 / 3, 3.5, 5.5], abs=1e-12
     )
 
 
 def test_aggregate_from_marginals_partial_table_banzhaf() -> None:
-    # Stratum probabilities C(2, k) / 4 = 1/4, 1/2, 1/4.
-    # Player 0: 1/4 * 1 + 1/2 * 3 + 1/4 * 5 = 3.
-    # Player 1: 1/4 * 2 + 1/2 * 4 + 1/4 * 4 = 3.5.
-    # Player 2: (1/2 * 5 + 1/4 * 6) / (1/2 + 1/4) = 4 / 0.75 = 16/3.
+    # Stratum probabilities C(2, k) / 4 = 1/4, 1/2, 1/4 on the differences above.
+    # Player 0: 1/4 * 1 + 1/2 * 4 + 1/4 * 5 = 3.5.
+    # Player 1: 1/4 * 2 + 1/2 * 4.5 + 1/4 * 4 = 3.75.
+    # Player 2: (1/2 * 5 + 1/4 * 6) / (1/2 + 1/4) = 16/3.
     assert _aggregate(PARTIAL, banzhaf_weight) == pytest.approx(
-        [3.0, 3.5, 16 / 3], abs=1e-12
+        [3.5, 3.75, 16 / 3], abs=1e-12
     )
 
 
 def test_aggregate_from_marginals_zero_fills_unobserved_players(
     caplog: pytest.LogCaptureFixture,
 ) -> None:
-    # Only pairs (∅, {0}) and (∅, {1}) exist; player 2 has no marginal.
+    # Only ∅, {0}, {1}: player 2 is never present, so no stratum has a with-mean.
     masks = [(False, False, False), (True, False, False), (False, True, False)]
     with caplog.at_level(logging.WARNING):
         values = _aggregate(masks, banzhaf_weight)
     assert values == [1.0, 2.0, 0.0]
     assert caplog.messages == [
         (
-            "1 of 3 players have no observed marginal (no sampled pair S, S | {i}); "
-            "their values are 0. Raise budget.fraction or set "
-            "include_minimal_masks. Players: [2]"
+            "1 of 3 players have no stratum sampled with and without them; "
+            "their values are 0. Raise the budget. Players: [2]"
         )
     ]
 

@@ -35,7 +35,7 @@ Citation: Javier Castro, Daniel Gómez, Juan Tejada, "Polynomial calculation of 
 
 Claim: Partial-sample estimates must be consistent, converging to the exact value as samples grow; mllm-shap samples coalitions, not the paper's player orderings.
 
-Used by: [[Estimation decisions#2026-10-07 — Stratified mean for partial samples|stratified mean]], `docs/theory/approximation.rst`.
+Used by: [[Estimation decisions#2026-10-18 — Stratified aggregation for mc|stratified aggregation]], `docs/theory/approximation.rst`.
 
 ## Dubey 1979 — Mathematical properties of the Banzhaf power index
 
@@ -83,7 +83,7 @@ Citation: Rory Mitchell, Joshua Cooper, Eibe Frank, Geoffrey Holmes, "Sampling p
 
 Claim: Estimators are compared at equal evaluation budgets; its antithetic, herding and quasi-Monte Carlo permutation sets are not implemented.
 
-Used by: [[estimation]], [[Estimation decisions#2026-10-07 — Stratified mean for partial samples|stratified mean]], `docs/theory/approximation.rst`.
+Used by: [[estimation]], [[Estimation decisions#2026-10-18 — Stratified aggregation for mc|stratified aggregation]], `docs/theory/approximation.rst`.
 
 ## Neyman 1934 — Two aspects of the representative method
 
@@ -132,3 +132,59 @@ Citation: Jiayao Zhang, Qiheng Sun, Jinfei Liu, Li Xiong, Jian Pei, Kui Ren, "Ef
 Claim: The `complementary` estimator (count matrix `M` and summed contributions `C` per player and size) and the two-phase `neyman_cc`; the size-`n` stratum is informed only by `(N, ∅)` ([[Fixed issues|C03]]), and the empirical Bernstein allocation is not implemented.
 
 Used by: [[estimation]], [[Estimation decisions#2026-10-07 — Empty and grand pair in CC sampling|empty and grand pair]], `docs/theory/approximation.rst`.
+
+## Kolpaczki 2024 — SVARM
+
+Citation: Patrick Kolpaczki, Viktor Bengs, Maximilian Muschalik, Eyke Hüllermeier, "Approximating the Shapley Value without Marginal Contributions", *AAAI* 38(12), 2024, [doi:10.1609/aaai.v38i12.29225](https://doi.org/10.1609/aaai.v38i12.29225).
+
+Claim: `mc` takes the size-stratified with-and-without means, so one evaluation updates every player, and the exact evaluation of the smallest strata first; the variance guarantees are not used.
+
+Used by: [[estimation]], `docs/theory/regression_estimators.rst`.
+
+## Liu 2024 — Kernel Banzhaf
+
+Citation: Yurong Liu, R. Teal Witter, Flip Korn, Tarfah Alrashed, Dimitris Paparas, Christopher Musco, Juliana Freire, "Kernel Banzhaf: A Fast and Robust Estimator for Banzhaf Values", 2024, [arXiv:2410.08336](https://arxiv.org/abs/2410.08336).
+
+Claim: `kernel_banzhaf` fits a linear model to payoffs of paired uniform coalitions; its slopes are the Banzhaf values.
+
+Used by: [[estimation]], `docs/theory/regression_estimators.rst`.
+
+## Liu 2025 — AttriBoT
+
+Citation: Fengyuan Liu, Nikhil Kandpal, Colin Raffel, "AttriBoT: A Bag of Tricks for Efficiently Approximating Leave-One-Out Context Attribution", *ICLR*, 2025, [arXiv:2411.15102](https://arxiv.org/abs/2411.15102).
+
+Claim: Hierarchical runs rely on its observation that paragraph scores approximate summed sentence scores; the other tricks are not implemented.
+
+Used by: [[estimation]], `docs/theory/regression_estimators.rst`.
+
+## Musco 2025 — Leverage SHAP
+
+Citation: Christopher Musco, R. Teal Witter, "Provably Accurate Shapley Value Estimation via Leverage Score Sampling", *ICLR*, 2025, [arXiv:2410.01917](https://arxiv.org/abs/2410.01917).
+
+Claim: `leverage` samples coalition sizes by leverage score (uniform over sizes) with paired sampling and solves the constrained Kernel SHAP regression; the authors' without-replacement Bernoulli scheme is replaced by deterministic per-size counts.
+
+Used by: [[estimation]], `docs/theory/regression_estimators.rst`.
+
+## Thies 2026 — ProxySHAP
+
+Citation: Santo M. A. R. Thies, Hubert Baniecki, R. Teal Witter, Eyke Hüllermeier, Maximilian Muschalik, Fabian Fumagalli, "ProxySHAP", *NeurIPS*, 2026, [arXiv:2605.22738](https://arxiv.org/abs/2605.22738).
+
+Claim: `proxy` fits a tree proxy and extracts its exact Shapley and Banzhaf values; only order 1 is implemented.
+
+Used by: [[estimation]], `docs/theory/regression_estimators.rst`.
+
+## Wang 2023 — Data Banzhaf
+
+Citation: Jiachen T. Wang, Ruoxi Jia, "Data Banzhaf: A Robust Data Valuation Framework for Machine Learning", *AISTATS*, PMLR 206, 2023, [arXiv:2205.15466](https://arxiv.org/abs/2205.15466).
+
+Claim: The Banzhaf value is the slope of the best linear fit under uniform coalitions and tolerates noisy payoffs, which motivates `kernel_banzhaf`.
+
+Used by: [[estimation]], `docs/theory/regression_estimators.rst`.
+
+## Witter 2025 — Regression-adjusted Monte Carlo
+
+Citation: R. Teal Witter, Yurong Liu, Christopher Musco, "Regression-Adjusted Monte Carlo Estimators for Shapley Values and Probabilistic Values", *NeurIPS*, 2025, [arXiv:2506.11849](https://arxiv.org/abs/2506.11849).
+
+Claim: `proxy` adds the sample-reuse estimate of the residual to the proxy's exact values.
+
+Used by: [[estimation]], `docs/theory/regression_estimators.rst`.

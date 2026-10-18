@@ -14,19 +14,22 @@ parent: "[[mllm-shap]]"
 
 | Benchmark | Median (ms) |
 |---|---|
-| `test_archive_round_trip_10k` | 51.055 |
-| `test_complementary_aggregation_n12` | 3.812 |
-| `test_dedup_key_throughput_10k` | 32.238 |
-| `test_exact_aggregation_full_table_n12` | 2.613 |
-| `test_import_bench` | 277.964 |
-| `test_mask_pack_unpack_10k` | 21.556 |
-| `test_mock_audio_generate_ten_seconds` | 0.633 |
-| `test_payload_cache_key_hashing` | 16.830 |
-| `test_pipeline_mock_exact_n10` | 137.553 |
-| `test_prefix_cache_hits_10k` | 18.733 |
-| `test_scheduler_1000_noop_jobs` | 5.940 |
-| `test_stratified_marginals_m2000` | 2.325 |
-| `test_tfidf_fit_and_score_4096` | 364.982 |
+| `test_archive_round_trip_10k` | 53.730 |
+| `test_complementary_aggregation_n12` | 4.111 |
+| `test_dedup_key_throughput_10k` | 33.306 |
+| `test_exact_aggregation_full_table_n12` | 2.666 |
+| `test_import_bench` | 299.001 |
+| `test_kernel_banzhaf_regression_n100_m3200` | 9.862 |
+| `test_leverage_regression_n100_m3200` | 10.218 |
+| `test_mask_pack_unpack_10k` | 25.549 |
+| `test_mock_audio_generate_ten_seconds` | 0.660 |
+| `test_payload_cache_key_hashing` | 17.008 |
+| `test_pipeline_mock_exact_n10` | 149.034 |
+| `test_prefix_cache_hits_10k` | 19.520 |
+| `test_proxy_fit_and_values_n12` | 17.132 |
+| `test_scheduler_1000_noop_jobs` | 5.919 |
+| `test_stratified_marginals_m2000` | 1.889 |
+| `test_tfidf_fit_and_score_4096` | 381.274 |
 
 The baseline machine is named in the runtime guide (`docs/guides/runtime.rst`). The latest local `make bench` report (`.pytest_benchmark/benchmark.json`) is machine-local and git-ignored, so it is not copied here.
 

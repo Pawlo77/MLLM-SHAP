@@ -8,10 +8,11 @@ import pytest
 
 from mllm_shap.domain.coalition import CoalitionMask
 from mllm_shap.domain.players import PlayerSet
+from mllm_shap.estimation._shared import budget_fraction
 from mllm_shap.estimation.complementary import ComplementaryEstimator
 from mllm_shap.estimation.estimands import BanzhafAggregator, ShapleyAggregator
 from mllm_shap.estimation.estimands._weights import aggregate_shapley_exact
-from tests.estimation._games import additive_payoffs, full_table
+from tests.estimation._games import additive_game, additive_payoffs, full_table
 
 
 def test_complementary_pairs_are_negations() -> None:
@@ -165,3 +166,61 @@ def test_complementary_singleton_pairs_fit_a_small_budget() -> None:
         for single in singletons
         for mask in (single, tuple(not value for value in single))
     ]
+
+
+def _block_pairs(num_players: int) -> int:
+    return sum(-(-num_players // size) for size in range(2, num_players // 2 + 1))
+
+
+@pytest.mark.parametrize("num_players", [5, 8, 11])
+def test_enough_budget_leaves_no_empty_stratum(num_players: int) -> None:
+    """Boundary, singleton and block pairs fill every (player, size) cell."""
+    masks_needed = 2 + 2 * num_players + 2 * _block_pairs(num_players)
+    estimator = ComplementaryEstimator()
+    players = PlayerSet(player_ids=tuple(f"p{i}" for i in range(num_players)))
+    masks = list(
+        estimator.sample_masks(
+            players, budget_fraction(num_players, None, masks_needed), False, seed=3
+        )
+    )
+    counts = estimator.m_counts
+    assert counts is not None
+    assert (counts[:, 1:] > 0).all()
+    assert len(masks) <= masks_needed
+
+
+def test_additive_game_is_unbiased_at_the_covering_budget() -> None:
+    num_players = 8
+    game = additive_game(num_players)
+    players = PlayerSet(player_ids=tuple(f"p{i}" for i in range(num_players)))
+    budget = 2 + 2 * num_players + 2 * _block_pairs(num_players)
+    estimates = []
+    for seed in range(300):
+        estimator = ComplementaryEstimator()
+        masks = list(
+            estimator.sample_masks(
+                players, budget_fraction(num_players, None, budget), False, seed
+            )
+        )
+        payoffs = [game.payoff(mask.present) for mask in masks]
+        estimates.append(
+            estimator.estimate_attributions(masks, payoffs, ShapleyAggregator())
+        )
+    mean = np.mean(estimates, axis=0)
+    standard_error = np.std(estimates, axis=0) / np.sqrt(len(estimates))
+    assert (np.abs(mean - game.shapley) <= 4 * standard_error + 1e-9).all()
+
+
+def test_empty_strata_are_named_in_a_warning(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    players = PlayerSet(player_ids=tuple(f"p{i}" for i in range(8)))
+    estimator = ComplementaryEstimator()
+    masks = list(
+        estimator.sample_masks(players, budget_fraction(8, None, 18), False, 0)
+    )
+    with caplog.at_level("WARNING", logger="mllm_shap"):
+        estimator.estimate_attributions(
+            masks, [float(sum(m.present)) for m in masks], ShapleyAggregator()
+        )
+    assert "empty for coalition sizes [2, 3, 4, 5, 6]" in caplog.text

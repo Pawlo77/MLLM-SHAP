@@ -1793,6 +1793,9 @@ audio = [
 lmstudio = [
     { name = "lmstudio" },
 ]
+proxy = [
+    { name = "scikit-learn" },
+]
 transformers = [
     { name = "accelerate" },
     { name = "peft" },
@@ -1842,13 +1845,14 @@ requires-dist = [
     { name = "peft", marker = "extra == 'transformers'", specifier = ">=0.17.0" },
     { name = "pydantic", specifier = ">=2.11.0,<3.0.0" },
     { name = "pyyaml", specifier = ">=6.0.2,<7.0.0" },
+    { name = "scikit-learn", marker = "extra == 'proxy'", specifier = ">=1.7.0" },
     { name = "seaborn", marker = "extra == 'viz'", specifier = ">=0.13.0" },
     { name = "soundfile", marker = "extra == 'audio'", specifier = ">=0.13.0" },
     { name = "torch", marker = "extra == 'transformers'", specifier = ">=2.5.0" },
     { name = "torchaudio", marker = "extra == 'transformers'", specifier = ">=2.9.0" },
     { name = "transformers", marker = "extra == 'transformers'", specifier = ">=4.56.0" },
 ]
-provides-extras = ["lmstudio", "transformers", "api", "audio", "viz"]
+provides-extras = ["lmstudio", "transformers", "api", "audio", "proxy", "viz"]
 
 [package.metadata.requires-dev]
 dev = [

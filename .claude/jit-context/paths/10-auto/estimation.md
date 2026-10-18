@@ -11,15 +11,15 @@ Full note: `knowledge/architecture/estimation.md`; update it in the same change 
 ## Responsibility
 
 - Choose which coalitions to evaluate (Estimator) and turn coalition payoffs into per-player attributions (Estimand aggregators).
-- Rescale attributions for presentation (normalisers).
+- Rescale attributions for presentation (normalisers) and make Shapley values efficient (`additive_efficiency`).
 
 ## Invariants
 
-- On the full table every estimator satisfies efficiency: `sum(values) == v(N) - v(∅)` for the Shapley estimand (Full coalition table (`knowledge/decisions/Estimation decisions.md`), Empty and grand pair in CC sampling (`knowledge/decisions/Estimation decisions.md`)).
-- Every sampler yields the grand and empty coalitions first, and they count toward the budget.
-- Complementary aggregation does not depend on mask order.
-- The complementary and Neyman budget floor `min(2n + 2, 2^n)` fits `(N, ∅)` and every singleton pair, so every size-1 stratum is seeded. At the floor the symmetric game `v(S) = |S|` gives exactly 1 per player (C14 (`knowledge/issues/Fixed issues.md`)).
-- Partial-budget estimates converge to the exact value as coverage grows; they are exact on additive games for Monte Carlo and close to efficient for complementary sampling (C12 (`knowledge/issues/Fixed issues.md`)).
+- On the full table every estimator is efficient for the Shapley estimand (Full coalition table (`knowledge/decisions/Estimation decisions.md`)); `leverage` is efficient at every budget.
+- Every sampler yields the grand and empty coalitions first; they count toward the budget.
+- Complementary aggregation does not depend on mask order; at the floor the game `v(S) = |S|` gives 1 per player (C14 (`knowledge/issues/Fixed issues.md`)).
+- `mc` is exact on the full table and nearly unbiased from about `32n` masks; `kernel_banzhaf` and `proxy` with correction are exact on the full table.
+- `additive_efficiency` never increases the L2 error: it projects onto the hyperplane holding the exact values.
 
 ## Known issues
 

@@ -4,19 +4,37 @@ type: decision-log
 domain: estimation
 parent: "[[mllm-shap]]"
 created: 2026-10-07
-updated: 2026-10-12
+updated: 2026-10-18
 tags: [decisions, estimation]
 related-code:
   - "[[src/mllm_shap/estimation/complementary.py]]"
   - "[[src/mllm_shap/estimation/neyman.py]]"
   - "[[src/mllm_shap/estimation/_shared.py]]"
   - "[[src/mllm_shap/estimation/exact.py]]"
+  - "[[src/mllm_shap/estimation/leverage.py]]"
+  - "[[src/mllm_shap/estimation/proxy.py]]"
   - "[[src/mllm_shap/estimation/estimands/_weights.py]]"
   - "[[src/mllm_shap/pipeline/orchestrator.py]]"
 ---
 # Estimation decisions
 
 Architecture: [[estimation]]. Theory: `docs/theory/approximation.rst`.
+
+## 2026-10-18 — Stratified aggregation for mc
+
+Decision: `mc` and the partial-table path of both aggregators use size-stratified with-and-without means over every sampled coalition; `mc` draws sizes uniformly after evaluating sizes `0, 1, n-1, n`. Neyman weights divide by `k` and `n - k`; phase one runs complete passes; complementary sampling adds block pairs per size.
+
+Why: pair means discarded almost every uniform sample once `n >= 10`, and a size-`k` cell's variance scales with `1/k`, not `1/(k+1)`.
+
+Consequences: partial-budget values differ from 0.6.0. Pair means were exact on additive games and the new means are not; elsewhere the new error was lower at `4n` and `32n`. Strata without both means are dropped, so some bias remains below about `16n`. Rejected: imputing missing strata.
+
+## 2026-10-18 — Regression estimators and hierarchical runs
+
+Decision: `leverage`, `kernel_banzhaf` and `proxy` are built in and use only archived masks and payoffs, so `reanalyze` works; `proxy` imports scikit-learn at construction. `explain_hierarchical` runs two games under separate run ids ([[Papers#Musco 2025 — Leverage SHAP|Leverage SHAP]]).
+
+Why: they update every player per evaluation and need no state beyond masks and payoffs.
+
+Consequences: on five ten-player games `proxy` had the lowest Shapley error from `8n`, `kernel_banzhaf` the lowest Banzhaf error from `4n`, and `leverage` beat `complementary` on three games ([[estimation]]). Fine-level values belong to the second game. Rejected: amortised and interaction estimators.
 
 ## 2026-10-12 — Leave-one-out bypasses the estimand
 
@@ -28,11 +46,11 @@ Consequences: `loo` values need not add up to `v(N) - v(∅)`, and the manifest'
 
 ## 2026-10-07 — Singleton-first complementary sampling
 
-Decision: Complementary and Neyman sampling yield `(N, ∅)`, then the `n` singleton pairs as far as the budget fits, then random pairs (Neyman: its grid walk); all count toward the budget. Aggregation keeps zero fill for empty strata. The Neyman phase-one walk goes size by size, round-robin over players ([[Fixed issues|C13]]).
+Decision: Complementary contribution (CC) sampling and Neyman sampling yield `(N, ∅)`, then the `n` singleton pairs as far as the budget fits, then further pairs; all count toward the budget. Aggregation keeps zero fill for empty strata and warns about them. The Neyman phase-one walk goes size by size ([[Fixed issues|C13]]).
 
-Why: Complementary contribution (CC) aggregation counts empty strata as zero, and only `({i}, N ∖ {i})` fills player `i`'s size-1 stratum, so partial budgets were biased upwards ([[Fixed issues|C12]]).
+Why: only `({i}, N ∖ {i})` fills player `i`'s size-1 stratum, so partial budgets were biased upwards ([[Fixed issues|C12]]).
 
-Consequences: On an 8-player game over 200 seeds at fraction 0.1, mean relative error was 0.586 (old), 0.550 (singleton-first) and 0.615 (size-uniform); singleton-first was best or close at every budget and exact at 1.0. The efficiency gap at half budget on an additive game drops from +1.709 to +0.029. At the minimum `2n` masks one player's size-1 stratum can stay empty. Rejected: rescaling by `n / |K|` (worse at every budget); additive imputation of empty strata (error not monotone in the budget).
+Consequences: the efficiency gap at half budget on an additive game dropped from +1.709 to +0.029. Rejected: rescaling by `n / |K|` (worse at every budget); additive imputation of empty strata (error not monotone in the budget).
 
 ## 2026-10-07 — Empty and grand pair in CC sampling
 
@@ -41,14 +59,6 @@ Decision: CC and Neyman CC sampling yield `(N, ∅)` exactly once, first. The CC
 Why: Only `(N, ∅)` informs every player's size-`n` stratum and the sampler never drew it, so every estimate was off by `-(v(N) - v(∅)) / n` ([[Fixed issues|C03]], [[Papers#Zhang 2023 — Efficient sampling approaches to Shapley value approximation|Zhang 2023]]).
 
 Consequences: Efficiency holds for CC estimates; a 1-player snapshot returns `v(N) - v(∅)`. The two extra evaluations are boundary coalitions the orchestrator already makes. Partial budgets still starved the size-1 strata until [[Estimation decisions#2026-10-07 — Singleton-first complementary sampling|singleton-first sampling]]. Rejected: documenting the constant offset, which keeps rankings but breaks the `abs_sum` and `min_max` normalisers and every efficiency check.
-
-## 2026-10-07 — Stratified mean for partial samples
-
-Decision: For player `i` and size `k`, estimate the mean marginal `E_k[v(S ∪ {i}) - v(S)]` from the observed pairs of that size. The estimate is the mean of those stratum means weighted by the semivalue's stratum probabilities (`1/n` per size for Shapley, `C(n-1, k) / 2^(n-1)` for Banzhaf), renormalised over observed sizes. `aggregate_from_marginals` keeps its signature.
-
-Why: Summing weighted marginals over the observed pairs of a partial table shrinks every estimate towards zero ([[Fixed issues|C05]]).
-
-Consequences: Consistent, and exact on additive games at any coverage ([[Papers#Castro 2009 — Polynomial calculation of the Shapley value|Castro 2009]], [[Papers#Mitchell 2022 — Sampling permutations for Shapley value estimation|Mitchell 2022]]); not unbiased for general games at low coverage, as the theory page says. 0.1.17 rescaled by `n / observed_strata` with a plain Banzhaf mean; 0.1.18 renormalises the weights. Rejected: the un-normalised sum (biased towards zero); documenting Monte Carlo as inconsistent (leaves the default sampler unusable for partial budgets).
 
 ## 2026-10-07 — Full coalition table
 

@@ -15,6 +15,12 @@ Estimation
 
 .. automodule:: mllm_shap.estimation.neyman
 
+.. automodule:: mllm_shap.estimation.leverage
+
+.. automodule:: mllm_shap.estimation.kernel_banzhaf
+
+.. automodule:: mllm_shap.estimation.proxy
+
 .. automodule:: mllm_shap.estimation.loo
 
 Estimand aggregators

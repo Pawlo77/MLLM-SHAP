@@ -115,6 +115,7 @@ See :doc:`guides/extending` for the full extras and entry-point matrix.
    guides/exact
    guides/approximation
    guides/choosing_an_estimator
+   guides/estimator_benchmark
    guides/value_functions
    guides/masking
    guides/backends
@@ -136,6 +137,7 @@ See :doc:`guides/extending` for the full extras and entry-point matrix.
    theory/estimands
    theory/exact
    theory/approximation
+   theory/regression_estimators
    theory/value_functions
    theory/masking
    theory/runtime

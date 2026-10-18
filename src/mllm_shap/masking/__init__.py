@@ -6,7 +6,12 @@
 
 from .builder import MaskBuilder, MaskedSnapshot
 from .codec import MaskCodec, PackedMask
-from .partitions import MessagePartitioner, MessagesOptions, TokenPartitioner
+from .partitions import (
+    MessagePartitioner,
+    MessagesOptions,
+    SentencePartitioner,
+    TokenPartitioner,
+)
 from .policies import DeletePolicy, NeutralPolicy, PadPolicy
 from .space import MaskSpace
 
@@ -21,5 +26,6 @@ __all__ = [
     "NeutralPolicy",
     "PackedMask",
     "PadPolicy",
+    "SentencePartitioner",
     "TokenPartitioner",
 ]

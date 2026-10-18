@@ -13,6 +13,8 @@ from ..backends.transformers import TransformersTextBackend
 from ..estimation.complementary import ComplementaryEstimator
 from ..estimation.estimands import BanzhafAggregator, ShapleyAggregator
 from ..estimation.exact import ExactEstimator
+from ..estimation.kernel_banzhaf import KernelBanzhafEstimator
+from ..estimation.leverage import LeverageEstimator
 from ..estimation.loo import LeaveOneOutEstimator
 from ..estimation.monte_carlo import MonteCarloEstimator
 from ..estimation.neyman import NeymanEstimator
@@ -22,7 +24,12 @@ from ..estimation.normalizers import (
     MinMaxNormalizer,
     PowerShiftNormalizer,
 )
-from ..masking.partitions import MessagePartitioner, TokenPartitioner
+from ..estimation.proxy import ProxyEstimator
+from ..masking.partitions import (
+    MessagePartitioner,
+    SentencePartitioner,
+    TokenPartitioner,
+)
 from ..masking.policies import DeletePolicy, NeutralPolicy, PadPolicy
 from ..value.embedding import CosineEmbeddingValue, EuclideanEmbeddingValue
 from ..value.logprob import LogprobValue
@@ -39,6 +46,9 @@ BUILTIN_PLUGINS: dict[PluginGroup, dict[str, PluginFactory]] = {
         "mc": MonteCarloEstimator,
         "complementary": ComplementaryEstimator,
         "neyman_cc": NeymanEstimator,
+        "leverage": LeverageEstimator,
+        "kernel_banzhaf": KernelBanzhafEstimator,
+        "proxy": ProxyEstimator,
         "loo": LeaveOneOutEstimator,
     },
     PluginGroup.ESTIMANDS: {
@@ -67,6 +77,7 @@ BUILTIN_PLUGINS: dict[PluginGroup, dict[str, PluginFactory]] = {
     },
     PluginGroup.PARTITIONS: {
         "tokens": TokenPartitioner,
+        "sentences": SentencePartitioner,
         "messages": MessagePartitioner,
         "sgpa_segments": SgpaSegmentPartitioner,
     },

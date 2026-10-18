@@ -87,6 +87,9 @@ nitpick_ignore: list[tuple[str, str]] = [
     # annotations carry no module, so intersphinx cannot resolve them.
     ("py:class", "Figure"),
     ("py:class", "Axes"),
+    # scikit-learn type imported under TYPE_CHECKING in mllm_shap.estimation.proxy
+    # (an optional extra, absent from the intersphinx inventories).
+    ("py:class", "GradientBoostingRegressor"),
     # numpy.typing.NDArray is rendered through its private alias module, which
     # the numpy inventory does not list.
     ("py:class", "numpy._typing._array_like.NDArray"),

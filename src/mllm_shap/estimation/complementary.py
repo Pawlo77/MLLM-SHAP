@@ -6,6 +6,7 @@
 """
 
 from collections.abc import Iterator, Sequence
+from itertools import chain
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -54,6 +55,22 @@ class ComplementaryEstimator(_SnapshotEstimator):
         """Reset complementary M-matrix counts before a new sampling run."""
         self._m_counts = np.zeros((num_players, num_players + 1), dtype=np.int64)
 
+    @staticmethod
+    def _block_cover(
+        rng: np.random.Generator, num_players: int, size: int
+    ) -> Iterator[tuple[bool, ...]]:
+        """Yield size-``size`` coalitions whose union is every player."""
+        order = rng.permutation(num_players)
+        for start in range(0, num_players, size):
+            block = list(order[start : start + size])
+            if len(block) < size:
+                rest = [int(i) for i in order if i not in block]
+                block += list(rng.choice(rest, size - len(block), replace=False))
+            present = [False] * num_players
+            for index in block:
+                present[int(index)] = True
+            yield tuple(present)
+
     def sample_masks(
         self,
         player_set: PlayerSet,
@@ -64,8 +81,8 @@ class ComplementaryEstimator(_SnapshotEstimator):
         """Yield complementary coalition pairs up to the configured budget.
 
         Order: the ``(N, empty)`` pair, the singleton pairs ``({i}, N - {i})``
-        (the ``2n + 2`` budget floor fits all of them), then random pairs. All
-        count toward the budget.
+        (the ``2n + 2`` budget floor fits all of them), block pairs that give every
+        player each size once, then random pairs. All count toward the budget.
         """
         num_players = player_set.num_players
         num_splits = compute_complementary_num_splits(
@@ -93,9 +110,17 @@ class ComplementaryEstimator(_SnapshotEstimator):
         yield CoalitionMask.from_sequence(grand)
         yield CoalitionMask.from_sequence(empty)
 
-        # Only the ({i}, N - {i}) pair fills player i's size-1 stratum; seed
-        # them all before random pairs so no stratum is left empty (zero-filled).
-        for present in iter_singletons(num_players):
+        # Only the ({i}, N - {i}) pair fills player i's size-1 stratum, so the
+        # singletons come first. Pairs of size l (2 <= l <= n // 2) over blocks that
+        # partition the players then put every player on both sides, so no
+        # (player, size) stratum stays empty once the budget covers the blocks
+        # (about n ln n pairs).
+        covers = (
+            present
+            for size in range(2, num_players // 2 + 1)
+            for present in self._block_cover(rng, num_players, size)
+        )
+        for present in chain(iter_singletons(num_players), covers):
             if generated + 2 > num_splits:
                 return
             complement = tuple(not value for value in present)

@@ -58,6 +58,25 @@ def test_budget_defaults_to_the_full_table() -> None:
     assert (absolute.fraction, absolute.evaluations) == (None, 2000)
 
 
+@pytest.mark.parametrize("num_players", [10, 100])
+def test_per_player_budget_is_a_multiple_of_the_player_count(num_players: int) -> None:
+    budget = BudgetConfig(per_player=4)
+    assert (budget.fraction, budget.evaluations) == (None, None)
+    assert budget.evaluations_for(num_players) == 4 * num_players
+    assert BudgetConfig(per_player=2.5).evaluations_for(5) == 13
+    output = ExplainRunner(_config({"per_player": 4})).explain_sync(
+        _snapshot(num_players)
+    )
+    assert output.metrics.requested == 4 * num_players
+
+
+def test_budget_keys_are_exclusive() -> None:
+    with pytest.raises(ConfigError, match=r"exactly one of budget\.fraction"):
+        explain_config_from_yaml(_yaml("{per_player: 4, evaluations: 10}"))
+    with pytest.raises(ValidationError, match="per_player"):
+        BudgetConfig.model_validate({"per_player": 0})
+
+
 def test_fraction_and_evaluations_are_exclusive() -> None:
     with pytest.raises(ConfigError, match=r"exactly one of budget\.fraction"):
         explain_config_from_yaml(_yaml("{fraction: 0.5, evaluations: 10}"))
@@ -147,3 +166,19 @@ def test_cli_config_check_accepts_an_absolute_budget(tmp_path: Path) -> None:
     refused = _cli_check(tmp_path, "{fraction: 0.1, evaluations: 2000}")
     assert refused.returncode == 2
     assert "exactly one of budget.fraction" in refused.stderr
+
+
+def test_additive_efficiency_makes_partial_budgets_efficient() -> None:
+    plain = ExplainRunner(_config({"fraction": 0.5})).explain_sync(_snapshot(6))
+    fixed = ExplainRunner(
+        _config({"fraction": 0.5}, efficiency="additive")
+    ).explain_sync(_snapshot(6))
+    gap = fixed.result.grand_value - fixed.result.base_value
+    assert sum(fixed.result.values) == pytest.approx(gap)
+    shifts = [
+        a - b for a, b in zip(fixed.result.values, plain.result.values, strict=True)
+    ]
+    assert shifts == pytest.approx([shifts[0]] * 6)
+    assert "efficiency" not in explain_config_to_yaml(_config({"fraction": 0.5}))
+    with pytest.raises(ValidationError, match="efficiency"):
+        _config({"fraction": 0.5}, efficiency="additive", estimand="banzhaf")

@@ -73,6 +73,17 @@ def test_token_players_are_whitespace_tokens(
     assert labels(output) == scenario.expect["labels"]
 
 
+@pytest.mark.parametrize("scenario", scenario_cases("partition.sentences"))
+def test_sentence_players_are_labelled_with_the_sentence(
+    scenario: Scenario, default_model: PracticalModel, practical_record: dict[str, Any]
+) -> None:
+    """One player per sentence, labelled with its text."""
+    output = default_model.explain(scenario)
+    practical_record["numbers"] = summary(output)
+
+    assert labels(output) == scenario.expect["labels"]
+
+
 @pytest.mark.parametrize("scenario", scenario_cases("partition.messages"))
 def test_message_players_follow_the_roles_option(
     scenario: Scenario, default_model: PracticalModel, practical_record: dict[str, Any]

@@ -4,7 +4,9 @@ Choosing an estimator
 Every coalition an estimator asks for is one model generation (minus the ones
 served from the cache), so the estimator and ``budget.fraction`` decide what a run
 costs. This page turns the trade-offs into a decision table. :doc:`approximation`
-has the code for each estimator and :doc:`../theory/approximation` the formulas.
+has the code for the samplers, :doc:`../theory/approximation` and
+:doc:`../theory/regression_estimators` the formulas, and :doc:`estimator_benchmark`
+the measured errors.
 
 Decision table
 --------------
@@ -22,27 +24,34 @@ Decision table
      - ``1.0`` (required)
      - Exact values; efficiency holds; :math:`2^n` generations
    * - You report the Banzhaf index
+     - ``kernel_banzhaf``
+     - ``per_player: 8`` or more
+     - Regression on paired uniform samples; lowest Banzhaf error from
+       :math:`4n` coalitions; ``mc`` is the sampler alternative
+   * - Shapley on a longer prompt, scikit-learn available
+     - ``proxy``
+     - ``per_player: 8`` or more
+     - Lowest Shapley error from :math:`8n` coalitions on the benchmark games;
+       also computes Banzhaf; fits trees on every aggregation
+   * - Shapley, values must add up to :math:`v(N) - v(\emptyset)`
+     - ``leverage``
+     - ``per_player: 4`` or more
+     - Efficient at every budget by construction; second-lowest error from
+       :math:`8n`; Shapley only
+   * - Shapley, no extra dependency, payoffs cheap
      - ``mc``
-     - as budget allows
-     - The only built-in sampler that feeds the Banzhaf aggregator
-   * - Shapley on a longer prompt
-     - ``mc``
-     - 0.2 to 0.5
-     - Lowest error from fraction 0.2 up on the benchmark game of
-       :ref:`theory-choosing-a-budget`
+     - ``per_player: 8`` or more
+     - Every sample updates every player; no extra dependency
    * - Shapley, generous budget, payoff variance differs by coalition size
      - ``neyman_cc``
-     - 0.5 or more
-     - Spends phase two where variance is high; below that phase one uses the
-       whole budget and its error is close to ``complementary`` on the
-       benchmark game
+     - ``per_player: 16`` or more
+     - Spends phase two where variance is high; better than ``complementary``
+       from :math:`16n`
    * - Shapley and you want every coalition paired with its complement
      - ``complementary``
-     - 0.3 or more
-     - Each pair :math:`(S, N \setminus S)` informs every player; the singleton
-       pairs come first, so every size-1 stratum is covered from a budget of
-       :math:`2 + 2n` masks; converges more slowly than ``mc`` on the benchmark
-       game
+     - ``per_player: 16`` or more
+     - Each pair :math:`(S, N \setminus S)` informs every player; pairs that
+       cover every size cost about :math:`n \ln n` pairs
    * - A baseline any attribution method must beat
      - ``loo``
      - ``budget.evaluations: n + 2`` past ``max_players``
@@ -105,35 +114,34 @@ backend calls further; ``output.metrics.executed`` reports the real number.
 Above about 25 players any fraction of :math:`2^n` you would type is more
 coalitions than a backend can serve. ``budget.evaluations`` sets the count
 instead: ``evaluations: 2000`` plans 2000 coalitions, the empty and grand ones
-included, at any number of players. Each estimator still applies its floor (2
-for ``mc``; :math:`2n + 2` for ``complementary`` and ``neyman_cc``, which also
-round an odd count down to whole pairs) and the ceiling :math:`2^n`; ``exact``
-accepts only ``fraction: 1.0``.
+included, at any number of players, and ``budget.per_player: 4`` plans
+:math:`\lceil 4n \rceil` of them. Each estimator still applies its floor (2 for
+``mc``; :math:`2n + 2` for the paired estimators, which also round an odd count
+down to whole pairs) and the ceiling :math:`2^n`; ``exact`` accepts only
+``fraction: 1.0``. Set one of the three keys.
 
 .. code-block:: yaml
 
    explanation:
-     estimator: mc
+     estimator: leverage
      budget:
-       evaluations: 2000
+       per_player: 4
 
 Accuracy versus budget
 ----------------------
 
-:ref:`theory-choosing-a-budget` plots the error of each estimator against the
-exact Shapley values of an eight-player game as the budget grows. The ranking
-depends on the game; ``examples/estimator_comparison.ipynb`` (on
-:doc:`../examples`) repeats the comparison on more games. Use them to pick a
-budget for your number of players before running on an expensive backend.
+:doc:`estimator_benchmark` lists the error of each estimator against the exact
+values of five ten-player games at :math:`2n` to :math:`32n` coalitions. The ranking
+depends on the game; ``examples/estimator_comparison.ipynb`` (on :doc:`../examples`)
+reruns it, and :ref:`theory-choosing-a-budget` says how to adapt it to your prompts.
 
 Checklist
 ---------
 
 1. Count players: ``len(TokenPartitioner().partition(snapshot).player_ids)``.
 2. If :math:`2^n` generations are affordable, use ``exact``.
-3. Otherwise start with ``mc`` at ``fraction: 0.2``, run two seeds and compare
-   the ranking of the top players.
-4. Raise the budget while the ranking still moves between seeds; at
-   ``fraction: 0.5`` and above ``neyman_cc`` is a good alternative.
+3. Otherwise start with ``proxy`` or ``leverage`` (``kernel_banzhaf`` for Banzhaf)
+   at ``per_player: 8``, run two seeds and compare the ranking of the top players.
+4. Raise the budget while the ranking still moves between seeds.
 5. Record the estimator and budget with the results; the run manifest already
    does (:doc:`pipeline`).

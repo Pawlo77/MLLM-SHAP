@@ -10,9 +10,12 @@ from pytest_benchmark.fixture import BenchmarkFixture
 from mllm_shap.domain.coalition import CoalitionMask
 from mllm_shap.domain.players import PlayerSet
 from mllm_shap.estimation.complementary import ComplementaryEstimator
-from mllm_shap.estimation.estimands import ShapleyAggregator
+from mllm_shap.estimation.estimands import BanzhafAggregator, ShapleyAggregator
 from mllm_shap.estimation.exact import ExactEstimator
+from mllm_shap.estimation.kernel_banzhaf import KernelBanzhafEstimator
+from mllm_shap.estimation.leverage import LeverageEstimator
 from mllm_shap.estimation.monte_carlo import MonteCarloEstimator
+from mllm_shap.estimation.proxy import ProxyEstimator
 
 _NUM_PLAYERS = 12
 _PLAYERS = PlayerSet(player_ids=tuple(f"p{index}" for index in range(_NUM_PLAYERS)))
@@ -50,7 +53,7 @@ def test_stratified_marginals_m2000(benchmark: BenchmarkFixture) -> None:
     )
 
     assert 1900 <= len(masks) <= 2100
-    assert values == pytest.approx(_WEIGHTS.tolist())
+    assert values == pytest.approx(_WEIGHTS.tolist(), abs=0.05)
 
 
 @pytest.mark.bench
@@ -70,3 +73,50 @@ def test_complementary_aggregation_n12(benchmark: BenchmarkFixture) -> None:
     assert len(values) == _NUM_PLAYERS
     assert sum(values) == pytest.approx(_WEIGHTS.sum(), abs=0.25)
     assert values == pytest.approx(_WEIGHTS.tolist(), abs=0.15)
+
+
+@pytest.mark.bench
+def test_leverage_regression_n100_m3200(benchmark: BenchmarkFixture) -> None:
+    """Constrained weighted regression on 3 200 sampled coalitions of 100 players."""
+    players = PlayerSet(player_ids=tuple(f"p{index}" for index in range(100)))
+    weights = np.linspace(0.5, 1.6, 100)
+    estimator = LeverageEstimator()
+    masks = list(estimator.sample_masks(players, 3200 / 2**100, False, seed=0))
+    payoffs = [float(weights[np.asarray(mask.present)].sum()) for mask in masks]
+
+    values = benchmark(
+        estimator.estimate_attributions, masks, payoffs, ShapleyAggregator()
+    )
+
+    assert len(masks) == 3200
+    assert values == pytest.approx(weights.tolist(), abs=1e-6)
+
+
+@pytest.mark.bench
+def test_kernel_banzhaf_regression_n100_m3200(benchmark: BenchmarkFixture) -> None:
+    """Centred least squares on 3 200 uniform pairs of 100 players."""
+    players = PlayerSet(player_ids=tuple(f"p{index}" for index in range(100)))
+    weights = np.linspace(0.5, 1.6, 100)
+    estimator = KernelBanzhafEstimator()
+    masks = list(estimator.sample_masks(players, 3200 / 2**100, False, seed=0))
+    payoffs = [float(weights[np.asarray(mask.present)].sum()) for mask in masks]
+
+    values = benchmark(
+        estimator.estimate_attributions, masks, payoffs, BanzhafAggregator()
+    )
+
+    assert values == pytest.approx(weights.tolist(), abs=1e-6)
+
+
+@pytest.mark.bench
+def test_proxy_fit_and_values_n12(benchmark: BenchmarkFixture) -> None:
+    """Tree proxy, leaf extraction and residual correction on 192 coalitions."""
+    estimator = ProxyEstimator()
+    masks = list(estimator.sample_masks(_PLAYERS, 192 / 4096, False, seed=0))
+    payoffs = _payoffs(masks)
+
+    values = benchmark(
+        estimator.estimate_attributions, masks, payoffs, ShapleyAggregator()
+    )
+
+    assert values == pytest.approx(_WEIGHTS.tolist(), abs=0.3)

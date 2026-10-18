@@ -56,6 +56,9 @@ exact = "mllm_shap.estimation.exact:ExactEstimator"
 mc = "mllm_shap.estimation.monte_carlo:MonteCarloEstimator"
 complementary = "mllm_shap.estimation.complementary:ComplementaryEstimator"
 neyman_cc = "mllm_shap.estimation.neyman:NeymanEstimator"
+leverage = "mllm_shap.estimation.leverage:LeverageEstimator"
+proxy = "mllm_shap.estimation.proxy:ProxyEstimator"
+kernel_banzhaf = "mllm_shap.estimation.kernel_banzhaf:KernelBanzhafEstimator"
 loo = "mllm_shap.estimation.loo:LeaveOneOutEstimator"
 
 [project.entry-points."mllm_shap.estimands"]
@@ -64,6 +67,7 @@ banzhaf = "mllm_shap.estimation.estimands.banzhaf:BanzhafAggregator"
 
 [project.entry-points."mllm_shap.partitions"]
 tokens = "mllm_shap.masking.partitions:TokenPartitioner"
+sentences = "mllm_shap.masking.partitions:SentencePartitioner"
 messages = "mllm_shap.masking.partitions:MessagePartitioner"
 sgpa_segments = "mllm_shap.alignment.partitions:SgpaSegmentPartitioner"
 
@@ -117,6 +121,10 @@ api = [
 audio = [
     "librosa>=0.11.0",
     "soundfile>=0.13.0",
+]
+# scikit-learn: the tree proxy of the 'proxy' estimator.
+proxy = [
+    "scikit-learn>=1.7.0",
 ]
 viz = [
     "matplotlib>=3.9.0",
@@ -213,6 +221,10 @@ disallow_any_generics = true
 
 [[tool.mypy.overrides]]
 module = ["logging518", "logging518.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["sklearn", "sklearn.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]

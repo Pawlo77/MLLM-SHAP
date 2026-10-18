@@ -1,10 +1,11 @@
-"""Player partition plugins: whitespace tokens and whole messages.
+"""Player partition plugins: whitespace tokens, sentences and whole messages.
 
 @domain masking
 @see [[knowledge/architecture/masking]]
 @tested-by [[tests/masking/test_partitions.py]]
 """
 
+import re
 from typing import TYPE_CHECKING, ClassVar, Final
 
 from pydantic import Field
@@ -72,6 +73,72 @@ class TokenPartitioner:
             player_ids=tuple(player_id for player_id, _ in pairs),
             spans=tuple(span for _, span in pairs),
         )
+
+
+_PARAGRAPH_RE = re.compile(r"(?:[^\n]|\n(?!\s*\n))+")
+_SENTENCE_RE = re.compile(r"\S.*?(?:[.!?]+(?=\s|$)|$)", re.DOTALL)
+
+
+class SentencePartitioner:
+    """Partition a snapshot into sentences, never crossing a blank line."""
+
+    options_model: ClassVar[type[PluginOptions]] = RolesOptions
+    """Options accepted from ``explanation.plugin_options``."""
+
+    def __init__(self, context: "PluginContext | None" = None) -> None:
+        """Read option ``roles`` from ``context``; every role by default."""
+        self.roles = _roles(context)
+        """Roles whose sentences become players."""
+
+    @property
+    def name(self) -> str:
+        """Return the registered partition identifier."""
+        return "sentences"
+
+    def partition(self, snapshot: ConversationSnapshot) -> PlayerSet:
+        """Derive one player per sentence of the selected roles.
+
+        A sentence ends at ``.``, ``!`` or ``?`` before whitespace or at the end of
+        its paragraph. Player ids are ``{snapshot_id}:{turn}:{message}:{sentence}``.
+        """
+        ids: list[str] = []
+        spans: list[PlayerSpan] = []
+        index = 0
+        for turn_index, turn in enumerate(snapshot.turns):
+            for local_index, message in enumerate(turn.messages):
+                if message.role.value in self.roles:
+                    for number, (start, end) in enumerate(
+                        _sentence_bounds(message.text)
+                    ):
+                        ids.append(
+                            f"{snapshot.snapshot_id}:{turn_index}:{local_index}:{number}"
+                        )
+                        spans.append(
+                            PlayerSpan(
+                                message_index=index,
+                                start=start,
+                                end=end,
+                                text=message.text[start:end],
+                                speaker=message.speaker,
+                            )
+                        )
+                index += 1
+        if not spans:
+            msg = "snapshot must contain at least one explainable sentence"
+            raise ValueError(msg)
+        return PlayerSet(player_ids=tuple(ids), spans=tuple(spans))
+
+
+def _sentence_bounds(text: str) -> list[tuple[int, int]]:
+    bounds = []
+    for paragraph in _PARAGRAPH_RE.finditer(text):
+        offset = paragraph.start()
+        for sentence in _SENTENCE_RE.finditer(paragraph.group()):
+            end = offset + sentence.end()
+            while end > offset + sentence.start() and text[end - 1].isspace():
+                end -= 1
+            bounds.append((offset + sentence.start(), end))
+    return bounds
 
 
 LABEL_PREVIEW_CHARS: Final[int] = 30

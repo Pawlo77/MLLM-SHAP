@@ -20,6 +20,7 @@ from ..errors import (
     ReanalyzeMismatchError,
 )
 from ..estimation._shared import budget_fraction
+from ..estimation.normalizers import apply_efficiency
 from ..masking.codec import MaskCodec
 from ..plugins.context import PluginContext
 from ..plugins.groups import PluginGroup
@@ -202,7 +203,10 @@ def reanalyze_sync(
         budget = archived_config.explanation.budget
         _check_coalition_rows(
             archive_root,
-            budget_fraction(num_players, budget.fraction, budget.evaluations) == 1.0,
+            budget_fraction(
+                num_players, budget.fraction, budget.evaluations_for(num_players)
+            )
+            == 1.0,
             lookup,
             num_players,
         )
@@ -212,6 +216,9 @@ def reanalyze_sync(
             [CoalitionMask.from_sequence(present) for present in mask_presents],
             payoffs,
             aggregator,
+        )
+        raw_values = apply_efficiency(
+            explanation.efficiency, raw_values, grand_value, base_value
         )
         normalized = normalizer.normalize(raw_values)
     aggregation_ms = (time.perf_counter() - aggregation_started) * 1000.0

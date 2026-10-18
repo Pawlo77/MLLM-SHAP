@@ -6,6 +6,8 @@ Masking
 
 .. automodule:: mllm_shap.masking.partitions
 
+.. automodule:: mllm_shap.masking.hierarchy
+
 .. automodule:: mllm_shap.masking.tokens
 
 .. automodule:: mllm_shap.masking.policies
