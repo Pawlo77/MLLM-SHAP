@@ -8,6 +8,13 @@ Changes in each published ``mllm-shap`` version. Newest first.
 Unreleased
 ----------
 
+.. _release-0-7-1:
+
+0.7.1 (2026-10-18)
+------------------
+
+Version 0.7.0 was tagged on a commit that still read 0.6.0 and was never published; 0.7.1 carries its changes.
+
 Added
 ~~~~~
 
