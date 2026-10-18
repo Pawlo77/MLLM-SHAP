@@ -78,8 +78,9 @@ How it compares
   (:meth:`~mllm_shap.ExplainRunner.reanalyze`, :doc:`guides/runtime`);
 - backends are plugins: mock, LM Studio, Hugging Face ``transformers`` and
   OpenAI-compatible APIs (:doc:`guides/backends`);
-- complementary-contribution and Neyman estimators sit next to Monte Carlo and
-  exact enumeration (:doc:`theory/approximation`).
+- sampling (Monte Carlo, complementary, Neyman) and regression estimators
+  (Leverage SHAP, Kernel Banzhaf, ProxySHAP) sit next to exact enumeration
+  (:doc:`theory/approximation`, :doc:`theory/regression_estimators`).
 
 Quick install
 -------------

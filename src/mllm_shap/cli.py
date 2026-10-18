@@ -69,6 +69,7 @@ explanation:
   budget:
     fraction: 1.0           # share of the 2^n coalitions; exact needs 1.0
     # evaluations: 2000     # or an absolute count instead of fraction (not exact)
+    # per_player: 4         # or ceil(4 n) coalitions for n players (not exact)
   include_minimal_masks: false
   max_inflight: 2           # concurrent backend calls
   max_players: 24           # refuse runs planning more than 2^max_players coalitions

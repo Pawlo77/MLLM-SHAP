@@ -40,7 +40,7 @@ parent: "[[mllm-shap]]"
 | [[src/mllm_shap/backends/transformers/embeddings.py]] | Embedding helpers for the transformers text backend. | backends | [[knowledge/architecture/backends]] | 50 | [[backends]] |
 | [[src/mllm_shap/backends/transformers/options.py]] | Settings of the transformers backend read from ``BackendConfig.options``. | backends | [[knowledge/architecture/backends]] | 52 | [[backends]] |
 | [[src/mllm_shap/backends/transformers/text.py]] | Hugging Face language model backend for text and, with a processor, audio. | backends | [[knowledge/architecture/backends]] | 382 | [[backends]] |
-| [[src/mllm_shap/cli.py]] | Command-line interface: ``mllm-shap explain\|reanalyze\|plugins\|config``. | core | [[knowledge/architecture/core]] | 257 | [[core]] |
+| [[src/mllm_shap/cli.py]] | Command-line interface: ``mllm-shap explain\|reanalyze\|plugins\|config``. | core | [[knowledge/architecture/core]] | 258 | [[core]] |
 | [[src/mllm_shap/domain/__init__.py]] | Domain types for cooperative-game explainability. | domain | [[knowledge/architecture/domain]] | 43 | [[domain]] |
 | [[src/mllm_shap/domain/coalition.py]] | Coalition masks over explainability players. | domain | [[knowledge/architecture/domain]] | 45 | [[domain]] |
 | [[src/mllm_shap/domain/config.py]] | Generation and runtime settings shared by backends, runtime and pipeline. | domain | [[knowledge/architecture/domain]] | 52 | [[domain]] |

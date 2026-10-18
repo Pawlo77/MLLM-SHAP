@@ -52,7 +52,7 @@ The eight stages
    the reference every coalition output is scored against, and it is the output
    of the grand coalition :math:`N`.
 4. **Sample coalitions.** The estimator draws coalition masks for
-   ``budget.fraction`` and ``seed``. The runner adds the empty and the grand
+   the budget (``fraction``, ``evaluations`` or ``per_player``) and ``seed``. The runner adds the empty and the grand
    coalition when the estimator did not draw them, so ``base_value`` and
    ``grand_value`` are always known.
 5. **Render and key.** The absence policy turns each mask into a masked snapshot

@@ -113,9 +113,10 @@ Which estimator?
 ----------------
 
 ``exact`` scores all :math:`2^n` coalitions and is only practical for short
-prompts. For longer inputs pick ``mc``, ``complementary`` or ``neyman_cc`` and a
-``budget.fraction`` below 1; :doc:`choosing_an_estimator` has the decision table
-and :doc:`approximation` the code.
+prompts. For longer inputs pick ``leverage``, ``proxy``, ``kernel_banzhaf``, ``mc``,
+``complementary`` or ``neyman_cc`` and a ``budget.per_player`` of a few multiples of
+the player count; :doc:`choosing_an_estimator` has the decision table and
+:doc:`approximation` the code.
 
 Label results for archives
 --------------------------
@@ -151,6 +152,6 @@ Next steps
 - :doc:`pipeline` — what happens inside a run, metrics and archives
 - :doc:`cli` — the same run from the command line, with JSON input and output
 - :doc:`config` — every configuration key
-- :doc:`choosing_an_estimator` — exact, Monte Carlo, complementary or Neyman
+- :doc:`choosing_an_estimator` — exact, sampling or regression estimators
 - :doc:`backends` — run against LM Studio, Hugging Face or an HTTP API
 - :doc:`../examples` — runnable notebooks

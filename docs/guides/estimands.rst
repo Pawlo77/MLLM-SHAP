@@ -78,12 +78,12 @@ Wire values for JSON manifests use :data:`~mllm_shap.domain.estimands.EstimandWi
 Partial samples
 ---------------
 
-With ``budget.fraction`` below 1 the aggregators see only part of the coalition
-table. Both are then estimated from the observed marginals stratified by
-coalition size: Shapley weights the observed sizes equally, Banzhaf by their
-binomial probabilities, each renormalized over the sizes observed. Both are exact
-on additive games and converge as coverage grows, but efficiency holds exactly
-only on the full table. :ref:`theory-partial-samples` gives the formulas and
+With a budget below the full table the aggregators see only part of the coalition
+table. Both are then estimated from the sampled coalitions stratified by size:
+the mean payoff with a player minus the mean without it, per size. Shapley
+weights the sizes equally, Banzhaf by their binomial probabilities, each
+renormalized over the sizes that have both means. Both converge as coverage
+grows, but efficiency holds exactly only on the full table (and for ``leverage``). :ref:`theory-partial-samples` gives the formulas and
 :doc:`choosing_an_estimator` the practical consequences.
 
 Notebook
