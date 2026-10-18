@@ -5,7 +5,7 @@ domain: core
 parent: "[[mllm-shap]]"
 tags: [architecture, core]
 created: 2026-10-07
-updated: 2026-10-12
+updated: 2026-10-18
 related-code:
   - "[[src/mllm_shap/__init__.py]]"
   - "[[src/mllm_shap/_logging.py]]"
@@ -23,7 +23,7 @@ related-code:
 
 ## Public surface
 
-- `__all__`: 71 names, listed in [[Public API]]: domain types, every built-in plugin class, the pipeline entry points, plugin machinery, every error, `ObservabilitySink`, `InMemoryObservabilitySink`, `CoalitionProgress`, `configure_logging` and `__version__`.
+- `__all__`: 81 names, listed in [[Public API]]: domain types, every built-in plugin class, the pipeline entry points, plugin machinery, every error, `ObservabilitySink`, `InMemoryObservabilitySink`, `CoalitionProgress`, `configure_logging` and `__version__`.
 - `render_attribution`, `render_attribution_html`, `display_attribution_html`: resolved lazily through module `__getattr__` (listed by `__dir__`), so `import mllm_shap` works without the `viz` extra.
 - `cli.main(argv)`: subcommands `explain` (JSON result, optional PNG chart), `reanalyze [--strict]`, `plugins` and `config --example | --check`. `--strict` raises `ReanalyzeMismatchError` for runs scored with backend embeddings instead of logging a warning.
   - Exit codes: `EXIT_OK` 0, `EXIT_INVALID` 2 (arguments, `--log-level` outside `LOG_LEVELS`, configuration, snapshot, archive), `EXIT_BACKEND_UNAVAILABLE` 3 (`BackendUnavailableError`, `ConnectionError`); other exceptions propagate.
