@@ -34,7 +34,7 @@ The core package does not install PyTorch. Python 3.12 or newer; [uv](https://do
 
 - **Honest estimands.** Shapley and Banzhaf are separate, labelled aggregators; every result and archive records which one produced it, and results report `base_value` and `grand_value` so efficiency (`sum(values) == v(N) - v(empty)`) can be verified; axiom tests enforce it.
 - **Reproducible runs.** One validated configuration, a run id derived from it, and an archive of every model generation, so attributions can be recomputed with another value function without calling the model again.
-- **Pluggable everything.** Partitions, absence policies, estimators, value functions, backends and renderers are entry-point plugins; exact, Monte Carlo, complementary and Neyman estimators ship built in.
+- **Pluggable everything.** Partitions, absence policies, estimators, value functions, backends and renderers are entry-point plugins; exact, Monte Carlo, complementary, Neyman, Leverage SHAP, Kernel Banzhaf and ProxySHAP estimators ship built in.
 
 ## Quickstart
 

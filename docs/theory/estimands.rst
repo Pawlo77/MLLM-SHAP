@@ -105,14 +105,14 @@ you intend to report.
 Estimands under partial samples
 -------------------------------
 
-With ``budget.fraction`` below 1 the aggregators see only some coalitions. The
-Shapley aggregator then averages the observed marginal contributions of each
-player within each coalition size and weights the sizes equally (a stratified
-mean); the Banzhaf aggregator uses the same strata weighted by their binomial
-probabilities :math:`\binom{n-1}{k} / 2^{n-1}`, renormalized over the sizes it
-observed.
-Both estimates are exact on additive games and converge to their estimand as
-coverage grows, but only the full table guarantees efficiency. See
+With a budget below the full table the aggregators see only some coalitions. The
+Shapley aggregator then takes, per coalition size, the mean payoff of the sampled
+coalitions with a player minus that of those without it and weights the sizes
+equally (a stratified mean); the Banzhaf aggregator uses the same strata weighted
+by their binomial probabilities :math:`\binom{n-1}{k} / 2^{n-1}`, renormalized
+over the sizes that have both means.
+Both estimates converge to their estimand as coverage grows, but only the full
+table guarantees efficiency. See
 :ref:`theory-partial-samples` for the formulas and
 :doc:`../guides/choosing_an_estimator` for budgets.
 

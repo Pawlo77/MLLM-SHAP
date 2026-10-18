@@ -38,7 +38,7 @@ Exact enumeration produces coalition payoffs :math:`v(S)`. The estimand plugin
    \xrightarrow{\text{EstimandAggregator}}
    (\phi_1, \ldots, \phi_n)
 
-Monte Carlo and Neyman estimators reuse the same estimand boundary — exact
+The approximate estimators reuse the same estimand boundary — exact
 estimation establishes the reference path for validating approximate samplers.
 
 Legacy parity

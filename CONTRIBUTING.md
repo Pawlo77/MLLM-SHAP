@@ -99,7 +99,7 @@ Write tests first for new behaviour and bug fixes.
 | `src/mllm_shap/domain/` | Cooperative-game types: players, coalitions, conversation snapshots, estimands. |
 | `src/mllm_shap/protocols/` | Protocol contracts that plugins implement. |
 | `src/mllm_shap/masking/` | Partitioning, absence policies, mask building and coalition codecs. |
-| `src/mllm_shap/estimation/` | Estimators (exact, Monte Carlo, complementary, Neyman), estimands and normalizers. |
+| `src/mllm_shap/estimation/` | Estimators (exact, Monte Carlo, complementary, Neyman, leverage, Kernel Banzhaf, proxy), estimands and normalizers. |
 | `src/mllm_shap/value/` | Value functions that score coalition outputs. |
 | `src/mllm_shap/backends/` | Model inference backends (mock, LM Studio, transformers, HTTP API). |
 | `src/mllm_shap/runtime/` | Run archive, deduplication, caches, scheduler and metrics. |
