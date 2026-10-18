@@ -115,8 +115,8 @@ Which estimator?
 ``exact`` scores all :math:`2^n` coalitions and is only practical for short
 prompts. For longer inputs pick ``leverage``, ``proxy``, ``kernel_banzhaf``, ``mc``,
 ``complementary`` or ``neyman_cc`` and a ``budget.per_player`` of a few multiples of
-the player count; :doc:`choosing_an_estimator` has the decision table and
-:doc:`approximation` the code.
+the player count (``proxy`` needs the ``[proxy]`` extra);
+:doc:`choosing_an_estimator` has the decision table and :doc:`approximation` the code.
 
 Label results for archives
 --------------------------
