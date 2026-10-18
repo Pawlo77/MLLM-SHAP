@@ -13,6 +13,8 @@ from mllm_shap.masking.hierarchy import (
     refined_player_set,
 )
 from mllm_shap.masking.partitions import SentencePartitioner
+from mllm_shap.pipeline.config import ExplainConfig
+from mllm_shap.plugins import PluginContext
 
 TEXT = "One two. Three four! Five?\n\nSix seven\n\nEight nine. Ten"
 
@@ -95,3 +97,13 @@ def test_trailing_whitespace_is_not_part_of_a_sentence() -> None:
     players = SentencePartitioner().partition(snapshot)
     assert [span.text for span in players.spans] == ["Go on.", "Then stop"]
     assert SentencePartitioner().name == "sentences"
+
+
+def test_sentences_skip_roles_outside_the_option() -> None:
+    config = ExplainConfig.model_validate({
+        "backend": {"kind": "mock", "model_id": "mock"},
+    })
+    context = PluginContext(config=config, options={"roles": ["user"]})
+    players = SentencePartitioner(context).partition(_snapshot())
+    assert [span.text for span in players.spans][:2] == ["One two.", "Three four!"]
+    assert len(players.spans) == 6

@@ -84,10 +84,10 @@ def tree_values(
                 values[list(absent)] += scale * loss
                 continue
             feature = int(tree.feature[node])
-            if feature not in present:
-                stack.append((int(left), present, absent | {feature}))
-            if feature not in absent:
-                stack.append((int(right), present | {feature}, absent))
+            # A binary feature is constant below its own split, so a path never
+            # tests it twice.
+            stack.append((int(left), present, absent | {feature}))
+            stack.append((int(right), present | {feature}, absent))
     return values
 
 

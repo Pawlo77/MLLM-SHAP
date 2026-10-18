@@ -17,7 +17,11 @@ from mllm_shap.domain.players import PlayerSet
 from mllm_shap.estimation._shared import budget_fraction
 from mllm_shap.estimation.complementary import ComplementaryEstimator
 from mllm_shap.estimation.estimands import BanzhafAggregator, ShapleyAggregator
-from mllm_shap.estimation.leverage import LeverageEstimator, allocate_pairs
+from mllm_shap.estimation.leverage import (
+    LeverageEstimator,
+    allocate_pairs,
+    distinct_subsets,
+)
 from tests.estimation._games import Game, reference_games
 
 
@@ -160,3 +164,21 @@ def test_boundary_coalitions_are_required() -> None:
     masks = list(estimator.sample_masks(players, 1.0, False, 0))[2:]
     with pytest.raises(ValueError, match="grand and the empty"):
         estimator.estimate_attributions(masks, [0.0] * len(masks), ShapleyAggregator())
+
+
+def test_distinct_subsets_redraws_repeats() -> None:
+    """Rejection sampling (large populations) skips a subset it already yielded."""
+
+    class Repeating:
+        def __init__(self) -> None:
+            self.calls = 0
+
+        def choice(self, population: int, size: int, replace: bool) -> list[int]:
+            self.calls += 1
+            return list(range(size)) if self.calls < 3 else list(range(1, size + 1))
+
+    rng = Repeating()
+    drawn = list(distinct_subsets(rng, 16, 8, 2, contains_first=False))  # type: ignore[arg-type]
+    assert len(drawn) == 2
+    assert drawn[0] != drawn[1]
+    assert rng.calls == 3
