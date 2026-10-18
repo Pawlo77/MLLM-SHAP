@@ -121,3 +121,9 @@ def test_hierarchical_needs_its_settings_and_sentence_players() -> None:
         )
     with pytest.raises(ValidationError, match="players: sentences"):
         _config(players="tokens")
+
+
+def test_runs_with_the_configured_backend_when_none_is_injected() -> None:
+    output = ExplainRunner(_config(seed=1)).explain_hierarchical_sync(_snapshot())
+    assert len(output.kept_groups) == 2
+    assert output.fine.metrics.requested > 0

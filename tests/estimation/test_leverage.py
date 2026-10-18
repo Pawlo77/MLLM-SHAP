@@ -144,3 +144,19 @@ def test_reanalyze_reproduces_the_run(tmp_path: Path) -> None:
     assert sum(first.result.values) == pytest.approx(
         first.result.grand_value - first.result.base_value
     )
+
+
+def test_single_player_gets_the_whole_gap() -> None:
+    estimator = LeverageEstimator()
+    players = PlayerSet(player_ids=("a",))
+    masks = list(estimator.sample_masks(players, 1.0, False, 0))
+    values = estimator.estimate_attributions(masks, [3.0, 1.0], ShapleyAggregator())
+    assert values == [2.0]
+
+
+def test_boundary_coalitions_are_required() -> None:
+    players = PlayerSet(player_ids=("a", "b", "c"))
+    estimator = LeverageEstimator()
+    masks = list(estimator.sample_masks(players, 1.0, False, 0))[2:]
+    with pytest.raises(ValueError, match="grand and the empty"):
+        estimator.estimate_attributions(masks, [0.0] * len(masks), ShapleyAggregator())

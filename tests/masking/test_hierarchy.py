@@ -86,3 +86,12 @@ def test_sentences_need_an_explainable_role() -> None:
             ))
         )
     assert SentencePartitioner().partition(snapshot).num_players == 1
+
+
+def test_trailing_whitespace_is_not_part_of_a_sentence() -> None:
+    snapshot = ConversationSnapshot.from_turns((
+        Turn(messages=(Message(role=Role.USER, text="Go on.  Then stop   "),)),
+    ))
+    players = SentencePartitioner().partition(snapshot)
+    assert [span.text for span in players.spans] == ["Go on.", "Then stop"]
+    assert SentencePartitioner().name == "sentences"

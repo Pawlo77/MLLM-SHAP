@@ -85,3 +85,17 @@ def test_missing_scikit_learn_names_the_extra(monkeypatch: pytest.MonkeyPatch) -
     monkeypatch.setitem(sys.modules, "sklearn.ensemble", None)
     with pytest.raises(ImportError, match=r"mllm-shap\[proxy\]"):
         ProxyEstimator()
+
+
+def test_large_games_with_small_budgets_skip_the_residual_correction() -> None:
+    """From 30 players and below 16 masks per player only the proxy values remain."""
+    num_players = 32
+    weights = np.linspace(0.0, 1.0, num_players)
+    players = PlayerSet(player_ids=tuple(f"p{i}" for i in range(num_players)))
+    estimator = ProxyEstimator()
+    masks = list(estimator.sample_masks(players, 200 / 2**num_players, False, 0))
+    payoffs = [float(weights @ np.array(m.present)) for m in masks]
+    values = estimator.estimate_attributions(masks, payoffs, ShapleyAggregator())
+    assert len(values) == num_players
+    assert np.isfinite(values).all()
+    assert estimator.name == "proxy"
