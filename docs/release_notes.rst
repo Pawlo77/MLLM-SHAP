@@ -8,6 +8,13 @@ Changes in each published ``mllm-shap`` version. Newest first.
 Unreleased
 ----------
 
+.. _release-0-7-1:
+
+0.7.1 (2026-10-18)
+------------------
+
+Version 0.7.0 was tagged on a commit that still read 0.6.0 and was never published; 0.7.1 carries its changes.
+
 Added
 ~~~~~
 
@@ -36,7 +43,6 @@ Fixed
 
 - ``neyman_cc`` divided the size-:math:`k` variance by :math:`k + 1` instead of
   :math:`k`, and counted the middle column twice for an even player count.
-
 - :class:`~mllm_shap.alignment.Wav2Vec2Ctc` no longer prints the Transformers load report for the
   training-only ``masked_spec_embed`` weight; any other missing weight is logged as a warning.
 
