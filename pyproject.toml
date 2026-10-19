@@ -1,6 +1,6 @@
 [project]
 name = "mllm-shap"
-version = "0.7.1"
+version = "0.8.0"
 description = "Shapley-value attributions for conversational language models."
 readme = "README.md"
 requires-python = ">=3.12"  # no upper bound: CI tests 3.12 to 3.14; optional extras may lag
