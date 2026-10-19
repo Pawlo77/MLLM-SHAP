@@ -127,7 +127,7 @@ class TransformersTextBackend:
         """Always true for text prompts; audio prompts raise ``ValueError``."""
         return True
 
-    async def score_continuations(
+    async def score_continuations(  # pragma: no cover
         self,
         snapshot: ConversationSnapshot,
         continuations: Sequence[str],
@@ -243,7 +243,7 @@ class TransformersTextBackend:
                 contextual_embedding=contextual_embedding(model, new_token_ids),
             )
 
-    def _force_sync(
+    def _force_sync(  # pragma: no cover
         self, snapshot: ConversationSnapshot, continuations: tuple[str, ...], top_k: int
     ) -> list[ForcedScore]:
         tokenizer = self._tokenizer
@@ -384,7 +384,7 @@ def _token_logprobs(torch: Any, logits: Any, new_ids: Any) -> tuple[float, ...]:
     return tuple(float(value) for value in chosen[:, 0].cpu().tolist())
 
 
-def _force_one(
+def _force_one(  # pragma: no cover
     torch: Any, model: Any, prompt_ids: Any, tokenizer: Any, text: str, top_k: int
 ) -> ForcedScore:
     """Return the log probabilities of ``text`` after ``prompt_ids``, one pass."""

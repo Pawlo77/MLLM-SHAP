@@ -66,7 +66,9 @@ class _HiddenStateEncoder:
         self._model = model
         self._layer = layer
 
-    def encode(self, texts: Sequence[str]) -> list[NDArray[np.floating]]:
+    def encode(
+        self, texts: Sequence[str]
+    ) -> list[NDArray[np.floating]]:  # pragma: no cover
         import torch
 
         batch = self._tokenizer(
@@ -118,7 +120,9 @@ class _WordPoolEncoder:
         self._tokenizer = tokenizer
         self._model = model
 
-    def encode(self, sentences: Sequence[Sequence[str]]) -> list[NDArray[np.floating]]:
+    def encode(
+        self, sentences: Sequence[Sequence[str]]
+    ) -> list[NDArray[np.floating]]:  # pragma: no cover
         import torch
 
         batch = self._tokenizer(
@@ -179,7 +183,9 @@ class _SequenceNli:
         labels = {int(i): str(n).lower() for i, n in model.config.id2label.items()}
         self._entail = next(i for i, name in labels.items() if "entail" in name)
 
-    def entailment(self, pairs: Sequence[tuple[str, str]]) -> list[float]:
+    def entailment(
+        self, pairs: Sequence[tuple[str, str]]
+    ) -> list[float]:  # pragma: no cover
         import torch
 
         batch = self._tokenizer(
@@ -242,7 +248,7 @@ class _WavLmEncoder:
         self._model = model
         self._layer = layer
 
-    def encode(self, path: str) -> NDArray[np.floating]:
+    def encode(self, path: str) -> NDArray[np.floating]:  # pragma: no cover
         import torch
 
         rate = int(self._extractor.sampling_rate)

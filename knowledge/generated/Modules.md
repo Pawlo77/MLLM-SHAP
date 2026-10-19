@@ -118,7 +118,7 @@ parent: "[[mllm-shap]]"
 | [[src/mllm_shap/value/bertscore.py]] | BERTScore F1 between a coalition answer and the full-input answer. | value | [[knowledge/architecture/value]] | 125 | [[value]] |
 | [[src/mllm_shap/value/contrastive.py]] | Contrastive log-odds of a target answer against a foil. | value | [[knowledge/architecture/value]] | 69 | [[value]] |
 | [[src/mllm_shap/value/embedding.py]] | Embedding-cosine value function. | value | [[knowledge/architecture/value]] | 142 | [[value]] |
-| [[src/mllm_shap/value/encoders.py]] | Lazy loaders of the sentence and token encoders behind semantic value functions. | value | [[knowledge/architecture/value]] | 304 | [[value]] |
+| [[src/mllm_shap/value/encoders.py]] | Lazy loaders of the sentence and token encoders behind semantic value functions. | value | [[knowledge/architecture/value]] | 310 | [[value]] |
 | [[src/mllm_shap/value/generation_records.py]] | Build generation records from generated text for value-function scoring. | value | [[knowledge/architecture/value]] | 64 | [[value]] |
 | [[src/mllm_shap/value/judge.py]] | Expected-grade value function from a judge model's score probabilities. | value | [[knowledge/architecture/value]] | 201 | [[value]] |
 | [[src/mllm_shap/value/logprob.py]] | Self-confidence value function from generated-token logprobs. | value | [[knowledge/architecture/value]] | 95 | [[value]] |
