@@ -5,7 +5,7 @@ domain: core
 parent: "[[mllm-shap]]"
 tags: [architecture, core]
 created: 2026-10-07
-updated: 2026-10-18
+updated: 2026-10-19
 related-code:
   - "[[src/mllm_shap/__init__.py]]"
   - "[[src/mllm_shap/_logging.py]]"

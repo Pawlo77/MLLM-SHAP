@@ -5,7 +5,7 @@ domain: protocols
 parent: "[[mllm-shap]]"
 tags: [architecture, protocols]
 created: 2026-10-07
-updated: 2026-10-18
+updated: 2026-10-19
 related-code:
   - "[[src/mllm_shap/protocols/__init__.py]]"
   - "[[src/mllm_shap/protocols/backend.py]]"

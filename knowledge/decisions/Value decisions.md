@@ -4,7 +4,7 @@ type: decision-log
 domain: value
 parent: "[[mllm-shap]]"
 created: 2026-10-08
-updated: 2026-10-18
+updated: 2026-10-19
 tags: [decisions, value]
 related-code:
   - "[[src/mllm_shap/value/generation_records.py]]"

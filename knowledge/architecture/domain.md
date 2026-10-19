@@ -5,7 +5,7 @@ domain: domain
 parent: "[[mllm-shap]]"
 tags: [architecture, domain]
 created: 2026-10-07
-updated: 2026-10-18
+updated: 2026-10-19
 related-code:
   - "[[src/mllm_shap/domain/__init__.py]]"
   - "[[src/mllm_shap/domain/coalition.py]]"
