@@ -26,14 +26,6 @@ Added
 - Every value function declares a :class:`~mllm_shap.protocols.value.ValueInfo`
   (range, direction, capabilities, extra model, cost); :doc:`theory/value_functions`
   lists them. The manifest records ``value_info`` and ``decoding``.
-- The ``leverage`` (Shapley), ``kernel_banzhaf`` (Banzhaf) and ``proxy`` (both,
-  extra ``mllm-shap[proxy]``) estimators fit a regression to the archived masks and
-  payoffs; see :doc:`theory/regression_estimators`.
-- ``budget.per_player`` sets the budget to :math:`\lceil \alpha n \rceil` coalitions.
-- ``explanation.efficiency: additive`` shifts Shapley values so they sum to
-  ``grand_value - base_value``.
-- The ``sentences`` partition and :meth:`~mllm_shap.ExplainRunner.explain_hierarchical`
-  attribute paragraphs first and the sentences of the top ones second.
 
 Changed
 ~~~~~~~
@@ -50,6 +42,35 @@ Changed
   per run and Shapley efficiency holds under sampled decoding.
 - Archive and manifest schema version 5 (teacher-forced scores, audio path,
   ``value_info``, ``decoding``): re-run ``explain`` to rebuild older archives.
+
+Removed
+~~~~~~~
+
+- ``embedding_euclidean``: it depends on vector scale and answer length and no paper
+  supports it. A config naming it fails with a pointer to ``embedding_cosine``.
+
+.. _release-0-7-1:
+
+0.7.1 (2026-10-18)
+------------------
+
+Version 0.7.0 was tagged on a commit that still read 0.6.0 and was never published; 0.7.1 carries its changes.
+
+Added
+~~~~~
+
+- The ``leverage`` (Shapley), ``kernel_banzhaf`` (Banzhaf) and ``proxy`` (both,
+  extra ``mllm-shap[proxy]``) estimators fit a regression to the archived masks and
+  payoffs; see :doc:`theory/regression_estimators`.
+- ``budget.per_player`` sets the budget to :math:`\lceil \alpha n \rceil` coalitions.
+- ``explanation.efficiency: additive`` shifts Shapley values so they sum to
+  ``grand_value - base_value``.
+- The ``sentences`` partition and :meth:`~mllm_shap.ExplainRunner.explain_hierarchical`
+  attribute paragraphs first and the sentences of the top ones second.
+
+Changed
+~~~~~~~
+
 - Attributions of ``mc``, ``complementary`` and ``neyman_cc`` at partial budgets differ
   from earlier versions and are not comparable with them. ``mc`` evaluates the small
   strata first, draws coalition sizes uniformly and updates every player from every
@@ -58,18 +79,11 @@ Changed
   about the sizes that stay empty. ``neyman_cc`` ends phase one between passes over
   the players.
 
-Removed
-~~~~~~~
-
-- ``embedding_euclidean``: it depends on vector scale and answer length and no paper
-  supports it. A config naming it fails with a pointer to ``embedding_cosine``.
-
 Fixed
 ~~~~~
 
 - ``neyman_cc`` divided the size-:math:`k` variance by :math:`k + 1` instead of
   :math:`k`, and counted the middle column twice for an even player count.
-
 - :class:`~mllm_shap.alignment.Wav2Vec2Ctc` no longer prints the Transformers load report for the
   training-only ``masked_spec_embed`` weight; any other missing weight is logged as a warning.
 

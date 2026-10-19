@@ -100,6 +100,8 @@ Optional extras:
    pip install "mllm-shap[lmstudio]"       # LM Studio backend
    pip install "mllm-shap[api]"            # OpenAI-compatible HTTP API
    pip install "mllm-shap[viz]"            # matplotlib attribution charts
+   pip install "mllm-shap[proxy]"          # scikit-learn: the ProxySHAP estimator
+   pip install "mllm-shap[audio]"          # audio decoding and alignment
 
 See :doc:`guides/extending` for the full extras and entry-point matrix.
 
