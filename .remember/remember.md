@@ -25,9 +25,8 @@ Weekly local task: `mllm-shap-upgrade` (Mon 08:00).
 ## Next
 - SGPA Audio work moves to `mllm-xai`: the Phase 0 game definition and model matrix,
   then the runner factory and smoke experiment on top of `mllm-shap` 0.7.1.
-- `make practical TIER=deep` did not run for 0.7.1 (LM Studio missing); the practical
-  scenarios `estimator.leverage`, `estimator.proxy`, `estimator.kernel_banzhaf` and
-  `partition.sentences` carry unmeasured thresholds. Run them and record the numbers.
+- The deep practical tier ran after 0.7.1 (9 of 9 passed, 2026-10-19); the new quick-tier
+  scenarios were measured and their thresholds recorded in `scenarios.yaml`.
 - Before tagging, check the release commit holds the bump:
   `git show HEAD:pyproject.toml | sed -n 3p`. A hook once dropped unstaged edits.
 - D06: add the SGPA paper to Papers.md once its conference review ends.
