@@ -17,7 +17,7 @@ paths:
     [conversation.multi_user, conversation.system_prompt, conversation.audio, backend.api]
   src/mllm_shap/backends/api/*: [backend.api, conversation.audio]
   src/mllm_shap/backends/lmstudio/*: [backend.lmstudio, conversation.audio]
-  src/mllm_shap/backends/transformers/*: [backend.transformers, backend.transformers.kv_cache, value.logprob]
+  src/mllm_shap/backends/transformers/*: [backend.transformers, backend.transformers.kv_cache, value.self_logprob, value.tf_logprob]
   src/mllm_shap/backends/transformers/audio.py: [conversation.audio]
   src/mllm_shap/backends/transformers/embeddings.py: [value.embedding_*]
 

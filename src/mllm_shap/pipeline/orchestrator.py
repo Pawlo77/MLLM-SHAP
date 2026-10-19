@@ -14,7 +14,7 @@ from typing import cast
 from ..domain.coalition import CoalitionMask
 from ..domain.conversation import ConversationSnapshot
 from ..domain.enums import EmbeddingMode
-from ..domain.generation import GenerationRecord
+from ..domain.generation import ForcedScore, GenerationRecord
 from ..domain.players import PlayerSet
 from ..errors import ConfigError
 from ..estimation._shared import budget_fraction
@@ -27,6 +27,7 @@ from ..protocols.backend import (
     GenerativeBackend,
     SupportsKvCache,
     SupportsLogprobs,
+    SupportsTeacherForcing,
 )
 from ..protocols.estimand import EstimandAggregator
 from ..protocols.estimator import EstimatorStrategy, TwoPhaseEstimator
@@ -34,8 +35,10 @@ from ..protocols.masking import AbsencePolicy
 from ..protocols.normalizer import Normalizer
 from ..protocols.value import (
     FittableValueFunction,
+    PreparesScores,
     RequiresEmbeddings,
     RequiresLogprobs,
+    RequiresTeacherForcing,
     ValueFunction,
 )
 from ..runtime.archive import BASE_GENERATION_FILE, RunArchive
@@ -73,6 +76,10 @@ class ExplainOrchestrator:
         # Backend records with model embeddings, by generated text; filled only
         # when the value function needs embeddings.
         self._embedded: dict[str, GenerationRecord] = {}
+        # Set when the value function scores teacher-forced continuations; the
+        # continuations are fixed once the base generation is known.
+        self._forcing: RequiresTeacherForcing | None = None
+        self._continuations: tuple[str, ...] = ()
 
     async def run(self) -> ExplainRunOutput:
         """Execute the configured explain pipeline and return attributions."""
@@ -122,6 +129,7 @@ class ExplainOrchestrator:
             )
 
             self._check_logprobs(value_fn)
+            self._check_teacher_forcing(value_fn)
             if (
                 isinstance(value_fn, RequiresEmbeddings)
                 and value_fn.needs_embeddings
@@ -149,20 +157,7 @@ class ExplainOrchestrator:
             mask_builder = MaskBuilder(absence_policy)
 
             archive: RunArchive | None = None
-            manifest = RunManifest(
-                estimand=explanation.estimand,
-                run_id=self._context.run_id,
-                snapshot_id=snapshot.snapshot_id,
-                estimator=explanation.estimator,
-                value_fn=explanation.value_fn,
-                normalizer=explanation.normalizer,
-                absence_policy=explanation.absence_policy,
-                players=explanation.players,
-                backend_kind=config.backend.kind,
-                model_id=self._backend.model_id,
-                player_ids=player_set.player_ids,
-                config=config,
-            )
+            manifest = self._initial_manifest(value_fn)
             if self._context.archive_root is not None:
                 archive = RunArchive.open(
                     self._context.archive_root,
@@ -223,6 +218,8 @@ class ExplainOrchestrator:
                     self._coalition_key(mask_builder, player_set, grand_mask),
                     base_record.text,
                     base_record.logprobs,
+                    base_record.forced,
+                    base_record.audio_path,
                 )
                 dedup = (
                     CoalitionDedupRegistry()
@@ -248,25 +245,19 @@ class ExplainOrchestrator:
                         self._backend.kv_cache_reused_tokens,
                     )
 
-                async def generate(
-                    snapshot_for_job: ConversationSnapshot,
-                ) -> str | GenerationRecord:
-                    record = await self._backend.generate(
-                        snapshot_for_job, self._generation
-                    )
-                    self._keep_embeddings(record)
-                    return (
-                        record if isinstance(record, GenerationRecord) else record.text
-                    )
-
                 schedule_started = time.perf_counter()
                 coalition_records, metrics = await self._generate_records(
-                    mask_builder, player_set, masks, scheduler, store, generate
+                    mask_builder,
+                    player_set,
+                    masks,
+                    scheduler,
+                    store,
+                    self._generate_coalition,
                 )
                 generation_ms += (time.perf_counter() - schedule_started) * 1000.0
 
                 scoring_started = time.perf_counter()
-                payoffs = self._score(value_fn, base_record, coalition_records)
+                payoffs = await self._score(value_fn, base_record, coalition_records)
                 scoring_ms += (time.perf_counter() - scoring_started) * 1000.0
 
                 if isinstance(estimator, TwoPhaseEstimator):
@@ -280,7 +271,7 @@ class ExplainOrchestrator:
                             phase_two,
                             scheduler,
                             store,
-                            generate,
+                            self._generate_coalition,
                         )
                         generation_ms += (
                             time.perf_counter() - schedule_started
@@ -291,10 +282,13 @@ class ExplainOrchestrator:
                         # Rescore every coalition so corpus-fitted value functions
                         # (TF-IDF) score both phases against the same corpus.
                         scoring_started = time.perf_counter()
-                        payoffs = self._score(value_fn, base_record, coalition_records)
+                        payoffs = await self._score(
+                            value_fn, base_record, coalition_records
+                        )
                         scoring_ms += (time.perf_counter() - scoring_started) * 1000.0
 
                 manifest = self._with_embedding_source(manifest, value_fn)
+                self._check_hash_embeddings(manifest, value_fn)
                 if archive is not None:
                     archive.write_manifest(manifest)
                     archive.mark_complete()
@@ -347,6 +341,21 @@ class ExplainOrchestrator:
             ),
         )
 
+    async def _generate_coalition(
+        self, snapshot: ConversationSnapshot
+    ) -> str | GenerationRecord:
+        """Generate (unless the value function skips it) and force one coalition."""
+        forcing = self._forcing
+        if forcing is not None and not forcing.reads_candidate_text:
+            record: GenerationResult = GenerationRecord(text="")
+        else:
+            record = await self._backend.generate(snapshot, self._generation)
+        self._keep_embeddings(record)
+        forced = await self._force(snapshot)
+        if forced:
+            return dataclasses.replace(_as_record(record), forced=forced)
+        return record if isinstance(record, GenerationRecord) else record.text
+
     async def _generate_base(
         self,
         mask_builder: MaskBuilder,
@@ -361,12 +370,52 @@ class ExplainOrchestrator:
         rendered = mask_builder.render(masked)
         generated = await self._backend.generate(rendered, self._generation)
         self._keep_embeddings(generated)
-        logprobs = (
-            generated.logprobs if isinstance(generated, GenerationRecord) else None
+        generated_record = _as_record(generated)
+        base_record = dataclasses.replace(
+            self._scoring_record(generated.text),
+            logprobs=generated_record.logprobs,
+            audio_path=generated_record.audio_path,
         )
-        return dataclasses.replace(
-            self._scoring_record(generated.text), logprobs=logprobs
+        if self._forcing is not None:
+            self._continuations = self._forcing.forced_continuations(base_record)
+            base_record = dataclasses.replace(
+                base_record, forced=await self._force(rendered)
+            )
+        return base_record
+
+    async def _force(self, snapshot: ConversationSnapshot) -> dict[str, ForcedScore]:
+        """Score the value function's continuations under ``snapshot``."""
+        if self._forcing is None:
+            return {}
+        backend = cast(SupportsTeacherForcing, self._backend)
+        scores = await backend.score_continuations(
+            snapshot, self._continuations, self._forcing.forced_top_k
         )
+        return dict(zip(self._continuations, scores, strict=True))
+
+    def _check_teacher_forcing(self, value_fn: ValueFunction) -> None:
+        """Refuse a teacher-forcing value function on a backend without it.
+
+        Raises:
+            ConfigError: Naming the backend, before any generation runs.
+        """
+        if not (
+            isinstance(value_fn, RequiresTeacherForcing)
+            and value_fn.needs_teacher_forcing
+        ):
+            return
+        if isinstance(self._backend, SupportsTeacherForcing) and (
+            self._backend.forces_continuations
+        ):
+            self._forcing = value_fn
+            return
+        msg = (
+            f"value_fn {self._context.config.explanation.value_fn!r} scores "
+            "teacher-forced continuations, which backend "
+            f"{self._context.config.backend.kind!r} cannot do; use the "
+            "transformers backend"
+        )
+        raise ConfigError(msg)
 
     def _check_logprobs(self, value_fn: ValueFunction) -> None:
         """Refuse a value function that needs logprobs on a backend without them.
@@ -384,6 +433,53 @@ class ExplainOrchestrator:
             f"value_fn {self._context.config.explanation.value_fn!r} needs token "
             f"logprobs, which backend {self._context.config.backend.kind!r} does "
             "not return; use the transformers or api backend"
+        )
+        raise ConfigError(msg)
+
+    def _initial_manifest(self, value_fn: ValueFunction) -> RunManifest:
+        """Return the manifest written before the first generation."""
+        config = self._context.config
+        explanation = config.explanation
+        return RunManifest(
+            estimand=explanation.estimand,
+            run_id=self._context.run_id,
+            snapshot_id=self._context.snapshot.snapshot_id,
+            estimator=explanation.estimator,
+            value_fn=explanation.value_fn,
+            value_info=_value_info(value_fn),
+            decoding={
+                "temperature": self._generation.temperature,
+                "top_k": self._generation.top_k,
+                "seed": explanation.seed,
+                "dedup": explanation.dedup.enabled,
+            },
+            normalizer=explanation.normalizer,
+            absence_policy=explanation.absence_policy,
+            players=explanation.players,
+            backend_kind=config.backend.kind,
+            model_id=self._backend.model_id,
+            player_ids=self._context.player_set.player_ids,
+            config=config,
+        )
+
+    def _check_hash_embeddings(
+        self, manifest: RunManifest, value_fn: ValueFunction
+    ) -> None:
+        """Refuse to score hash vectors that carry no meaning, unless allowed.
+
+        Raises:
+            ConfigError: If a value function that reads model states was fed the
+                hash vectors of a backend without them.
+        """
+        if manifest.embedding_source is not EmbeddingSource.HASH:
+            return
+        if getattr(value_fn, "allow_hash_embeddings", True):
+            return
+        msg = (
+            f"backend {self._context.config.backend.kind!r} gives no model states, "
+            f"so value_fn {value_fn.name!r} would score 8-dimensional hash vectors "
+            "of the text; use a sentence encoder (the default) or set "
+            "plugin_options.embedding_cosine.allow_hash_embeddings"
         )
         raise ConfigError(msg)
 
@@ -546,14 +642,18 @@ class ExplainOrchestrator:
             if text is None:
                 msg = f"missing generation for coalition {coalition_key!r}"
                 raise RuntimeError(msg)
+            entry = store.entry(coalition_key)
             records.append(
                 dataclasses.replace(
-                    self._scoring_record(text), logprobs=store.logprobs(coalition_key)
+                    self._scoring_record(text),
+                    logprobs=None if entry is None else entry.logprobs,
+                    forced={} if entry is None else entry.forced,
+                    audio_path=None if entry is None else entry.audio_path,
                 )
             )
         return records, metrics
 
-    def _score(
+    async def _score(
         self,
         value_fn: ValueFunction,
         base_record: GenerationRecord,
@@ -561,7 +661,22 @@ class ExplainOrchestrator:
     ) -> list[float]:
         """Fit corpus-dependent value functions and score every coalition."""
         with self._context.resolved_telemetry().span("orchestrator.score"):
+            if isinstance(value_fn, PreparesScores):
+                await value_fn.prepare(base_record, coalition_records)
             return score_coalitions(value_fn, base_record, coalition_records)
+
+
+def _as_record(generated: GenerationResult) -> GenerationRecord:
+    return (
+        generated
+        if isinstance(generated, GenerationRecord)
+        else GenerationRecord(text=generated.text)
+    )
+
+
+def _value_info(value_fn: ValueFunction) -> dict[str, str]:
+    info = getattr(value_fn, "manifest_info", None)
+    return dict(info()) if callable(info) else {}
 
 
 def score_coalitions(

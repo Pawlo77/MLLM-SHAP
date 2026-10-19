@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, ClassVar
 from ..domain.generation import GenerationRecord
 from ..protocols.backend import GenerationResult
 from ..protocols.plugin import PluginOptions
+from ..protocols.value import ValueInfo
 from ._metrics import cosine_similarity
 from ._token_hash import TokenHasher
 
@@ -24,6 +25,9 @@ class TfIdfCosineValue:
     """Score generations with cosine similarity of frozen TF-IDF vectors."""
 
     options_model: ClassVar[type[PluginOptions]] = PluginOptions
+    info: ClassVar[ValueInfo] = ValueInfo(
+        value_range=(0.0, 1.0), reads_base=True, cost="text"
+    )
     """Accepts no ``explanation.plugin_options``."""
 
     def __init__(self, context: "PluginContext | None" = None) -> None:

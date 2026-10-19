@@ -14,14 +14,20 @@ from ..masking.codec import MaskCodec, PackedMask
 
 
 def dedup_enabled(config: DedupConfig, generation: GenerationConfig) -> bool:
-    """Return whether coalition deduplication should be active."""
+    """Return whether coalition deduplication should be active.
+
+    ``auto`` is on at any temperature: a coalition is generated once per run and
+    reused, so repeated masks share one payoff and Shapley efficiency holds
+    under sampled decoding.
+    """
     match config.enabled:
         case "on":
             return True
         case "off":
             return False
         case "auto":
-            return generation.temperature == 0.0
+            _ = generation
+            return True
         case _ as unreachable:
             msg = f"unsupported dedup mode: {unreachable!r}"
             raise AssertionError(msg)

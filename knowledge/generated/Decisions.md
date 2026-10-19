@@ -16,6 +16,9 @@ Newest first.
 |---|---|---|---|
 | 2026-10-18 | estimation | [[Estimation decisions#2026-10-18 — Stratified aggregation for mc\|Stratified aggregation for mc]] | accepted |
 | 2026-10-18 | estimation | [[Estimation decisions#2026-10-18 — Regression estimators and hierarchical runs\|Regression estimators and hierarchical runs]] | accepted |
+| 2026-10-18 | value | [[Value decisions#2026-10-18 — Teacher-forced value functions score y_N without generating\|Teacher-forced value functions score y_N without generating]] | accepted |
+| 2026-10-18 | value | [[Value decisions#2026-10-18 — Sentence encoder is the default of embedding_cosine\|Sentence encoder is the default of embedding_cosine]] | accepted |
+| 2026-10-18 | value | [[Value decisions#2026-10-18 — A coalition is generated once per run at any temperature\|A coalition is generated once per run at any temperature]] | accepted |
 | 2026-10-12 | estimation | [[Estimation decisions#2026-10-12 — Leave-one-out bypasses the estimand\|Leave-one-out bypasses the estimand]] | accepted |
 | 2026-10-12 | masking | [[Masking decisions#2026-10-12 — Alignment-only transcripts are hidden by the policies\|Alignment-only transcripts are hidden by the policies]] | accepted |
 | 2026-10-11 | backends | [[Backends decisions#2026-10-11 — Audio input through the transformers processor\|Audio input through the transformers processor]] | accepted |

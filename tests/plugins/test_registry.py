@@ -152,7 +152,12 @@ def test_embedding_value_reads_embedding_mode() -> None:
     """``explanation.embedding_mode`` selects contextual embeddings."""
     registry = PluginRegistry()
     register_builtin_plugins(registry)
-    context = _configured_context(registry, embedding_mode="contextual")
+    context = _configured_context(
+        registry,
+        embedding_mode="contextual",
+        value_fn="embedding_cosine",
+        plugin_options={"embedding_cosine": {"encoder": "model_states"}},
+    )
     value_fn = registry.resolve(PluginGroup.VALUE_FNS, "embedding_cosine", context)
     base = GenerationRecord(
         text="a", embedding=(1.0, 0.0), contextual_embedding=(0.0, 1.0)

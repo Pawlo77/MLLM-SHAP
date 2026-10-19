@@ -34,7 +34,7 @@ from mllm_shap.protocols import (
     SupportsLogprobs,
 )
 from mllm_shap.protocols.backend import GenerationResult
-from mllm_shap.value.embedding import CosineEmbeddingValue, EuclideanEmbeddingValue
+from mllm_shap.value.embedding import CosineEmbeddingValue
 from mllm_shap.value.generation_records import generation_record_from_text
 from mllm_shap.value.tfidf import TfIdfCosineValue
 
@@ -209,6 +209,10 @@ class EmbeddingProbe:
         return candidate.embedding[0]
 
 
+_MODEL_STATES = {"encoder": "model_states", "allow_hash_embeddings": True}
+"""Score the backend's own vectors, hash vectors included."""
+
+
 def _embedding_config(value_fn: str) -> ExplainConfig:
     return ExplainConfig.model_validate({
         "backend": {"kind": "embedding", "model_id": "embedding"},
@@ -217,13 +221,17 @@ def _embedding_config(value_fn: str) -> ExplainConfig:
             "value_fn": value_fn,
             "absence_policy": "delete",
             "archive": {"path": ""},
+            **(
+                {"plugin_options": {"embedding_cosine": _MODEL_STATES}}
+                if value_fn == "embedding_cosine"
+                else {}
+            ),
         },
     })
 
 
 def test_embedding_value_functions_declare_they_need_embeddings() -> None:
     assert isinstance(CosineEmbeddingValue(), RequiresEmbeddings)
-    assert isinstance(EuclideanEmbeddingValue(), RequiresEmbeddings)
     assert CosineEmbeddingValue().needs_embeddings
     assert not isinstance(TfIdfCosineValue(), RequiresEmbeddings)
 

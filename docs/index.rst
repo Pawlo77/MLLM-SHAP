@@ -102,6 +102,8 @@ Optional extras:
    pip install "mllm-shap[viz]"            # matplotlib attribution charts
    pip install "mllm-shap[proxy]"          # scikit-learn: the ProxySHAP estimator
    pip install "mllm-shap[audio]"          # audio decoding and alignment
+   pip install "mllm-shap[semantic]"       # sentence, BERTScore and NLI encoders
+   pip install "mllm-shap[audio-semantic]" # SpeechBERTScore encoder and recognizer
 
 See :doc:`guides/extending` for the full extras and entry-point matrix.
 

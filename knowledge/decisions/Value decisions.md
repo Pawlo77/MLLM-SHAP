@@ -4,11 +4,15 @@ type: decision-log
 domain: value
 parent: "[[mllm-shap]]"
 created: 2026-10-08
-updated: 2026-10-08
+updated: 2026-10-19
 tags: [decisions, value]
 related-code:
   - "[[src/mllm_shap/value/generation_records.py]]"
   - "[[src/mllm_shap/value/logprob.py]]"
+  - "[[src/mllm_shap/value/teacher_forced.py]]"
+  - "[[src/mllm_shap/value/embedding.py]]"
+  - "[[src/mllm_shap/runtime/dedup.py]]"
+  - "[[src/mllm_shap/pipeline/rescore.py]]"
   - "[[src/mllm_shap/backends/mock/backend.py]]"
   - "[[src/mllm_shap/pipeline/orchestrator.py]]"
   - "[[src/mllm_shap/pipeline/reanalyze.py]]"
@@ -16,6 +20,30 @@ related-code:
 # Value decisions
 
 Architecture: [[value]]. Related: [[backends]], [[pipeline]], [[Reanalyze]].
+
+## 2026-10-18 — Teacher-forced value functions score y_N without generating
+
+Decision: `tf_logprob`, `tf_jsd` and `contrastive` declare `RequiresTeacherForcing`. The orchestrator scores `forced_continuations(base)` under every coalition prompt through `SupportsTeacherForcing.score_continuations`, stores the result in `GenerationRecord.forced` and the archive, and skips generating coalition answers. `ExplainRunner.rescore` rebuilds prompts from archived masks for archives written by other value functions.
+
+Why: the published baselines (MExGen, Captum, ARC-JSD) score a fixed continuation, which `logprob` never did; one forward pass costs far less than a generation.
+
+Consequences: `logprob` becomes `self_logprob`; the archive and manifest schema is 5. `api` and `lmstudio` cannot serve these functions. Rejected: scoring inside `score` (it has no backend).
+
+## 2026-10-18 — Sentence encoder is the default of embedding_cosine
+
+Decision: `embedding_cosine` embeds answer text with `all-MiniLM-L6-v2`; `encoder: model_states` keeps the old behaviour and hash vectors need `allow_hash_embeddings`. `embedding_euclidean` is deleted.
+
+Why: pooled states of a generative model rank pairs poorly under cosine, hash vectors carry no meaning, and the Euclidean score depends on vector scale and answer length.
+
+Consequences: `reanalyze` reproduces `explain` for the default encoder; the extra `mllm-shap[semantic]` is needed.
+
+## 2026-10-18 — A coalition is generated once per run at any temperature
+
+Decision: `dedup.enabled: auto` is on whatever the temperature, and the manifest records `decoding`.
+
+Why: two generations of one coalition differ when sampling, so repeated masks got different payoffs and the archive held rows `reanalyze` could not reproduce.
+
+Consequences: Shapley sums to `v(N) - v(empty)` under sampling; repeated masks share one payoff.
 
 ## 2026-10-08 — Logprob value is the coalition's own mean token logprob
 

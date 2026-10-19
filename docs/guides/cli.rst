@@ -136,7 +136,7 @@ reanalyzed result has no snapshot, so its labels carry the player ids only:
 .. guide-result:: cli_reanalyze
 
 Archives store generated text only, so embedding value functions
-(``embedding_cosine``, ``embedding_euclidean``) score hash embeddings of that text
+(``embedding_cosine`` with ``encoder: model_states``) score hash embeddings of that text
 on reanalysis. The manifest's ``embedding_source`` says which embeddings the
 explain run scored: ``none`` when the value function read none, ``hash`` for the
 text-derived vectors and ``backend`` for model embeddings (the transformers

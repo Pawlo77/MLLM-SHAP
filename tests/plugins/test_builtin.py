@@ -137,11 +137,20 @@ def test_builtin_registers_value_functions_and_normalizers() -> None:
     assert isinstance(value_fn, TfIdfCosineValue)
     assert isinstance(normalizer, MinMaxNormalizer)
     assert registry.names(PluginGroup.VALUE_FNS) == (
+        "bertscore",
+        "contrastive",
         "embedding_cosine",
-        "embedding_euclidean",
+        "judge_grade",
         "logprob",
+        "nli_logodds",
         "reference_wer",
+        "self_logprob",
+        "semascore",
+        "speech_bertscore",
+        "tf_jsd",
+        "tf_logprob",
         "tfidf_cosine",
+        "transcribed",
     )
     assert registry.names(PluginGroup.NORMALIZERS) == (
         "abs_sum",

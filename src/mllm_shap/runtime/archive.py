@@ -10,10 +10,11 @@ import logging
 import shutil
 import sqlite3
 from collections.abc import Iterator, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Final, Literal, Protocol, Self
 
+from ..domain.generation import ForcedScore, forced_from_json, forced_to_json
 from ..errors import (
     ArchiveCorruptError,
     ArchiveExistsError,
@@ -27,10 +28,10 @@ logger = logging.getLogger(__name__)
 BASE_GENERATION_FILE = "base_generation.txt"
 """Filename for the grand-coalition reference generation at the archive root."""
 
-ARCHIVE_SCHEMA_VERSION: Final[int] = 4
+ARCHIVE_SCHEMA_VERSION: Final[int] = 5
 """SQLite ``user_version`` written by this release and required on load."""
 
-MANIFEST_SCHEMA_VERSION: Final[int] = 4
+MANIFEST_SCHEMA_VERSION: Final[int] = 5
 """Manifest ``schema_version`` written by this release and required on load."""
 
 
@@ -110,6 +111,12 @@ class CoalitionRecord:
     logprobs: tuple[float, ...] | None = None
     """Token logprobs of the generation; ``None`` when the backend gave none."""
 
+    forced: Mapping[str, ForcedScore] = field(default_factory=dict)
+    """Teacher-forced scores by continuation text; empty when none were computed."""
+
+    audio_path: str | None = None
+    """Waveform file of a spoken answer, when the backend produced one."""
+
 
 @dataclass(frozen=True, slots=True)
 class CoalitionRecordDraft:
@@ -141,6 +148,12 @@ class CoalitionRecordDraft:
 
     logprobs: tuple[float, ...] | None = None
     """Token logprobs of the generation; ``None`` when the backend gave none."""
+
+    forced: Mapping[str, ForcedScore] = field(default_factory=dict)
+    """Teacher-forced scores by continuation text; empty when none were computed."""
+
+    audio_path: str | None = None
+    """Waveform file of a spoken answer, when the backend produced one."""
 
 
 class RunArchive:
@@ -287,8 +300,10 @@ class RunArchive:
                 elapsed_ms,
                 cache_hit,
                 generation_text,
-                logprobs
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                logprobs,
+                forced,
+                audio_path
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 draft.snapshot_id,
@@ -301,6 +316,8 @@ class RunArchive:
                 int(draft.cache_hit),
                 draft.generation_text,
                 None if draft.logprobs is None else json.dumps(draft.logprobs),
+                forced_to_json(draft.forced) if draft.forced else None,
+                draft.audio_path,
             ),
         )
         if cursor.lastrowid is None:
@@ -346,7 +363,9 @@ class RunArchive:
                 elapsed_ms,
                 cache_hit,
                 generation_text,
-                logprobs
+                logprobs,
+                forced,
+                audio_path
             FROM coalition_records
             ORDER BY record_id
             """
@@ -366,6 +385,8 @@ class RunArchive:
                 elapsed_ms=float(row["elapsed_ms"]),
                 cache_hit=bool(row["cache_hit"]),
                 logprobs=_logprobs_from_json(row["logprobs"]),
+                forced=forced_from_json(row["forced"]),
+                audio_path=row["audio_path"],
             )
 
     def close(self) -> None:
@@ -397,7 +418,9 @@ class RunArchive:
                 elapsed_ms REAL NOT NULL,
                 cache_hit INTEGER NOT NULL,
                 generation_text TEXT NOT NULL,
-                logprobs TEXT
+                logprobs TEXT,
+                forced TEXT,
+                audio_path TEXT
             )
             """
         )

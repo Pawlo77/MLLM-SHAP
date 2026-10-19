@@ -12,7 +12,7 @@ parent: "[[mllm-shap]]"
 
 | Module | Summary | Domain | See | Lines | Architecture note |
 |---|---|---|---|---|---|
-| [[src/mllm_shap/__init__.py]] | Shapley-value attributions for conversational language models. | core | [[knowledge/architecture/core]] | 202 | [[core]] |
+| [[src/mllm_shap/__init__.py]] | Shapley-value attributions for conversational language models. | core | [[knowledge/architecture/core]] | 220 | [[core]] |
 | [[src/mllm_shap/_logging.py]] | Central logging bootstrap for mllm_shap. | core | [[knowledge/architecture/core]] | 149 | [[core]] |
 | [[src/mllm_shap/alignment/__init__.py]] | Spectrogram-guided alignment of transcript tokens to speech (``audio`` extra). | alignment | [[knowledge/architecture/alignment]] | 18 | [[alignment]] |
 | [[src/mllm_shap/alignment/ctc.py]] | CTC forced alignment (Viterbi over the blank-extended target sequence). | alignment | [[knowledge/architecture/alignment]] | 82 | [[alignment]] |
@@ -32,23 +32,23 @@ parent: "[[mllm-shap]]"
 | [[src/mllm_shap/backends/lmstudio/options.py]] | Settings of the LM Studio backend read from ``BackendConfig.options``. | backends | [[knowledge/architecture/backends]] | 48 | [[backends]] |
 | [[src/mllm_shap/backends/mock/__init__.py]] | Mock backend exports. | backends | [[knowledge/architecture/backends]] | 12 | [[backends]] |
 | [[src/mllm_shap/backends/mock/audio.py]] | Deterministic mock backend that hears the voiced runs of audio parts. | backends | [[knowledge/architecture/backends]] | 81 | [[backends]] |
-| [[src/mllm_shap/backends/mock/backend.py]] | Deterministic mock backend for CI-safe E2E tests. | backends | [[knowledge/architecture/backends]] | 73 | [[backends]] |
+| [[src/mllm_shap/backends/mock/backend.py]] | Deterministic mock backend for CI-safe E2E tests. | backends | [[knowledge/architecture/backends]] | 126 | [[backends]] |
 | [[src/mllm_shap/backends/transformers/__init__.py]] | Hugging Face transformers text backend. | backends | [[knowledge/architecture/backends]] | 9 | [[backends]] |
 | [[src/mllm_shap/backends/transformers/_torch.py]] | Lazy import of the optional ``torch`` dependency. | backends | [[knowledge/architecture/backends]] | 21 | [[backends]] |
 | [[src/mllm_shap/backends/transformers/audio.py]] | Model inputs for audio language models through a Hugging Face processor. | backends | [[knowledge/architecture/backends]] | 89 | [[backends]] |
 | [[src/mllm_shap/backends/transformers/chat.py]] | Conversation snapshot helpers for Hugging Face chat templates. | backends | [[knowledge/architecture/backends]] | 26 | [[backends]] |
 | [[src/mllm_shap/backends/transformers/embeddings.py]] | Embedding helpers for the transformers text backend. | backends | [[knowledge/architecture/backends]] | 50 | [[backends]] |
 | [[src/mllm_shap/backends/transformers/options.py]] | Settings of the transformers backend read from ``BackendConfig.options``. | backends | [[knowledge/architecture/backends]] | 52 | [[backends]] |
-| [[src/mllm_shap/backends/transformers/text.py]] | Hugging Face language model backend for text and, with a processor, audio. | backends | [[knowledge/architecture/backends]] | 382 | [[backends]] |
+| [[src/mllm_shap/backends/transformers/text.py]] | Hugging Face language model backend for text and, with a processor, audio. | backends | [[knowledge/architecture/backends]] | 450 | [[backends]] |
 | [[src/mllm_shap/cli.py]] | Command-line interface: ``mllm-shap explain\|reanalyze\|plugins\|config``. | core | [[knowledge/architecture/core]] | 258 | [[core]] |
-| [[src/mllm_shap/domain/__init__.py]] | Domain types for cooperative-game explainability. | domain | [[knowledge/architecture/domain]] | 43 | [[domain]] |
+| [[src/mllm_shap/domain/__init__.py]] | Domain types for cooperative-game explainability. | domain | [[knowledge/architecture/domain]] | 44 | [[domain]] |
 | [[src/mllm_shap/domain/coalition.py]] | Coalition masks over explainability players. | domain | [[knowledge/architecture/domain]] | 45 | [[domain]] |
 | [[src/mllm_shap/domain/config.py]] | Generation and runtime settings shared by backends, runtime and pipeline. | domain | [[knowledge/architecture/domain]] | 52 | [[domain]] |
 | [[src/mllm_shap/domain/conversation.py]] | Immutable conversation snapshots without backend or IO. | domain | [[knowledge/architecture/domain]] | 401 | [[domain]] |
 | [[src/mllm_shap/domain/enums.py]] | Conversation and explanation enumerations for the text MVP. | domain | [[knowledge/architecture/domain]] | 36 | [[domain]] |
 | [[src/mllm_shap/domain/estimands.py]] | Estimand labels for attribution outputs and archive manifests. | domain | [[knowledge/architecture/domain]] | 34 | [[domain]] |
 | [[src/mllm_shap/domain/game.py]] | Cooperative-game domain types. | domain | [[knowledge/architecture/domain]] | 18 | [[domain]] |
-| [[src/mllm_shap/domain/generation.py]] | Generation payloads scored by value functions. | domain | [[knowledge/architecture/domain]] | 31 | [[domain]] |
+| [[src/mllm_shap/domain/generation.py]] | Generation payloads scored by value functions. | domain | [[knowledge/architecture/domain]] | 78 | [[domain]] |
 | [[src/mllm_shap/domain/players.py]] | Player indexing for cooperative-game explainability. | domain | [[knowledge/architecture/domain]] | 78 | [[domain]] |
 | [[src/mllm_shap/errors.py]] | Typed errors raised by mllm-shap pipeline components. | core | [[knowledge/architecture/core]] | 68 | [[core]] |
 | [[src/mllm_shap/estimation/__init__.py]] | Estimation algorithms for cooperative-game attribution. | estimation | [[knowledge/architecture/estimation]] | 36 | [[estimation]] |
@@ -79,20 +79,21 @@ parent: "[[mllm-shap]]"
 | [[src/mllm_shap/pipeline/config.py]] | Explain pipeline configuration schema. | pipeline | [[knowledge/architecture/pipeline]] | 342 | [[pipeline]] |
 | [[src/mllm_shap/pipeline/context.py]] | Shared state for one explain pipeline run. | pipeline | [[knowledge/architecture/pipeline]] | 57 | [[pipeline]] |
 | [[src/mllm_shap/pipeline/faithfulness.py]] | Deletion curves: how fast a ranking of players destroys the answer. | pipeline | [[knowledge/architecture/pipeline]] | 143 | [[pipeline]] |
-| [[src/mllm_shap/pipeline/manifest.py]] | Versioned run manifest persisted next to every run archive. | pipeline | [[knowledge/architecture/pipeline]] | 246 | [[pipeline]] |
-| [[src/mllm_shap/pipeline/orchestrator.py]] | Explain pipeline orchestration. | pipeline | [[knowledge/architecture/pipeline]] | 596 | [[pipeline]] |
-| [[src/mllm_shap/pipeline/reanalyze.py]] | Reanalyze archived coalition generations without backend calls. | pipeline | [[knowledge/architecture/pipeline]] | 291 | [[pipeline]] |
+| [[src/mllm_shap/pipeline/manifest.py]] | Versioned run manifest persisted next to every run archive. | pipeline | [[knowledge/architecture/pipeline]] | 271 | [[pipeline]] |
+| [[src/mllm_shap/pipeline/orchestrator.py]] | Explain pipeline orchestration. | pipeline | [[knowledge/architecture/pipeline]] | 711 | [[pipeline]] |
+| [[src/mllm_shap/pipeline/reanalyze.py]] | Reanalyze archived coalition generations without backend calls. | pipeline | [[knowledge/architecture/pipeline]] | 360 | [[pipeline]] |
+| [[src/mllm_shap/pipeline/rescore.py]] | Rescore an archive with teacher-forced value functions, without generating. | pipeline | [[knowledge/architecture/pipeline]] | 128 | [[pipeline]] |
 | [[src/mllm_shap/pipeline/result.py]] | Explain pipeline result types. | pipeline | [[knowledge/architecture/pipeline]] | 170 | [[pipeline]] |
-| [[src/mllm_shap/pipeline/runner.py]] | Public explain pipeline entry point. | pipeline | [[knowledge/architecture/pipeline]] | 334 | [[pipeline]] |
+| [[src/mllm_shap/pipeline/runner.py]] | Public explain pipeline entry point. | pipeline | [[knowledge/architecture/pipeline]] | 360 | [[pipeline]] |
 | [[src/mllm_shap/plugins/__init__.py]] | Plugin registry exports. | plugins | [[knowledge/architecture/plugins]] | 22 | [[plugins]] |
 | [[src/mllm_shap/plugins/backends.py]] | Backend plugin construction helpers. | plugins | [[knowledge/architecture/plugins]] | 22 | [[plugins]] |
-| [[src/mllm_shap/plugins/builtin.py]] | Built-in plugin registration and the default registry. | plugins | [[knowledge/architecture/plugins]] | 116 | [[plugins]] |
+| [[src/mllm_shap/plugins/builtin.py]] | Built-in plugin registration and the default registry. | plugins | [[knowledge/architecture/plugins]] | 132 | [[plugins]] |
 | [[src/mllm_shap/plugins/context.py]] | Context handed to every plugin factory. | plugins | [[knowledge/architecture/plugins]] | 59 | [[plugins]] |
 | [[src/mllm_shap/plugins/groups.py]] | Plugin group identifiers for entry-point loading. | plugins | [[knowledge/architecture/plugins]] | 36 | [[plugins]] |
 | [[src/mllm_shap/plugins/options.py]] | Lookup and validation of ``explanation.plugin_options``. | plugins | [[knowledge/architecture/plugins]] | 143 | [[plugins]] |
-| [[src/mllm_shap/plugins/registry.py]] | Plugin registry with entry-point discovery. | plugins | [[knowledge/architecture/plugins]] | 143 | [[plugins]] |
-| [[src/mllm_shap/protocols/__init__.py]] | Protocol contracts for pipeline plugins. | protocols | [[knowledge/architecture/protocols]] | 45 | [[protocols]] |
-| [[src/mllm_shap/protocols/backend.py]] | Generative backend protocol. | protocols | [[knowledge/architecture/protocols]] | 71 | [[protocols]] |
+| [[src/mllm_shap/plugins/registry.py]] | Plugin registry with entry-point discovery. | plugins | [[knowledge/architecture/plugins]] | 154 | [[plugins]] |
+| [[src/mllm_shap/protocols/__init__.py]] | Protocol contracts for pipeline plugins. | protocols | [[knowledge/architecture/protocols]] | 53 | [[protocols]] |
+| [[src/mllm_shap/protocols/backend.py]] | Generative backend protocol. | protocols | [[knowledge/architecture/protocols]] | 99 | [[protocols]] |
 | [[src/mllm_shap/protocols/embedding.py]] | Embedding provider protocol. | protocols | [[knowledge/architecture/protocols]] | 20 | [[protocols]] |
 | [[src/mllm_shap/protocols/estimand.py]] | Estimand aggregation protocol. | protocols | [[knowledge/architecture/protocols]] | 28 | [[protocols]] |
 | [[src/mllm_shap/protocols/estimator.py]] | Estimator strategy protocols. | protocols | [[knowledge/architecture/protocols]] | 56 | [[protocols]] |
@@ -101,24 +102,32 @@ parent: "[[mllm-shap]]"
 | [[src/mllm_shap/protocols/partition.py]] | Player partition protocol. | protocols | [[knowledge/architecture/protocols]] | 26 | [[protocols]] |
 | [[src/mllm_shap/protocols/plugin.py]] | Options contract for plugins configured through ``explanation.plugin_options``. | protocols | [[knowledge/architecture/protocols]] | 33 | [[protocols]] |
 | [[src/mllm_shap/protocols/renderer.py]] | Attribution renderer protocol. | protocols | [[knowledge/architecture/protocols]] | 28 | [[protocols]] |
-| [[src/mllm_shap/protocols/value.py]] | Value function protocol. | protocols | [[knowledge/architecture/protocols]] | 64 | [[protocols]] |
+| [[src/mllm_shap/protocols/value.py]] | Value function protocol. | protocols | [[knowledge/architecture/protocols]] | 136 | [[protocols]] |
 | [[src/mllm_shap/runtime/__init__.py]] | Runtime archive, deduplication, caching, and scheduling. | runtime | [[knowledge/architecture/runtime]] | 52 | [[runtime]] |
-| [[src/mllm_shap/runtime/archive.py]] | SQLite-backed run archive for coalition evaluation history. | runtime | [[knowledge/architecture/runtime]] | 437 | [[runtime]] |
-| [[src/mllm_shap/runtime/dedup.py]] | Coalition deduplication keys and registry. | runtime | [[knowledge/architecture/runtime]] | 86 | [[runtime]] |
+| [[src/mllm_shap/runtime/archive.py]] | SQLite-backed run archive for coalition evaluation history. | runtime | [[knowledge/architecture/runtime]] | 460 | [[runtime]] |
+| [[src/mllm_shap/runtime/dedup.py]] | Coalition deduplication keys and registry. | runtime | [[knowledge/architecture/runtime]] | 92 | [[runtime]] |
 | [[src/mllm_shap/runtime/kv_cache.py]] | Prefix-cache storage for shared prompt token prefixes. | runtime | [[knowledge/architecture/runtime]] | 128 | [[runtime]] |
 | [[src/mllm_shap/runtime/metrics.py]] | Performance summaries for explain pipeline runs. | runtime | [[knowledge/architecture/runtime]] | 24 | [[runtime]] |
 | [[src/mllm_shap/runtime/progress.py]] | Optional synchronous progress callbacks for coalition execution. | runtime | [[knowledge/architecture/runtime]] | 35 | [[runtime]] |
-| [[src/mllm_shap/runtime/scheduler.py]] | Async coalition inference scheduling with deduplication. | runtime | [[knowledge/architecture/runtime]] | 243 | [[runtime]] |
-| [[src/mllm_shap/runtime/store.py]] | Hot LRU cache for coalition generation results. | runtime | [[knowledge/architecture/runtime]] | 53 | [[runtime]] |
+| [[src/mllm_shap/runtime/scheduler.py]] | Async coalition inference scheduling with deduplication. | runtime | [[knowledge/architecture/runtime]] | 256 | [[runtime]] |
+| [[src/mllm_shap/runtime/store.py]] | Hot LRU cache for coalition generation results. | runtime | [[knowledge/architecture/runtime]] | 72 | [[runtime]] |
 | [[src/mllm_shap/runtime/telemetry.py]] | Optional observability hooks for explain pipeline stages. | runtime | [[knowledge/architecture/runtime]] | 58 | [[runtime]] |
-| [[src/mllm_shap/value/__init__.py]] | Coalition utility scoring plugins. | value | [[knowledge/architecture/value]] | 19 | [[value]] |
-| [[src/mllm_shap/value/_metrics.py]] | Numpy similarity metrics for value functions. | value | [[knowledge/architecture/value]] | 35 | [[value]] |
+| [[src/mllm_shap/value/__init__.py]] | Coalition utility scoring plugins. | value | [[knowledge/architecture/value]] | 35 | [[value]] |
+| [[src/mllm_shap/value/_metrics.py]] | Numpy similarity metrics for value functions. | value | [[knowledge/architecture/value]] | 24 | [[value]] |
 | [[src/mllm_shap/value/_token_hash.py]] | Token hashing helpers for TF-IDF value functions. | value | [[knowledge/architecture/value]] | 42 | [[value]] |
-| [[src/mllm_shap/value/embedding.py]] | Embedding-based value functions. | value | [[knowledge/architecture/value]] | 99 | [[value]] |
+| [[src/mllm_shap/value/bertscore.py]] | BERTScore F1 between a coalition answer and the full-input answer. | value | [[knowledge/architecture/value]] | 125 | [[value]] |
+| [[src/mllm_shap/value/contrastive.py]] | Contrastive log-odds of a target answer against a foil. | value | [[knowledge/architecture/value]] | 69 | [[value]] |
+| [[src/mllm_shap/value/embedding.py]] | Embedding-cosine value function. | value | [[knowledge/architecture/value]] | 142 | [[value]] |
+| [[src/mllm_shap/value/encoders.py]] | Lazy loaders of the sentence and token encoders behind semantic value functions. | value | [[knowledge/architecture/value]] | 310 | [[value]] |
 | [[src/mllm_shap/value/generation_records.py]] | Build generation records from generated text for value-function scoring. | value | [[knowledge/architecture/value]] | 64 | [[value]] |
-| [[src/mllm_shap/value/logprob.py]] | Logprob-based value function. | value | [[knowledge/architecture/value]] | 61 | [[value]] |
-| [[src/mllm_shap/value/tfidf.py]] | Frozen-corpus TF-IDF cosine value function. | value | [[knowledge/architecture/value]] | 101 | [[value]] |
-| [[src/mllm_shap/value/wer.py]] | Word error rate against a reference text as a coalition value. | value | [[knowledge/architecture/value]] | 80 | [[value]] |
+| [[src/mllm_shap/value/judge.py]] | Expected-grade value function from a judge model's score probabilities. | value | [[knowledge/architecture/value]] | 201 | [[value]] |
+| [[src/mllm_shap/value/logprob.py]] | Self-confidence value function from generated-token logprobs. | value | [[knowledge/architecture/value]] | 95 | [[value]] |
+| [[src/mllm_shap/value/nli.py]] | Bidirectional entailment log-odds between a coalition answer and the full one. | value | [[knowledge/architecture/value]] | 105 | [[value]] |
+| [[src/mllm_shap/value/semascore.py]] | SeMaScore: segment-aligned, importance-weighted meaning score for transcripts. | value | [[knowledge/architecture/value]] | 213 | [[value]] |
+| [[src/mllm_shap/value/speech.py]] | Speech value functions: SpeechBERTScore on audio and the transcription adapter. | value | [[knowledge/architecture/value]] | 199 | [[value]] |
+| [[src/mllm_shap/value/teacher_forced.py]] | Teacher-forced value functions: log probability and Jensen-Shannon shift of ``y_N``. | value | [[knowledge/architecture/value]] | 202 | [[value]] |
+| [[src/mllm_shap/value/tfidf.py]] | Frozen-corpus TF-IDF cosine value function. | value | [[knowledge/architecture/value]] | 105 | [[value]] |
+| [[src/mllm_shap/value/wer.py]] | Word error rate against a reference text as a coalition value. | value | [[knowledge/architecture/value]] | 85 | [[value]] |
 | [[src/mllm_shap/viz/__init__.py]] | Token attribution visualization plugins. | viz | [[knowledge/architecture/viz]] | 44 | [[viz]] |
 | [[src/mllm_shap/viz/audio.py]] | Figure of aligned audio segments: waveform, refined boundaries and energy. | viz | [[knowledge/architecture/viz]] | 134 | [[viz]] |
 | [[src/mllm_shap/viz/colors.py]] | SHAP-inspired diverging colors for signed attributions. | viz | [[knowledge/architecture/viz]] | 65 | [[viz]] |

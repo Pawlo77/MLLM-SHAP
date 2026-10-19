@@ -83,7 +83,8 @@ Run manifest
 ------------
 
 Every archive stores ``manifest.json`` and one SQLite file, ``archive.sqlite``
-(WAL journal), whose rows hold the generated text. The manifest's
+(WAL journal), whose rows hold the generated text, the token logprobs, any
+teacher-forced scores and the audio path of a spoken answer. The manifest's
 ``schema_version`` is :data:`~mllm_shap.runtime.archive.MANIFEST_SCHEMA_VERSION`
 and the database's ``PRAGMA user_version`` is
 :data:`~mllm_shap.runtime.archive.ARCHIVE_SCHEMA_VERSION`.
@@ -108,6 +109,10 @@ The manifest written by :class:`~mllm_shap.ExplainRunner` records:
        order
    * - ``backend_kind``, ``model_id``
      - Which backend and model generated the coalition outputs
+   * - ``value_info``
+     - Settings the value function reports: encoder, layer, model, library version
+   * - ``decoding``
+     - ``temperature``, ``top_k``, ``seed`` and the ``dedup`` policy of the run
    * - ``config``
      - Full :class:`~mllm_shap.ExplainConfig` echo
 
@@ -130,7 +135,8 @@ Build coalition dedup keys
 
 A coalition key hashes everything that determines a generation: snapshot, player
 order, mask, absence policy, model and generation settings. With ``dedup.enabled:
-auto`` deduplication is on only for deterministic decoding (``temperature`` 0):
+auto`` deduplication is on at any temperature, so a repeated coalition is generated
+once per run and every repeat shares its payoff:
 
 .. code-block:: python
 

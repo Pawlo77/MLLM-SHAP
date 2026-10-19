@@ -30,8 +30,9 @@ Optional, not part of `make check`: `make tests-all`, `make bench`, `make practi
   review threads on its own PR; it never reviews other PRs on GitHub.
 - Subagents default to Sonnet, Haiku for mechanical work; pass `model: opus` or `fable`
   when depth pays: estimator math, hard bugs, security or design review, a failed Sonnet run.
-- No new markdown or doc expansion unless it is requested or crucial new information.
-- No runtime dependency without a justification in `pyproject.toml`.
+- No new markdown or doc expansion unless requested or crucial.
+- No runtime dependency without a justification in `pyproject.toml`; a new extra is listed in README,
+  `docs/index.rst` and `docs/guides/extending.rst`.
 - Use `prek`, never the `pre-commit` CLI; change dependencies in `pyproject.toml` plus
   `uv lock`, never `pip install`.
 - Write the fewest lines that keep the meaning: one home per fact, link instead of

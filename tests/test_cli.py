@@ -419,6 +419,9 @@ def test_cli_reanalyze_strict_refuses_backend_embedding_runs(
     config_path = tmp_path / "config.yaml"
     config = json.loads(config_path.read_text(encoding="utf-8"))
     config["explanation"]["value_fn"] = "embedding_cosine"
+    config["explanation"]["plugin_options"] = {
+        "embedding_cosine": {"encoder": "model_states", "allow_hash_embeddings": True}
+    }
     config_path.write_text(json.dumps(config), encoding="utf-8")
 
     with caplog.at_level(logging.WARNING, logger="mllm_shap"):

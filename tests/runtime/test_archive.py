@@ -74,7 +74,7 @@ def test_archive_stores_generation_text_inline(
     assert not (root / "blobs").exists()
     with sqlite3.connect(root / "archive.sqlite") as conn:
         assert conn.execute("PRAGMA journal_mode").fetchone()[0] == "wal"
-        assert conn.execute("PRAGMA user_version").fetchone()[0] == 4
+        assert conn.execute("PRAGMA user_version").fetchone()[0] == 5
         (text,) = conn.execute(
             "SELECT generation_text FROM coalition_records"
         ).fetchone()

@@ -5,7 +5,7 @@ domain: pipeline
 parent: "[[mllm-shap]]"
 tags: [architecture, pipeline]
 created: 2026-10-07
-updated: 2026-10-18
+updated: 2026-10-19
 related-code:
   - "[[src/mllm_shap/pipeline/__init__.py]]"
   - "[[src/mllm_shap/pipeline/config.py]]"
@@ -14,49 +14,50 @@ related-code:
   - "[[src/mllm_shap/pipeline/manifest.py]]"
   - "[[src/mllm_shap/pipeline/orchestrator.py]]"
   - "[[src/mllm_shap/pipeline/reanalyze.py]]"
+  - "[[src/mllm_shap/pipeline/rescore.py]]"
   - "[[src/mllm_shap/pipeline/result.py]]"
   - "[[src/mllm_shap/pipeline/runner.py]]"
 ---
 # pipeline
 
-Walkthrough: [[How a run works]].
+Walkthrough: [[How a run works]]
 
 ## Responsibility
 
-- User entry point (`ExplainRunner`), configuration schema, the orchestration of one explain run, re-scoring of an archive, and the result and manifest types.
+- Entry point (`ExplainRunner`), configuration, orchestration of one run, re-scoring of an archive, result and manifest types.
 
 ## Public surface
 
-Signatures: [[Public API]]; configuration keys: [[Config keys]].
+Signatures: [[Public API]]; keys: [[Config keys]].
 
-- `ExplainConfig`: `backend`, `generation` and `explanation` sections. `BudgetConfig` takes one of `fraction`, `evaluations` and `per_player`. Unset keys, `efficiency: none` and an unset `hierarchical` are not serialised, so older configurations keep their [[Run id]] ([[Pipeline decisions#2026-10-08 — Absolute budget passed to samplers as an exact fraction|Absolute budget passed to samplers as an exact fraction]]).
-- `ExplanationConfig` cross-field rules raise `ConfigError`: `exact` needs `budget.fraction: 1.0`, `complementary`, `neyman_cc` and `leverage` need the Shapley estimand and `kernel_banzhaf` Banzhaf. `efficiency: additive` needs Shapley without `loo`, `hierarchical` the `sentences` players, `neyman_cc` no `include_minimal_masks`. `explain_config_from_yaml` raises `ConfigError` for an invalid, empty or non-mapping document.
-- `ExplainRunner`: `explain`, `explain_sync` (a `RuntimeError` inside a running loop), `explain_hierarchical` (returns `HierarchicalRunOutput`), `reanalyze`. `close`, `aclose` and the context managers close an injected backend and the runner's loop.
-- `ExplainOrchestrator.run()`: see Data flow. `score_coalitions` fits a `FittableValueFunction` on base plus coalitions and scores each coalition; `reanalyze` uses it too.
-- `reanalyze_sync` ([[Reanalyze]]): for a run scored with backend embeddings and a `RequiresEmbeddings` value function it logs a `WARNING`, or raises `ReanalyzeMismatchError` with `strict`; a `RequiresLogprobs` value function on rows without logprobs raises `ReanalyzeMismatchError`.
+- `ExplainConfig`: `backend`, `generation` and `explanation` sections. `BudgetConfig` takes one of `fraction`, `evaluations` and `per_player`. Unset keys, `efficiency: none` and `hierarchical` are not serialised, so older configurations keep their [[Run id]] ([[Pipeline decisions#2026-10-08 — Absolute budget passed to samplers as an exact fraction|Absolute budget passed to samplers as an exact fraction]]).
+- `ExplanationConfig` cross-field rules raise `ConfigError`: `exact` needs `budget.fraction: 1.0`, `complementary`, `neyman_cc` and `leverage` need the Shapley estimand and `kernel_banzhaf` Banzhaf. `efficiency: additive` needs Shapley without `loo`, `hierarchical` the `sentences` players, `neyman_cc` no `include_minimal_masks`. `explain_config_from_yaml` raises `ConfigError` for an invalid document.
+- `ExplainRunner`: `explain`, `explain_sync` (a `RuntimeError` inside a running loop), `explain_hierarchical` (returns `HierarchicalRunOutput`), `reanalyze`, `rescore`. `close`, `aclose` and the context managers close an injected backend and the loop.
+- `ExplainOrchestrator.run()`: see Data flow. `score_coalitions` fits a `FittableValueFunction` and scores each coalition; `reanalyze` uses it too.
+- `reanalyze_sync` ([[Reanalyze]]): for a run scored with backend embeddings and a `RequiresEmbeddings` value function it logs a `WARNING`, or raises `ReanalyzeMismatchError` with `strict`; a `RequiresLogprobs` or `RequiresTeacherForcing` value function on rows without logprobs or `forced` scores raises `ReanalyzeMismatchError`. `rescore` rebuilds prompts from archived masks, runs `score_continuations` only and reanalyzes ([[Value decisions#2026-10-18 — Teacher-forced value functions score y_N without generating|decision]]).
 - `ExplainResult`; `ExplainRunOutput` with `to_dict()` (`ExplainRunPayload`; each label adds `speaker` and `label`, the span's `display_label`); `player_set` is `None` after `reanalyze`.
-- `RunManifest`, `parse_manifest`, `MANIFEST_SCHEMA_VERSION` 4 ([[Manifest]]): `embedding_source` is `"none"`, `"hash"` or `"backend"`; wrong field types raise `ArchiveCorruptError`.
-- `deletion_curve(config, snapshot, attributions, ks=None, registry=None, backend=None)` (async): ranks players, runs the pipeline with a private estimator sampling `N - top_k` per `k` on a registry copy, and returns `DeletionCurve` (`values`, `drops`, trapezoid `area` over `k / n`).
-- `ExplainContext`: resolved inputs of one run; `plugin_context()` builds the `PluginContext`.
+- `RunManifest`, `parse_manifest`, `MANIFEST_SCHEMA_VERSION` 5 ([[Manifest]]): `embedding_source` is `"none"`, `"hash"` or `"backend"`; `value_info` and `decoding` record the value function's settings and the sampling; wrong types raise `ArchiveCorruptError`.
+- `deletion_curve(config, snapshot, attributions, ks=None, registry=None, backend=None)` (async): runs the pipeline with a private estimator sampling `N - top_k` per `k` and returns `DeletionCurve` (`values`, `drops`, trapezoid `area`).
+- `ExplainContext`: resolved inputs of one run; `plugin_context()` builds its `PluginContext`.
 
 ## Data flow
 
 1. `ExplainRunner._partition` and `_build_context` check plugin options, resolve the partitioner, refuse a plan above `2 ** max_players` coalitions and set the [[Run id]] from the configuration without its archive section plus the model id.
 2. Without an injected backend the runner builds one through [[plugins]] `instantiate_backend` and closes it after the call.
-3. The orchestrator resolves the plugins. A `RequiresLogprobs` value function on a backend without `SupportsLogprobs` raises `ConfigError` ([[Value decisions#2026-10-08 — Logprob value is the coalition's own mean token logprob|logprob value]]). A `RequiresEmbeddings` value function switches `generation.compute_embeddings` on; the archive opens with the manifest.
+3. The orchestrator resolves the plugins. A `RequiresLogprobs` value function on a backend without `SupportsLogprobs` raises `ConfigError` ([[Value decisions#2026-10-08 — Logprob value is the coalition's own mean token logprob|logprob value]]). A `RequiresTeacherForcing` one needs `SupportsTeacherForcing` (`ConfigError`) and skips coalition generation when `reads_candidate_text` is false. A `RequiresEmbeddings` one switches `generation.compute_embeddings` on.
 4. It generates the [[Base generation]] and writes it to the archive first.
-5. It samples masks with `budget_fraction(n, fraction, evaluations)` from [[estimation]] and adds a missing empty or grand coalition; the base text is `v(N)`. A `SupportsKvCache` backend gets its prefix cache enabled, and the metrics count only this run's hits.
+5. It samples masks with `budget_fraction(n, fraction, evaluations)` ([[estimation]]) and adds a missing empty or grand coalition; the base text is `v(N)`. A `SupportsKvCache` backend gets its prefix cache enabled, and the metrics count only this run's hits.
 6. It plans `(mask, coalition key, prefix hash)` per mask, sorted by prefix hash only with `kv_cache.enabled`; the [[runtime]] scheduler consumes lazily rendered jobs, and records come back by coalition key in mask order.
-7. `score_coalitions` scores records built with `generation_record_from_text(text)` plus the backend's logprobs, kept per coalition key in the store. Hash vectors depend on the text only, so the records equal what `reanalyze` builds from the archived text and logprobs.
+7. `score_coalitions` scores records built with `generation_record_from_text(text)` plus the backend's logprobs and `forced` scores, kept per coalition key in the store and archive, so the records equal what `reanalyze` builds. A `PreparesScores` value function is awaited first.
 8. A `TwoPhaseEstimator` gets `begin_allocation(masks, payoffs)`; phase-two masks run the same way and every coalition is rescored on the joint corpus.
 9. It records `embedding_source` (`"backend"` when a backend vector differs from the hash vector, else `"hash"` when embeddings are scored), marks the archive complete, aggregates with `estimator.estimate_attributions`, normalises and logs each stage at `INFO`.
 
 ## Invariants
 
 - The empty and grand coalitions are always evaluated; `sum(values) == grand_value - base_value` for Shapley on the full table.
-- Payoffs are aligned with masks whatever order the scheduler ran the jobs in ([[Fixed issues|C11]]).
-- The base generation is in the archive before any coalition row; an archive is marked complete only after every coalition of both phases is stored.
-- `reanalyze` refuses a different estimator, absence policy or partition (`ReanalyzeMismatchError`). It raises `ArchiveIncompleteError` for a foreign or unfinished archive, a missing boundary coalition, or missing rows under a full-table budget.
+- Payoffs align with masks in any job order ([[Fixed issues|C11]]).
+- The base generation precedes every coalition row; an archive is complete only after both phases are stored.
+- `reanalyze` refuses a different estimator, absence policy or partition (`ReanalyzeMismatchError`). It raises `ArchiveIncompleteError` for a foreign or unfinished archive, a missing boundary coalition, or rows missing under a full-table budget.
 - `explain` and `reanalyze` score identical records for a run without model embeddings ([[Fixed issues|C15]]).
 
 ## Known issues

@@ -61,7 +61,7 @@ def test_run_manifest_round_trips_every_field() -> None:
     """Serialized manifests parse back to an equal manifest."""
     manifest = _manifest()
     payload = manifest.to_dict()
-    assert payload["schema_version"] == 4
+    assert payload["schema_version"] == 5
     assert payload["estimand"] == "shapley"
     assert payload["estimator"] == "exact"
     assert payload["player_ids"] == ["snap-1:0:0:0", "snap-1:0:0:1"]

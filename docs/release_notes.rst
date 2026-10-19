@@ -8,6 +8,52 @@ Changes in each published ``mllm-shap`` version. Newest first.
 Unreleased
 ----------
 
+.. _release-0-8-0:
+
+0.8.0 (2026-10-19)
+------------------
+
+Added
+~~~~~
+
+- Teacher-forced value functions ``tf_logprob`` (mean or summed log probability of the
+  full-input answer under each coalition prompt), ``tf_jsd`` (Jensen-Shannon shift of
+  the next-token distributions) and ``contrastive`` (log-odds of a target against a
+  foil). They need
+  :class:`~mllm_shap.protocols.backend.SupportsTeacherForcing` (``transformers``
+  with text prompts, ``mock``) and generate no coalition answers.
+- ``bertscore``, ``nli_logodds``, ``semascore`` (transcripts), ``speech_bertscore``,
+  the ``transcribed`` adapter and the ``judge_grade`` reference; extras
+  ``mllm-shap[semantic]`` and ``mllm-shap[audio-semantic]``; see
+  :doc:`guides/value_functions`.
+- :meth:`~mllm_shap.ExplainRunner.rescore` scores an archive with a teacher-forced
+  value function from forward passes only, without generating.
+- Every value function declares a :class:`~mllm_shap.protocols.value.ValueInfo`
+  (range, direction, capabilities, extra model, cost); :doc:`theory/value_functions`
+  lists them. The manifest records ``value_info`` and ``decoding``.
+
+Changed
+~~~~~~~
+
+- ``embedding_cosine`` embeds the answers with a sentence encoder
+  (``all-MiniLM-L6-v2``) by default. ``plugin_options.embedding_cosine.encoder:
+  model_states`` restores the pooled states of the explained model, and a backend
+  without model states (mock, LM Studio, API) is refused unless
+  ``allow_hash_embeddings`` is set.
+- ``logprob`` is renamed ``self_logprob``: it measures confidence in the coalition's
+  own answer. The old name warns and stays for one minor version; use ``tf_logprob``
+  for fidelity to the full-input answer.
+- ``dedup.enabled: auto`` is on at any temperature, so a coalition is generated once
+  per run and Shapley efficiency holds under sampled decoding.
+- Archive and manifest schema version 5 (teacher-forced scores, audio path,
+  ``value_info``, ``decoding``): re-run ``explain`` to rebuild older archives.
+
+Removed
+~~~~~~~
+
+- ``embedding_euclidean``: it depends on vector scale and answer length and no paper
+  supports it. A config naming it fails with a pointer to ``embedding_cosine``.
+
 .. _release-0-7-1:
 
 0.7.1 (2026-10-18)

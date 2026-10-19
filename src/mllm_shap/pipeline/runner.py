@@ -31,6 +31,7 @@ from .config import ArchiveConfig, ExplainConfig, explain_config_to_yaml
 from .context import ExplainContext
 from .orchestrator import ExplainOrchestrator
 from .reanalyze import reanalyze_sync
+from .rescore import rescore
 from .result import ExplainRunOutput, HierarchicalRunOutput
 
 
@@ -232,6 +233,31 @@ class ExplainRunner:
             telemetry=self._telemetry,
             strict=strict,
         )
+
+    async def rescore(
+        self, snapshot: ConversationSnapshot, archive_root: Path | str
+    ) -> ExplainRunOutput:
+        """Score an archived run with the runner's value function, without generating.
+
+        ``snapshot`` is the conversation the run explained. Teacher-forced value
+        functions (``tf_logprob``, ``tf_jsd``, ``contrastive``) run forward
+        passes on the rebuilt coalition prompts; other value functions behave as
+        :meth:`reanalyze`. No ``generate`` call is made.
+        """
+        context = self._build_context(snapshot)
+        backend = self._backend or instantiate_backend(context.plugin_context())
+        try:
+            return await rescore(
+                Path(archive_root),
+                self._config,
+                self._registry,
+                snapshot,
+                backend,
+                self._telemetry,
+            )
+        finally:
+            if self._backend is None and isinstance(backend, SupportsAclose):
+                await backend.aclose()
 
     def _partition(self, snapshot: ConversationSnapshot) -> PlayerSet:
         check_plugin_options(self._config, self._registry)

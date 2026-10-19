@@ -4,10 +4,12 @@
 @see [[knowledge/architecture/protocols]]
 """
 
+from collections.abc import Sequence
 from typing import Protocol, runtime_checkable
 
 from ..domain.config import GenerationConfig
 from ..domain.conversation import ConversationSnapshot
+from ..domain.generation import ForcedScore
 
 
 class GenerationResult(Protocol):
@@ -61,6 +63,32 @@ class SupportsLogprobs(Protocol):
     @property
     def returns_logprobs(self) -> bool:
         """Return whether generated records include token logprobs."""
+
+
+@runtime_checkable
+class SupportsTeacherForcing(Protocol):
+    """Backend that scores fixed continuations under a prompt without generating.
+
+    Value functions that declare ``needs_teacher_forcing`` require it. ``mock``
+    and ``transformers`` (text prompts) implement it; ``lmstudio`` and ``api``
+    do not, because chat servers do not return prompt logprobs.
+    """
+
+    @property
+    def forces_continuations(self) -> bool:
+        """Return whether :meth:`score_continuations` is available."""
+
+    async def score_continuations(
+        self,
+        snapshot: ConversationSnapshot,
+        continuations: Sequence[str],
+        top_k: int = 0,
+    ) -> list[ForcedScore]:
+        """Return one :class:`~mllm_shap.domain.generation.ForcedScore` each.
+
+        With ``top_k`` above zero each score also holds the ``top_k`` most
+        probable next tokens at every continuation position.
+        """
 
 
 @runtime_checkable

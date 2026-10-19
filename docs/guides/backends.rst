@@ -47,7 +47,7 @@ Chat templates have no speaker slot, so every backend sends a message with a
 ``assistant`` or ``system``). A message emptied by the ``delete`` policy is sent
 empty, without the name.
 
-The ``logprob`` value function (:doc:`value_functions`) needs the log probability
+The ``self_logprob`` value function (:doc:`value_functions`) needs the log probability
 of each generated token:
 
 .. list-table::
@@ -68,6 +68,13 @@ of each generated token:
        LM Studio's server instead
    * - ``mock``, ``mock_audio``
      - None
+
+The teacher-forced value functions (``tf_logprob``, ``tf_jsd``, ``contrastive``) need
+:class:`~mllm_shap.protocols.backend.SupportsTeacherForcing`: ``transformers`` (text
+prompts, one forward pass per continuation) and ``mock`` (hash-derived
+distributions) have it; ``api`` and ``lmstudio`` do not, because chat servers do
+not return the logprobs of a prompt, and a run with them fails with
+:exc:`~mllm_shap.errors.ConfigError` before generating.
 
 Mock
 ----
@@ -174,7 +181,7 @@ prefix runs in separate forward passes that round differently, so a near-tied
 greedy token can flip and values can move slightly; the backend logs one warning,
 and ``dtype: float32`` gives identical results. Static and
 contextual embeddings of the output are computed only for value functions that
-need them (``embedding_cosine``, ``embedding_euclidean``). The tiny random model below loads in seconds and is what the
+need them (``embedding_cosine`` with ``encoder: model_states``). The tiny random model below loads in seconds and is what the
 ``gpu``-marked tests use:
 
 .. code-block:: yaml

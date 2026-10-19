@@ -31,8 +31,15 @@ from ..masking.partitions import (
     TokenPartitioner,
 )
 from ..masking.policies import DeletePolicy, NeutralPolicy, PadPolicy
-from ..value.embedding import CosineEmbeddingValue, EuclideanEmbeddingValue
-from ..value.logprob import LogprobValue
+from ..value.bertscore import BertScoreValue
+from ..value.contrastive import ContrastiveValue
+from ..value.embedding import CosineEmbeddingValue
+from ..value.judge import JudgeGradeValue
+from ..value.logprob import LogprobValue, SelfLogprobValue
+from ..value.nli import NliLogOddsValue
+from ..value.semascore import SemaScoreValue
+from ..value.speech import SpeechBertScoreValue, TranscribedValue
+from ..value.teacher_forced import TfJsdValue, TfLogprobValue
 from ..value.tfidf import TfIdfCosineValue
 from ..value.wer import ReferenceWerValue
 from ..viz.token_bar import TokenBarRenderer
@@ -58,8 +65,17 @@ BUILTIN_PLUGINS: dict[PluginGroup, dict[str, PluginFactory]] = {
     PluginGroup.VALUE_FNS: {
         "tfidf_cosine": TfIdfCosineValue,
         "embedding_cosine": CosineEmbeddingValue,
-        "embedding_euclidean": EuclideanEmbeddingValue,
+        "self_logprob": SelfLogprobValue,
         "logprob": LogprobValue,
+        "tf_logprob": TfLogprobValue,
+        "tf_jsd": TfJsdValue,
+        "contrastive": ContrastiveValue,
+        "bertscore": BertScoreValue,
+        "nli_logodds": NliLogOddsValue,
+        "semascore": SemaScoreValue,
+        "speech_bertscore": SpeechBertScoreValue,
+        "transcribed": TranscribedValue,
+        "judge_grade": JudgeGradeValue,
         "reference_wer": ReferenceWerValue,
     },
     PluginGroup.NORMALIZERS: {

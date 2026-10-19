@@ -96,19 +96,76 @@ scenarios:
     turns: *france
     overrides: {explanation: {value_fn: embedding_cosine}}
     expect: {agrees_with: value.tfidf_cosine}
-  value.embedding_euclidean:
-    tier: default
-    turns: *france
-    overrides: {explanation: {value_fn: embedding_euclidean}}
-    expect: {agrees_with: value.tfidf_cosine}
-  value.logprob:
+  value.self_logprob:
     tier: default
     turns:
       - - {role: user, text: The capital of France is Paris.}
         - {role: user, text: "Correction: the capital of France is Berlin, not Paris."}
         - {role: user, text: "What is the capital of France? Answer with one word."}
-    overrides: {explanation: {value_fn: logprob, players: messages}}
+    overrides: {explanation: {value_fn: self_logprob, players: messages}}
     expect: {contradiction: 1, sign: -1}
+  value.logprob:
+    # Deprecated alias of self_logprob; still selectable for one minor version.
+    tier: fast
+    turns: *france
+    overrides: {explanation: {value_fn: logprob}}
+    expect: {finite: true}
+  value.tf_logprob:
+    tier: default
+    turns: *france
+    overrides: {explanation: {value_fn: tf_logprob}}
+    expect: {sign: -1}
+  value.tf_jsd:
+    tier: default
+    turns: *france
+    overrides: {explanation: {value_fn: tf_jsd}}
+    expect: {sign: -1}
+  value.contrastive:
+    tier: default
+    turns: *france
+    overrides:
+      explanation:
+        value_fn: contrastive
+        plugin_options: {contrastive: {target: " Paris", foil: " London"}}
+    expect: {top_player: France}
+  value.bertscore:
+    tier: default
+    turns: *france
+    overrides: {explanation: {value_fn: bertscore}}
+    expect: {finite: true}
+  value.nli_logodds:
+    tier: default
+    turns: *france
+    overrides: {explanation: {value_fn: nli_logodds}}
+    expect: {finite: true}
+  value.semascore:
+    tier: default
+    turns: *france
+    overrides: {explanation: {value_fn: semascore}}
+    expect: {finite: true}
+  value.judge_grade:
+    tier: default
+    turns: *france
+    overrides:
+      explanation:
+        value_fn: judge_grade
+        plugin_options:
+          judge_grade: {backend: transformers, model_id: Qwen/Qwen2.5-1.5B-Instruct}
+    expect: {finite: true}
+  value.speech_bertscore:
+    # Spoken answers need a backend that returns audio; none ships, so the test skips.
+    tier: default
+    turns: *france
+    overrides: {explanation: {value_fn: speech_bertscore}}
+    expect: {skip: no spoken answers}
+  value.transcribed:
+    tier: default
+    turns: *france
+    overrides:
+      explanation:
+        value_fn: transcribed
+        plugin_options: {transcribed: {value_fn: bertscore}}
+    expect: {skip: no spoken answers}
   value.reference_wer:
     # Deletion curve of the tfidf_cosine exact ranking, scored by reference_wer
     # against the full answer: a utility other than the explanation's. Measured
@@ -241,7 +298,7 @@ scenarios:
   archive.reanalyze:
     tier: fast
     turns: *france
-    overrides: {explanation: {value_fn: logprob}}
+    overrides: {explanation: {value_fn: self_logprob}}
     expect: {}
   cli.explain:
     tier: fast
@@ -321,7 +378,7 @@ scenarios:
     turns:
       - [{role: user, text: "The meeting is on Monday. Which day?"}]
     variants:  # embedding_* need in-process embeddings: quick tier value.embedding_*
-      - {explanation: {value_fn: logprob}}
+      - {explanation: {value_fn: self_logprob}}
     # LM Studio qwen2.5-3b (4-bit): tfidf_cosine ranks of "Monday." / "Friday." are 3 and
     # 1 (0.168 behind 0.171 and 0.170; Friday 0.192 on top), so the top slot flips on a
     # near tie; logprob ranks are 6 and 6. A rank shift of 2 absorbs the tie.
@@ -402,7 +459,7 @@ scenarios:
         players: messages
         plugin_options: {messages: {roles: [user]}}
     variants:
-      - {explanation: {value_fn: logprob}}
+      - {explanation: {value_fn: self_logprob}}
     expect: {}
   deep.cli.parity:
     tier: deep

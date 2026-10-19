@@ -22,14 +22,3 @@ def cosine_similarity(
     base_norm = max(float(np.linalg.norm(base_array)), epsilon)
     other_norm = max(float(np.linalg.norm(other_array)), epsilon)
     return float(np.dot(base_array, other_array) / (base_norm * other_norm))
-
-
-def euclidean_similarity(
-    base: Sequence[float] | NDArray[np.floating],
-    other: Sequence[float] | NDArray[np.floating],
-) -> float:
-    """Return ``1 / (1 + distance)`` between two vectors."""
-    base_array = np.asarray(base, dtype=np.float64)
-    other_array = np.asarray(other, dtype=np.float64)
-    distance = float(np.linalg.norm(other_array - base_array))
-    return 1.0 / (1.0 + distance)

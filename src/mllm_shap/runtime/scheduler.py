@@ -17,7 +17,7 @@ from ..masking.codec import PackedMask
 from .archive import CoalitionRecordDraft, RunArchive
 from .dedup import CoalitionDedupRegistry
 from .progress import CoalitionProgress, NullCoalitionProgress
-from .store import HotResultStore
+from .store import HotResultStore, StoredGeneration
 
 GenerateFn = Callable[[ConversationSnapshot], Awaitable[str | GenerationRecord]]
 """Async callable that returns the generated text, or a record carrying it and
@@ -192,8 +192,9 @@ class InferenceScheduler:
             cached = self._store.get(job.coalition_key)
             if cached is not None:
                 mutable["cache_hits"] += 1
-                logprobs = self._store.logprobs(job.coalition_key)
-                self._maybe_archive(job, cached, logprobs, True, elapsed_ms=0.0)
+                entry = self._store.entry(job.coalition_key)
+                if entry is not None:
+                    self._maybe_archive(job, entry, True, elapsed_ms=0.0)
                 return
 
             if self._dedup is not None and not self._dedup.observe(job.coalition_key):
@@ -205,13 +206,24 @@ class InferenceScheduler:
                 generated = await generate(job.snapshot)
                 elapsed_ms = (time.perf_counter() - started) * 1000.0
             mutable["executed"] += 1
-            text, logprobs = (
-                (generated, None)
+            entry = (
+                StoredGeneration(generated)
                 if isinstance(generated, str)
-                else (generated.text, generated.logprobs)
+                else StoredGeneration(
+                    generated.text,
+                    generated.logprobs,
+                    generated.forced,
+                    generated.audio_path,
+                )
             )
-            self._store.put(job.coalition_key, text, logprobs)
-            self._maybe_archive(job, text, logprobs, False, elapsed_ms=elapsed_ms)
+            self._store.put(
+                job.coalition_key,
+                entry.text,
+                entry.logprobs,
+                entry.forced,
+                entry.audio_path,
+            )
+            self._maybe_archive(job, entry, False, elapsed_ms=elapsed_ms)
         finally:
             self._finished += 1
             self._progress.on_coalition_finished(
@@ -221,8 +233,7 @@ class InferenceScheduler:
     def _maybe_archive(
         self,
         job: CoalitionJob,
-        generation_text: str,
-        logprobs: tuple[float, ...] | None,
+        entry: StoredGeneration,
         cache_hit: bool,
         elapsed_ms: float,
     ) -> None:
@@ -235,9 +246,11 @@ class InferenceScheduler:
                 mask=PackedMask(words=job.mask_words, n_bits=job.mask_n_bits),
                 absence_policy=job.absence_policy,
                 model_id=job.model_id,
-                generation_text=generation_text,
+                generation_text=entry.text,
                 elapsed_ms=elapsed_ms,
                 cache_hit=cache_hit,
-                logprobs=logprobs,
+                logprobs=entry.logprobs,
+                forced=entry.forced,
+                audio_path=entry.audio_path,
             )
         )
