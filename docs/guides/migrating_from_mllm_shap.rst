@@ -59,16 +59,22 @@ The legacy MLLM-Shap experiments named their utilities U1 to U4. The correspondi
      - ``mllm-shap``
    * - U1
      - ``CosineSimilarity`` on static embeddings
-     - ``value_fn: embedding_cosine``, ``embedding_mode: static``
+     - ``value_fn: embedding_cosine``, ``plugin_options.embedding_cosine.encoder:
+       model_states``, ``embedding_mode: static``
    * - U2
      - ``CosineSimilarity`` on contextual embeddings
-     - ``value_fn: embedding_cosine``, ``embedding_mode: contextual``
+     - ``value_fn: embedding_cosine``, ``plugin_options.embedding_cosine.encoder:
+       model_states``, ``embedding_mode: contextual``
    * - U3
      - ``TfIdfCosineSimilarity``
      - ``value_fn: tfidf_cosine``
    * - U4
      - ``EuclideanSimilarity``
-     - ``value_fn: embedding_euclidean``
+     - None: ``embedding_euclidean`` was removed in 0.7 because it depends on vector
+       scale and answer length; use ``embedding_cosine``
+
+Since 0.7 ``embedding_cosine`` embeds the answers with a sentence encoder by
+default; ``model_states`` keeps the legacy pooled states of the explained model.
 
 Behaviour that changed
 ----------------------

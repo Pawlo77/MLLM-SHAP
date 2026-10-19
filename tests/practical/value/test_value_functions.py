@@ -27,9 +27,7 @@ from tests.practical._judge import efficiency_gap, top_by_magnitude, top_players
 
 @pytest.mark.parametrize(
     "scenario",
-    scenario_cases(
-        "value.tfidf_cosine", "value.embedding_cosine", "value.embedding_euclidean"
-    ),
+    scenario_cases("value.tfidf_cosine", "value.embedding_cosine"),
 )
 def test_similarity_values_agree_on_the_top_player(
     scenario: Scenario, default_model: PracticalModel, practical_record: dict[str, Any]
@@ -53,7 +51,7 @@ def test_similarity_values_agree_on_the_top_player(
     )
 
 
-@pytest.mark.parametrize("scenario", scenario_cases("value.logprob"))
+@pytest.mark.parametrize("scenario", scenario_cases("value.self_logprob"))
 def test_logprob_values_flag_the_planted_contradiction(
     scenario: Scenario, default_model: PracticalModel, practical_record: dict[str, Any]
 ) -> None:
@@ -127,3 +125,37 @@ def test_normalizers_rescore_one_archive(
     for name in ("power_shift", "min_max"):
         values = scaled[name].result.values
         assert (sum(values), min(values)) == pytest.approx((1.0, 0.0)), name
+
+
+@pytest.mark.parametrize(
+    "scenario",
+    scenario_cases(
+        "value.logprob",
+        "value.tf_logprob",
+        "value.tf_jsd",
+        "value.contrastive",
+        "value.bertscore",
+        "value.nli_logodds",
+        "value.semascore",
+        "value.judge_grade",
+        "value.speech_bertscore",
+        "value.transcribed",
+    ),
+)
+def test_new_value_functions_give_finite_attributions(
+    scenario: Scenario, default_model: PracticalModel, practical_record: dict[str, Any]
+) -> None:
+    """Each value function runs end to end on a real model and keeps its sign."""
+    if "skip" in scenario.expect:
+        pytest.skip(str(scenario.expect["skip"]))
+    output = default_model.explain(scenario)
+    practical_record["numbers"] = summary(output)
+
+    assert all(math.isfinite(v) for v in output.result.values)
+    if scenario.expect.get("sign") == -1:
+        assert output.result.base_value <= 0.0
+        assert output.result.grand_value <= 0.0
+    if "top_player" in scenario.expect:
+        assert scenario.expect["top_player"] in top_players(
+            labels(output), output.result.values
+        )

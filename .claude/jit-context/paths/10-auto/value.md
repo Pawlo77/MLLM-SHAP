@@ -15,11 +15,12 @@ Full note: `knowledge/architecture/value.md`; update it in the same change (skil
 
 ## Invariants
 
-- `explain` and `reanalyze` score the same records for text-based value functions and `logprob`, and for embedding value functions when the backend has no model embeddings. They return the same values on the same archive (C15 (`knowledge/issues/Fixed issues.md`)).
-- TF-IDF weights are fitted once per scoring pass on exactly the corpus that is scored (both Neyman phases are rescored together).
-- `score(base, base)` is the grand-coalition payoff; for `tfidf_cosine` it is 1 for any non-empty base text.
+- `explain` and `reanalyze` return the same values on the same archive for text value functions, `self_logprob`, sentence-encoder `embedding_cosine` and archived teacher-forced scores.
+- TF-IDF weights are fitted once per scoring pass on exactly the corpus that is scored.
+- `score(base, base)` is the grand-coalition payoff: 1 for `tfidf_cosine`, 0 for `tf_jsd`.
 
 ## Known issues
 
-- Embedding values of a transformers run differ between `explain` (model embeddings) and `reanalyze` (hash embeddings of archived text), because archives store text only; documented in the 0.1.18 release notes.
+- Embedding values of a transformers run with `encoder: model_states` differ between `explain` (model embeddings) and `reanalyze` (hash embeddings of archived text).
+- Speech value functions need records with `audio_path`; no built-in backend returns speech.
 - Fixed: C08, C15 (Fixed issues (`knowledge/issues/Fixed issues.md`)).

@@ -79,8 +79,17 @@ neutral = "mllm_shap.masking.policies:NeutralPolicy"
 [project.entry-points."mllm_shap.value_fns"]
 tfidf_cosine = "mllm_shap.value.tfidf:TfIdfCosineValue"
 embedding_cosine = "mllm_shap.value.embedding:CosineEmbeddingValue"
-embedding_euclidean = "mllm_shap.value.embedding:EuclideanEmbeddingValue"
+self_logprob = "mllm_shap.value.logprob:SelfLogprobValue"
 logprob = "mllm_shap.value.logprob:LogprobValue"
+tf_logprob = "mllm_shap.value.teacher_forced:TfLogprobValue"
+tf_jsd = "mllm_shap.value.teacher_forced:TfJsdValue"
+contrastive = "mllm_shap.value.contrastive:ContrastiveValue"
+bertscore = "mllm_shap.value.bertscore:BertScoreValue"
+nli_logodds = "mllm_shap.value.nli:NliLogOddsValue"
+semascore = "mllm_shap.value.semascore:SemaScoreValue"
+speech_bertscore = "mllm_shap.value.speech:SpeechBertScoreValue"
+transcribed = "mllm_shap.value.speech:TranscribedValue"
+judge_grade = "mllm_shap.value.judge:JudgeGradeValue"
 reference_wer = "mllm_shap.value.wer:ReferenceWerValue"
 
 [project.entry-points."mllm_shap.normalizers"]
@@ -125,6 +134,20 @@ audio = [
 # scikit-learn: the tree proxy of the 'proxy' estimator.
 proxy = [
     "scikit-learn>=1.7.0",
+]
+# Sentence, token and NLI encoders of embedding_cosine, bertscore, nli_logodds and
+# semascore; sentence-transformers loads the default embedding_cosine encoder.
+semantic = [
+    "sentence-transformers>=3.0.0",
+    "torch>=2.5.0",
+    "transformers>=4.56.0",
+]
+# Speech encoder and recognizer of speech_bertscore and transcribed, plus audio decoding.
+audio-semantic = [
+    "librosa>=0.11.0",
+    "soundfile>=0.13.0",
+    "torch>=2.5.0",
+    "transformers>=4.56.0",
 ]
 viz = [
     "matplotlib>=3.9.0",

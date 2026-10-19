@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, ClassVar
 
 from ..protocols.backend import GenerationResult
 from ..protocols.plugin import PluginOptions
+from ..protocols.value import ValueInfo
 
 if TYPE_CHECKING:
     from ..plugins.context import PluginContext
@@ -60,6 +61,10 @@ class ReferenceWerValue:
 
     options_model: ClassVar[type[PluginOptions]] = ReferenceWerOptions
     """Options accepted from ``explanation.plugin_options``."""
+
+    info: ClassVar[ValueInfo] = ValueInfo(
+        value_range=(0.0, 1.0), reads_base=True, cost="text"
+    )
 
     def __init__(self, context: "PluginContext | None" = None) -> None:
         """Read ``reference`` from the plugin options in ``context``."""

@@ -55,7 +55,7 @@ def test_build_coalition_key_changes_with_generation() -> None:
 
 
 def test_dedup_enabled_modes() -> None:
-    """Dedup auto mode follows deterministic generation temperature."""
+    """Dedup auto mode is on at any temperature, so repeated masks share a payoff."""
     generation = GenerationConfig(temperature=0.0)
     assert dedup_enabled(DedupConfig(enabled="on"), generation) is True
     assert dedup_enabled(DedupConfig(enabled="off"), generation) is False
@@ -65,7 +65,7 @@ def test_dedup_enabled_modes() -> None:
             DedupConfig(enabled="auto"),
             GenerationConfig(temperature=0.5),
         )
-        is False
+        is True
     )
 
 

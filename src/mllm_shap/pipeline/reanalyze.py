@@ -5,15 +5,17 @@
 @tested-by [[tests/pipeline/test_reanalyze.py]]
 """
 
+import asyncio
 import dataclasses
 import logging
 import sqlite3
 import time
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import cast
 
 from ..domain.coalition import CoalitionMask
+from ..domain.generation import ForcedScore, GenerationRecord
 from ..errors import (
     ArchiveCorruptError,
     ArchiveIncompleteError,
@@ -30,8 +32,10 @@ from ..protocols.estimand import EstimandAggregator
 from ..protocols.estimator import EstimatorStrategy
 from ..protocols.normalizer import Normalizer
 from ..protocols.value import (
+    PreparesScores,
     RequiresEmbeddings,
     RequiresLogprobs,
+    RequiresTeacherForcing,
     ValueFunction,
 )
 from ..runtime.archive import CoalitionRecord, RunArchive, read_manifest_payload
@@ -55,6 +59,7 @@ def reanalyze_sync(
     manifest: RunManifest | None = None,
     telemetry: ObservabilitySink | None = None,
     strict: bool = False,
+    forced: Mapping[str, Mapping[str, ForcedScore]] | None = None,
 ) -> ExplainRunOutput:
     """Rescore and re-aggregate an archived explain run without backend calls.
 
@@ -63,6 +68,10 @@ def reanalyze_sync(
     only, so embedding value functions score hash embeddings of that text; when
     the archived run scored backend embeddings this logs a WARNING, or raises
     with ``strict``.
+
+    Teacher-forced value functions read the scores archived by ``explain`` or the
+    ``forced`` mapping (coalition key to continuation to score) that
+    :meth:`~mllm_shap.ExplainRunner.rescore` computes; without them they raise.
 
     Raises:
         ValueError: If the archive has no coalition rows or no base generation.
@@ -76,8 +85,9 @@ def reanalyze_sync(
             some of the 2^n coalitions.
         ReanalyzeMismatchError: If ``config`` uses a different estimator, absence
             policy or partition than the archived run, the value function needs
-            logprobs and a row has none, or, with ``strict``, the value function
-            reads embeddings and the archived run scored backend embeddings.
+            logprobs or teacher-forced scores and a row has none, or, with
+            ``strict``, the value function reads embeddings and the archived run
+            scored backend embeddings.
         ConfigError: If ``explanation.plugin_options`` names a plugin outside the
             run or holds an unknown option.
     """
@@ -160,20 +170,7 @@ def reanalyze_sync(
         ValueFunction,
         registry.resolve(PluginGroup.VALUE_FNS, explanation.value_fn, plugin_context),
     )
-    if (
-        resolved_manifest.embedding_source is EmbeddingSource.BACKEND
-        and isinstance(value_fn, RequiresEmbeddings)
-        and value_fn.needs_embeddings
-    ):
-        msg = (
-            f"archive {archive_root} was scored with embeddings of backend model "
-            f"{resolved_manifest.embedding_model!r}; reanalyze scores hash "
-            f"embeddings of the archived text, so {explanation.value_fn!r} values "
-            "differ from explain"
-        )
-        if strict:
-            raise ReanalyzeMismatchError(msg)
-        logger.warning(msg)
+    _warn_embeddings(archive_root, value_fn, resolved_manifest, strict)
     _check_logprobs(archive_root, value_fn, records, resolved_manifest)
     normalizer = cast(
         Normalizer,
@@ -184,14 +181,11 @@ def reanalyze_sync(
 
     scoring_started = time.perf_counter()
     with sink.span("reanalyze.score"):
-        base_record = generation_record_from_text(base_text)
-        coalition_records = [
-            dataclasses.replace(
-                generation_record_from_text(record.generation_text),
-                logprobs=record.logprobs,
-            )
-            for record in records
-        ]
+        base_record, coalition_records = _archived_records(
+            archive_root, value_fn, records, base_text, forced or {}
+        )
+        if isinstance(value_fn, PreparesScores):
+            asyncio.run(value_fn.prepare(base_record, coalition_records))
         payoffs = score_coalitions(value_fn, base_record, coalition_records)
     scoring_ms = (time.perf_counter() - scoring_started) * 1000.0
 
@@ -267,6 +261,81 @@ def _check_logprobs(
             "cannot rescore it"
         )
         raise ReanalyzeMismatchError(msg)
+
+
+def _warn_embeddings(
+    archive_root: Path, value_fn: ValueFunction, manifest: RunManifest, strict: bool
+) -> None:
+    """Warn (or raise with ``strict``) when backend embeddings cannot be rebuilt."""
+    if not (
+        manifest.embedding_source is EmbeddingSource.BACKEND
+        and isinstance(value_fn, RequiresEmbeddings)
+        and value_fn.needs_embeddings
+    ):
+        return
+    msg = (
+        f"archive {archive_root} was scored with embeddings of backend model "
+        f"{manifest.embedding_model!r}; reanalyze scores hash "
+        f"embeddings of the archived text, so {manifest.value_fn!r} values "
+        "differ from explain"
+    )
+    if strict:
+        raise ReanalyzeMismatchError(msg)
+    logger.warning(msg)
+
+
+def _archived_records(
+    archive_root: Path,
+    value_fn: ValueFunction,
+    records: Sequence[CoalitionRecord],
+    base_text: str,
+    extra: Mapping[str, Mapping[str, ForcedScore]],
+) -> tuple[GenerationRecord, list[GenerationRecord]]:
+    """Rebuild the records an archive scores, with their teacher-forced scores."""
+    coalition_records = [
+        dataclasses.replace(
+            generation_record_from_text(record.generation_text),
+            logprobs=record.logprobs,
+            forced={**record.forced, **extra.get(record.coalition_key, {})},
+            audio_path=record.audio_path,
+        )
+        for record in records
+    ]
+    base_record = generation_record_from_text(base_text)
+    for row, scored in zip(records, coalition_records, strict=True):
+        if all(MaskCodec.unpack(row.mask)):
+            base_record = dataclasses.replace(
+                base_record, forced=scored.forced, audio_path=row.audio_path
+            )
+            break
+    _check_forced(archive_root, value_fn, base_record, coalition_records)
+    return base_record, coalition_records
+
+
+def _check_forced(
+    archive_root: Path,
+    value_fn: ValueFunction,
+    base: GenerationRecord,
+    records: Sequence[GenerationRecord],
+) -> None:
+    """Refuse a teacher-forcing value function on rows without its scores."""
+    if not (
+        isinstance(value_fn, RequiresTeacherForcing) and value_fn.needs_teacher_forcing
+    ):
+        return
+    wanted = value_fn.forced_continuations(base)
+    for record in records:
+        for text in wanted:
+            score = record.forced.get(text)
+            if score is None or (
+                value_fn.forced_top_k > 0 and score.token_logprobs and not score.top_ids
+            ):
+                msg = (
+                    f"archive {archive_root} has no teacher-forced scores for "
+                    f"value_fn {value_fn.name!r}; score them with "
+                    "ExplainRunner.rescore, which runs forward passes only"
+                )
+                raise ReanalyzeMismatchError(msg)
 
 
 def _check_coalition_rows(

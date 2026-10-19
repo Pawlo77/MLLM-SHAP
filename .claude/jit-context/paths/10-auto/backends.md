@@ -17,7 +17,7 @@ Full note: `knowledge/architecture/backends.md`; update it in the same change (s
 - Audio prompts skip the prefix cache; a text model and `lmstudio` (unless `audio: transcript`) refuse audio with `ValueError`; `mock` hashes text and the snapshot id only.
 - `mock_audio`: a run's token depends on its samples only, so silencing or cutting another run leaves it unchanged.
 - In float32, greedy transformers outputs are identical with the prefix cache on and off, and their logprobs agree within 1e-4; in float16 and bfloat16 they agree up to rounding, and the backend warns once (decision (`knowledge/decisions/Backends decisions.md`)). No prompt token is processed twice.
-- A backend injected into `ExplainRunner` is reused across calls and closed by the runner; otherwise one backend is built and closed per `explain()`.
+- An injected backend is reused across calls and closed by the runner; otherwise one is built and closed per `explain()`.
 
 ## Known issues
 

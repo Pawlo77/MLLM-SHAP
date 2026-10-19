@@ -10,6 +10,7 @@ from .backend import (
     SupportsAclose,
     SupportsKvCache,
     SupportsLogprobs,
+    SupportsTeacherForcing,
 )
 from .embedding import EmbeddingProvider
 from .estimand import EstimandAggregator
@@ -19,9 +20,12 @@ from .partition import PlayerPartitioner
 from .plugin import DeclaresPluginOptions, PluginOptions
 from .value import (
     FittableValueFunction,
+    PreparesScores,
     RequiresEmbeddings,
     RequiresLogprobs,
+    RequiresTeacherForcing,
     ValueFunction,
+    ValueInfo,
 )
 
 __all__ = [
@@ -35,11 +39,15 @@ __all__ = [
     "GenerativeBackend",
     "PlayerPartitioner",
     "PluginOptions",
+    "PreparesScores",
     "RequiresEmbeddings",
     "RequiresLogprobs",
+    "RequiresTeacherForcing",
     "SupportsAclose",
     "SupportsKvCache",
     "SupportsLogprobs",
+    "SupportsTeacherForcing",
     "TwoPhaseEstimator",
     "ValueFunction",
+    "ValueInfo",
 ]

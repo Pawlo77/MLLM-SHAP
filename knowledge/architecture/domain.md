@@ -5,7 +5,7 @@ domain: domain
 parent: "[[mllm-shap]]"
 tags: [architecture, domain]
 created: 2026-10-07
-updated: 2026-10-12
+updated: 2026-10-18
 related-code:
   - "[[src/mllm_shap/domain/__init__.py]]"
   - "[[src/mllm_shap/domain/coalition.py]]"
@@ -33,7 +33,7 @@ related-code:
 - `ConversationSnapshot.from_json(text)` / `to_json(indent=2)` with the `SnapshotPayload`, `TurnPayload`, `MessagePayload` TypedDicts: `{"turns": [{"messages": [{"role", "text" or "content", "speaker"?}]}]}` plus an optional `snapshot_id` when it is not the content-derived one. `content` lists `PartPayload` parts: `text`, or `audio` with `sample_rate` and either `path` (resolved against `from_json(base_dir=...)`) or base64 `data`; shape errors raise `TypeError`, bad JSON, roles or empty turns raise `ValueError`.
 - `PlayerSpan(message_index, start, end, text, speaker=None, label=None, samples=None)` with `display_label`; `samples` is the `[start, end)` sample range of an audio player ([[Player span]]); `PlayerSet(player_ids, spans=(), hidden_text=())` with `num_players`; `hidden_text` lists messages whose text policies drop (alignment-only transcripts).
 - `CoalitionMask(present)`: `from_sequence`, `coalition_size()`, `validate_against(player_set)` ([[masking]]).
-- `GenerationRecord`: `text`, `text_token_rows`, `audio_token_rows`, `logprobs` (`None` when the backend returned none), `embedding`, `contextual_embedding`.
+- `GenerationRecord`: `text`, `text_token_rows`, `audio_token_rows`, `logprobs` (`None` when the backend returned none), `embedding`, `contextual_embedding`, `forced` (continuation text to `ForcedScore`: token logprobs and optional top-`k` ids and logprobs) and `audio_path`.
 - `domain/config.py`: `GenerationConfig(max_new_tokens=128, temperature=0.0, top_k=1, compute_embeddings=False)`, `DedupConfig(enabled="auto")`, `KvCacheConfig(enabled=False, max_entries=8)`; also importable from `mllm_shap.pipeline.config`.
 - `Estimand` (`shapley`, `banzhaf`), `EstimandWire`, `estimand_to_wire` ([[estimation|Estimand]]); `Role` (`user`, `assistant`, `system`) and `RoleName`, the same values as a `Literal` for plugin options (`roles`, `text_roles`); `EmbeddingMode` (`static`, `contextual`); `CooperativeGame(player_set)`.
 

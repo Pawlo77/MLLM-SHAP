@@ -10,11 +10,12 @@ import copy
 import dataclasses
 import logging
 import threading
+from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any, ClassVar
 
 from ...domain.config import GenerationConfig
 from ...domain.conversation import ConversationSnapshot
-from ...domain.generation import GenerationRecord
+from ...domain.generation import ForcedScore, GenerationRecord
 from ...errors import BackendUnavailableError
 from ...protocols.plugin import PluginOptions
 from ...runtime.kv_cache import CroppableCache, PrefixCacheManager
@@ -121,6 +122,33 @@ class TransformersTextBackend:
             generation,
         )
 
+    @property
+    def forces_continuations(self) -> bool:
+        """Always true for text prompts; audio prompts raise ``ValueError``."""
+        return True
+
+    async def score_continuations(
+        self,
+        snapshot: ConversationSnapshot,
+        continuations: Sequence[str],
+        top_k: int = 0,
+    ) -> list[ForcedScore]:
+        """Score each continuation with one forward pass, without generating.
+
+        The continuation is tokenized on its own and appended to the chat
+        prompt; ``top_k`` adds the most probable next tokens per position.
+
+        Raises:
+            ValueError: If ``snapshot`` has audio parts.
+        """
+        await self._ensure_loaded()
+        if snapshot_has_audio(snapshot):
+            msg = "teacher-forced scoring supports text prompts only"
+            raise ValueError(msg)
+        return await asyncio.to_thread(
+            self._force_sync, snapshot, tuple(continuations), top_k
+        )
+
     async def aclose(self) -> None:
         """Release loaded model references."""
         self._tokenizer = None
@@ -214,6 +242,22 @@ class TransformersTextBackend:
                 embedding=static_embedding(model, new_token_ids),
                 contextual_embedding=contextual_embedding(model, new_token_ids),
             )
+
+    def _force_sync(
+        self, snapshot: ConversationSnapshot, continuations: tuple[str, ...], top_k: int
+    ) -> list[ForcedScore]:
+        tokenizer = self._tokenizer
+        model = self._model
+        if tokenizer is None or model is None:
+            msg = "transformers backend is not loaded"
+            raise BackendUnavailableError(msg)
+        torch = import_torch()
+        with self._model_lock, torch.no_grad():
+            prompt_ids = self._encode(torch, model, tokenizer, snapshot)["input_ids"]
+            return [
+                _force_one(torch, model, prompt_ids, tokenizer, text, top_k)
+                for text in continuations
+            ]
 
     def _encode(
         self, torch: Any, model: Any, tokenizer: Any, snapshot: ConversationSnapshot
@@ -338,6 +382,30 @@ def _token_logprobs(torch: Any, logits: Any, new_ids: Any) -> tuple[float, ...]:
     steps = torch.stack([step[0] for step in logits[: len(new_ids)]]).float()
     chosen = steps.log_softmax(dim=-1).gather(1, new_ids[:, None].to(steps.device))
     return tuple(float(value) for value in chosen[:, 0].cpu().tolist())
+
+
+def _force_one(
+    torch: Any, model: Any, prompt_ids: Any, tokenizer: Any, text: str, top_k: int
+) -> ForcedScore:
+    """Return the log probabilities of ``text`` after ``prompt_ids``, one pass."""
+    ids = [int(t) for t in tokenizer.encode(text, add_special_tokens=False)]
+    if not ids:
+        return ForcedScore(())
+    cont = torch.tensor([ids], dtype=torch.long, device=prompt_ids.device)
+    full = torch.cat([prompt_ids, cont], dim=1)
+    start = prompt_ids.shape[1] - 1
+    logits = model(full).logits[0, start : start + len(ids)].float()
+    logprobs = logits.log_softmax(dim=-1)
+    chosen = logprobs.gather(1, cont[0][:, None])[:, 0]
+    token_logprobs = tuple(float(v) for v in chosen.cpu().tolist())
+    if top_k <= 0:
+        return ForcedScore(token_logprobs)
+    top = logprobs.topk(min(top_k, logprobs.shape[-1]), dim=-1)
+    return ForcedScore(
+        token_logprobs,
+        tuple(tuple(int(i) for i in row) for row in top.indices.cpu().tolist()),
+        tuple(tuple(float(v) for v in row) for row in top.values.cpu().tolist()),
+    )
 
 
 def _device_and_dtype(torch: Any, dtype: TorchDtype) -> tuple[Any, Any]:

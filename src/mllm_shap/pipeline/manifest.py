@@ -9,7 +9,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 from enum import StrEnum
 from importlib.metadata import PackageNotFoundError, version
-from typing import TypedDict
+from typing import Any, TypedDict
 
 from ..domain.estimands import Estimand, EstimandWire, estimand_to_wire
 from ..errors import ArchiveCorruptError
@@ -93,6 +93,12 @@ class RunManifestPayload(TypedDict):
     embedding_model: str
     """Model that computed backend embeddings; empty unless ``"backend"``."""
 
+    value_info: dict[str, str]
+    """Encoder, model and version settings the value function reports."""
+
+    decoding: dict[str, object]
+    """Temperature, top-k, seed and deduplication policy of the run."""
+
     config: dict[str, object]
     """Full explain configuration echo (``ExplainConfig.model_dump(mode="json")``)."""
 
@@ -145,6 +151,13 @@ class RunManifest:
     """Backend model that computed the embeddings when ``embedding_source`` is
     ``"backend"``; empty otherwise."""
 
+    value_info: Mapping[str, str] = field(default_factory=dict)
+    """Settings the value function reports through ``manifest_info()``, such as
+    its encoder, layer and library version."""
+
+    decoding: Mapping[str, object] = field(default_factory=dict)
+    """Decoding temperature, top-k, seed and deduplication policy of the run."""
+
     config: ExplainConfig | None = None
     """Explain configuration of the run, when the pipeline wrote the manifest."""
 
@@ -172,6 +185,8 @@ class RunManifest:
             "player_ids": list(self.player_ids),
             "embedding_source": self.embedding_source.value,
             "embedding_model": self.embedding_model,
+            "value_info": dict(self.value_info),
+            "decoding": dict(self.decoding),
             "config": {}
             if self.config is None
             else self.config.model_dump(mode="json"),
@@ -232,6 +247,8 @@ def parse_manifest(payload: Mapping[str, object]) -> RunManifest:
         player_ids=tuple(str(player_id) for player_id in player_ids),
         embedding_source=embedding_source,
         embedding_model=_text(payload, "embedding_model"),
+        value_info=_mapping(payload, "value_info"),
+        decoding=_mapping(payload, "decoding"),
         config=config,
         mllm_shap_version=_text(payload, "mllm_shap_version"),
         schema_version=MANIFEST_SCHEMA_VERSION,
@@ -242,5 +259,13 @@ def _text(payload: Mapping[str, object], key: str) -> str:
     value = payload.get(key, "")
     if not isinstance(value, str):
         msg = f"manifest field {key!r} must be a string"
+        raise ArchiveCorruptError(msg)
+    return value
+
+
+def _mapping(payload: Mapping[str, object], key: str) -> dict[str, Any]:
+    value = payload.get(key, {})
+    if not isinstance(value, dict):
+        msg = f"manifest field {key!r} must be a mapping"
         raise ArchiveCorruptError(msg)
     return value

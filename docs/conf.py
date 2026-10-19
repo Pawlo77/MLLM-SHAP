@@ -37,6 +37,7 @@ extensions = [
     "guide_outputs",
     "public_exports",
     "config_table",
+    "value_table",
     "repo_links",
 ]
 
@@ -112,7 +113,10 @@ nitpick_ignore_regex: list[tuple[str, str]] = [
     # Sphinx splits dataclass signatures whose generic field types contain a
     # comma (``OrderedDict[str, str]``, ``Mapping[str, object]``,
     # ``tuple[str, ...]``) and then looks up the fragment before the comma.
-    ("py:class", r"(collections\.abc\.Mapping|collections\.OrderedDict|tuple)\[str"),
+    (
+        "py:class",
+        r"(collections\.abc\.Mapping|collections\.OrderedDict|tuple|dict)\[(str|float)",
+    ),
     # The same split in plugin option models: ``list[RoleName]`` expands to
     # ``list[Literal['user', ...]]``, ``SgpaOptions.transcript`` to
     # ``Literal['send', ...]`` and ``Field(ge=...)`` to ``Annotated[float, ...]``.

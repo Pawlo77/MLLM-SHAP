@@ -17,7 +17,7 @@ from .conversation import (
 from .enums import EmbeddingMode, Role
 from .estimands import Estimand, EstimandWire, estimand_to_wire
 from .game import CooperativeGame
-from .generation import GenerationRecord
+from .generation import ForcedScore, GenerationRecord
 from .players import PlayerSet, PlayerSpan
 
 __all__ = [
@@ -30,6 +30,7 @@ __all__ = [
     "EmbeddingMode",
     "Estimand",
     "EstimandWire",
+    "ForcedScore",
     "GenerationConfig",
     "GenerationRecord",
     "KvCacheConfig",

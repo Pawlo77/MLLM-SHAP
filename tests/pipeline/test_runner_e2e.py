@@ -16,6 +16,9 @@ from mllm_shap.estimation.exact import ExactEstimator
 from mllm_shap.runtime import BASE_GENERATION_FILE, InMemoryObservabilitySink
 from mllm_shap.runtime.archive import RunArchive
 
+MODEL_STATES = {"encoder": "model_states", "allow_hash_embeddings": True}
+"""Score the backend's own vectors, hash vectors included."""
+
 
 def _three_token_snapshot() -> ConversationSnapshot:
     turn = Turn(messages=(Message(role=Role.USER, text="a b c"),))
@@ -131,7 +134,12 @@ def test_runner_reanalyze_rescores_without_backend_calls(tmp_path: Path) -> None
             update={
                 "explanation": _e2e_config(
                     archive_path=archive_template
-                ).explanation.model_copy(update={"value_fn": "embedding_cosine"})
+                ).explanation.model_copy(
+                    update={
+                        "value_fn": "embedding_cosine",
+                        "plugin_options": {"embedding_cosine": MODEL_STATES},
+                    }
+                )
             }
         )
     ).reanalyze(archive_root)
@@ -251,6 +259,8 @@ def test_reanalyze_scores_generated_text_like_explain(
         mode="python"
     )
     payload["explanation"]["value_fn"] = value_fn
+    if value_fn == "embedding_cosine":
+        payload["explanation"]["plugin_options"] = {"embedding_cosine": MODEL_STATES}
     runner = ExplainRunner(ExplainConfig.model_validate(payload))
     snapshot = ConversationSnapshot.from_turns((
         Turn(messages=(Message(role=Role.USER, text="a b c d"),)),
@@ -269,6 +279,7 @@ def test_reanalyze_matches_explain_embedding_values(
         mode="python"
     )
     payload["explanation"]["value_fn"] = "embedding_cosine"
+    payload["explanation"]["plugin_options"] = {"embedding_cosine": MODEL_STATES}
     payload["explanation"]["absence_policy"] = "delete"
     payload["explanation"]["embedding_mode"] = embedding_mode
     runner = ExplainRunner(ExplainConfig.model_validate(payload))

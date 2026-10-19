@@ -25,6 +25,15 @@ PluginFactory = Callable[["PluginContext"], object]
 :class:`~mllm_shap.plugins.context.PluginContext`."""
 
 
+REMOVED_PLUGINS = {
+    ("mllm_shap.value_fns", "embedding_euclidean"): (
+        "it was removed in 0.7 (scale-dependent, no paper supports it); "
+        "use 'embedding_cosine'"
+    ),
+}
+"""Plugins deleted from the built-ins, with the message naming the replacement."""
+
+
 class PluginRegistry:
     """Register and resolve pipeline plugins by group and name."""
 
@@ -97,6 +106,8 @@ class PluginRegistry:
             return self._factories[group_key][name]
         except KeyError as error:
             msg = f"unknown plugin {name!r} in group {group_key!r}"
+            if (group_key, name) in REMOVED_PLUGINS:
+                msg += f"; {REMOVED_PLUGINS[group_key, name]}"
             raise PluginNotFoundError(msg) from error
 
     def resolve_type(self, group: PluginGroup | str, name: str) -> type:
