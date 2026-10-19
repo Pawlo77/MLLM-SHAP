@@ -169,3 +169,43 @@ def test_semascore_empty_reference() -> None:
     value_fn = SemaScoreValue(encoder=_Words())
     assert value_fn.score(_rec(""), _rec("")) == 1.0
     assert value_fn.score(_rec(""), _rec("cat")) == 0.0
+
+
+def test_value_functions_load_their_encoder_lazily_and_report_it(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from mllm_shap.value import bertscore, nli, semascore
+
+    loaded: list[str] = []
+
+    def token_encoder(name: str, layer: int, revision: str) -> _WordAxes:
+        loaded.append(f"{name}:{layer}:{revision}")
+        return _WordAxes()
+
+    def nli_model(name: str, revision: str) -> _FakeNli:
+        loaded.append(f"{name}:{revision}")
+        return _FakeNli()
+
+    def word_encoder(name: str, revision: str) -> _Words:
+        loaded.append(f"{name}:{revision}")
+        return _Words()
+
+    monkeypatch.setattr(bertscore, "load_token_encoder", token_encoder)
+    monkeypatch.setattr(nli, "load_nli_model", nli_model)
+    monkeypatch.setattr(semascore, "load_word_encoder", word_encoder)
+
+    BertScoreValue().score(_rec("cat"), _rec("dog"))
+    NliLogOddsValue().score(_rec("a"), _rec("b"))
+    SemaScoreValue().score(_rec("the cat"), _rec("the dog"))
+
+    assert loaded == [
+        "roberta-large:17:main",
+        "microsoft/deberta-large-mnli:main",
+        "roberta-base:main",
+    ]
+    assert BertScoreValue().manifest_info()["layer"] == "17"
+    assert NliLogOddsValue().manifest_info()["model"] == "microsoft/deberta-large-mnli"
+    assert SemaScoreValue().manifest_info()["encoder"] == "roberta-base"
+    assert BertScoreValue().name == "bertscore"
+    assert NliLogOddsValue().name == "nli_logodds"
+    assert SemaScoreValue().name == "semascore"

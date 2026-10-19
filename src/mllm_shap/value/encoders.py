@@ -253,7 +253,8 @@ class _WavLmEncoder:
             hidden = self._model(**inputs, output_hidden_states=True).hidden_states[
                 self._layer
             ]
-        return torch.nn.functional.normalize(hidden[0].float(), dim=-1).cpu().numpy()
+        frames = torch.nn.functional.normalize(hidden[0].float(), dim=-1)
+        return np.asarray(frames.cpu().numpy())
 
 
 @lru_cache(maxsize=2)
@@ -268,10 +269,9 @@ def load_speech_encoder(name: str, layer: int, revision: str = "main") -> Speech
     except ImportError as exc:
         msg = f"encoder {name!r} needs transformers; {AUDIO_EXTRA}"
         raise BackendUnavailableError(msg) from exc
+    extractor_class: Any = AutoFeatureExtractor
     return _WavLmEncoder(
-        AutoFeatureExtractor.from_pretrained(  # type: ignore[no-untyped-call]
-            name, revision=revision
-        ),
+        extractor_class.from_pretrained(name, revision=revision),
         AutoModel.from_pretrained(name, revision=revision).eval(),
         layer,
     )

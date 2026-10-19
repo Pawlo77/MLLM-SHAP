@@ -93,3 +93,34 @@ def test_transcribed_fits_a_corpus_value_function_on_the_transcripts() -> None:
     value_fn.fit([one, two])
     assert value_fn.score(one, one) == pytest.approx(1.0)
     assert 0.0 < value_fn.score(one, two) < 1.0
+
+
+def test_speech_value_functions_load_encoders_lazily_and_report_them(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from mllm_shap.value import speech
+
+    loaded: list[str] = []
+
+    def speech_encoder(name: str, layer: int, revision: str) -> _Frames:
+        loaded.append(f"{name}:{layer}:{revision}")
+        return _Frames()
+
+    def recognizer(name: str, revision: str = "main") -> _Recognizer:
+        loaded.append(f"{name}:{revision}")
+        return _Recognizer()
+
+    monkeypatch.setattr(speech, "load_speech_encoder", speech_encoder)
+    monkeypatch.setattr(speech, "load_recognizer", recognizer)
+
+    value_fn = SpeechBertScoreValue()
+    assert value_fn.score(_spoken("a"), _spoken("a")) == pytest.approx(1.0)
+    assert value_fn.name == "speech_bertscore"
+    assert value_fn.manifest_info()["layer"] == "14"
+
+    transcribed = _transcribed(_Recognizer())
+    transcribed._recognizer = None
+    assert transcribed.name == "transcribed"
+    assert transcribed.manifest_info()["value_fn"] == "reference_wer"
+    transcribed.score(_spoken("one"), _spoken("one"))
+    assert loaded == ["microsoft/wavlm-large:14:main", "openai/whisper-base:main"]

@@ -110,3 +110,52 @@ def test_default_encoder_is_a_sentence_model_and_hash_vectors_are_opt_in() -> No
 def test_embedding_euclidean_is_removed_with_a_pointer_to_cosine() -> None:
     with pytest.raises(PluginNotFoundError, match="use 'embedding_cosine'"):
         default_registry().resolve_factory(PluginGroup.VALUE_FNS, "embedding_euclidean")
+
+
+def test_sentence_encoder_loads_lazily_and_is_recorded(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from mllm_shap.value import embedding
+
+    loaded: list[str] = []
+
+    def load(name: str) -> _AxisEncoder:
+        loaded.append(name)
+        return _AxisEncoder()
+
+    monkeypatch.setattr(embedding, "load_sentence_encoder", load)
+    value_fn = CosineEmbeddingValue()
+    value_fn._encoder_name = "axis"
+    assert value_fn.score(
+        GenerationRecord(text="cat"), GenerationRecord(text="cat")
+    ) == pytest.approx(1.0)
+    assert loaded == ["axis"]
+    assert value_fn.manifest_info()["encoder"] == "axis"
+    assert CosineEmbeddingValue().manifest_info() == {"encoder": "model_states"}
+
+
+def test_hash_vectors_are_refused_unless_allowed(tmp_path: object) -> None:
+    from mllm_shap.domain.conversation import ConversationSnapshot, Message, Turn
+    from mllm_shap.domain.enums import Role
+    from mllm_shap.errors import ConfigError
+    from mllm_shap.pipeline import ExplainConfig, ExplainRunner
+
+    def run(options: dict[str, object]) -> None:
+        config = ExplainConfig.model_validate({
+            "backend": {"kind": "mock", "model_id": "mock"},
+            "explanation": {
+                "estimator": "exact",
+                "value_fn": "embedding_cosine",
+                "absence_policy": "delete",
+                "archive": {"path": ""},
+                "plugin_options": {"embedding_cosine": options},
+            },
+        })
+        snapshot = ConversationSnapshot.from_turns((
+            Turn((Message(role=Role.USER, text="alpha beta"),)),
+        ))
+        ExplainRunner(config).explain_sync(snapshot)
+
+    with pytest.raises(ConfigError, match="allow_hash_embeddings"):
+        run({"encoder": "model_states"})
+    run({"encoder": "model_states", "allow_hash_embeddings": True})
