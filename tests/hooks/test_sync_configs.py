@@ -97,6 +97,17 @@ def test_delivery_switch_controls_commit_push_and_merge(
     assert "Bash(gh api graphql*)" in allow
 
 
+def test_research_permissions_follow_the_research_folder(
+    configs: ModuleType, tmp_path: Path
+) -> None:
+    plain = configs.claude_settings(_root(tmp_path / "plain"))["permissions"]["allow"]
+    assert not set(configs.RESEARCH_ALLOW) & set(plain)
+    root = _root(tmp_path / "research")
+    (root / "research").mkdir()
+    allow = configs.claude_settings(root)["permissions"]["allow"]
+    assert set(configs.RESEARCH_ALLOW) <= set(allow)
+
+
 def test_secrets_and_force_pushes_are_always_denied(
     configs: ModuleType, tmp_path: Path
 ) -> None:

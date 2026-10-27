@@ -273,10 +273,11 @@ def by_budget(
 
 
 def vendored(root: Path) -> set[str]:
-    """Return path prefixes of the vendored skills and agents."""
+    """Return path prefixes of the vendored skills, rules and agents."""
     prefixes: set[str] = set()
     for table, template in (
         (".agents/skills/VENDORED.md", ".agents/skills/{}/"),
+        (".agents/skills/VENDORED.md", ".cursor/rules/{}.mdc"),
         (".claude/agents/VENDORED.md", ".claude/agents/{}.md"),
     ):
         path = root / table

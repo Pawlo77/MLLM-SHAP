@@ -25,6 +25,9 @@ TARGET_DIR = ROOT / ".claude" / "rules"
 ALWAYS_NAME = "always.md"
 """Output file that merges every always-apply rule."""
 
+PLUGIN_RULES = frozenset({"ponytail"})
+"""Rules a Claude Code plugin injects itself; they get no Claude copy."""
+
 HEADER = "<!-- Generated from {source} by scripts/sync_rules.py; do not edit. -->"
 """First body line of every generated file."""
 
@@ -63,6 +66,8 @@ def render(sources: list[Path]) -> dict[str, str]:
         fields, body = split_frontmatter(path.read_text(encoding="utf-8"))
         source = path.relative_to(ROOT).as_posix()
         header = HEADER.format(source=source)
+        if path.stem in PLUGIN_RULES:
+            continue
         if fields.get("alwaysApply", "").lower() == "true":
             always.append(f"{header}\n\n{body}")
             continue

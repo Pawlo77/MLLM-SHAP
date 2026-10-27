@@ -1,10 +1,17 @@
-Applies to SKILL.md in this directory, vendored from
-https://github.com/JuliusBrussee/caveman at commit 0574b85a19ab7b2b7f42cc3b3838e20f24ab85eb
-(skills/caveman/SKILL.md, MIT-licensed at that commit).
+Applies to the files in the skill directories `ponytail`, `ponytail-review`, `ponytail-audit`,
+`ponytail-debt`, `ponytail-gain` and `ponytail-help` (SKILL.md each) and to
+`.cursor/rules/ponytail.mdc`, vendored from
+https://github.com/DietrichGebert/ponytail at commit 09c434ab73ca43761c5d8b0c5d341926c2fba710
+(skills/*/SKILL.md and .cursor/rules/ponytail.mdc, MIT-licensed at that commit).
+Hooks, status band, Node scripts, plugin manifests, translations and benchmarks are not vendored.
+
+Modified copy: `ponytail/SKILL.md` lacks the `argument-hint` frontmatter key, which the Agent
+Skills spec check rejects. Other text is unchanged. The Node hooks, status band and board come
+from the upstream plugin (see README), not from these files.
 
 MIT License
 
-Copyright (c) 2026 Julius Brussee
+Copyright (c) 2026 DietrichGebert
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

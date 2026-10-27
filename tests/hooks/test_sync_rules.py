@@ -41,16 +41,26 @@ def test_render_scoped_and_always(
         "---\ndescription: t\nglobs: src/**/*.py\nalwaysApply: false\n---\n\n# Types\n",
         encoding="utf-8",
     )
-    always = tmp_path / "caveman.mdc"
+    always = tmp_path / "style.mdc"
     always.write_text(
-        "---\ndescription: c\nalwaysApply: true\n---\n\n# Caveman\n", encoding="utf-8"
+        "---\ndescription: c\nalwaysApply: true\n---\n\n# Always\n", encoding="utf-8"
     )
     monkeypatch.setattr(sync_rules, "ROOT", tmp_path)
     out = sync_rules.render([scoped, always])
     assert out["types.md"].startswith('---\npaths:\n  - "src/**/*.py"\n---\n')
     assert out["types.md"].endswith("# Types\n")
-    assert "# Caveman" in out["always.md"]
+    assert "# Always" in out["always.md"]
     assert "types" not in out["always.md"]
+
+
+def test_plugin_rule_has_no_claude_copy(
+    sync_rules, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A rule the Claude Code plugin injects itself is not generated."""
+    rule = tmp_path / "ponytail.mdc"
+    rule.write_text("---\nalwaysApply: true\n---\n\n# P\n", encoding="utf-8")
+    monkeypatch.setattr(sync_rules, "ROOT", tmp_path)
+    assert sync_rules.render([rule]) == {}
 
 
 def test_generated_rules_are_current() -> None:

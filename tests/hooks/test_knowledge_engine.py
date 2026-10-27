@@ -141,6 +141,15 @@ def test_updated_date_is_kept_while_the_body_is_unchanged(
     assert "updated: 2020-01-01" not in changed
 
 
+def test_empty_public_api_ends_in_one_newline(
+    builder: ModuleType, project: Path
+) -> None:
+    _write(project, "src/demo/__init__.py", '"""Demo."""\n\n__all__ = []\n')
+    built = builder.build_all(project)
+    api = next(text for path, text in built.items() if path.name == "Public API.md")
+    assert api.endswith("|---|---|---|\n")
+
+
 def test_check_reports_stale_notes_and_write_fixes_them(
     builder: ModuleType, project: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:

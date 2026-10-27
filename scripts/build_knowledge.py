@@ -284,7 +284,8 @@ def build_public_api(root: Path) -> str:
         link = f"[[{source}]]" if source else ""
         rows.append(f"| `{name}` | {link} | {cell(summary)} |")
     body = header("Public API", f"`{package.name}.__all__`", root)
-    body += "| Name | Defined in | Summary |\n|---|---|---|\n" + "\n".join(rows) + "\n"
+    body += "| Name | Defined in | Summary |\n|---|---|---|\n"
+    body += "".join(f"{row}\n" for row in rows)
     return body
 
 
