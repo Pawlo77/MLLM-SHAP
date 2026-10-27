@@ -21,20 +21,6 @@ Every line is read again by people and agents. Write the fewest lines that keep 
 - A file at or over budget must not grow: cut or split before adding. Files already over budget when the rule came in are capped at that size (`existing` in `[tool.agent-kit.brevity]`).
 - Reports and PR bodies: findings first; no recap of the task or of code you only read.
 
-<!-- Generated from .cursor/rules/caveman.mdc by scripts/sync_rules.py; do not edit. -->
-
-# Caveman ultra (chat default)
-
-Chat replies only:
-
-- Drop articles, filler, pleasantries and hedging; fragments are fine.
-- One idea per sentence.
-- Exact technical terms; numbers, paths, commands and error text verbatim.
-- No invented abbreviations; no arrows or symbols in place of words.
-- Write plainly for security warnings and irreversible actions, then resume.
-- Anything written to a file (code, comments, commits, PR bodies, notes, docs, plans, memory) and every subagent report stays normal prose.
-- Off on "stop caveman" or "normal mode". Skill `caveman` is only for switching level with `/caveman <level>`.
-
 <!-- Generated from .cursor/rules/git-commits.mdc by scripts/sync_rules.py; do not edit. -->
 
 # Git commits and pull requests

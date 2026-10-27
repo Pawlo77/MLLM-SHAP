@@ -6,6 +6,12 @@
         "repo": "astral-sh/claude-code-plugins"
       }
     },
+    "ponytail": {
+      "source": {
+        "source": "github",
+        "repo": "DietrichGebert/ponytail"
+      }
+    },
     "trailofbits": {
       "source": {
         "source": "github",
@@ -27,6 +33,7 @@
     "skill-creator@claude-plugins-official": true,
     "remember@claude-plugins-official": true,
     "astral@astral-sh": true,
+    "ponytail@ponytail": true,
     "property-based-testing@trailofbits": true,
     "mutation-testing@trailofbits": true,
     "differential-review@trailofbits": true,
