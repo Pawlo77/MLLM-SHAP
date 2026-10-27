@@ -7,6 +7,7 @@ from the required `astral` plugin, not from this directory.
 | Skill | Upstream path | Commit | Licence |
 |-------|---------------|--------|---------|
 | caveman | [JuliusBrussee/caveman](https://github.com/JuliusBrussee/caveman) `skills/caveman/SKILL.md` | `0574b85a19ab7b2b7f42cc3b3838e20f24ab85eb` | MIT (skill surface at that commit) |
+| ponytail, ponytail-review, ponytail-audit, ponytail-debt, ponytail-gain, ponytail-help | python-kit-template `.agents/skills/ponytail*` and `.cursor/rules/ponytail.mdc` | `09c434ab73ca43761c5d8b0c5d341926c2fba710` | see `ponytail/LICENSE` |
 
 The caveman MIT notice (Copyright (c) 2026 Julius Brussee) is kept in `caveman/LICENSE`.
 
