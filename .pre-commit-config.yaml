@@ -148,8 +148,8 @@ repos:
         verbose: true
 
       - id: agent-check
-        name: make agent-check (mirrors CI)
-        entry: make agent-check
+        name: make push-check (tests of the changed code, hooks; CI runs all tests)
+        entry: make push-check
         language: system
         stages: [pre-push]
         pass_filenames: false

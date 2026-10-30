@@ -17,7 +17,7 @@ its scheduled run) is the request to commit, push and ship the upgrade branch.
 
 Protected items (`pin` and `protected-workflows` in `[tool.agent-kit.upgrade]`) are
 reported as `(protected: report only)`, never edited. List them in the PR body for the
-maintainer; how they are handled here: `local.md` in this folder.
+maintainer; how they are handled here: `local.md` in this folder, when it exists.
 
 ## Procedure
 

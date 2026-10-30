@@ -4,7 +4,9 @@
 ``.cursor/hooks.json`` come from a shared base plus ``[tool.agent-kit.configs]``:
 ``delivery`` (``ask`` or ``autopilot``: may Claude commit, push and merge unasked),
 ``allow``, ``deny``, ``marketplaces``, ``plugins``, ``post-edit-hooks``,
-``codex-approval``. Never edit the outputs.
+``codex-approval``. Never edit the outputs. Add a plugin to ``plugins`` (and
+``marketplaces``) there and run ``make configs``; ``claude plugin install --scope
+project`` is lost on the next run.
 
 Usage: ``uv run python scripts/sync_configs.py [--check]``; exits 1 if stale.
 """
@@ -372,6 +374,19 @@ def render(root: Path = ROOT) -> dict[str, str]:
     }
 
 
+def _is_current(path: Path, content: str) -> bool:
+    """Whether ``path`` holds ``content``; JSON compares as data (key order is free)."""
+    if not path.is_file():
+        return False
+    text = path.read_text(encoding="utf-8")
+    if path.suffix != ".json":
+        return text == content
+    try:
+        return json.loads(text) == json.loads(content)
+    except json.JSONDecodeError:
+        return False
+
+
 def main(argv: list[str] | None = None) -> int:
     """Write the configs, or with ``--check`` report the stale ones."""
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
@@ -381,7 +396,7 @@ def main(argv: list[str] | None = None) -> int:
     stale = []
     for rel, content in render(args.root).items():
         path = args.root / rel
-        if path.is_file() and path.read_text(encoding="utf-8") == content:
+        if _is_current(path, content):
             continue
         stale.append(rel)
         if not args.check:

@@ -3,6 +3,7 @@
 import json
 import shutil
 import subprocess
+from collections.abc import Mapping
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -15,7 +16,7 @@ HAVE_TOOLS = shutil.which("bash") is not None and shutil.which("jq") is not None
 
 
 def run_hook(
-    script: Path, payload: dict[str, object], cwd: Path | None = None
+    script: Path, payload: Mapping[str, object], cwd: Path | None = None
 ) -> subprocess.CompletedProcess[str]:
     """Run ``script`` with ``payload`` as JSON on stdin."""
     return subprocess.run(
