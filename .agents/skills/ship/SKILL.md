@@ -62,9 +62,8 @@ Green gate first: skill `ci`, then `scripts/pr_follow.py <n>` after every push.
 
 - Routine and success: `gh pr merge <n> --auto --merge --delete-branch` (GitHub merges
   after the required checks); watch the `main` workflows (`gh run watch <id>
-  --exit-status`); the "After merge" steps of `local.md`; skill `vibe` Compound step for a
-  non-obvious lesson; final line `Merged <url>` (with Copilot on, plus `(no Copilot review)`
-  when it was skipped).
+  --exit-status`); the "After merge" steps of `local.md`; final line `Merged <url>` (with
+  Copilot on, plus `(no Copilot review)` when it was skipped).
 - Review, round limit or a declined thread: stop; final line `Ready for your review:
   <url>` plus one line per open point. Never merge a review PR.
 

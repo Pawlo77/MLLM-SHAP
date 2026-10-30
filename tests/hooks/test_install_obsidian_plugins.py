@@ -98,3 +98,21 @@ def test_repositories_merge_the_project_table(installer, tmp_path: Path) -> None
     assert installer.repositories(tmp_path / "missing") == {
         "dataview": "blacksmithgu/obsidian-dataview"
     }
+
+
+def test_seed_settings_replaces_only_missing_or_empty_files(
+    installer, vault: Path
+) -> None:
+    """Obsidian's empty defaults are replaced by the examples; real content is kept."""
+    for name, example in (
+        ("app", '{"a": 1}'),
+        ("appearance", '{"b": 2}'),
+        ("hotkeys", "{}"),
+    ):
+        (vault / f"{name}.example.json").write_text(example)
+    (vault / "app.json").write_text("{}")
+    (vault / "appearance.json").write_text('{"mine": true}')
+    seeded = installer.seed_settings(vault)
+    assert seeded == ["app.json", "hotkeys.json"]
+    assert json.loads((vault / "app.json").read_text()) == {"a": 1}
+    assert json.loads((vault / "appearance.json").read_text()) == {"mine": True}

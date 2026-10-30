@@ -4,6 +4,7 @@
 """
 
 import json
+from collections.abc import Mapping
 from pathlib import Path
 
 import pytest
@@ -29,7 +30,7 @@ def _repo_with_memory(tmp_path: Path) -> Path:
     return repo
 
 
-def _start(repo: Path, payload: dict[str, object]) -> str:
+def _start(repo: Path, payload: Mapping[str, object]) -> str:
     proc = run_hook(repo / "scripts" / "hooks" / "session_start.sh", payload, cwd=repo)
     assert proc.returncode == 0, proc.stderr
     return proc.stdout
@@ -117,3 +118,34 @@ def test_project_extension_adds_state_and_memory(tmp_path: Path) -> None:
     assert "- extra: state line" in _start(repo, CLAUDE)
     ctx = json.loads(_start(repo, CURSOR))["additional_context"]
     assert "extra memory" in ctx
+
+
+def _context(repo: Path) -> str:
+    return json.loads(_start(repo, CURSOR))["additional_context"]
+
+
+def test_unset_up_repo_is_flagged(tmp_path: Path) -> None:
+    """No .venv and no pre-commit hook: the context says to run make setup."""
+    ctx = _context(scratch_repo(tmp_path))
+    assert "- setup: incomplete (.venv, git hooks); run make setup" in ctx
+
+
+def test_set_up_repo_reports_ok(tmp_path: Path) -> None:
+    """A .venv and an installed pre-commit hook count as set up."""
+    repo = scratch_repo(tmp_path)
+    (repo / ".venv").mkdir()
+    hook = repo / ".git" / "hooks" / "pre-commit"
+    hook.parent.mkdir(exist_ok=True)
+    hook.write_text("#!/bin/sh\n", encoding="utf-8")
+    assert "- setup: ok" in _context(repo)
+
+
+def test_empty_obsidian_settings_are_flagged(tmp_path: Path) -> None:
+    """Obsidian's empty first-open files count as missing settings and plugins."""
+    repo = scratch_repo(tmp_path)
+    obsidian = repo / ".obsidian"
+    obsidian.mkdir()
+    (obsidian / "app.json").write_text("{}", encoding="utf-8")
+    (obsidian / "community-plugins.json").write_text('["dataview"]', encoding="utf-8")
+    ctx = _context(repo)
+    assert "obsidian settings, obsidian plugins" in ctx

@@ -7,6 +7,7 @@
 
 import json
 import subprocess
+from collections.abc import Mapping
 from pathlib import Path
 
 import pytest
@@ -23,7 +24,9 @@ from tests.hooks._hookrun import (
 pytestmark = pytest.mark.skipif(not HAVE_TOOLS, reason="needs bash and jq")
 
 
-def _lib(payload: dict[str, object], snippet: str) -> subprocess.CompletedProcess[str]:
+def _lib(
+    payload: Mapping[str, object], snippet: str
+) -> subprocess.CompletedProcess[str]:
     """Source lib.sh with ``payload`` on stdin, then run ``snippet``."""
     return subprocess.run(
         ["bash", "-c", f'source "{HOOKS / "lib.sh"}"; {snippet}'],

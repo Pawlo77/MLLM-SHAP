@@ -6,6 +6,7 @@
 import importlib.util
 from pathlib import Path
 from types import ModuleType
+from typing import Any
 
 import pytest
 
@@ -22,7 +23,7 @@ def checker(tmp_path_factory: pytest.TempPathFactory) -> ModuleType:
     )
     assert spec is not None
     assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
+    module: Any = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     module.SCRIPTS = tmp_path_factory.mktemp("no-rules")  # the shared checks only
     return module

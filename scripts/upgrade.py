@@ -243,7 +243,8 @@ def hook_revs(runner: Runner, root: Path, _gh: GitHub) -> list[Item]:
         if line and not line[0].isspace():
             repo = line.strip()
         elif match := _HOOK.search(line):
-            items.append(Item("hook", repo, *match.groups(), PRE_COMMIT))
+            old, new = match.groups()
+            items.append(Item("hook", repo, old, new, PRE_COMMIT))
     return items
 
 

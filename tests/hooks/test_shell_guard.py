@@ -7,6 +7,7 @@ import importlib.util
 import json
 import re
 from types import ModuleType
+from typing import Any
 
 import pytest
 
@@ -27,7 +28,7 @@ def guard() -> ModuleType:
     )
     assert spec is not None
     assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
+    module: Any = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     # Pin the project rules, so the cases do not depend on the repository's config.
     module._project_rules = lambda: (

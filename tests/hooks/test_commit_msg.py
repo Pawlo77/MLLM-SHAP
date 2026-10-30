@@ -38,6 +38,10 @@ def commit_msg():
         "[prek] auto fixes from pre-commit hooks",
         "[prek] pre-commit autoupdate",
         "feat: add x\n\nBody with details.",
+        "Merge branch 'main' into feat/x",
+        "Merge remote-tracking branch 'origin/main'",
+        "Merge pull request #12 from owner/fix/x",
+        'Revert "feat: add x"',
     ],
 )
 def test_valid_commit_messages(commit_msg, message: str) -> None:
@@ -54,6 +58,8 @@ def test_valid_commit_messages(commit_msg, message: str) -> None:
         "feat: trailing period.",
         "feat add missing colon",
         "unknown: not a type",
+        "Merge stuff",
+        "revert things",
         "feat: " + ("x" * 80),
         "feat: add x\n\nCo-Authored-By: Claude <noreply@anthropic.com>",
         "feat: add x\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)",

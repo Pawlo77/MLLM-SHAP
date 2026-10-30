@@ -8,10 +8,12 @@ description: >-
 
 Exit criterion: `make check` (`AGENTS.md`). Rules: `.cursor/rules/*.mdc` (always-apply rules
 plus the ones whose globs match the files you touch). The conventions, extra steps and
-pitfalls of this repository: `local.md` in this folder.
+pitfalls of this repository: `local.md` in this folder, when it exists.
 
 ## Workflow
 
+0. **Set up**: when session start says `setup: incomplete`, run `make setup` first and
+   report its result.
 1. **Read**: task scope only; the existing `src/` and `tests/`; what `local.md` names.
 2. **Red**: failing `tests/test_*.py` first (mirror `src/`); test behaviour, not trivia.
 3. **Green**: smallest typed implementation; reuse before new abstractions.
