@@ -16,9 +16,9 @@ TEST_ARGS ?=
 SKILLS_TESTS ?= tests/hooks/test_skill_frontmatter.py tests/hooks/test_agents.py
 VAULT_ARGS ?= $(shell bash -c '. scripts/hooks/kit_conf.sh; kit_conf vault-check-args --quiet')
 
-.PHONY: help install upgrade-check upgrade upgrade-pin clean prek prek-all tests agent-check \
-	check vault-check knowledge rules agents configs skills-check skills-validate \
-	obsidian-plugins
+.PHONY: help install upgrade-check upgrade upgrade-pin clean prek prek-all tests tests-changed push-check agent-check \
+	check setup vault-check knowledge rules agents configs skills-check skills-validate \
+	obsidian-init obsidian-plugins
 
 help: ## Show available targets
 	@printf "Available targets:\n"
@@ -33,6 +33,9 @@ install: ## Set up the development environment
 	else \
 		echo "Secondary worktree: git hooks are shared and tied to one venv; run 'make install' in the main checkout."; \
 	fi
+	@$(MAKE) --no-print-directory obsidian-init
+
+setup: install obsidian-plugins tests ## Environment, hooks, Obsidian settings and plugins, then the tests
 
 upgrade-check: ## List outdated packages, action pins, uv and Obsidian plugins
 	uv run python scripts/upgrade.py --check
@@ -59,6 +62,13 @@ prek-all: ## Run git hook checks on all files
 
 tests: ## Run the test suite
 	uv run pytest $(TEST_ARGS)
+
+tests-changed: ## Run only the tests the branch's changes can reach (whole suite when unsure)
+	uv run python scripts/select_tests.py -- $(TEST_ARGS)
+
+push-check: ## Pre-push: the changed tests, then all quality hooks (CI runs every test)
+	$(MAKE) tests-changed
+	$(MAKE) prek-all
 
 agent-check: ## Agent validate: tests + prek-all
 	$(MAKE) tests
@@ -92,5 +102,8 @@ skills-check: ## Skill and subagent frontmatter follows the Agent Skills spec
 skills-validate: ## Upstream Agent Skills validator on every skill (advisory)
 	@for d in .agents/skills/*/; do uvx --from skills-ref==0.1.1 agentskills validate "$$d" || true; done
 
-obsidian-plugins: ## Download the pinned community plugin releases into .obsidian/plugins
-	uv run python scripts/install_obsidian_plugins.py
+obsidian-init: ## Seed .obsidian/*.json from the examples where missing or empty
+	@test ! -d .obsidian || uv run python scripts/install_obsidian_plugins.py --init
+
+obsidian-plugins: obsidian-init ## Download the pinned community plugin releases into .obsidian/plugins
+	@test ! -d .obsidian || uv run python scripts/install_obsidian_plugins.py

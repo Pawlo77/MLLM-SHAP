@@ -8,8 +8,8 @@ description: >-
 
 # Obsidian vault
 
-The vault is the repository root. `local.md` names the vault, the note folders, the
-plugins and the files agents may touch; read it first. Read
+The vault is the repository root. `local.md`, when it exists, names the vault, the note
+folders, the plugins and the files agents may touch; read it first. Read
 [references/syntax.md](references/syntax.md) before writing Dataview, Bases, Canvas,
 Mermaid or Templater.
 

@@ -13,7 +13,7 @@ make check
 ```
 
 `make check` runs the tests, every prek hook and the vault check. What each part covers
-here, and what else to run for the files you changed: `local.md` in this folder.
+here, and what else to run for the files you changed: `local.md` in this folder, when it exists.
 
 ## After push
 

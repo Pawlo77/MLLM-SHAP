@@ -38,3 +38,7 @@
 *.pkl binary
 *.pickle binary
 *.bin binary
+
+# Generated notes: two branches that both change them merge without a conflict; the
+# next commit's knowledge-build hook (or `make knowledge`) rewrites the merged note.
+knowledge/generated/** merge=union

@@ -60,8 +60,27 @@ memory() {
   return 0
 }
 
+# Names what `make setup` would still do; filesystem only, so the hook stays fast.
+setup_gaps() {
+  local gaps=() hook plugin live
+  [ -d .venv ] || gaps+=(".venv")
+  hook="$(git rev-parse --git-path hooks/pre-commit 2>/dev/null)"
+  [ -n "$hook" ] && [ -f "$hook" ] || gaps+=("git hooks")
+  if [ -d .obsidian ]; then
+    for live in app community-plugins; do
+      # a missing file, or Obsidian's empty default ({} or [])
+      [ "$(tr -d ' \n' <".obsidian/$live.json" 2>/dev/null | wc -c)" -gt 2 ] \
+        || { gaps+=("obsidian settings"); break; }
+    done
+    for plugin in $(jq -r '.[]' .obsidian/community-plugins.json 2>/dev/null); do
+      [ -f ".obsidian/plugins/$plugin/main.js" ] || { gaps+=("obsidian plugins"); break; }
+    done
+  fi
+  (IFS=,; echo "${gaps[*]}" | sed 's/,/, /g')
+}
+
 state() {
-  local changes vault
+  local changes vault gaps
   echo "## $(kit_conf name "$(basename "$ROOT")") session state"
   echo "- branch: $(git branch --show-current 2>/dev/null)"
   changes="$(git status --short 2>/dev/null)"
@@ -74,6 +93,12 @@ state() {
   echo "- recent commits:"
   git log --oneline -5 2>/dev/null | sed 's/^/    /'
   echo "- exit criterion: make check"
+  gaps="$(setup_gaps)"
+  if [ -n "$gaps" ]; then
+    echo "- setup: incomplete ($gaps); run make setup before other work"
+  else
+    echo "- setup: ok"
+  fi
   echo "- session key (skill ship: uv run python scripts/pr_policy.py --write-marker --session <key>): $(session_key)"
   declare -F project_state >/dev/null && project_state
   if [ -f scripts/check_vault.py ] && command -v uv >/dev/null 2>&1; then
