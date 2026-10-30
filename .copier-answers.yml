@@ -1,11 +1,13 @@
 # Changes here will be overwritten by Copier; run `copier update` instead.
-_commit: v1.1.0
+_commit: v1.4.2
 _src_path: gh:Pawlo77/python-kit-template
 author_email: pozorski.paul@gmail.com
 author_name: Paweł Pozorski
 description: Shapley-value explainability for conversational language models
+eden: false
 module: mllm_shap
 owner: Pawlo77
+plgrid: false
 research: false
 scaffold: none
 slug: mllm-shap
