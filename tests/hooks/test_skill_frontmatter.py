@@ -11,6 +11,7 @@ Claude Code and Cursor read them and the upstream validator rejects them.
 import json
 import re
 import unicodedata
+from collections.abc import Mapping
 from pathlib import Path
 
 import pytest
@@ -51,7 +52,7 @@ def _frontmatter(path: Path) -> tuple[dict[str, object], str]:
     return meta, match.group(2)
 
 
-def spec_errors(meta: dict[str, object], directory: str) -> list[str]:
+def spec_errors(meta: Mapping[str, object], directory: str) -> list[str]:
     """Return Agent Skills specification violations for one skill's frontmatter."""
     errors: list[str] = []
     extra = set(meta) - SPEC_FIELDS - CLIENT_FIELDS
@@ -170,3 +171,15 @@ def test_agent_frontmatter(path: Path) -> None:
     tools = {t.strip() for t in str(meta["tools"]).split(",")}
     assert not tools & WRITE_TOOLS, f"{path.stem} must be read-only"
     assert body.strip()
+
+
+@pytest.mark.parametrize("path", SKILL_FILES, ids=lambda p: p.parent.name)
+def test_skill_references_resolve(path: Path) -> None:
+    """Named skills exist; a skill names `local.md` only if it exists or is optional."""
+    text = path.read_text(encoding="utf-8")
+    for name in re.findall(r"skills? `([a-z0-9-]+)`", text):
+        assert (SKILLS / name / "SKILL.md").is_file(), f"unknown skill `{name}`"
+    if "`local.md`" in text and not (path.parent / "local.md").is_file():
+        assert "when it exists" in " ".join(text.split()), (
+            "`local.md` is named but may not exist"
+        )

@@ -179,3 +179,18 @@ def test_check_reports_stale_files_and_write_fixes_them(
     capsys.readouterr()
     assert configs.main(["--check", "--root", str(root)]) == 1
     assert "stale: .cursor/hooks.json" in capsys.readouterr().out
+
+
+def test_check_ignores_json_key_order_but_not_content(
+    configs: ModuleType, tmp_path: Path
+) -> None:
+    """``claude plugin install`` reorders keys; that is not stale, a missing key is."""
+    root = _root(tmp_path)
+    assert configs.main(["--root", str(root)]) == 0
+    path = root / ".claude" / "settings.json"
+    data = json.loads(path.read_text(encoding="utf-8"))
+    path.write_text(json.dumps(dict(reversed(data.items()))), encoding="utf-8")
+    assert configs.main(["--check", "--root", str(root)]) == 0
+    del data["hooks"]
+    path.write_text(json.dumps(data), encoding="utf-8")
+    assert configs.main(["--check", "--root", str(root)]) == 1
