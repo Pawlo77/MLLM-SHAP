@@ -31,7 +31,10 @@ ROOT = SCRIPTS.parent
 sys.path.insert(0, str(SCRIPTS))
 sys.path.insert(0, str(SCRIPTS / "hooks"))
 
-from check_memory_files import maintainer_emails, scan_text  # noqa: E402
+from check_memory_files import (  # noqa: E402  # ty: ignore[unresolved-import]
+    maintainer_emails,
+    scan_text,
+)
 from kit_config import load as load_config  # noqa: E402
 
 DEFAULTS: dict[str, Any] = {

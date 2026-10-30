@@ -6,6 +6,7 @@
 import importlib.util
 from pathlib import Path
 from types import ModuleType
+from typing import Any
 
 import pytest
 
@@ -22,7 +23,7 @@ def checker(tmp_path_factory: pytest.TempPathFactory) -> ModuleType:
     )
     assert spec is not None
     assert spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
+    module: Any = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     module.SCRIPTS = tmp_path_factory.mktemp("no-rules")  # the shared checks only
     return module
@@ -179,3 +180,15 @@ def test_project_rules_and_strict_groups(
     assert _errors(checker, vault) == []
     assert _errors(checker, vault, strict=True) == ["knowledge/Note.md:1: rule"]
     assert _errors(checker, vault, strict_tags=True) == ["x:1: tag"]
+
+
+def test_shipped_code_links_no_dot_paths() -> None:
+    """A wikilink to a dot path cannot resolve (Obsidian skips dot folders): a project
+    that scans its code for links fails its vault check on it."""
+    bad = [
+        str(path.relative_to(ROOT))
+        for folder in ("scripts", "tests")
+        for path in (ROOT / folder).rglob("*.py")
+        if "[[" + "." in path.read_text(encoding="utf-8")
+    ]
+    assert not bad, bad

@@ -22,6 +22,11 @@ COMMIT_TYPES: tuple[str, ...] = (
 _TYPE_ALT = "|".join(COMMIT_TYPES)
 _SUBJECT_RE = re.compile(rf"^({_TYPE_ALT})(\([a-zA-Z0-9/_-]+\))?: .+$")
 
+# git's own subjects: `git merge` and `git revert` run this hook with them
+_GIT_GENERATED_RE = re.compile(
+    r"^(Merge (branch|remote-tracking branch|pull request|tag) .+|Revert \".+\")$"
+)
+
 # prek autofix / autoupdate commit messages from .pre-commit-config.yaml
 _PREK_PREFIX = "[prek]"
 
@@ -43,7 +48,7 @@ def validate_commit_message(message: str) -> str | None:
     for line in message.splitlines():
         if is_watermark(line):
             return f"AI attribution is not allowed in commit messages: {line.strip()!r}"
-    if subject.startswith(_PREK_PREFIX):
+    if subject.startswith(_PREK_PREFIX) or _GIT_GENERATED_RE.match(subject):
         return None
     if subject.endswith("."):
         return "subject must not end with a period"

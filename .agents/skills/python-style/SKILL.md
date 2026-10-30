@@ -7,7 +7,7 @@ description: >-
 
 # Python style
 
-Read the rules that apply; they are the single source. `local.md` lists this repository's
+Read the rules that apply; they are the single source. `local.md`, when it exists, lists this repository's
 Python rules (typing, docstrings, logging, configuration). `minimal-diff.mdc`, `tdd.mdc`
 and `brevity.mdc` set scope, tests first and size budgets.
 

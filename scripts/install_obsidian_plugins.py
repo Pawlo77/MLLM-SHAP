@@ -1,7 +1,7 @@
 """Install the vault's Obsidian community plugins from their pinned GitHub releases.
 
 Usage:
-    uv run python scripts/install_obsidian_plugins.py [--force | --check]
+    uv run python scripts/install_obsidian_plugins.py [--force | --check | --init]
 
 Downloads ``main.js`` and ``styles.css`` of the release pinned by each committed
 ``manifest.json`` (Obsidian disables a plugin whose ``main.js`` is missing). Plugin id
@@ -48,6 +48,26 @@ def enabled_plugins(obsidian: Path = OBSIDIAN) -> list[str]:
     live = obsidian / "community-plugins.json"
     source = live if live.is_file() else obsidian / "community-plugins.example.json"
     return list(json.loads(source.read_text()))
+
+
+def seed_settings(obsidian: Path = OBSIDIAN) -> list[str]:
+    """Copy each ``*.example.json`` over its live file when that is missing or empty.
+
+    Obsidian writes ``{}`` or ``[]`` on first open, so a plain copy that keeps existing
+    files would leave the vault without the shared settings; real content is kept.
+    """
+    seeded: list[str] = []
+    for example in sorted(obsidian.rglob("*.example.json")):
+        live = example.with_name(example.name.replace(".example.json", ".json"))
+        if live.is_file() and json.loads(live.read_text() or "null") not in (
+            None,
+            {},
+            [],
+        ):
+            continue
+        live.write_text(example.read_text())
+        seeded.append(str(live.relative_to(obsidian)))
+    return seeded
 
 
 def pinned_version(plugin: str, obsidian: Path = OBSIDIAN) -> str:
@@ -105,8 +125,12 @@ def main(argv: list[str] | None = None) -> int:
     """Install or check every enabled plugin; return the exit status."""
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--check", action="store_true", help="report, do not download")
+    parser.add_argument("--init", action="store_true", help="seed the settings only")
     parser.add_argument("--force", action="store_true", help="re-download everything")
     args = parser.parse_args(argv)
+    if args.init:
+        print("seeded: " + (", ".join(seed_settings()) or "nothing"))
+        return 0
     status = 0
     for plugin in enabled_plugins():
         version = pinned_version(plugin)
