@@ -8,6 +8,7 @@ import os
 import shutil
 import subprocess
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -41,7 +42,7 @@ def repo(tmp_path: Path) -> Path:
     return root
 
 
-def _gate(repo: Path, command: str, *, cursor: bool = False) -> dict[str, object]:
+def _gate(repo: Path, command: str, *, cursor: bool = False) -> dict[str, Any]:
     payload = {**CURSOR, "command": command}
     if not cursor:
         payload = {**CLAUDE, "tool_input": {"command": command}}

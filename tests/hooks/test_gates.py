@@ -11,6 +11,7 @@ import os
 import shutil
 import subprocess
 import time
+from collections.abc import Mapping
 from pathlib import Path
 
 import pytest
@@ -49,7 +50,7 @@ TOOLS = (
 
 def run(
     script: str,
-    payload: dict[str, object],
+    payload: Mapping[str, object],
     cwd: Path,
     extra_env: dict[str, str] | None = None,
 ) -> subprocess.CompletedProcess[str]:
@@ -115,14 +116,14 @@ RED = (
 )
 
 
-def start_session(repo: Path, shape: dict[str, object] = CLAUDE) -> None:
+def start_session(repo: Path, shape: Mapping[str, object] = CLAUDE) -> None:
     """Run session_start.sh, which seeds the session's tests-ok tree hash."""
     payload = {**shape, "hook_event_name": "SessionStart"}
     assert run("session_start.sh", payload, repo).returncode == 0
 
 
 def edit(
-    repo: Path, rel: str, text: str = "X = 2\n", shape: dict[str, object] = CLAUDE
+    repo: Path, rel: str, text: str = "X = 2\n", shape: Mapping[str, object] = CLAUDE
 ) -> None:
     """Start the session of ``shape`` when needed, then write ``rel``."""
     key = str(shape.get("session_id", shape.get("conversation_id")))
@@ -267,7 +268,7 @@ def test_stop_gate_green_hash_ends_shell_edit_gating(
 
 
 def test_stop_gate_warns_on_slow_runs(repo: Path, tmp_path: Path) -> None:
-    """A make tests run over 120 s logs a WARNING line on stderr."""
+    """A make tests-changed run over 120 s logs a WARNING line on stderr."""
     edit(repo, "src/mod.py", "X = 8\n")
     env, _ = make_env(tmp_path, exit_code=0, output="1 passed")
     clock = tmp_path / "clock"
@@ -281,7 +282,7 @@ def test_stop_gate_warns_on_slow_runs(repo: Path, tmp_path: Path) -> None:
     fake_date.chmod(0o755)
     result = run("stop_test_gate.sh", CLAUDE, repo, env)
     assert result.returncode == 0
-    assert "WARNING: stop test gate: make tests took 125 s" in result.stderr
+    assert "WARNING: stop test gate: make tests-changed took 125 s" in result.stderr
 
 
 def test_session_start_clears_own_and_stale_gate_state(repo: Path) -> None:

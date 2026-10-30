@@ -38,6 +38,7 @@ OWNED = (
     "CITATION.cff",
     "CONTRIBUTING.md",
     ".github/pull_request_template.md",
+    ".github/dependabot.yaml",
     ".obsidian/**",
     "knowledge/**",
     "plans/**",
