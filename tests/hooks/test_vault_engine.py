@@ -162,6 +162,22 @@ def test_schema_exemptions(checker: ModuleType, vault: Path) -> None:
     assert _errors(checker, vault) == []
 
 
+def test_link_fields_resolve_paths_and_note_names(
+    checker: ModuleType, vault: Path
+) -> None:
+    field = 'link-fields = ["references"]\nsections-exempt'
+    schema = SCHEMA.replace("sections-exempt", field)
+    _write(vault, "pyproject.toml", "[project]\nname = 'demo'\n" + schema)
+    _write(vault, "knowledge/Paper.md", NOTE.format("Paper", "concept", "[[Note]]"))
+    note = NOTE.format("Note", "concept", "x").replace(
+        "---\n\n#", 'references: ["[[Paper]]", "[[Missing]]"]\n---\n\n#', 1
+    )
+    _write(vault, "knowledge/Note.md", note)
+    errors = _errors(checker, vault)
+    assert any("references target missing: Missing" in line for line in errors)
+    assert not any("target missing: Paper" in line for line in errors)
+
+
 def test_project_rules_and_strict_groups(
     checker: ModuleType, vault: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
