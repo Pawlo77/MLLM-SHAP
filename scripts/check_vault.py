@@ -301,7 +301,8 @@ def check_schema(vault: Vault, path: Path, text: str) -> list[Finding]:
 
     ``[tool.agent-kit.vault.schema]`` sets ``dirs``, ``required`` keys, allowed
     ``types``, per-type ``statuses`` and ``sections``, ``exempt`` types per key,
-    ``sections-exempt`` note names and ``link-fields`` whose targets must exist.
+    ``sections-exempt`` note names and ``link-fields`` whose targets must resolve like
+    wikilinks (a vault path with extension, or a note name).
     """
     schema = vault.cfg.get("schema", {})
     if not schema or not vault.under(path, *schema.get("dirs", [])):
@@ -334,7 +335,7 @@ def check_schema(vault: Vault, path: Path, text: str) -> list[Finding]:
         for item in meta.get(key) or []:
             match = LINK.search(str(item))
             target = (match.group(1) if match else str(item)).strip()
-            if not (vault.root / target).exists():
+            if vault.resolve(target) is None:
                 findings.append(Finding(rel, 1, f"{key} target missing: {target}"))
     if path.stem not in schema.get("sections-exempt", []):
         present = headings(text)
