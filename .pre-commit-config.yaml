@@ -164,7 +164,7 @@ repos:
 
       - id: conventional-commit-msg
         name: conventional commit message
-        entry: python scripts/hooks/commit_msg.py
+        entry: uv run python scripts/hooks/commit_msg.py
         language: system
         stages: [commit-msg]
         always_run: true
