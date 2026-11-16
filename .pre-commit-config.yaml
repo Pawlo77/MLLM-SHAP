@@ -170,7 +170,7 @@ repos:
         always_run: true
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.17.3
+    rev: v0.17.5
     hooks:
       - id: ruff-check
         types_or: [python, pyi]
@@ -179,7 +179,7 @@ repos:
         types_or: [python, pyi]
 
   - repo: https://github.com/zizmorcore/zizmor-pre-commit
-    rev: v1.31.1
+    rev: v1.32.0
     hooks:
       - id: zizmor
         args: [-q, --min-severity=medium, --config, .github/zizmor.yml]
