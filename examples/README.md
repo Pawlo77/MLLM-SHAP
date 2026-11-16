@@ -29,6 +29,9 @@ What each notebook demonstrates, and the extras it needs: [docs gallery](https:/
 - `runtime_core.ipynb`
 - `exact_estimation.ipynb`
 - `estimator_comparison.ipynb`
+- `estimators_semivalues_uncertainty.ipynb`
+- `replay_and_cost.ipynb`
+- `faithfulness_and_interactions.ipynb`
 - `attribution_viz.ipynb`
 - `text_explain_e2e.ipynb`
 - `audio_alignment.ipynb`
