@@ -144,6 +144,7 @@ See :doc:`guides/extending` for the full extras and entry-point matrix.
    theory/estimands
    theory/exact
    theory/approximation
+   theory/uncertainty
    theory/regression_estimators
    theory/value_functions
    theory/masking

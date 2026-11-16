@@ -131,8 +131,14 @@ it. The registry hands them to the plugin as
 :attr:`PluginContext.options <mllm_shap.plugins.context.PluginContext.options>`;
 see :doc:`extending` for a plugin that reads them. Built-in plugins with options
 are ``absence_policies/pad`` (``placeholder``), ``absence_policies/neutral``
-(``fill_char``) and ``normalizers/power_shift`` (``power``); the others accept
-none. Before a run starts, a key naming no plugin of the run, an unknown option
+(``fill_char``), ``absence_policies/infill`` (``model``, ``revision``),
+``normalizers/power_shift`` (``power``), ``estimands/beta_shapley`` (``alpha``,
+``beta``), ``estimands/weighted_banzhaf`` (``p``), ``estimators/permutation``
+(``antithetic``), ``estimators/lime`` (``kernel_width``, ``alpha``),
+``value_fns/contrastive`` (``target``, ``foil``) and ``value_fns/label_margin``
+(``target``, ``labels``); the others accept none. The ``replay`` backend reads
+``backend.options`` (``archives``, ``fallback``) and the ``transformers`` backend
+``backend.options.batch_size``; see :doc:`backends`. Before a run starts, a key naming no plugin of the run, an unknown option
 or a value of the wrong type raises :exc:`~mllm_shap.errors.ConfigError` naming
 the group, plugin and key.
 

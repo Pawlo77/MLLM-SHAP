@@ -323,6 +323,7 @@ reuse its model:
    curve = await deletion_curve(wer_config, snapshot, output.result.values)
    print(curve.removed, curve.values, round(curve.area, 3))
 
+See :doc:`../notebooks/faithfulness_and_interactions` for runnable examples.
 :func:`~mllm_shap.removal_metrics` scores one ranking on one set of coalitions
 (:class:`~mllm_shap.RemovalMetrics`): deletion and insertion curves, comprehensiveness,
 sufficiency and a normalised ``aopc``, the win rate against size-matched random sets,

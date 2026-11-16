@@ -95,6 +95,8 @@ test the plumbing, not a model.
 Replay
 ------
 
+See :doc:`../notebooks/replay_and_cost` for a worked run.
+
 :class:`~mllm_shap.backends.replay.ReplayBackend` answers coalitions from run archives,
 so any estimator, budget, seed or value function runs on a table you already paid for.
 Use the config of the archived run, changing only those settings: rows are found by

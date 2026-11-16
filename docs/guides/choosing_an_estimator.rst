@@ -88,10 +88,14 @@ and returns the order-2 ``k-SII`` matrix through ``shapiq``: a positive entry me
 two players are worth more together than their separate values add up to. It needs the
 full table of :math:`2^n` coalitions, so it is for short inputs, and an archive or the
 ``replay`` backend answers repeats without the model. Other ``shapiq`` indices such as
-``FSII`` (Faith-SHAP) work through ``index``.
+``FSII`` (Faith-SHAP) work through ``index``. The result carries the player ids, their words
+in ``labels`` and ``top(k)`` for the largest pairs.
 
 Stopping early
 --------------
+
+The notebook :doc:`../notebooks/estimators_semivalues_uncertainty` runs the estimators, the
+standard errors, the stopping rule and the budget planner on a toy game.
 
 ``budget.stop`` ends sampling before the budget, which stays the upper bound. After every
 ``check_every`` coalitions (default 16), once ``min_evaluations`` have run (default

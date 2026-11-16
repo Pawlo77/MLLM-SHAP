@@ -61,16 +61,18 @@ generation:
   compute_embeddings: false # set automatically for embedding value functions
 
 explanation:
-  estimand: shapley         # shapley | banzhaf
-  estimator: exact          # exact | mc | complementary | neyman_cc
-  value_fn: tfidf_cosine    # tfidf_cosine | embedding_cosine | logprob | ...
+  estimand: shapley         # shapley | banzhaf | beta_shapley | ...
+  estimator: exact          # exact | mc | permutation | lime | leverage | ...
+  value_fn: tfidf_cosine    # tfidf_cosine | tf_logprob | label_margin | ...
   normalizer: identity      # identity | abs_sum | power_shift | min_max
   players: tokens           # tokens | messages (one player per message)
-  absence_policy: delete    # delete | pad | neutral
+  absence_policy: delete    # delete | pad | neutral | infill
+  stderr: false             # standard error per value (mc and exact only)
   budget:
     fraction: 1.0           # share of the 2^n coalitions; exact needs 1.0
     # evaluations: 2000     # or an absolute count instead of fraction (not exact)
     # per_player: 4         # or ceil(4 n) coalitions for n players (not exact)
+    # stop: {max_ci_width: 0.2}  # end mc sampling early
   include_minimal_masks: false
   max_inflight: 2           # concurrent backend calls
   max_players: 24           # refuse runs planning more than 2^max_players coalitions

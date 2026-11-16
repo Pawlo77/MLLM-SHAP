@@ -164,6 +164,8 @@ Convergence depends on the game. :doc:`../guides/estimator_benchmark` tabulates 
 error of every estimator at budgets of :math:`2n` to :math:`32n` coalitions on five
 reference games; run the same comparison on a game that resembles your prompts, or
 on the prompt itself with a cheap backend and ``exact`` as the reference.
+For a target error, a stopping rule and the error a run reports about itself, see
+:doc:`uncertainty`.
 
 References
 ----------
