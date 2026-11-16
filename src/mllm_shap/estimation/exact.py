@@ -5,11 +5,12 @@
 @tested-by [[tests/estimation/test_exact.py]]
 """
 
-from collections.abc import Iterator
+from collections.abc import Iterator, Sequence
 from typing import TYPE_CHECKING
 
 from ..domain.coalition import CoalitionMask
 from ..domain.players import PlayerSet
+from ..protocols.estimand import EstimandAggregator
 from ._shared import _SnapshotEstimator, mask_int_to_present
 
 if TYPE_CHECKING:
@@ -60,3 +61,13 @@ class ExactEstimator(_SnapshotEstimator):
         for mask_int in ExactEstimator.iter_mask_ints(num_players):
             present = mask_int_to_present(mask_int, num_players)
             yield CoalitionMask.from_sequence(present)
+
+    def standard_errors(
+        self,
+        masks: Sequence[CoalitionMask],
+        payoffs: Sequence[float],
+        aggregator: EstimandAggregator,
+    ) -> list[float]:
+        """Return zeros: the full table leaves no sampling error."""
+        _ = payoffs, aggregator
+        return [0.0] * len(masks[0].present)

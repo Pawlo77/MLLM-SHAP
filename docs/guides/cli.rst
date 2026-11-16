@@ -14,6 +14,7 @@ without writing Python. It reads the same YAML configuration as
        --render token_bar --png result.png
    mllm-shap reanalyze --config config.yaml --archive runs/<run_id>
    mllm-shap plugins                            # registered plugins per group
+   mllm-shap plan --players 20 --range 2 --target-error 0.1   # budget for an error
 
 Add ``--log-level info`` (``debug``, ``info``, ``warning`` or ``error``, any case)
 before the command to see the pipeline's stage events on stderr (see

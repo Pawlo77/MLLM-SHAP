@@ -8,6 +8,7 @@
 import logging
 import math
 from collections.abc import Callable, Sequence
+from dataclasses import dataclass
 
 import numpy as np
 
@@ -89,6 +90,113 @@ def aggregate_shapley_exact(
     return shap_values.tolist()
 
 
+@dataclass(frozen=True)
+class _StratumTables:
+    """Per player and coalition size, sums, squared sums and counts of payoffs."""
+
+    with_sum: np.ndarray
+    with_square: np.ndarray
+    with_count: np.ndarray
+    without_sum: np.ndarray
+    without_square: np.ndarray
+    without_count: np.ndarray
+    pooled_variance: float
+    """Sample variance of all distinct payoffs, for strata with one observation."""
+
+
+def _stratum_tables(
+    masks: Sequence[Sequence[bool]], payoffs: Sequence[float]
+) -> _StratumTables:
+    """Tabulate the distinct coalitions by size, with and without each player."""
+    num_players = len(masks[0])
+    payoff_lookup: dict[int, float] = {}
+    for mask, payoff in zip(masks, payoffs, strict=True):
+        payoff_lookup[present_to_mask_int(mask)] = payoff
+    unique = np.array(
+        [[(key >> i) & 1 for i in range(num_players)] for key in payoff_lookup],
+        dtype=np.float64,
+    )
+    pay = np.fromiter(payoff_lookup.values(), dtype=np.float64)
+    onehot = np.eye(num_players + 1)[unique.sum(axis=1).astype(np.int64)]
+    absent = 1.0 - unique
+    return _StratumTables(
+        with_sum=(unique * pay[:, None]).T @ onehot,
+        with_square=(unique * (pay**2)[:, None]).T @ onehot,
+        with_count=unique.T @ onehot,
+        without_sum=(absent * pay[:, None]).T @ onehot,
+        without_square=(absent * (pay**2)[:, None]).T @ onehot,
+        without_count=absent.T @ onehot,
+        pooled_variance=float(pay.var(ddof=1)) if len(pay) > 1 else 0.0,
+    )
+
+
+def marginal_standard_errors(
+    masks: Sequence[Sequence[bool]],
+    payoffs: Sequence[float],
+    weight_fn: Callable[[int, int], float],
+) -> list[float]:
+    """Return the standard error of :func:`aggregate_from_marginals` per player.
+
+    Each stratum difference has variance ``s^2 / n (1 - n / N)`` per side: ``s^2`` is
+    the sample variance of the sampled payoffs, ``n`` their count and ``N`` the
+    ``C(n_players - 1, l)`` coalitions of that stratum, so an enumerated stratum has
+    none. A side with one observation uses the pooled variance of all payoffs.
+    Strata are independent and combined with the squared renormalised weights of the
+    value; coalitions are treated as a simple random sample within each size.
+    """
+    num_players = len(masks[0])
+    tables = _stratum_tables(masks, payoffs)
+
+    def side_variance(
+        total: np.ndarray, square: np.ndarray, count: np.ndarray
+    ) -> np.ndarray:
+        mean_square = np.divide(
+            square, count, where=count > 0, out=np.zeros_like(square)
+        )
+        mean = np.divide(total, count, where=count > 0, out=np.zeros_like(total))
+        unbiased = np.divide(
+            count * (mean_square - mean**2),
+            count - 1,
+            where=count > 1,
+            out=np.full_like(total, tables.pooled_variance),
+        )
+        population = np.array([
+            math.comb(num_players - 1, size) for size in range(num_players)
+        ])
+        finite = np.clip(1.0 - count / population, 0.0, 1.0)
+        variance: np.ndarray = np.divide(
+            np.maximum(unbiased, 0.0) * finite,
+            count,
+            where=count > 0,
+            out=np.zeros_like(total),
+        )
+        return variance
+
+    with_var = side_variance(
+        tables.with_sum[:, 1:], tables.with_square[:, 1:], tables.with_count[:, 1:]
+    )
+    without_var = side_variance(
+        tables.without_sum[:, :-1],
+        tables.without_square[:, :-1],
+        tables.without_count[:, :-1],
+    )
+    valid = (tables.with_count[:, 1:] > 0) & (tables.without_count[:, :-1] > 0)
+    probabilities = np.array([
+        weight_fn(size, num_players) * math.comb(num_players - 1, size)
+        for size in range(num_players)
+    ])
+    mass = (valid * probabilities).sum(axis=1)
+    share = np.divide(
+        valid * probabilities,
+        mass[:, None],
+        where=mass[:, None] > 0,
+        out=np.zeros_like(with_var),
+    )
+    return [
+        float(v) for v in np.sqrt((share**2 * (with_var + without_var)).sum(axis=1))
+    ]
+
+
 def aggregate_from_marginals(
     masks: Sequence[Sequence[bool]],
     payoffs: Sequence[float],
@@ -131,19 +239,9 @@ def aggregate_from_marginals(
         msg = "all masks must have the same number of players"
         raise ValueError(msg)
 
-    payoff_lookup: dict[int, float] = {}
-    for mask, payoff in zip(masks, payoffs, strict=True):
-        payoff_lookup[present_to_mask_int(mask)] = payoff
-    unique = np.array(
-        [[(key >> i) & 1 for i in range(num_players)] for key in payoff_lookup],
-        dtype=np.float64,
-    )
-    pay = np.fromiter(payoff_lookup.values(), dtype=np.float64)
-    onehot = np.eye(num_players + 1)[unique.sum(axis=1).astype(np.int64)]
-    with_sum, with_count = (unique * pay[:, None]).T @ onehot, unique.T @ onehot
-    absent = 1.0 - unique
-    without_sum, without_count = (absent * pay[:, None]).T @ onehot, absent.T @ onehot
-
+    tables = _stratum_tables(masks, payoffs)
+    with_sum, with_count = tables.with_sum, tables.with_count
+    without_sum, without_count = tables.without_sum, tables.without_count
     # Stratum l pairs the size-(l + 1) coalitions with i and the size-l without.
     valid = (with_count[:, 1:] > 0) & (without_count[:, :-1] > 0)
     difference = np.divide(

@@ -12,6 +12,8 @@ Masking
 
 .. automodule:: mllm_shap.masking.policies
 
+.. automodule:: mllm_shap.masking.infill
+
 .. automodule:: mllm_shap.masking.audio
 
 .. automodule:: mllm_shap.masking.builder

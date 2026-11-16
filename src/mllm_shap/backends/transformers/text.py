@@ -8,8 +8,10 @@
 import asyncio
 import copy
 import dataclasses
+import itertools
 import logging
 import threading
+import time
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any, ClassVar
 
@@ -19,6 +21,7 @@ from ...domain.generation import ForcedScore, GenerationRecord
 from ...errors import BackendUnavailableError
 from ...protocols.plugin import PluginOptions
 from ...runtime.kv_cache import CroppableCache, PrefixCacheManager
+from ...runtime.metrics import CostCounters
 from ...value.generation_records import generation_record_from_text
 from .._chat import snapshot_has_audio, snapshot_to_chat_messages
 from ._torch import import_torch
@@ -31,6 +34,25 @@ if TYPE_CHECKING:
     from ...plugins.context import PluginContext
 
 logger = logging.getLogger(__name__)
+
+
+@dataclasses.dataclass
+class _ForceRequest:
+    """One queued ``score_continuations`` call waiting for its batch."""
+
+    snapshot: ConversationSnapshot
+    continuations: tuple[str, ...]
+    top_k: int
+    future: "asyncio.Future[list[ForcedScore]]"
+
+
+@dataclasses.dataclass
+class _GenerateRequest:
+    """One queued greedy ``generate`` call waiting for its batch."""
+
+    snapshot: ConversationSnapshot
+    generation: GenerationConfig
+    future: "asyncio.Future[GenerationRecord]"
 
 
 class TransformersTextBackend:
@@ -60,6 +82,11 @@ class TransformersTextBackend:
         self._prefix_cache: PrefixCacheManager | None = None
         self._kv_cache_hits = 0
         self._kv_cache_reused_tokens = 0
+        self._cost = CostCounters()
+        self._force_queue: list[_ForceRequest] = []
+        self._generate_queue: list[_GenerateRequest] = []
+        self._generate_timer: asyncio.Task[None] | None = None
+        self._force_timer: asyncio.Task[None] | None = None
         self._warned_half_precision_cache = False
         self._init_lock = asyncio.Lock()
         # Generation runs in worker threads; one model must not run concurrently.
@@ -69,6 +96,11 @@ class TransformersTextBackend:
     def model_id(self) -> str:
         """Return the configured Hugging Face model identifier."""
         return self._config.model_id
+
+    @property
+    def batch_size(self) -> int:
+        """Return the teacher-forced batch size (``backend.options.batch_size``)."""
+        return self._options.batch_size
 
     @property
     def returns_logprobs(self) -> bool:
@@ -116,11 +148,141 @@ class TransformersTextBackend:
                 "loaded as a text-only causal language model"
             )
             raise ValueError(msg)
+        if (
+            self._options.batch_size > 1
+            and generation.temperature == 0.0
+            and not generation.compute_embeddings
+            and not snapshot_has_audio(snapshot)
+        ):
+            return await self._enqueue_generate(snapshot, generation)
         return await asyncio.to_thread(
             self._generate_sync,
             snapshot,
             generation,
         )
+
+    async def _enqueue_generate(
+        self, snapshot: ConversationSnapshot, generation: GenerationConfig
+    ) -> GenerationRecord:
+        """Queue a greedy generation; run the batch when full or after the wait."""
+        future: asyncio.Future[GenerationRecord] = (
+            asyncio.get_running_loop().create_future()
+        )
+        self._generate_queue.append(_GenerateRequest(snapshot, generation, future))
+        if len(self._generate_queue) >= self._options.batch_size:
+            await self._flush_generate()
+        elif self._generate_timer is None or self._generate_timer.done():
+            self._generate_timer = asyncio.create_task(self._generate_after_wait())
+        return await future
+
+    async def _generate_after_wait(self) -> None:
+        await asyncio.sleep(self._options.batch_wait_ms / 1000.0)
+        await self._flush_generate()
+
+    async def _flush_generate(self) -> None:
+        batch, self._generate_queue = self._generate_queue, []
+        if not batch:
+            return
+        try:
+            records = await asyncio.to_thread(self._generate_batch_sync, batch)
+        except Exception as error:
+            for request in batch:
+                if not request.future.done():
+                    request.future.set_exception(error)
+            return
+        for request, record in zip(batch, records, strict=True):
+            if not request.future.done():
+                request.future.set_result(record)
+
+    def _generate_batch_sync(
+        self, batch: list["_GenerateRequest"]
+    ) -> list[GenerationRecord]:
+        """Generate every request greedily in left-padded batches.
+
+        Requests with the same settings are sorted by prompt length and run
+        ``batch_size`` at a time; the prefix cache is not used. Each row stops at its
+        first end-of-sequence token, which is scored like in the one-prompt path.
+        """
+        tokenizer = self._tokenizer
+        model = self._model
+        if tokenizer is None or model is None:
+            msg = "transformers backend is not loaded"
+            raise BackendUnavailableError(msg)
+        torch = import_torch()
+        records: list[GenerationRecord | None] = [None] * len(batch)
+        with self._model_lock, torch.no_grad():
+            prompts = [
+                [
+                    int(t)
+                    for t in self._encode(torch, model, tokenizer, r.snapshot)[
+                        "input_ids"
+                    ][0].tolist()
+                ]
+                for r in batch
+            ]
+            order = sorted(range(len(batch)), key=lambda i: len(prompts[i]))
+            pad = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else 0
+            eos = tokenizer.eos_token_id
+            for start in range(0, len(order), self._options.batch_size):
+                chunk = order[start : start + self._options.batch_size]
+                for _key, members in itertools.groupby(
+                    chunk,
+                    key=lambda i: (
+                        batch[i].generation.max_new_tokens,
+                        batch[i].generation.top_k,
+                    ),
+                ):
+                    group = list(members)
+                    width = max(len(prompts[i]) for i in group)
+                    device = model.device
+                    ids = torch.tensor(
+                        [[pad] * (width - len(prompts[i])) + prompts[i] for i in group],
+                        dtype=torch.long,
+                        device=device,
+                    )
+                    mask = torch.tensor(
+                        [
+                            [0] * (width - len(prompts[i])) + [1] * len(prompts[i])
+                            for i in group
+                        ],
+                        dtype=torch.long,
+                        device=device,
+                    )
+                    kwargs = _generate_kwargs(
+                        torch, tokenizer, ids, batch[group[0]].generation
+                    )
+                    kwargs["attention_mask"] = mask
+                    clock = _device_clock(torch)
+                    generated = model.generate(**kwargs)
+                    elapsed = _device_clock(torch) - clock
+                    produced = 0
+                    for row, i in enumerate(group):
+                        new_ids = generated.sequences[row, width:].cpu().tolist()
+                        if eos is not None and eos in new_ids:
+                            new_ids = new_ids[: new_ids.index(eos) + 1]
+                        steps = torch.stack([
+                            step[row] for step in generated.logits[: len(new_ids)]
+                        ]).float()
+                        chosen = steps.log_softmax(dim=-1).gather(
+                            1, torch.tensor(new_ids, device=steps.device)[:, None]
+                        )
+                        text = tokenizer.decode(
+                            new_ids, skip_special_tokens=True
+                        ).strip()
+                        records[i] = dataclasses.replace(
+                            generation_record_from_text(text),
+                            logprobs=tuple(
+                                float(v) for v in chosen[:, 0].cpu().tolist()
+                            ),
+                        )
+                        produced += len(new_ids)
+                    self._count(
+                        sum(len(prompts[i]) for i in group),
+                        produced,
+                        len(group),
+                        elapsed,
+                    )
+        return [record for record in records if record is not None]
 
     @property
     def forces_continuations(self) -> bool:
@@ -145,9 +307,109 @@ class TransformersTextBackend:
         if snapshot_has_audio(snapshot):
             msg = "teacher-forced scoring supports text prompts only"
             raise ValueError(msg)
+        if self._options.batch_size > 1:
+            return await self._enqueue_force(snapshot, tuple(continuations), top_k)
         return await asyncio.to_thread(
             self._force_sync, snapshot, tuple(continuations), top_k
         )
+
+    async def _enqueue_force(
+        self, snapshot: ConversationSnapshot, continuations: tuple[str, ...], top_k: int
+    ) -> list[ForcedScore]:
+        """Queue a request; run the batch when full or after ``batch_wait_ms``."""
+        future: asyncio.Future[list[ForcedScore]] = (
+            asyncio.get_running_loop().create_future()
+        )
+        self._force_queue.append(_ForceRequest(snapshot, continuations, top_k, future))
+        queued = sum(len(r.continuations) for r in self._force_queue)
+        if queued >= self._options.batch_size:
+            await self._flush_force()
+        elif self._force_timer is None or self._force_timer.done():
+            self._force_timer = asyncio.create_task(self._flush_after_wait())
+        return await future
+
+    async def _flush_after_wait(self) -> None:
+        await asyncio.sleep(self._options.batch_wait_ms / 1000.0)
+        await self._flush_force()
+
+    async def _flush_force(self) -> None:
+        batch, self._force_queue = self._force_queue, []
+        if not batch:
+            return
+        try:
+            results = await asyncio.to_thread(self._force_batch_sync, batch)
+        except Exception as error:
+            for request in batch:
+                if not request.future.done():
+                    request.future.set_exception(error)
+            return
+        for request, scores in zip(batch, results, strict=True):
+            if not request.future.done():
+                request.future.set_result(scores)
+
+    def _force_batch_sync(
+        self, batch: list["_ForceRequest"]
+    ) -> list[list[ForcedScore]]:
+        """Score every continuation of ``batch`` in padded forward passes.
+
+        Sequences are right-padded and sorted by length, ``batch_size`` per pass, so
+        the scores equal the one-prompt passes up to floating-point rounding.
+        """
+        tokenizer = self._tokenizer
+        model = self._model
+        if tokenizer is None or model is None:
+            msg = "transformers backend is not loaded"
+            raise BackendUnavailableError(msg)
+        torch = import_torch()
+        jobs: list[tuple[int, int, list[int], list[int], int]] = []
+        with self._model_lock, torch.no_grad():
+            for r_index, request in enumerate(batch):
+                prompt = [
+                    int(t)
+                    for t in self._encode(torch, model, tokenizer, request.snapshot)[
+                        "input_ids"
+                    ][0].tolist()
+                ]
+                for c_index, text in enumerate(request.continuations):
+                    ids = [
+                        int(t) for t in tokenizer.encode(text, add_special_tokens=False)
+                    ]
+                    jobs.append((r_index, c_index, prompt, ids, request.top_k))
+            results: list[list[ForcedScore]] = [
+                [ForcedScore(())] * len(r.continuations) for r in batch
+            ]
+            pending = sorted(
+                (job for job in jobs if job[3]), key=lambda j: len(j[2]) + len(j[3])
+            )
+            pad = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else 0
+            size = self._options.batch_size
+            for start in range(0, len(pending), size):
+                group = pending[start : start + size]
+                width = max(len(j[2]) + len(j[3]) for j in group)
+                rows = [
+                    j[2] + j[3] + [pad] * (width - len(j[2]) - len(j[3])) for j in group
+                ]
+                mask = [
+                    [1] * (len(j[2]) + len(j[3]))
+                    + [0] * (width - len(j[2]) - len(j[3]))
+                    for j in group
+                ]
+                device = model.device
+                clock = _device_clock(torch)
+                logits = model(
+                    input_ids=torch.tensor(rows, dtype=torch.long, device=device),
+                    attention_mask=torch.tensor(mask, dtype=torch.long, device=device),
+                ).logits.float()
+                elapsed = _device_clock(torch) - clock
+                for row, (r_index, c_index, prompt, ids, top_k) in enumerate(group):
+                    begin = len(prompt) - 1
+                    results[r_index][c_index] = _forced_from_logits(
+                        torch, logits[row, begin : begin + len(ids)], ids, top_k
+                    )
+                self._count(
+                    sum(len(j[2]) + len(j[3]) for j in group), 0, len(group), elapsed
+                )
+        return results
 
     async def aclose(self) -> None:
         """Release loaded model references."""
@@ -227,9 +489,12 @@ class TransformersTextBackend:
             if len(inputs) == 1:
                 token_ids = [int(token_id) for token_id in input_ids[0].tolist()]
                 self._attach_prefix_cache(model, input_ids, token_ids, generate_kwargs)
+            started = _device_clock(torch)
             generated = model.generate(**generate_kwargs)
+            elapsed = _device_clock(torch) - started
             new_ids = generated.sequences[0, input_ids.shape[1] :]
             new_token_ids = [int(token_id) for token_id in new_ids.cpu().tolist()]
+            self._count(int(input_ids.shape[1]), len(new_token_ids), 1, elapsed)
             text = tokenizer.decode(new_token_ids, skip_special_tokens=True).strip()
             record = dataclasses.replace(
                 generation_record_from_text(text),
@@ -254,10 +519,31 @@ class TransformersTextBackend:
         torch = import_torch()
         with self._model_lock, torch.no_grad():
             prompt_ids = self._encode(torch, model, tokenizer, snapshot)["input_ids"]
-            return [
-                _force_one(torch, model, prompt_ids, tokenizer, text, top_k)
-                for text in continuations
-            ]
+            scores = []
+            for text in continuations:
+                started = _device_clock(torch)
+                scores.append(
+                    _force_one(torch, model, prompt_ids, tokenizer, text, top_k)
+                )
+                elapsed = _device_clock(torch) - started
+                forced = len(tokenizer.encode(text, add_special_tokens=False))
+                self._count(int(prompt_ids.shape[1]) + forced, 0, 1, elapsed)
+            return scores
+
+    @property
+    def cost_counters(self) -> CostCounters:
+        """Return the cumulative model work since the backend was created."""
+        return self._cost
+
+    def _count(
+        self, prompt: int, generated: int, sequences: int, seconds: float
+    ) -> None:
+        self._cost = CostCounters(
+            self._cost.forward_sequences + sequences,
+            self._cost.prompt_tokens + prompt,
+            self._cost.generated_tokens + generated,
+            self._cost.device_seconds + seconds,
+        )
 
     def _encode(
         self, torch: Any, model: Any, tokenizer: Any, snapshot: ConversationSnapshot
@@ -370,6 +656,15 @@ def _generate_kwargs(
     return kwargs
 
 
+def _device_clock(torch: Any) -> float:
+    """Return a clock reading after pending device work has finished."""
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
+    elif hasattr(torch, "mps") and torch.backends.mps.is_available():
+        torch.mps.synchronize()
+    return time.perf_counter()
+
+
 def _token_logprobs(torch: Any, logits: Any, new_ids: Any) -> tuple[float, ...]:
     """Return the log-softmax of the raw logits at each generated token.
 
@@ -395,6 +690,14 @@ def _force_one(  # pragma: no cover
     full = torch.cat([prompt_ids, cont], dim=1)
     start = prompt_ids.shape[1] - 1
     logits = model(full).logits[0, start : start + len(ids)].float()
+    return _forced_from_logits(torch, logits, ids, top_k)
+
+
+def _forced_from_logits(
+    torch: Any, logits: Any, ids: list[int], top_k: int
+) -> ForcedScore:
+    """Return the forced score of ``ids`` from the logits at their positions."""
+    cont = torch.tensor([ids], dtype=torch.long, device=logits.device)
     logprobs = logits.log_softmax(dim=-1)
     chosen = logprobs.gather(1, cont[0][:, None])[:, 0]
     token_logprobs = tuple(float(v) for v in chosen.cpu().tolist())

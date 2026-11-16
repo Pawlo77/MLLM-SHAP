@@ -213,7 +213,7 @@ def test_repeated_masks_share_one_generation_at_positive_temperature(
 
 def test_tf_value_functions_are_registered_with_declared_metadata() -> None:
     registry = default_registry()
-    for name in ("tf_logprob", "tf_jsd", "contrastive"):
+    for name in ("tf_logprob", "tf_jsd", "contrastive", "label_margin"):
         info = registry.resolve_type(PluginGroup.VALUE_FNS, name).info
         assert info.needs == ("teacher_forcing",)
         assert info.cost == "forward"
@@ -221,3 +221,28 @@ def test_tf_value_functions_are_registered_with_declared_metadata() -> None:
 
 def test_generation_record_default_has_no_forced_scores() -> None:
     assert GenerationRecord(text="x").forced == {}
+
+
+@pytest.mark.parametrize(
+    ("value_fn", "options"),
+    [
+        ("tf_logprob", {}),
+        ("tf_jsd", {}),
+        ("contrastive", {"target": "alpha", "foil": "beta"}),
+        ("label_margin", {"target": "alpha", "labels": ["alpha", "beta", "gamma"]}),
+    ],
+)
+def test_reanalyze_of_every_teacher_forced_value_function_needs_no_model(
+    tmp_path: Path, value_fn: str, options: dict[str, object]
+) -> None:
+    config = _config(tmp_path, value_fn, plugin_options={value_fn: options})
+    backend = CountingBackend()
+    first = ExplainRunner(config, backend=backend).explain_sync(_snapshot())
+    calls = (backend.generated, backend.forced)
+
+    again = ExplainRunner(config).reanalyze(tmp_path / first.run_id)
+
+    assert again.result.values == pytest.approx(first.result.values, abs=1e-12)
+    assert again.result.grand_value == pytest.approx(first.result.grand_value)
+    assert again.metrics.executed == 0
+    assert (backend.generated, backend.forced) == calls

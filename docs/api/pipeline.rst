@@ -18,6 +18,8 @@ Pipeline
 
 .. automodule:: mllm_shap.pipeline.faithfulness
 
+.. automodule:: mllm_shap.pipeline.interactions
+
 .. automodule:: mllm_shap.pipeline.orchestrator
 
 .. automodule:: mllm_shap.pipeline.context

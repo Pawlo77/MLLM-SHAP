@@ -18,7 +18,8 @@ times :math:`2^n` for :math:`n` players, so every full-table run on more than
 ``max_players`` players). ``budget.evaluations`` replaces ``budget.fraction``
 with an absolute number of coalition evaluations and ``budget.per_player`` with
 a multiple of the player count (``per_player: 4`` plans :math:`\lceil 4n \rceil`);
-set one of the three, never two. ``explanation.efficiency: additive`` shifts
+set one of the three, never two. ``budget.stop`` ends ``mc`` or ``permutation`` sampling early
+(see :doc:`choosing_an_estimator`). ``explanation.efficiency: additive`` shifts
 Shapley values so they sum to ``grand_value - base_value``;
 ``explanation.hierarchical`` configures
 :meth:`~mllm_shap.ExplainRunner.explain_hierarchical` (needs

@@ -25,14 +25,14 @@ related-code:
 
 - `__all__`: 81 names, listed in [[Public API]]: domain types, every built-in plugin class, the pipeline entry points, plugin machinery, every error, `ObservabilitySink`, `InMemoryObservabilitySink`, `CoalitionProgress`, `configure_logging` and `__version__`.
 - `render_attribution`, `render_attribution_html`, `display_attribution_html`: resolved lazily through module `__getattr__` (listed by `__dir__`), so `import mllm_shap` works without the `viz` extra.
-- `cli.main(argv)`: subcommands `explain` (JSON result, optional PNG chart), `reanalyze [--strict]`, `plugins` and `config --example | --check`. `--strict` raises `ReanalyzeMismatchError` for runs scored with backend embeddings instead of logging a warning.
+- `cli.main(argv)`: subcommands `explain` (JSON result, optional PNG chart), `reanalyze [--strict]`, `plan --players --range --target-error` (Hoeffding budget), `plugins` and `config --example | --check`. `--strict` raises `ReanalyzeMismatchError` for runs scored with backend embeddings instead of logging a warning.
   - Exit codes: `EXIT_OK` 0, `EXIT_INVALID` 2 (arguments, `--log-level` outside `LOG_LEVELS`, configuration, snapshot, archive), `EXIT_BACKEND_UNAVAILABLE` 3 (`BackendUnavailableError`, `ConnectionError`); other exceptions propagate.
   - `EXAMPLE_CONFIG` is the commented YAML printed by `config --example`.
 - `bootstrap_logging()`: runs once at import; applies `[tool.logging]` from the file named by `MLLM_SHAP_LOGGING_CONFIG`, otherwise installs only a `NullHandler`.
 - `configure_logging(config_path=None, level=None, json=False)`: TOML configuration, or with `level`/`json` a single stderr handler (`JsonLogFormatter` for one JSON object per line) and `propagate=False`; `json` with `config_path` raises `ValueError`.
 - Errors (13 classes), each also subclassing the matching builtin (`LookupError`, `ValueError`, `RuntimeError`, `FileExistsError`, `FileNotFoundError`, `ImportError`):
   - `MllmShapError` root; `PluginNotFoundError`, `PluginConflictError`, `PluginLoadError` (`entry_point_name`), `ConfigError`, `BackendUnavailableError` and its subclass `LogprobsUnavailableError` (a record without the logprobs `logprob` needs; command-line exit code 3).
-  - `ArchiveExistsError`, `ArchiveIncompleteError`, `ArchiveNotFoundError` (no manifest or SQLite database), `ArchiveCorruptError` (unreadable archive or manifest), `ManifestVersionError`, `ReanalyzeMismatchError`.
+  - `ArchiveExistsError`, `ArchiveIncompleteError`, `ArchiveNotFoundError` (no manifest or SQLite database), `ArchiveCorruptError` (unreadable archive or manifest), `ManifestVersionError`, `ReanalyzeMismatchError`, `ReplayMissError` (the replay backend lacks a coalition).
 
 ## Data flow
 

@@ -92,6 +92,28 @@ test the plumbing, not a model.
 
 ``mock_audio`` hears audio parts; see :doc:`audio_backends`.
 
+Replay
+------
+
+:class:`~mllm_shap.backends.replay.ReplayBackend` answers coalitions from run archives,
+so any estimator, budget, seed or value function runs on a table you already paid for.
+Use the config of the archived run, changing only those settings: rows are found by
+coalition key, which covers the input, players, absence policy, model id and generation
+settings. A coalition no archive holds raises
+:exc:`~mllm_shap.errors.ReplayMissError` naming it, unless ``fallback`` names a live
+backend that computes it.
+
+.. code-block:: yaml
+
+   backend:
+     kind: replay
+     model_id: stub
+     options:
+       archives: [runs/exact-table]
+       fallback: {kind: mock, model_id: stub}
+
+Teacher-forced scores come from the archive too, for the continuations it holds.
+
 HTTP API
 --------
 
@@ -181,8 +203,16 @@ prefix runs in separate forward passes that round differently, so a near-tied
 greedy token can flip and values can move slightly; the backend logs one warning,
 and ``dtype: float32`` gives identical results. Static and
 contextual embeddings of the output are computed only for value functions that
-need them (``embedding_cosine`` with ``encoder: model_states``). The tiny random model below loads in seconds and is what the
-``gpu``-marked tests use:
+need them (``embedding_cosine`` with ``encoder: model_states``).
+
+``backend.options.batch_size`` (default 1) scores teacher-forced value functions and
+generates greedy answers (``temperature: 0``) in padded batches: concurrent calls are
+collected until that many are waiting, or ``batch_wait_ms`` (default 5) has passed, and
+run together. Batched generation skips the prefix cache and the model-state embeddings. Scores equal the one-prompt scores to about :math:`10^{-4}` in ``float32``, and all 256 coalitions of eight words gave the same greedy text on the tiny model. The
+scheduler runs at least ``batch_size`` coalitions at once. On the tiny CPU model 128
+prompts ran 2.7 times faster at 8 and 3.6 times faster at 32; throughput on a 3B model
+and a GPU has not been measured. The tiny random model below loads in seconds and is what
+the ``gpu``-marked tests use:
 
 .. code-block:: yaml
 

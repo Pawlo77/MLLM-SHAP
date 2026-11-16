@@ -128,11 +128,11 @@ def test_cli_plugins_lists_every_group(tmp_path: Path) -> None:
 
     assert completed.returncode == 0
     assert (
-        "mllm_shap.estimators: complementary, exact, kernel_banzhaf, leverage, loo, "
-        "mc, neyman_cc, proxy"
+        "mllm_shap.estimators: complementary, exact, kernel_banzhaf, leverage, lime, "
+        "loo, mc, neyman_cc, permutation, proxy"
     ) in (completed.stdout)
     assert (
-        "mllm_shap.backends: api, lmstudio, mock, mock_audio, transformers"
+        "mllm_shap.backends: api, lmstudio, mock, mock_audio, replay, transformers"
         in completed.stdout
     )
 

@@ -11,6 +11,7 @@ related-code:
   - "[[src/mllm_shap/pipeline/config.py]]"
   - "[[src/mllm_shap/pipeline/context.py]]"
   - "[[src/mllm_shap/pipeline/faithfulness.py]]"
+  - "[[src/mllm_shap/pipeline/interactions.py]]"
   - "[[src/mllm_shap/pipeline/manifest.py]]"
   - "[[src/mllm_shap/pipeline/orchestrator.py]]"
   - "[[src/mllm_shap/pipeline/reanalyze.py]]"
@@ -37,7 +38,7 @@ Signatures: [[Public API]]; keys: [[Config keys]].
 - `reanalyze_sync` ([[Reanalyze]]): for a run scored with backend embeddings and a `RequiresEmbeddings` value function it logs a `WARNING`, or raises `ReanalyzeMismatchError` with `strict`; a `RequiresLogprobs` or `RequiresTeacherForcing` value function on rows without logprobs or `forced` scores raises `ReanalyzeMismatchError`. `rescore` rebuilds prompts from archived masks, runs `score_continuations` only and reanalyzes ([[Value decisions#2026-10-18 — Teacher-forced value functions score y_N without generating|decision]]).
 - `ExplainResult`; `ExplainRunOutput` with `to_dict()` (`ExplainRunPayload`; each label adds `speaker` and `label`, the span's `display_label`); `player_set` is `None` after `reanalyze`.
 - `RunManifest`, `parse_manifest`, `MANIFEST_SCHEMA_VERSION` 5 ([[Manifest]]): `embedding_source` is `"none"`, `"hash"` or `"backend"`; `value_info` and `decoding` record the value function's settings and the sampling; wrong types raise `ArchiveCorruptError`.
-- `deletion_curve(config, snapshot, attributions, ks=None, registry=None, backend=None)` (async): runs the pipeline with a private estimator sampling `N - top_k` per `k` and returns `DeletionCurve` (`values`, `drops`, trapezoid `area`).
+- `deletion_curve(config, snapshot, attributions, ks, registry, backend)` (async): samples `N - top_k` per `k`, returns `DeletionCurve` (`values`, `drops`, `area`); `removal_metrics` adds insertion, random-matched and flip metrics.
 - `ExplainContext`: resolved inputs of one run; `plugin_context()` builds its `PluginContext`.
 
 ## Data flow

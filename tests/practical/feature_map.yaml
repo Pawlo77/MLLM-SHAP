@@ -13,6 +13,7 @@ paths:
 
   src/mllm_shap/backends/__init__.py: none
   src/mllm_shap/backends/mock/*: none
+  src/mllm_shap/backends/replay/*: none
   src/mllm_shap/backends/_chat.py:
     [conversation.multi_user, conversation.system_prompt, conversation.audio, backend.api]
   src/mllm_shap/backends/api/*: [backend.api, conversation.audio]
@@ -38,11 +39,16 @@ paths:
   src/mllm_shap/estimation/kernel_banzhaf.py: [estimator.kernel_banzhaf]
   src/mllm_shap/estimation/proxy.py: [estimator.proxy]
   src/mllm_shap/estimation/loo.py: [estimator.loo]
+  src/mllm_shap/estimation/lime.py: [estimator.lime]
+  src/mllm_shap/estimation/planning.py: none
+  src/mllm_shap/estimation/stopping.py: none
+  src/mllm_shap/estimation/permutation.py: [estimator.permutation]
   src/mllm_shap/estimation/estimands/*: [estimator.exact, estimand.banzhaf]
   src/mllm_shap/estimation/normalizers.py: [value.normalizers]
 
   src/mllm_shap/masking/*: smoke
   src/mllm_shap/masking/policies.py: [masking.*, partition.sgpa_segments]
+  src/mllm_shap/masking/infill.py: [masking.infill]
   src/mllm_shap/masking/audio.py: [partition.sgpa_segments]
   src/mllm_shap/masking/tokens.py: [masking.*, partition.tokens]
   src/mllm_shap/masking/partitions.py: [partition.*, conversation.multi_turn]
@@ -52,6 +58,8 @@ paths:
   src/mllm_shap/pipeline/result.py: [cli.explain, viz.render]
   src/mllm_shap/pipeline/manifest.py: [cli.reanalyze]
   src/mllm_shap/pipeline/faithfulness.py: [value.reference_wer]
+  src/mllm_shap/pipeline/interactions.py: none
+  src/mllm_shap/estimation/interactions.py: none
 
   src/mllm_shap/plugins/*: smoke
   src/mllm_shap/runtime/*: smoke

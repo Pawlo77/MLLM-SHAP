@@ -42,6 +42,19 @@ class EstimatorStrategy(Protocol):
 
 
 @runtime_checkable
+class ProvidesStandardErrors(Protocol):
+    """Estimator that reports the standard error of its raw values."""
+
+    def standard_errors(
+        self,
+        masks: Sequence[CoalitionMask],
+        payoffs: Sequence[float],
+        aggregator: EstimandAggregator,
+    ) -> list[float]:
+        """Return one standard error per player for the values of the same inputs."""
+
+
+@runtime_checkable
 class TwoPhaseEstimator(Protocol):
     """Estimator that allocates a second sampling phase from first-phase payoffs."""
 

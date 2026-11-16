@@ -5,6 +5,12 @@
 """
 
 from .banzhaf import BanzhafAggregator
+from .semivalue import BetaShapleyAggregator, WeightedBanzhafAggregator
 from .shapley import ShapleyAggregator
 
-__all__ = ["BanzhafAggregator", "ShapleyAggregator"]
+__all__ = [
+    "BanzhafAggregator",
+    "BetaShapleyAggregator",
+    "ShapleyAggregator",
+    "WeightedBanzhafAggregator",
+]

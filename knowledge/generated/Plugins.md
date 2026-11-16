@@ -15,22 +15,28 @@ A plugin registered only as an entry point resolves only through `PluginRegistry
 | Group | Config key | Name | Class | Module | Registered by | Summary |
 |---|---|---|---|---|---|---|
 | mllm_shap.absence_policies | explanation.absence_policy | `delete` | `DeletePolicy` | [[src/mllm_shap/masking/policies.py]] | entry point | Remove absent players from the rendered conversation. |
+| mllm_shap.absence_policies | explanation.absence_policy | `infill` | `InfillPolicy` | [[src/mllm_shap/masking/infill.py]] | entry point | Replace absent players with the fills of a masked language model. |
 | mllm_shap.absence_policies | explanation.absence_policy | `neutral` | `NeutralPolicy` | [[src/mllm_shap/masking/policies.py]] | entry point | Replace absent players with neutral fillers that preserve their width. |
 | mllm_shap.absence_policies | explanation.absence_policy | `pad` | `PadPolicy` | [[src/mllm_shap/masking/policies.py]] | entry point | Replace absent players with a fixed mask placeholder. |
 | mllm_shap.backends | backend.kind | `api` | `ApiBackend` | [[src/mllm_shap/backends/api/backend.py]] | entry point | Generate text through an OpenAI-compatible ``/chat/completions`` endpoint. |
 | mllm_shap.backends | backend.kind | `lmstudio` | `LmStudioBackend` | [[src/mllm_shap/backends/lmstudio/backend.py]] | entry point | Generate text through a local LM Studio API server. |
 | mllm_shap.backends | backend.kind | `mock` | `MockBackend` | [[src/mllm_shap/backends/mock/backend.py]] | entry point | Hash-based generative backend with no external model dependencies. |
 | mllm_shap.backends | backend.kind | `mock_audio` | `MockAudioBackend` | [[src/mllm_shap/backends/mock/audio.py]] | entry point | Echo text words and answer one token per voiced run of every audio part. |
+| mllm_shap.backends | backend.kind | `replay` | `ReplayBackend` | [[src/mllm_shap/backends/replay/backend.py]] | entry point | Serve archived coalition generations; compute misses with a fallback. |
 | mllm_shap.backends | backend.kind | `transformers` | `TransformersTextBackend` | [[src/mllm_shap/backends/transformers/text.py]] | entry point | Generate text with a local Hugging Face language model. |
 | mllm_shap.estimands | explanation.estimand | `banzhaf` | `BanzhafAggregator` | [[src/mllm_shap/estimation/estimands/banzhaf.py]] | entry point | Aggregate coalition samples with uniform Banzhaf coalition weights. |
+| mllm_shap.estimands | explanation.estimand | `beta_shapley` | `BetaShapleyAggregator` | [[src/mllm_shap/estimation/estimands/semivalue.py]] | entry point | Aggregate coalition samples with Beta Shapley weights. |
 | mllm_shap.estimands | explanation.estimand | `shapley` | `ShapleyAggregator` | [[src/mllm_shap/estimation/estimands/shapley.py]] | entry point | Aggregate coalition samples with Shapley coalition weights. |
+| mllm_shap.estimands | explanation.estimand | `weighted_banzhaf` | `WeightedBanzhafAggregator` | [[src/mllm_shap/estimation/estimands/semivalue.py]] | entry point | Aggregate coalition samples with weighted Banzhaf weights. |
 | mllm_shap.estimators | explanation.estimator | `complementary` | `ComplementaryEstimator` | [[src/mllm_shap/estimation/complementary.py]] | entry point | Sample complementary coalition pairs and aggregate CC attributions. |
 | mllm_shap.estimators | explanation.estimator | `exact` | `ExactEstimator` | [[src/mllm_shap/estimation/exact.py]] | entry point | Enumerate all coalitions and delegate attribution to an estimand plugin. |
 | mllm_shap.estimators | explanation.estimator | `kernel_banzhaf` | `KernelBanzhafEstimator` | [[src/mllm_shap/estimation/kernel_banzhaf.py]] | entry point | Sample uniform complementary pairs and fit the Banzhaf regression. |
 | mllm_shap.estimators | explanation.estimator | `leverage` | `LeverageEstimator` | [[src/mllm_shap/estimation/leverage.py]] | entry point | Sample complementary pairs by leverage and solve the Kernel SHAP regression. |
+| mllm_shap.estimators | explanation.estimator | `lime` | `LimeEstimator` | [[src/mllm_shap/estimation/lime.py]] | entry point | Sample random subsets and fit the LIME surrogate on their payoffs. |
 | mllm_shap.estimators | explanation.estimator | `loo` | `LeaveOneOutEstimator` | [[src/mllm_shap/estimation/loo.py]] | entry point | Attribute ``v(N) - v(N - {i})`` to player ``i`` from ``n + 1`` coalitions. |
 | mllm_shap.estimators | explanation.estimator | `mc` | `MonteCarloEstimator` | [[src/mllm_shap/estimation/monte_carlo.py]] | entry point | Sample random coalitions and delegate attribution to an estimand plugin. |
 | mllm_shap.estimators | explanation.estimator | `neyman_cc` | `NeymanEstimator` | [[src/mllm_shap/estimation/neyman.py]] | entry point | Two-phase complementary estimator with Neyman coalition-size allocation. |
+| mllm_shap.estimators | explanation.estimator | `permutation` | `PermutationEstimator` | [[src/mllm_shap/estimation/permutation.py]] | entry point | Sample orderings, evaluate their prefixes and delegate to the estimand. |
 | mllm_shap.estimators | explanation.estimator | `proxy` | `ProxyEstimator` | [[src/mllm_shap/estimation/proxy.py]] | entry point | Leverage-sampled coalitions, a tree proxy, and a residual correction. |
 | mllm_shap.normalizers | explanation.normalizer | `abs_sum` | `AbsSumNormalizer` | [[src/mllm_shap/estimation/normalizers.py]] | entry point | Scale attributions by the sum of absolute values. |
 | mllm_shap.normalizers | explanation.normalizer | `identity` | `IdentityNormalizer` | [[src/mllm_shap/estimation/normalizers.py]] | entry point | Return attributions unchanged. |
@@ -46,6 +52,7 @@ A plugin registered only as an entry point resolves only through `PluginRegistry
 | mllm_shap.value_fns | explanation.value_fn | `contrastive` | `ContrastiveValue` | [[src/mllm_shap/value/contrastive.py]] | entry point | Score :math:`v(S) = \log p(t \mid x_S) - \log p(f \mid x_S)`. |
 | mllm_shap.value_fns | explanation.value_fn | `embedding_cosine` | `CosineEmbeddingValue` | [[src/mllm_shap/value/embedding.py]] | entry point | Cosine similarity between sentence embeddings of two answers. |
 | mllm_shap.value_fns | explanation.value_fn | `judge_grade` | `JudgeGradeValue` | [[src/mllm_shap/value/judge.py]] | entry point | Score :math:`v(S) = \sum_g g\,p(g)` for a judge's grade distribution. |
+| mllm_shap.value_fns | explanation.value_fn | `label_margin` | `LabelMarginValue` | [[src/mllm_shap/value/contrastive.py]] | entry point | Score :math:`v(S) = \log p(t \mid x_S) - \log \sum_{l \ne t} p(l \mid x_S)`. |
 | mllm_shap.value_fns | explanation.value_fn | `logprob` | `LogprobValue` | [[src/mllm_shap/value/logprob.py]] | entry point | Deprecated name of :class:`SelfLogprobValue`, kept for one minor version. |
 | mllm_shap.value_fns | explanation.value_fn | `nli_logodds` | `NliLogOddsValue` | [[src/mllm_shap/value/nli.py]] | entry point | Score the log-odds that the two answers entail each other. |
 | mllm_shap.value_fns | explanation.value_fn | `reference_wer` | `ReferenceWerValue` | [[src/mllm_shap/value/wer.py]] | entry point | Score ``1 - min(1, WER)`` of a coalition's answer against a reference. |

@@ -16,21 +16,28 @@ from ..domain.conversation import ConversationSnapshot
 from ..domain.enums import EmbeddingMode
 from ..domain.generation import ForcedScore, GenerationRecord
 from ..domain.players import PlayerSet
-from ..errors import ConfigError
+from ..errors import ConfigError, ReplayMissError
 from ..estimation._shared import budget_fraction
 from ..estimation.normalizers import apply_efficiency
+from ..estimation.stopping import check_stop
 from ..masking.builder import MaskBuilder
 from ..masking.codec import MaskCodec
 from ..plugins.groups import PluginGroup
 from ..protocols.backend import (
     GenerationResult,
     GenerativeBackend,
+    ReplaySource,
+    ReportsCost,
     SupportsKvCache,
     SupportsLogprobs,
     SupportsTeacherForcing,
 )
 from ..protocols.estimand import EstimandAggregator
-from ..protocols.estimator import EstimatorStrategy, TwoPhaseEstimator
+from ..protocols.estimator import (
+    EstimatorStrategy,
+    ProvidesStandardErrors,
+    TwoPhaseEstimator,
+)
 from ..protocols.masking import AbsencePolicy
 from ..protocols.normalizer import Normalizer
 from ..protocols.value import (
@@ -44,7 +51,7 @@ from ..protocols.value import (
 from ..runtime.archive import BASE_GENERATION_FILE, RunArchive
 from ..runtime.dedup import CoalitionDedupRegistry, build_coalition_key, dedup_enabled
 from ..runtime.kv_cache import build_snapshot_prefix_hash
-from ..runtime.metrics import PerfSummary
+from ..runtime.metrics import CostCounters, PerfSummary
 from ..runtime.scheduler import (
     CoalitionJob,
     GenerateFn,
@@ -53,6 +60,7 @@ from ..runtime.scheduler import (
 )
 from ..runtime.store import HotResultStore
 from ..value.generation_records import generation_record_from_text
+from .config import StopConfig
 from .context import ExplainContext
 from .manifest import EmbeddingSource, RunManifest
 from .result import ExplainResult, ExplainRunOutput
@@ -85,6 +93,7 @@ class ExplainOrchestrator:
         """Execute the configured explain pipeline and return attributions."""
         telemetry = self._context.resolved_telemetry()
         run_started = time.perf_counter()
+        cost_before = self._backend_cost()
         generation_ms = 0.0
         scoring_ms = 0.0
         aggregation_ms = 0.0
@@ -227,7 +236,10 @@ class ExplainOrchestrator:
                     else None
                 )
                 scheduler = InferenceScheduler(
-                    max_inflight=explanation.max_inflight,
+                    max_inflight=max(
+                        explanation.max_inflight,
+                        int(getattr(self._backend, "batch_size", 1)),
+                    ),
                     generation=config.generation,
                     store=store,
                     dedup=dedup,
@@ -246,14 +258,26 @@ class ExplainOrchestrator:
                     )
 
                 schedule_started = time.perf_counter()
-                coalition_records, metrics = await self._generate_records(
-                    mask_builder,
-                    player_set,
-                    masks,
-                    scheduler,
-                    store,
-                    self._generate_coalition,
-                )
+                if explanation.budget.stop is None:
+                    coalition_records, metrics = await self._generate_records(
+                        mask_builder,
+                        player_set,
+                        masks,
+                        scheduler,
+                        store,
+                        self._generate_coalition,
+                    )
+                else:
+                    (
+                        masks,
+                        coalition_records,
+                        metrics,
+                    ) = await self._generate_until_stable(
+                        explanation.budget.stop,
+                        (mask_builder, player_set, scheduler, store),
+                        masks,
+                        (value_fn, base_record, estimator, aggregator),
+                    )
                 generation_ms += (time.perf_counter() - schedule_started) * 1000.0
 
                 scoring_started = time.perf_counter()
@@ -308,12 +332,16 @@ class ExplainOrchestrator:
                         explanation.efficiency, raw_values, grand_value, base_value
                     )
                     normalized = normalizer.normalize(raw_values)
+                    stderr = estimator_standard_errors(
+                        estimator, explanation.stderr, masks, payoffs, aggregator
+                    )
                 aggregation_ms = (time.perf_counter() - aggregation_started) * 1000.0
             finally:
                 if archive is not None:
                     archive.close()
 
         total_ms = (time.perf_counter() - run_started) * 1000.0
+        cost = self._backend_cost() - cost_before
         logger.info(
             "explain run %s done in %.1f ms (%d coalitions, %d backend calls)",
             self._context.run_id,
@@ -326,6 +354,7 @@ class ExplainOrchestrator:
             values=tuple(normalized),
             base_value=base_value,
             grand_value=grand_value,
+            stderr=stderr,
         )
         return ExplainRunOutput(
             result=result,
@@ -338,8 +367,18 @@ class ExplainOrchestrator:
                 generation_ms=generation_ms,
                 scoring_ms=scoring_ms,
                 aggregation_ms=aggregation_ms,
+                forward_sequences=cost.forward_sequences,
+                prompt_tokens=cost.prompt_tokens,
+                generated_tokens=cost.generated_tokens,
+                device_seconds=cost.device_seconds,
             ),
         )
+
+    def _backend_cost(self) -> CostCounters:
+        """Return the backend's cumulative model work; zero when it reports none."""
+        if isinstance(self._backend, ReportsCost):
+            return self._backend.cost_counters
+        return CostCounters()
 
     async def _generate_coalition(
         self, snapshot: ConversationSnapshot
@@ -368,6 +407,9 @@ class ExplainOrchestrator:
             grand_mask,
         )
         rendered = mask_builder.render(masked)
+        archived = await self._archived_base(rendered)
+        if archived is not None:
+            return archived
         generated = await self._backend.generate(rendered, self._generation)
         self._keep_embeddings(generated)
         generated_record = _as_record(generated)
@@ -382,6 +424,36 @@ class ExplainOrchestrator:
                 base_record, forced=await self._force(rendered)
             )
         return base_record
+
+    async def _archived_base(
+        self, rendered: ConversationSnapshot
+    ) -> GenerationRecord | None:
+        """Return the base generation of a replay source's archive, if it has one."""
+        backend = self._backend
+        if not isinstance(backend, ReplaySource):
+            return None
+        found = backend.archived_base(self._context.snapshot.snapshot_id)
+        if found is None:
+            return None
+        text, grand = found
+        base_record = dataclasses.replace(
+            self._scoring_record(text),
+            logprobs=None if grand is None else grand.logprobs,
+            audio_path=None if grand is None else grand.audio_path,
+        )
+        if self._forcing is None:
+            return base_record
+        self._continuations = self._forcing.forced_continuations(base_record)
+        archived = {} if grand is None else dict(grand.forced)
+        if all(text in archived for text in self._continuations):
+            return dataclasses.replace(base_record, forced=archived)
+        if not backend.has_fallback:
+            msg = (
+                "the replay archives lack the teacher-forced scores of "
+                f"{[t[:30] for t in self._continuations]} for the full input"
+            )
+            raise ReplayMissError(msg)
+        return dataclasses.replace(base_record, forced=await self._force(rendered))
 
     async def _force(self, snapshot: ConversationSnapshot) -> dict[str, ForcedScore]:
         """Score the value function's continuations under ``snapshot``."""
@@ -615,6 +687,7 @@ class ExplainOrchestrator:
             )
             for mask in masks
         ]
+        self._seed_replay(planned, store)
         scheduled = (
             sorted(planned, key=lambda item: item[2])
             if self._context.config.explanation.kv_cache.enabled
@@ -652,6 +725,101 @@ class ExplainOrchestrator:
                 )
             )
         return records, metrics
+
+    async def _generate_until_stable(
+        self,
+        stop: StopConfig,
+        run: tuple[MaskBuilder, PlayerSet, InferenceScheduler, HotResultStore],
+        masks: Sequence[CoalitionMask],
+        scoring: tuple[
+            ValueFunction, GenerationRecord, EstimatorStrategy, EstimandAggregator
+        ],
+    ) -> tuple[list[CoalitionMask], list[GenerationRecord], SchedulerMetrics]:
+        """Evaluate ``masks`` in chunks and stop once the stopping rule holds.
+
+        Every ``stop.check_every`` coalitions, past the floor, the values so far are
+        estimated and :func:`~mllm_shap.estimation.stopping.check_stop` decides.
+        The planned masks are the upper bound; the unevaluated rest is dropped.
+        """
+        mask_builder, player_set, scheduler, store = run
+        value_fn, base_record, estimator, aggregator = scoring
+        floor = stop.min_evaluations or 2 * (player_set.num_players + 1)
+        used: list[CoalitionMask] = []
+        records: list[GenerationRecord] = []
+        metrics: SchedulerMetrics | None = None
+        previous: tuple[int, ...] | None = None
+        position = 0
+        while position < len(masks):
+            end = min(len(masks), position + stop.check_every)
+            chunk = masks[position:end]
+            new_records, new_metrics = await self._generate_records(
+                mask_builder,
+                player_set,
+                chunk,
+                scheduler,
+                store,
+                self._generate_coalition,
+            )
+            used.extend(chunk)
+            records.extend(new_records)
+            metrics = (
+                new_metrics if metrics is None else _merge_metrics(metrics, new_metrics)
+            )
+            position = end
+            if len(used) < floor or position >= len(masks):
+                continue
+            payoffs = await self._score(value_fn, base_record, records)
+            values = estimator.estimate_attributions(used, payoffs, aggregator)
+            errors = (
+                estimator.standard_errors(used, payoffs, aggregator)
+                if stop.max_ci_width is not None
+                and isinstance(estimator, ProvidesStandardErrors)
+                else None
+            )
+            decision = check_stop(
+                values, errors, stop.max_ci_width, stop.top_k_stable, previous
+            )
+            previous = decision.top
+            if decision.stop:
+                logger.info(
+                    "stopped at %d of %d coalitions (%s)",
+                    len(used),
+                    len(masks),
+                    decision.reason,
+                )
+                break
+        if metrics is None:
+            msg = "no coalitions were planned"
+            raise RuntimeError(msg)
+        return used, records, metrics
+
+    def _seed_replay(
+        self,
+        planned: Sequence[tuple[CoalitionMask, str, str]],
+        store: HotResultStore,
+    ) -> None:
+        """Load archived rows of a replay source into ``store``; refuse misses."""
+        backend = self._backend
+        if not isinstance(backend, ReplaySource):
+            return
+        for mask, coalition_key, _ in planned:
+            row = backend.archived_row(coalition_key)
+            if row is not None:
+                store.put(
+                    coalition_key,
+                    row.generation_text,
+                    row.logprobs,
+                    row.forced,
+                    row.audio_path,
+                )
+            elif not backend.has_fallback:
+                bits = "".join("1" if present else "0" for present in mask.present)
+                msg = (
+                    f"coalition {bits} (players present as 1) of snapshot "
+                    f"{self._context.snapshot.snapshot_id!r} is not in the replay "
+                    "archives; archive it first or set backend.options.fallback"
+                )
+                raise ReplayMissError(msg)
 
     async def _score(
         self,
@@ -709,3 +877,19 @@ def _merge_metrics(
             first.kv_cache_reused_tokens, second.kv_cache_reused_tokens
         ),
     )
+
+
+def estimator_standard_errors(
+    estimator: EstimatorStrategy,
+    requested: bool,
+    masks: Sequence[CoalitionMask],
+    payoffs: Sequence[float],
+    aggregator: EstimandAggregator,
+) -> tuple[float, ...] | None:
+    """Return the estimator's standard errors when ``explanation.stderr`` asks."""
+    if not requested:
+        return None
+    if not isinstance(estimator, ProvidesStandardErrors):
+        msg = f"estimator {estimator.name!r} reports no standard errors"
+        raise ConfigError(msg)
+    return tuple(estimator.standard_errors(masks, payoffs, aggregator))

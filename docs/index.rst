@@ -101,6 +101,8 @@ Optional extras:
    pip install "mllm-shap[api]"            # OpenAI-compatible HTTP API
    pip install "mllm-shap[viz]"            # matplotlib attribution charts
    pip install "mllm-shap[proxy]"          # scikit-learn: the ProxySHAP estimator
+   pip install "mllm-shap[infill]"         # masked language model of the infill policy
+   pip install "mllm-shap[interactions]"   # shapiq: exact pairwise interactions
    pip install "mllm-shap[audio]"          # audio decoding and alignment
    pip install "mllm-shap[semantic]"       # sentence, BERTScore and NLI encoders
    pip install "mllm-shap[audio-semantic]" # SpeechBERTScore encoder and recognizer

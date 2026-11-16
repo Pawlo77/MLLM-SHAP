@@ -59,11 +59,16 @@ def test_builtin_plugins_resolve_from_config_keys() -> None:
 
 
 def test_builtin_registers_all_absence_policies() -> None:
-    """Built-in registration exposes delete, pad, and neutral policies."""
+    """Built-in registration exposes delete, infill, pad, and neutral policies."""
     registry = PluginRegistry()
     register_builtin_plugins(registry)
 
-    assert registry.names(PluginGroup.ABSENCE_POLICIES) == ("delete", "neutral", "pad")
+    assert registry.names(PluginGroup.ABSENCE_POLICIES) == (
+        "delete",
+        "infill",
+        "neutral",
+        "pad",
+    )
     assert isinstance(
         registry.resolve(PluginGroup.ABSENCE_POLICIES, "pad", _context(registry)),
         PadPolicy,
@@ -96,9 +101,11 @@ def test_builtin_registers_approximate_estimators() -> None:
         "exact",
         "kernel_banzhaf",
         "leverage",
+        "lime",
         "loo",
         "mc",
         "neyman_cc",
+        "permutation",
         "proxy",
     )
     assert isinstance(
@@ -141,6 +148,7 @@ def test_builtin_registers_value_functions_and_normalizers() -> None:
         "contrastive",
         "embedding_cosine",
         "judge_grade",
+        "label_margin",
         "logprob",
         "nli_logodds",
         "reference_wer",

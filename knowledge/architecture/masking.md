@@ -13,6 +13,7 @@ related-code:
   - "[[src/mllm_shap/masking/builder.py]]"
   - "[[src/mllm_shap/masking/codec.py]]"
   - "[[src/mllm_shap/masking/partitions.py]]"
+  - "[[src/mllm_shap/masking/infill.py]]"
   - "[[src/mllm_shap/masking/policies.py]]"
   - "[[src/mllm_shap/masking/space.py]]"
   - "[[src/mllm_shap/masking/tokens.py]]"
@@ -32,6 +33,7 @@ related-code:
 - `DeletePolicy` (`delete`): removes absent spans together with the whitespace that separated them.
 - `PadPolicy` (`pad`): replaces absent spans with `placeholder` (default `[MASK]`, plugin option `PadOptions.placeholder`).
 - `NeutralPolicy` (`neutral`): replaces each absent span with `fill_char` (default `_`, plugin option `NeutralOptions.fill_char`) repeated to the span's width.
+- `InfillPolicy` (`infill`, extra `infill`, options `model`, `revision`): one mask token per absent word, filled by a masked language model in one pass per message; fills are cached per masked text.
 - All three take a `PluginContext` first and read only `PlayerSet.spans`; a player set without spans raises. For spans with `samples` (audio players, [[alignment]]) `audio.render_audio` also edits the message's first `AudioPart`: `delete` cuts absent samples, `pad` and `neutral` replace them with silence of the same length ([[Masking decisions#2026-10-10 — Audio players are sample ranges on the player span|audio players]]). Then `audio.hide_text` drops the text parts of `PlayerSet.hidden_text` messages in every coalition ([[Masking decisions#2026-10-12 — Alignment-only transcripts are hidden by the policies|decision]]).
 - `tokens.py`: `token_spans(snapshot)`, `render_spans(snapshot, spans, replacements)` (replaces character ranges per message, `None` deletes, text outside every span is kept).
 - `MaskBuilder(policy)`: `view(snapshot, players, mask) -> MaskedSnapshot` (no copy), `render(masked) -> ConversationSnapshot`.
@@ -58,7 +60,7 @@ related-code:
 
 - [[tests/masking/test_partitions.py]]
 - [[tests/masking/test_custom_partitioner.py]]
-- [[tests/masking/test_policies.py]]
+- [[tests/masking/test_policies.py]], [[tests/masking/test_infill.py]]
 - [[tests/masking/test_tokens.py]]
 - [[tests/masking/test_builder.py]]
 - [[tests/masking/test_codec.py]]

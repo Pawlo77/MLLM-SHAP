@@ -22,6 +22,7 @@ parent: "[[mllm-shap]]"
 | `BackendUnavailableError` | [[src/mllm_shap/errors.py]] | Raised when a configured generative backend cannot be reached. |
 | `BanzhafAggregator` | [[src/mllm_shap/estimation/estimands/banzhaf.py]] | Aggregate coalition samples with uniform Banzhaf coalition weights. |
 | `BertScoreValue` | [[src/mllm_shap/value/bertscore.py]] | Score :math:`v(S) = F_1` of greedy token matching against :math:`y_N`. |
+| `BetaShapleyAggregator` | [[src/mllm_shap/estimation/estimands/semivalue.py]] | Aggregate coalition samples with Beta Shapley weights. |
 | `CoalitionMask` | [[src/mllm_shap/domain/coalition.py]] | Boolean presence mask aligned with a player set. |
 | `CoalitionProgress` | [[src/mllm_shap/runtime/progress.py]] | Sync hooks notified as coalition jobs are planned and finished. |
 | `ComplementaryEstimator` | [[src/mllm_shap/estimation/complementary.py]] | Sample complementary coalition pairs and aggregate CC attributions. |
@@ -42,10 +43,13 @@ parent: "[[mllm-shap]]"
 | `HierarchicalRunOutput` | [[src/mllm_shap/pipeline/result.py]] | Both games of a hierarchical run. |
 | `IdentityNormalizer` | [[src/mllm_shap/estimation/normalizers.py]] | Return attributions unchanged. |
 | `InMemoryObservabilitySink` | [[src/mllm_shap/runtime/telemetry.py]] | Collect span records in memory for tests and diagnostics. |
+| `InfillPolicy` | [[src/mllm_shap/masking/infill.py]] | Replace absent players with the fills of a masked language model. |
 | `JudgeGradeValue` | [[src/mllm_shap/value/judge.py]] | Score :math:`v(S) = \sum_g g\,p(g)` for a judge's grade distribution. |
 | `KernelBanzhafEstimator` | [[src/mllm_shap/estimation/kernel_banzhaf.py]] | Sample uniform complementary pairs and fit the Banzhaf regression. |
+| `LabelMarginValue` | [[src/mllm_shap/value/contrastive.py]] | Score :math:`v(S) = \log p(t \mid x_S) - \log \sum_{l \ne t} p(l \mid x_S)`. |
 | `LeaveOneOutEstimator` | [[src/mllm_shap/estimation/loo.py]] | Attribute ``v(N) - v(N - {i})`` to player ``i`` from ``n + 1`` coalitions. |
 | `LeverageEstimator` | [[src/mllm_shap/estimation/leverage.py]] | Sample complementary pairs by leverage and solve the Kernel SHAP regression. |
+| `LimeEstimator` | [[src/mllm_shap/estimation/lime.py]] | Sample random subsets and fit the LIME surrogate on their payoffs. |
 | `LmStudioBackend` | [[src/mllm_shap/backends/lmstudio/backend.py]] | Generate text through a local LM Studio API server. |
 | `LogprobValue` | [[src/mllm_shap/value/logprob.py]] | Deprecated name of :class:`SelfLogprobValue`, kept for one minor version. |
 | `LogprobsUnavailableError` | [[src/mllm_shap/errors.py]] | Raised when a value function needs token logprobs a generation lacks. |
@@ -62,6 +66,8 @@ parent: "[[mllm-shap]]"
 | `NliLogOddsValue` | [[src/mllm_shap/value/nli.py]] | Score the log-odds that the two answers entail each other. |
 | `ObservabilitySink` | [[src/mllm_shap/runtime/telemetry.py]] | Protocol for recording explain pipeline stage spans. |
 | `PadPolicy` | [[src/mllm_shap/masking/policies.py]] | Replace absent players with a fixed mask placeholder. |
+| `PairwiseInteractions` | [[src/mllm_shap/pipeline/interactions.py]] | Order-2 interaction values between the players of one run. |
+| `PermutationEstimator` | [[src/mllm_shap/estimation/permutation.py]] | Sample orderings, evaluate their prefixes and delegate to the estimand. |
 | `PlayerSet` | [[src/mllm_shap/domain/players.py]] | Ordered explainability players aligned with coalition masks. |
 | `PlayerSpan` | [[src/mllm_shap/domain/players.py]] | Where one player sits in the conversation it was partitioned from. |
 | `PluginConflictError` | [[src/mllm_shap/errors.py]] | Raised when a plugin name is registered twice without ``replace=True``. |
@@ -74,6 +80,9 @@ parent: "[[mllm-shap]]"
 | `ProxyEstimator` | [[src/mllm_shap/estimation/proxy.py]] | Leverage-sampled coalitions, a tree proxy, and a residual correction. |
 | `ReanalyzeMismatchError` | [[src/mllm_shap/errors.py]] | Raised when reanalyze settings disagree with the archived run. |
 | `ReferenceWerValue` | [[src/mllm_shap/value/wer.py]] | Score ``1 - min(1, WER)`` of a coalition's answer against a reference. |
+| `RemovalMetrics` | [[src/mllm_shap/pipeline/faithfulness.py]] | Removal metrics of one ranking, read off one set of scored coalitions. |
+| `ReplayBackend` | [[src/mllm_shap/backends/replay/backend.py]] | Serve archived coalition generations; compute misses with a fallback. |
+| `ReplayMissError` | [[src/mllm_shap/errors.py]] | Raised when the replay backend is asked for a coalition no archive holds. |
 | `Role` | [[src/mllm_shap/domain/enums.py]] | Participant role attached to a message or token. |
 | `RunManifest` | [[src/mllm_shap/pipeline/manifest.py]] | Top-level metadata persisted alongside a run archive. |
 | `SelfLogprobValue` | [[src/mllm_shap/value/logprob.py]] | Score a coalition by the model's confidence in its own generation. |
@@ -92,13 +101,17 @@ parent: "[[mllm-shap]]"
 | `TranscribedValue` | [[src/mllm_shap/value/speech.py]] | Score spoken answers by transcribing them and applying a text value function. |
 | `TransformersTextBackend` | [[src/mllm_shap/backends/transformers/text.py]] | Generate text with a local Hugging Face language model. |
 | `Turn` | [[src/mllm_shap/domain/conversation.py]] | One conversational turn composed of ordered messages. |
+| `WeightedBanzhafAggregator` | [[src/mllm_shap/estimation/estimands/semivalue.py]] | Aggregate coalition samples with weighted Banzhaf weights. |
 | `__version__` | | Installed package version string. |
+| `compute_removal_metrics` | [[src/mllm_shap/pipeline/faithfulness.py]] | Return the removal metrics of a ranking from a coalition payoff function. |
 | `configure_logging` | [[src/mllm_shap/_logging.py]] | Configure the ``mllm_shap`` loggers from TOML or with one stderr handler. |
 | `default_registry` | [[src/mllm_shap/plugins/builtin.py]] | Return a registry with the built-in plugins and third-party entry points. |
 | `deletion_curve` | [[src/mllm_shap/pipeline/faithfulness.py]] | Score ``snapshot`` with its ``k`` highest-attributed players removed at once. |
 | `display_attribution_html` | [[src/mllm_shap/viz/render.py]] | Display colored token HTML when IPython is available. |
 | `explain_config_from_yaml` | [[src/mllm_shap/pipeline/config.py]] | Parse YAML text into a validated :class:`ExplainConfig`. |
 | `explain_config_to_yaml` | [[src/mllm_shap/pipeline/config.py]] | Serialize a config to YAML with stable key ordering within sections. |
+| `explain_interactions` | [[src/mllm_shap/pipeline/interactions.py]] | Score every coalition of ``snapshot`` and return its pairwise interactions. |
 | `parse_manifest` | [[src/mllm_shap/pipeline/manifest.py]] | Parse a JSON manifest payload into a run manifest. |
+| `removal_metrics` | [[src/mllm_shap/pipeline/faithfulness.py]] | Score the removal metrics of ``attributions`` under ``config``. |
 | `render_attribution` | [[src/mllm_shap/viz/render.py]] | Render ``output`` attributions with a registered renderer plugin. |
 | `render_attribution_html` | [[src/mllm_shap/viz/render.py]] | Return an HTML fragment for inline token coloring in Jupyter. |

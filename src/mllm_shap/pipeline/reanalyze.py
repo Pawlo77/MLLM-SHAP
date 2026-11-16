@@ -45,7 +45,7 @@ from ..runtime.telemetry import NullObservabilitySink, ObservabilitySink
 from ..value.generation_records import generation_record_from_text
 from .config import ExplainConfig
 from .manifest import EmbeddingSource, RunManifest, parse_manifest
-from .orchestrator import score_coalitions
+from .orchestrator import estimator_standard_errors, score_coalitions
 from .result import ExplainResult, ExplainRunOutput
 
 logger = logging.getLogger(__name__)
@@ -206,15 +206,15 @@ def reanalyze_sync(
         )
         grand_value = lookup[(True,) * num_players]
         base_value = lookup[(False,) * num_players]
-        raw_values = estimator.estimate_attributions(
-            [CoalitionMask.from_sequence(present) for present in mask_presents],
-            payoffs,
-            aggregator,
-        )
+        masks = [CoalitionMask.from_sequence(present) for present in mask_presents]
+        raw_values = estimator.estimate_attributions(masks, payoffs, aggregator)
         raw_values = apply_efficiency(
             explanation.efficiency, raw_values, grand_value, base_value
         )
         normalized = normalizer.normalize(raw_values)
+        stderr = estimator_standard_errors(
+            estimator, explanation.stderr, masks, payoffs, aggregator
+        )
     aggregation_ms = (time.perf_counter() - aggregation_started) * 1000.0
 
     total_ms = (time.perf_counter() - started) * 1000.0
@@ -230,6 +230,7 @@ def reanalyze_sync(
         values=tuple(normalized),
         base_value=base_value,
         grand_value=grand_value,
+        stderr=stderr,
     )
     return ExplainRunOutput(
         result=result,

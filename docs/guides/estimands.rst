@@ -73,7 +73,7 @@ are used either way. The result and the manifest carry the label:
 .. guide-result:: estimands_run_label
 
 Wire values for JSON manifests use :data:`~mllm_shap.domain.estimands.EstimandWire`
-(``"shapley"`` | ``"banzhaf"``).
+(``"shapley"`` | ``"banzhaf"`` | ``"beta_shapley"`` | ``"weighted_banzhaf"``).
 
 Partial samples
 ---------------

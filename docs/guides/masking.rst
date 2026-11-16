@@ -53,7 +53,10 @@ For audio players (``sgpa_segments``, :doc:`alignment`) the policies also edit t
 audio: ``delete`` cuts absent samples, ``pad`` and ``neutral`` silence them.
 
 ``delete`` drops absent tokens, ``pad`` replaces each with a placeholder and
-``neutral`` with a width-matched filler. The same coalition under the other two:
+``neutral`` with a width-matched filler; ``infill`` (extra ``infill``, options ``model``,
+default ``roberta-base``, and ``revision``) fills each absent word with a masked language model's top
+choice, the same text for the same coalition, so removal stays on-manifold. The same
+coalition under the other two:
 
 .. code-block:: python
 

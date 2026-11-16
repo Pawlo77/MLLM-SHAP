@@ -408,6 +408,15 @@ wheels = [
 ]
 
 [[package]]
+name = "colour"
+version = "0.1.5"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/a0/d4/5911a7618acddc3f594ddf144ecd8a03c29074a540f4494670ad8f153efe/colour-0.1.5.tar.gz", hash = "sha256:af20120fefd2afede8b001fbef2ea9da70ad7d49fafdb6489025dae8745c3aee", size = 24776, upload-time = "2017-11-19T23:20:08.015Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/74/46/e81907704ab203206769dee1385dc77e1407576ff8f50a0681d0a6b541be/colour-0.1.5-py2.py3-none-any.whl", hash = "sha256:33f6db9d564fadc16e59921a56999b79571160ce09916303d35346dddc17978c", size = 23772, upload-time = "2017-11-19T23:20:04.56Z" },
+]
+
+[[package]]
 name = "comm"
 version = "0.2.3"
 source = { registry = "https://pypi.org/simple" }
@@ -1794,6 +1803,13 @@ audio-semantic = [
     { name = "torch" },
     { name = "transformers" },
 ]
+infill = [
+    { name = "torch" },
+    { name = "transformers" },
+]
+interactions = [
+    { name = "shapiq" },
+]
 lmstudio = [
     { name = "lmstudio" },
 ]
@@ -1858,17 +1874,20 @@ requires-dist = [
     { name = "scikit-learn", marker = "extra == 'proxy'", specifier = ">=1.7.0" },
     { name = "seaborn", marker = "extra == 'viz'", specifier = ">=0.13.0" },
     { name = "sentence-transformers", marker = "extra == 'semantic'", specifier = ">=3.0.0" },
+    { name = "shapiq", marker = "extra == 'interactions'", specifier = ">=1.3.0" },
     { name = "soundfile", marker = "extra == 'audio'", specifier = ">=0.13.0" },
     { name = "soundfile", marker = "extra == 'audio-semantic'", specifier = ">=0.13.0" },
     { name = "torch", marker = "extra == 'audio-semantic'", specifier = ">=2.5.0" },
+    { name = "torch", marker = "extra == 'infill'", specifier = ">=2.5.0" },
     { name = "torch", marker = "extra == 'semantic'", specifier = ">=2.5.0" },
     { name = "torch", marker = "extra == 'transformers'", specifier = ">=2.5.0" },
     { name = "torchaudio", marker = "extra == 'transformers'", specifier = ">=2.9.0" },
     { name = "transformers", marker = "extra == 'audio-semantic'", specifier = ">=4.56.0" },
+    { name = "transformers", marker = "extra == 'infill'", specifier = ">=4.56.0" },
     { name = "transformers", marker = "extra == 'semantic'", specifier = ">=4.56.0" },
     { name = "transformers", marker = "extra == 'transformers'", specifier = ">=4.56.0" },
 ]
-provides-extras = ["lmstudio", "transformers", "api", "audio", "proxy", "semantic", "audio-semantic", "viz"]
+provides-extras = ["lmstudio", "transformers", "api", "audio", "infill", "interactions", "proxy", "semantic", "audio-semantic", "viz"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -3610,6 +3629,43 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/34/26/f5d29e25ffdb535afef2d35cdb55b325298f96debd670da4c325e08d70f4/setuptools-83.0.0.tar.gz", hash = "sha256:025bccbbf0fa05b6192bc64ae1e7b16e001fd6d6d4d5de03c97b1c1ade523bef", size = 1154254, upload-time = "2026-07-04T15:31:22.699Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/5d/40/e1e72872c6354b306daef1703549e8e83b4d43cfea356311bf722a043752/setuptools-83.0.0-py3-none-any.whl", hash = "sha256:29b23c360f22f414dc7336bb39178cc7bcbf6021ed2733cde173f09dba19abb3", size = 1008090, upload-time = "2026-07-04T15:31:20.885Z" },
+]
+
+[[package]]
+name = "shapiq"
+version = "1.8.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "colour" },
+    { name = "joblib" },
+    { name = "matplotlib" },
+    { name = "networkx" },
+    { name = "numpy" },
+    { name = "pandas" },
+    { name = "pillow" },
+    { name = "requests" },
+    { name = "scikit-learn" },
+    { name = "scipy" },
+    { name = "tqdm" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/46/ec/9237d0e0c60be7fe4a82e4e11dabe71c881408e26bebb688ae152ae79295/shapiq-1.8.0.tar.gz", hash = "sha256:e1af659c5a5a0d251e40cd26dda298e532cb0340d66b8db9694ac793135de55a", size = 514875, upload-time = "2026-10-20T08:56:43.477Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/76/12/7c4d663ac24726a2261734581454c15bcf277ee3ed139a5960ccc152b73c/shapiq-1.8.0-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:e73d97318b07faa8341ae2416a87966fdcae7b32dcb9bd3715670d15a791c731", size = 891324, upload-time = "2026-10-20T08:56:18.615Z" },
+    { url = "https://files.pythonhosted.org/packages/ba/01/11934cee23cfba7b0534a961611152e7b6a4848e9c7e36642abc60072df7/shapiq-1.8.0-cp312-cp312-macosx_12_0_arm64.whl", hash = "sha256:cc9bbed50c4cc8e5755480a42b4113373a3f632d6448a3141122ab7121b048a4", size = 871701, upload-time = "2026-10-20T08:56:20.353Z" },
+    { url = "https://files.pythonhosted.org/packages/a1/7e/177159e49bb720a96934e497d848d26d59618e61b7930f3e507785c93b7c/shapiq-1.8.0-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:4c740c6212be7ce2e1856fe7cab8a3c7518eac6a93142fac64711e1a54432bee", size = 3422966, upload-time = "2026-10-20T08:56:21.874Z" },
+    { url = "https://files.pythonhosted.org/packages/5c/00/85fd73d6dc3e6a53bcbd017337d09b95c34928e35306539d0d03bc554d58/shapiq-1.8.0-cp312-cp312-win_amd64.whl", hash = "sha256:f6668a9a7737b361cda2d393650d66027d288f4cea0061eb207df559d42269c4", size = 1055930, upload-time = "2026-10-20T08:56:23.57Z" },
+    { url = "https://files.pythonhosted.org/packages/c7/bc/a3b3d65e8960ac7ae0e296d16facd8587c4598bb1f42d64619adc0b825a7/shapiq-1.8.0-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:04a47b6d0e44ce6a732c2e8b9bfef7f623dd304cf32d77072d741e067bd50584", size = 891338, upload-time = "2026-10-20T08:56:25.169Z" },
+    { url = "https://files.pythonhosted.org/packages/e1/27/183826b3084876db4f7228103d768c8759c3bf9aac8fd34bd1bbfda5e428/shapiq-1.8.0-cp313-cp313-macosx_12_0_arm64.whl", hash = "sha256:6f8f8a5ceef45a10832b9c5cc696db2635232751c9b57c987e92d01a07a96e1c", size = 871710, upload-time = "2026-10-20T08:56:26.525Z" },
+    { url = "https://files.pythonhosted.org/packages/41/b1/ecf26a3fb047c670f636e951ae76bc77cd29eb1187b2c9dd0f64e0046fcf/shapiq-1.8.0-cp313-cp313-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:29e537531b3e507db7fed6997361b40232e247325c55e1e0259c72161b220c88", size = 3437207, upload-time = "2026-10-20T08:56:27.869Z" },
+    { url = "https://files.pythonhosted.org/packages/b7/c8/b9685590c1ea2421b6b5a29eb31bbf4e71c61678e26a16058472958eedbc/shapiq-1.8.0-cp313-cp313-win_amd64.whl", hash = "sha256:a17535902b52b3daca14bc7840a24cc9b6ba6500f5a7b8bd05dde5b7ade0787d", size = 1055937, upload-time = "2026-10-20T08:56:29.286Z" },
+    { url = "https://files.pythonhosted.org/packages/ce/84/b6e7b28e5940566ef8b5bfcd9d2572a8b77f776d0646a56b15d6084a91bf/shapiq-1.8.0-cp314-cp314-macosx_10_15_x86_64.whl", hash = "sha256:111d0766667f7982cfb91c657d5e09f6768b7a0a40cd4322a6ab1c884629cb37", size = 892015, upload-time = "2026-10-20T08:56:30.817Z" },
+    { url = "https://files.pythonhosted.org/packages/86/0d/6cee1a715ba7c18e2145193556959b55a6aa684a30c9e42487d5f6520760/shapiq-1.8.0-cp314-cp314-macosx_12_0_arm64.whl", hash = "sha256:9720454a2a8f50f74b85f1526bf0b7146d62243b48315a76597801b828d207ff", size = 871863, upload-time = "2026-10-20T08:56:32.166Z" },
+    { url = "https://files.pythonhosted.org/packages/18/1a/d83e7791cc130da052b3baa1ace8f9409174b244da5a392c6ec71d602401/shapiq-1.8.0-cp314-cp314-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:2503348e64244159019903c3f016e53c87984a87a4bca33a66fa423733b6e37b", size = 3437665, upload-time = "2026-10-20T08:56:33.525Z" },
+    { url = "https://files.pythonhosted.org/packages/e7/7d/62f978d139d1b09aed1a0bf6d50f825a35d2ac83eb9aa45b102278c821ad/shapiq-1.8.0-cp314-cp314-win_amd64.whl", hash = "sha256:b76d2ff49ea4db791fa39882f21e60ec0e849e49a44e890327980029e35996e6", size = 1070976, upload-time = "2026-10-20T08:56:35.028Z" },
+    { url = "https://files.pythonhosted.org/packages/57/cc/97a03569745e7b580fdd4d54369d55388e371e615f4ac4bf83fb2ac9cdfa/shapiq-1.8.0-cp315-cp315-macosx_10_15_x86_64.whl", hash = "sha256:cc39229ca2baafb579019a0d4736b808bdb6155996a71577d42bf068ec974c55", size = 892007, upload-time = "2026-10-20T08:56:36.652Z" },
+    { url = "https://files.pythonhosted.org/packages/26/3f/073316cb221cacf7442e2017dc6a0a3985e4b794e5e6ab7e20b7d7f38884/shapiq-1.8.0-cp315-cp315-macosx_12_0_arm64.whl", hash = "sha256:165eb7a303d7a51d67a2f7bb6748ff1eb78e822ca559112f9dfc411b0eefd082", size = 871462, upload-time = "2026-10-20T08:56:39.068Z" },
+    { url = "https://files.pythonhosted.org/packages/e7/71/5f6d6e17739e6a85878e4ed1e794b07054ea67b8269bcfa27b86547db9c3/shapiq-1.8.0-cp315-cp315-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:8dcda05b1a8b91b1b086f862b219ec96cc0b256b43cc0c7bc31b2339a15ed77d", size = 3442998, upload-time = "2026-10-20T08:56:40.425Z" },
+    { url = "https://files.pythonhosted.org/packages/e7/e2/4dd75c5feefb18cd5fc368a4df12818d5b2dd909a6d11733b2b399f0446f/shapiq-1.8.0-cp315-cp315-win_amd64.whl", hash = "sha256:68fb8f1b3f17d6a1ac5a314fe167433ac725d1982d443ecbccda12dcbc2b4079", size = 1070963, upload-time = "2026-10-20T08:56:41.93Z" },
 ]
 
 [[package]]

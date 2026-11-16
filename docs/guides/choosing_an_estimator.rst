@@ -52,6 +52,16 @@ Decision table
      - ``per_player: 16`` or more
      - Each pair :math:`(S, N \setminus S)` informs every player; pairs that
        cover every size cost about :math:`n \ln n` pairs
+   * - The classic baseline of attribution papers, any estimand
+     - ``permutation``
+     - ``per_player: 8`` or more
+     - Random orderings and their reverses, every prefix evaluated;
+       ``plugin_options: {permutation: {antithetic: false}}`` draws plain orderings
+   * - The surrogate baseline of faithfulness comparisons
+     - ``lime``
+     - ``per_player: 8`` or more
+     - Weighted ridge on random subsets with the reference kernel; coefficients, not
+       Shapley values; ignores the estimand and needs ``efficiency: none``
    * - A baseline any attribution method must beat
      - ``loo``
      - ``budget.evaluations: n + 2`` past ``max_players``
@@ -69,6 +79,45 @@ full-table run on more than
 :exc:`~mllm_shap.errors.ConfigError` before any model call, whatever the
 estimator; lower the fraction, use coarser players, or raise the limit
 deliberately.
+
+Pairwise interactions
+---------------------
+
+:func:`~mllm_shap.explain_interactions` (extra ``interactions``) scores every coalition
+and returns the order-2 ``k-SII`` matrix through ``shapiq``: a positive entry means the
+two players are worth more together than their separate values add up to. It needs the
+full table of :math:`2^n` coalitions, so it is for short inputs, and an archive or the
+``replay`` backend answers repeats without the model. Other ``shapiq`` indices such as
+``FSII`` (Faith-SHAP) work through ``index``.
+
+Stopping early
+--------------
+
+``budget.stop`` ends sampling before the budget, which stays the upper bound. After every
+``check_every`` coalitions (default 16), once ``min_evaluations`` have run (default
+:math:`2(n + 1)`), it stops when every 95% interval is at most ``max_ci_width`` wide (``mc``
+only, from the standard errors below) or the ``top_k_stable`` players of largest magnitude
+are the same set as at the previous check (``mc`` and ``permutation``). On the reference
+games it spent about what a fixed budget of the same error spends (0 to 7% fewer
+evaluations), so use it to set a target width rather than to save calls.
+
+.. code-block:: yaml
+
+   explanation:
+     estimator: mc
+     budget: {fraction: 0.5, stop: {max_ci_width: 0.2, check_every: 16}}
+
+Standard errors
+---------------
+
+``explanation.stderr: true`` adds a standard error per value to the result (``stderr``
+in the JSON payload); ``value ± 1.96 * stderr`` is a 95% interval. It is defined for
+``mc``, from the variance of the size strata with a finite-population correction, and
+for ``exact``, where it is zero. On the reference games of the test suite the intervals
+of ``mc`` contained the exact value in 92 to 97% of seeds at 10 to 25% budget. It needs
+``efficiency: none`` and the ``identity`` normalizer, and ``reanalyze`` recomputes it
+from the archive. ``permutation`` has no standard error: the prefixes of one ordering are
+correlated, and the same formula covered only 60 to 82% of the exact values.
 
 Whatever you choose, ``base_value`` and ``grand_value`` are evaluated exactly, and
 with ``identity`` normalization the values sum to ``grand_value - base_value``

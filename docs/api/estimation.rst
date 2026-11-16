@@ -11,6 +11,16 @@ Estimation
    :inherited-members:
 
 .. automodule:: mllm_shap.estimation.complementary
+
+.. automodule:: mllm_shap.estimation.permutation
+
+.. automodule:: mllm_shap.estimation.lime
+
+.. automodule:: mllm_shap.estimation.interactions
+
+.. automodule:: mllm_shap.estimation.planning
+
+.. automodule:: mllm_shap.estimation.stopping
    :inherited-members:
 
 .. automodule:: mllm_shap.estimation.neyman
@@ -32,6 +42,8 @@ Estimand aggregators
 .. automodule:: mllm_shap.estimation.estimands.shapley
 
 .. automodule:: mllm_shap.estimation.estimands.banzhaf
+
+.. automodule:: mllm_shap.estimation.estimands.semivalue
 
 Normalizers
 -----------
