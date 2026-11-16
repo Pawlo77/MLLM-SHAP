@@ -5,7 +5,7 @@ domain: masking
 parent: "[[mllm-shap]]"
 tags: [architecture, masking]
 created: 2026-10-07
-updated: 2026-10-18
+updated: 2026-11-16
 related-code:
   - "[[src/mllm_shap/masking/hierarchy.py]]"
   - "[[src/mllm_shap/masking/__init__.py]]"

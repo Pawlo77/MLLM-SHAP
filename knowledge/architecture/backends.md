@@ -5,7 +5,7 @@ domain: backends
 parent: "[[mllm-shap]]"
 tags: [architecture, backends]
 created: 2026-10-07
-updated: 2026-10-19
+updated: 2026-11-16
 related-code:
   - "[[src/mllm_shap/backends/__init__.py]]"
   - "[[src/mllm_shap/backends/_chat.py]]"

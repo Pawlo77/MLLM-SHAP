@@ -5,7 +5,7 @@ domain: pipeline
 parent: "[[mllm-shap]]"
 tags: [architecture, pipeline]
 created: 2026-10-07
-updated: 2026-10-19
+updated: 2026-11-16
 related-code:
   - "[[src/mllm_shap/pipeline/__init__.py]]"
   - "[[src/mllm_shap/pipeline/config.py]]"
