@@ -37,3 +37,9 @@ def test_matrix_is_symmetric_and_pairs_are_ranked() -> None:
     matrix = result.values
     assert all(matrix[i][j] == matrix[j][i] for i in range(3) for j in range(3))
     assert len(result.top(2)) == 2
+
+
+def test_labels_are_the_words_of_the_players() -> None:
+    result = _run("alpha beta gamma")
+    assert result.labels == ("alpha", "beta", "gamma")
+    assert all(label in result.labels for pair in result.top(3) for label in pair[:2])

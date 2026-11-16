@@ -125,3 +125,14 @@ def test_config_refuses_estimators_that_sample_in_pairs(estimator: str) -> None:
         f"{head}explanation: {{estimator: mc, estimand: weighted_banzhaf}}\n"
     )
     assert config.explanation.estimand is Estimand.WEIGHTED_BANZHAF
+
+
+def test_the_aggregators_name_their_estimand_and_weigh_coalitions() -> None:
+    assert _beta().estimand is Estimand.BETA_SHAPLEY
+    assert _weighted().estimand is Estimand.WEIGHTED_BANZHAF
+    assert _beta().coalition_weight(2, 6) == pytest.approx(
+        beta_shapley_weight(2, 6, *BETA_SHAPLEY)
+    )
+    assert _weighted().coalition_weight(2, 6) == pytest.approx(
+        weighted_banzhaf_weight(2, 6, WEIGHTED_BANZHAF_P)
+    )

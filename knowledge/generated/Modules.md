@@ -88,9 +88,9 @@ parent: "[[mllm-shap]]"
 | [[src/mllm_shap/pipeline/config.py]] | Explain pipeline configuration schema. | pipeline | [[knowledge/architecture/pipeline]] | 408 | [[pipeline]] |
 | [[src/mllm_shap/pipeline/context.py]] | Shared state for one explain pipeline run. | pipeline | [[knowledge/architecture/pipeline]] | 57 | [[pipeline]] |
 | [[src/mllm_shap/pipeline/faithfulness.py]] | Removal metrics: how fast a ranking of players destroys or restores the answer. | pipeline | [[knowledge/architecture/pipeline]] | 449 | [[pipeline]] |
-| [[src/mllm_shap/pipeline/interactions.py]] | Pairwise interactions of an explained input, scored through the pipeline. | pipeline | [[knowledge/architecture/pipeline]] | 77 | [[pipeline]] |
+| [[src/mllm_shap/pipeline/interactions.py]] | Pairwise interactions of an explained input, scored through the pipeline. | pipeline | [[knowledge/architecture/pipeline]] | 88 | [[pipeline]] |
 | [[src/mllm_shap/pipeline/manifest.py]] | Versioned run manifest persisted next to every run archive. | pipeline | [[knowledge/architecture/pipeline]] | 271 | [[pipeline]] |
-| [[src/mllm_shap/pipeline/orchestrator.py]] | Explain pipeline orchestration. | pipeline | [[knowledge/architecture/pipeline]] | 895 | [[pipeline]] |
+| [[src/mllm_shap/pipeline/orchestrator.py]] | Explain pipeline orchestration. | pipeline | [[knowledge/architecture/pipeline]] | 899 | [[pipeline]] |
 | [[src/mllm_shap/pipeline/reanalyze.py]] | Reanalyze archived coalition generations without backend calls. | pipeline | [[knowledge/architecture/pipeline]] | 361 | [[pipeline]] |
 | [[src/mllm_shap/pipeline/rescore.py]] | Rescore an archive with teacher-forced value functions, without generating. | pipeline | [[knowledge/architecture/pipeline]] | 128 | [[pipeline]] |
 | [[src/mllm_shap/pipeline/result.py]] | Explain pipeline result types. | pipeline | [[knowledge/architecture/pipeline]] | 180 | [[pipeline]] |

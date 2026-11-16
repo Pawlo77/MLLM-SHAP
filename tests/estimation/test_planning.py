@@ -88,3 +88,14 @@ def test_the_cli_prints_the_plan(capsys: pytest.CaptureFixture[str]) -> None:
     assert (
         main(["plan", "--players", "4", "--range", "-1", "--target-error", "0.1"]) != 0
     )
+
+
+def test_the_cli_hints_at_exact_when_sampling_is_not_cheaper(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    from mllm_shap.cli import main
+
+    assert (
+        main(["plan", "--players", "6", "--range", "1", "--target-error", "0.01"]) == 0
+    )
+    assert "use estimator exact" in capsys.readouterr().out

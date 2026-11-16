@@ -33,3 +33,15 @@ def test_a_partial_table_is_refused() -> None:
     masks, payoffs = game.table()
     with pytest.raises(ValueError, match="complete table"):
         pairwise_interactions(masks[:-1], payoffs[:-1])
+
+
+def test_a_missing_shapiq_install_names_the_extra(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import sys
+
+    monkeypatch.setitem(sys.modules, "shapiq", None)
+    game = reference_games(4)[0]
+    masks, payoffs = game.table()
+    with pytest.raises(ImportError, match=r"mllm-shap\[interactions\]"):
+        pairwise_interactions(masks, payoffs)

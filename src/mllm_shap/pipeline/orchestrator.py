@@ -798,13 +798,17 @@ class ExplainOrchestrator:
         planned: Sequence[tuple[CoalitionMask, str, str]],
         store: HotResultStore,
     ) -> None:
-        """Load archived rows of a replay source into ``store``; refuse misses."""
+        """Load archived rows of a replay source into ``store``; refuse misses.
+
+        A row that lacks a teacher-forced score the value function needs counts as a
+        miss, so a fallback backend computes it.
+        """
         backend = self._backend
         if not isinstance(backend, ReplaySource):
             return
         for mask, coalition_key, _ in planned:
             row = backend.archived_row(coalition_key)
-            if row is not None:
+            if row is not None and all(c in row.forced for c in self._continuations):
                 store.put(
                     coalition_key,
                     row.generation_text,

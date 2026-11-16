@@ -69,3 +69,17 @@ def test_payload_omits_stderr_unless_requested(tmp_path: Path) -> None:
     output = ExplainRunner(config).explain_sync(_snapshot())
     assert output.result.stderr is None
     assert "stderr" not in output.to_dict()
+
+
+def test_an_estimator_without_standard_errors_is_refused() -> None:
+    from mllm_shap.errors import ConfigError
+    from mllm_shap.estimation.estimands import ShapleyAggregator
+    from mllm_shap.estimation.lime import LimeEstimator
+    from mllm_shap.pipeline.orchestrator import estimator_standard_errors
+
+    with pytest.raises(ConfigError, match="no standard errors"):
+        estimator_standard_errors(LimeEstimator(), True, [], [], ShapleyAggregator())
+    assert (
+        estimator_standard_errors(LimeEstimator(), False, [], [], ShapleyAggregator())
+        is None
+    )

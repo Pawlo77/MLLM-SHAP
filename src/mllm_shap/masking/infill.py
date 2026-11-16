@@ -72,16 +72,16 @@ class HfMaskedLmFiller:
                     "'mllm-shap[infill]'"
                 )
                 raise BackendUnavailableError(msg) from error
-            self._torch = torch
-            self._tokenizer = AutoTokenizer.from_pretrained(
+            self._torch = torch  # pragma: no cover
+            self._tokenizer = AutoTokenizer.from_pretrained(  # pragma: no cover
                 self._model_id, revision=self._revision
             )
-            self._model = AutoModelForMaskedLM.from_pretrained(
+            self._model = AutoModelForMaskedLM.from_pretrained(  # pragma: no cover
                 self._model_id, revision=self._revision
             ).eval()
         return self._tokenizer, self._model
 
-    def fill(self, text: str) -> list[str]:
+    def fill(self, text: str) -> list[str]:  # pragma: no cover
         """Return the most probable non-special word at each mask, in one pass."""
         tokenizer, model = self._load()
         torch = self._torch

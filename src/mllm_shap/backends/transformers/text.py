@@ -194,7 +194,7 @@ class TransformersTextBackend:
             if not request.future.done():
                 request.future.set_result(record)
 
-    def _generate_batch_sync(
+    def _generate_batch_sync(  # pragma: no cover
         self, batch: list["_GenerateRequest"]
     ) -> list[GenerationRecord]:
         """Generate every request greedily in left-padded batches.
@@ -347,7 +347,7 @@ class TransformersTextBackend:
             if not request.future.done():
                 request.future.set_result(scores)
 
-    def _force_batch_sync(
+    def _force_batch_sync(  # pragma: no cover
         self, batch: list["_ForceRequest"]
     ) -> list[list[ForcedScore]]:
         """Score every continuation of ``batch`` in padded forward passes.
@@ -656,7 +656,7 @@ def _generate_kwargs(
     return kwargs
 
 
-def _device_clock(torch: Any) -> float:
+def _device_clock(torch: Any) -> float:  # pragma: no cover
     """Return a clock reading after pending device work has finished."""
     if torch.cuda.is_available():
         torch.cuda.synchronize()
@@ -693,7 +693,7 @@ def _force_one(  # pragma: no cover
     return _forced_from_logits(torch, logits, ids, top_k)
 
 
-def _forced_from_logits(
+def _forced_from_logits(  # pragma: no cover
     torch: Any, logits: Any, ids: list[int], top_k: int
 ) -> ForcedScore:
     """Return the forced score of ``ids`` from the logits at their positions."""

@@ -136,3 +136,10 @@ def test_pipeline_run_scores_the_plan_once_and_flags_circularity() -> None:
     assert metrics.insertion_values == pytest.approx((0.0, 1.0, 2.0, 2.0, 2.0))
     assert metrics.circular
     assert metrics.deletion_win_rate is not None
+
+
+def test_the_curve_areas_are_trapezoids_over_the_removed_fraction() -> None:
+    metrics = compute_removal_metrics([2.0, 1.0], lambda mask: float(sum(mask)))
+    assert metrics.deletion_values == (2.0, 1.0, 0.0)
+    assert metrics.deletion_area == pytest.approx(1.0)
+    assert metrics.insertion_area == pytest.approx(1.0)

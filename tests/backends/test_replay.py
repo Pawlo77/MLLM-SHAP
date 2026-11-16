@@ -124,3 +124,100 @@ def test_replay_needs_archives(tmp_path: Path) -> None:
     })
     with pytest.raises(ConfigError, match="archives"):
         ExplainRunner(config).explain_sync(_snapshot())
+
+
+def _backend(source: Path, fallback: bool = False):
+    from mllm_shap.backends.replay import ReplayBackend
+    from mllm_shap.plugins import PluginContext, default_registry
+
+    options: dict[str, object] = {"archives": [str(source)]}
+    if fallback:
+        options["fallback"] = {"kind": "mock", "model_id": "mock"}
+    config = ExplainConfig.model_validate({
+        "backend": {"kind": "replay", "model_id": "mock", "options": options},
+    })
+    return ReplayBackend(PluginContext(config=config, registry=default_registry()))
+
+
+def test_archives_of_different_models_are_refused(
+    tmp_path: Path, exact_archive: tuple[Path, list[float]]
+) -> None:
+    first, _ = exact_archive
+    other = tmp_path / "other"
+    ExplainRunner(
+        ExplainConfig.model_validate({
+            "backend": {"kind": "mock", "model_id": "mock-b"},
+            "generation": {"max_new_tokens": 4},
+            "explanation": {
+                "estimator": "exact",
+                "absence_policy": "pad",
+                "archive": {"path": str(other)},
+            },
+        })
+    ).explain_sync(_snapshot())
+    options = {"archives": [str(first), str(other)]}
+    config = ExplainConfig.model_validate({
+        "backend": {"kind": "replay", "model_id": "mock", "options": options},
+        "explanation": {"archive": {"path": str(tmp_path / "out")}},
+    })
+    with pytest.raises(ConfigError, match="different models"):
+        ExplainRunner(config).explain_sync(_snapshot())
+
+
+def test_the_backend_without_a_fallback_refuses_unknown_prompts(
+    exact_archive: tuple[Path, list[float]],
+) -> None:
+    import asyncio
+
+    from mllm_shap.domain.config import GenerationConfig
+
+    backend = _backend(exact_archive[0])
+    assert backend.has_fallback is False
+    assert backend.model_id == "mock"
+    with pytest.raises(ReplayMissError, match="not in the replay archives"):
+        asyncio.run(backend.generate(_snapshot(3), GenerationConfig()))
+    with pytest.raises(ReplayMissError, match="teacher-forced"):
+        asyncio.run(backend.score_continuations(_snapshot(3), ["x"]))
+
+
+def test_the_backend_delegates_to_its_fallback_and_closes_it(
+    exact_archive: tuple[Path, list[float]],
+) -> None:
+    import asyncio
+
+    from mllm_shap.domain.config import GenerationConfig
+
+    backend = _backend(exact_archive[0], fallback=True)
+    record = asyncio.run(backend.generate(_snapshot(3), GenerationConfig()))
+    scores = asyncio.run(backend.score_continuations(_snapshot(3), ["x y"]))
+    assert backend.has_fallback is True
+    assert record.text
+    assert len(scores) == 1
+    closed: list[bool] = []
+
+    class Closing:
+        async def aclose(self) -> None:
+            closed.append(True)
+
+    backend._fallback = Closing()  # type: ignore[assignment]
+    asyncio.run(backend.aclose())
+    assert closed == [True]
+
+
+def test_rows_without_the_needed_forced_scores_count_as_misses(
+    tmp_path: Path, exact_archive: tuple[Path, list[float]]
+) -> None:
+    root, _ = exact_archive  # archived with the default text value function
+    forced = {"value_fn": "tf_logprob"}
+    live = ExplainRunner(
+        _live(tmp_path / "live", estimator="exact", **forced)
+    ).explain_sync(_snapshot())
+    strict = _replay(tmp_path / "strict", root, estimator="exact", **forced)
+    with pytest.raises(ReplayMissError, match="teacher-forced"):
+        ExplainRunner(strict).explain_sync(_snapshot())
+    lenient = _replay(
+        tmp_path / "lenient", root, fallback=True, estimator="exact", **forced
+    )
+    output = ExplainRunner(lenient).explain_sync(_snapshot())
+    assert list(output.result.values) == pytest.approx(list(live.result.values))
+    assert output.metrics.executed > 0

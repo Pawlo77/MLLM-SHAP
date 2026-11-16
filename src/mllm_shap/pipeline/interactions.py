@@ -29,6 +29,10 @@ class PairwiseInteractions:
     player_ids: tuple[str, ...]
     """Players in matrix order."""
 
+    labels: tuple[str, ...]
+    """Text of each player in matrix order; the player ids when the players have no
+    spans."""
+
     values: tuple[tuple[float, ...], ...]
     """Symmetric matrix; entry ``[i][j]`` is the interaction of players ``i`` and ``j``
     and the diagonal is zero. Positive means the pair is worth more together."""
@@ -36,7 +40,7 @@ class PairwiseInteractions:
     def top(self, k: int = 5) -> list[tuple[str, str, float]]:
         """Return the ``k`` largest-magnitude pairs as ``(player, player, value)``."""
         pairs = [
-            (self.player_ids[i], self.player_ids[j], self.values[i][j])
+            (self.labels[i], self.labels[j], self.values[i][j])
             for i, j in itertools.combinations(range(len(self.player_ids)), 2)
         ]
         return sorted(pairs, key=lambda pair: -abs(pair[2]))[:k]
@@ -68,10 +72,17 @@ async def explain_interactions(
     output = await ExplainRunner(run_config, registry=plugins, backend=backend).explain(
         snapshot
     )
+    player_set = output.player_set
+    labels = (
+        tuple(span.text for span in player_set.spans)
+        if player_set is not None and player_set.spans
+        else output.manifest.player_ids
+    )
     masks = list(sampler.payoffs)
     matrix = pairwise_interactions(masks, [sampler.payoffs[m] for m in masks], index)
     return PairwiseInteractions(
         index=index,
         player_ids=output.manifest.player_ids,
+        labels=labels,
         values=tuple(tuple(float(v) for v in row) for row in np.asarray(matrix)),
     )
