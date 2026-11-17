@@ -42,7 +42,12 @@ def test_registry_loads_estimand_entry_points() -> None:
 
     assert isinstance(shapley, ShapleyAggregator)
     assert isinstance(banzhaf, BanzhafAggregator)
-    assert registry.names(PluginGroup.ESTIMANDS) == ("banzhaf", "shapley")
+    assert registry.names(PluginGroup.ESTIMANDS) == (
+        "banzhaf",
+        "beta_shapley",
+        "shapley",
+        "weighted_banzhaf",
+    )
 
 
 def test_registry_loads_value_fn_and_normalizer_entry_points() -> None:

@@ -18,7 +18,10 @@ from mllm_shap.errors import BackendUnavailableError
 from mllm_shap.pipeline.config import ExplainConfig
 from mllm_shap.plugins import PluginContext, PluginGroup, default_registry
 from mllm_shap.protocols import RequiresTeacherForcing
-from mllm_shap.value.contrastive import ContrastiveValue
+from mllm_shap.value.contrastive import (
+    ContrastiveValue,
+    LabelMarginValue,
+)
 from mllm_shap.value.teacher_forced import TfJsdValue, TfLogprobValue, _jsd
 
 BASE = GenerationRecord(text="a b")
@@ -149,3 +152,47 @@ def test_mock_backend_forces_deterministic_normalised_distributions() -> None:
     assert asyncio.run(backend.score_continuations(_snapshot("a"), [""]))[0] == (
         ForcedScore(())
     )
+
+
+def test_label_margin_is_target_against_the_log_sum_of_the_other_labels() -> None:
+    value_fn = LabelMarginValue(
+        _context("label_margin", target="a", labels=["a", "b", "c"])
+    )
+    candidate = GenerationRecord(
+        text="",
+        forced={
+            "a": ForcedScore((-1.0,)),
+            "b": ForcedScore((-2.0,)),
+            "c": ForcedScore((-3.0,)),
+        },
+    )
+    assert value_fn.forced_continuations(BASE) == ("a", "b", "c")
+    expected = -1.0 - math.log(math.exp(-2.0) + math.exp(-3.0))
+    assert value_fn.score(BASE, candidate) == pytest.approx(expected)
+
+
+def test_label_margin_with_two_labels_equals_contrastive() -> None:
+    forced = {"no": ForcedScore((-1.0, -0.5)), "yes": ForcedScore((-3.0,))}
+    candidate = GenerationRecord(text="", forced=forced)
+    margin = LabelMarginValue(
+        _context("label_margin", target="no", labels=["no", "yes"])
+    )
+    contrast = ContrastiveValue(_context("contrastive", target="no", foil="yes"))
+    assert margin.score(BASE, candidate) == pytest.approx(
+        contrast.score(BASE, candidate)
+    )
+
+
+@pytest.mark.parametrize(
+    "options",
+    [
+        {"target": "a", "labels": ["a"]},
+        {"target": "z", "labels": ["a", "b"]},
+        {"target": "a", "labels": ["a", "a"]},
+    ],
+)
+def test_label_margin_rejects_inconsistent_labels(options: dict[str, object]) -> None:
+    from pydantic import ValidationError
+
+    with pytest.raises(ValidationError):
+        LabelMarginValue(_context("label_margin", **options))

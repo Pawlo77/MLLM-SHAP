@@ -50,6 +50,10 @@ answer and :math:`y_N` the answer for the full prompt:
      - :math:`\log p(t \mid x_S) - \log p(f \mid x_S)` for a target :math:`t` and
        a foil :math:`f`
      - Yin and Neubig 2022 (`arXiv:2202.10419 <https://arxiv.org/abs/2202.10419>`_)
+   * - ``label_margin``
+     - :math:`\log p(t \mid x_S) - \log \sum_{l \ne t} p(l \mid x_S)` over the labels
+       of a closed-answer task
+     - Yin and Neubig 2022 (`arXiv:2202.10419 <https://arxiv.org/abs/2202.10419>`_)
    * - ``bertscore``
      - :math:`F_1` of greedy token matching of encoder states, :math:`R =
        \frac{1}{|y_N|}\sum_i \max_j \cos(e_i, \hat e_j)`

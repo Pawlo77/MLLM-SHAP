@@ -6,6 +6,7 @@
 
 from .builder import MaskBuilder, MaskedSnapshot
 from .codec import MaskCodec, PackedMask
+from .infill import InfillPolicy
 from .partitions import (
     MessagePartitioner,
     MessagesOptions,
@@ -17,6 +18,7 @@ from .space import MaskSpace
 
 __all__ = [
     "DeletePolicy",
+    "InfillPolicy",
     "MaskBuilder",
     "MaskCodec",
     "MaskSpace",

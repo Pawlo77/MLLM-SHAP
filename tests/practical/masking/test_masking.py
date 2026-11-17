@@ -98,3 +98,20 @@ def test_message_players_follow_the_roles_option(
     assert all(output.result.values[i] > 0 for i in scenario.expect["positive"])
     expected = names[scenario.expect["top_player"]]
     assert top_players(names, output.result.values) == [expected]
+
+
+@pytest.mark.parametrize("scenario", scenario_cases("masking.infill"))
+def test_infill_fills_absent_words_and_keeps_the_top_player(
+    scenario: Scenario, default_model: PracticalModel, practical_record: dict[str, Any]
+) -> None:
+    """The empty coalition has no mask tokens left; the top player holds."""
+    pytest.importorskip("transformers")
+    output = default_model.explain(scenario)
+    practical_record["numbers"] = summary(output)
+
+    empty = _empty_coalition_text(scenario, default_model)
+    assert "<mask>" not in empty
+    assert len(empty.split()) == len(scenario.snapshot.messages()[0].text.split())
+    assert scenario.expect["top_player"] in top_players(
+        labels(output), output.result.values
+    )

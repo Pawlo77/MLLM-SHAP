@@ -134,6 +134,7 @@ def test_normalizers_rescore_one_archive(
         "value.tf_logprob",
         "value.tf_jsd",
         "value.contrastive",
+        "value.label_margin",
         "value.bertscore",
         "value.nli_logodds",
         "value.semascore",

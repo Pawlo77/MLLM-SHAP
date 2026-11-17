@@ -54,6 +54,8 @@ def test_exact_reference(
         "estimator.neyman_cc",
         "estimator.leverage",
         "estimator.proxy",
+        "estimator.permutation",
+        "estimator.lime",
     ),
 )
 def test_sampled_estimators_track_exact(
@@ -105,6 +107,22 @@ def test_banzhaf_exact_and_sampled(
     nearest = top_by_magnitude(estimate, expect["mc_top_k"])
     assert names.index(expect["top_player"]) in nearest
     assert distance <= expect["max_l1"]
+
+
+@pytest.mark.parametrize(
+    "scenario", scenario_cases("estimand.beta_shapley", "estimand.weighted_banzhaf")
+)
+def test_semivalue_exact_and_sampled(
+    scenario: Scenario, default_model: PracticalModel, practical_record: dict[str, Any]
+) -> None:
+    """Monte Carlo keeps the exact semivalue's top player among its top ranks."""
+    exact = default_model.explain(scenario)
+    sampled = default_model.explain(scenario, scenario.variants[0])
+    reference = exact.result.values
+    practical_record["numbers"] = {"exact": summary(exact), "mc": summary(sampled)}
+
+    nearest = top_by_magnitude(sampled.result.values, scenario.expect["mc_top_k"])
+    assert top_by_magnitude(reference, 1)[0] in nearest
 
 
 @pytest.mark.parametrize("scenario", scenario_cases("estimator.kernel_banzhaf"))

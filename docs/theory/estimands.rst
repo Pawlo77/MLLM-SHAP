@@ -49,6 +49,27 @@ Banzhaf (1965) introduced the index in weighted-voting analysis; Dubey & Shapley
 (1979) developed its mathematical properties on the space of characteristic
 functions.
 
+Semivalues (estimands)
+----------------------
+
+Both semivalues keep the marginal contributions of Shapley and Banzhaf and change only
+the weight of each coalition size. Each is a mixture of Banzhaf-type weights over an
+inclusion probability :math:`t`, so the same sampled coalitions serve any semivalue.
+
+**Weighted Banzhaf** with parameter :math:`p \in (0, 1)` includes every other player
+with probability :math:`p`: :math:`w(k, n) = p^k (1-p)^{n-1-k}`. At :math:`p = 1/2` it is
+the Banzhaf index. Option ``p``, default 0.3.
+
+**Beta Shapley** (Kwon and Zou, 2022) draws :math:`t \sim \mathrm{Beta}(\beta, \alpha)`:
+:math:`w(k, n) = B(k + \beta,\, n - 1 - k + \alpha) / B(\alpha, \beta)`. With
+:math:`\alpha > \beta` small coalitions weigh more; :math:`\alpha = \beta = 1` is Shapley.
+Options ``alpha`` (default 4) and ``beta`` (default 1).
+
+Implemented in :class:`~mllm_shap.estimation.estimands.semivalue.BetaShapleyAggregator`
+and :class:`~mllm_shap.estimation.estimands.semivalue.WeightedBanzhafAggregator`. They
+need estimator ``mc``, ``exact`` or ``loo``; the paired and regression estimators
+assume the Shapley or Banzhaf weights.
+
 When Shapley and Banzhaf diverge
 --------------------------------
 

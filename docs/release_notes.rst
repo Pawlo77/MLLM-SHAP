@@ -8,6 +8,32 @@ Changes in each published ``mllm-shap`` version. Newest first.
 Unreleased
 ----------
 
+Added
+~~~~~
+
+- Estimands ``beta_shapley`` (options ``alpha``, ``beta``) and ``weighted_banzhaf``
+  (option ``p``); they need estimator ``mc``, ``exact``, ``permutation``, ``lime`` or
+  ``loo``. See :doc:`theory/estimands`.
+- Estimators ``permutation`` (random orderings with their reverses) and ``lime`` (the
+  kernel-weighted ridge surrogate), and the value function ``label_margin`` (a target
+  label against the other labels of a closed answer).
+- ``explanation.stderr`` reports a standard error per value for ``mc`` and ``exact``;
+  ``budget.stop`` ends ``mc`` or ``permutation`` sampling on interval width or a stable
+  top set; ``mllm-shap plan`` turns a target error into a budget
+  (:doc:`guides/choosing_an_estimator`).
+- The ``replay`` backend answers coalitions from run archives, so any estimator, budget
+  or seed runs without the model (:doc:`guides/backends`).
+- ``PerfSummary`` and the ``perf`` payload carry ``forward_sequences``,
+  ``prompt_tokens``, ``generated_tokens`` and ``device_seconds`` for the ``mock`` and
+  ``transformers`` backends. The ``transformers`` option ``batch_size`` scores teacher-forced
+  sequences and generates greedy answers in padded batches.
+- :func:`~mllm_shap.removal_metrics` adds insertion curves, comprehensiveness,
+  sufficiency, a normalised AOPC, win rates against random sets and flip sizes, and
+  warns when an evaluation reuses the explanation's value function and filler.
+- The ``infill`` absence policy (extra ``infill``) fills absent words with a masked
+  language model, and :func:`~mllm_shap.explain_interactions` returns pairwise
+  ``k-SII`` values through ``shapiq`` (extra ``interactions``).
+
 .. _release-0-8-0:
 
 0.8.0 (2026-10-19)

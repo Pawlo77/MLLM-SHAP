@@ -14,6 +14,14 @@ Mock
 
 .. automodule:: mllm_shap.backends.mock.audio
 
+Replay from run archives
+------------------------
+
+.. automodule:: mllm_shap.backends.replay
+   :no-members:
+
+.. automodule:: mllm_shap.backends.replay.backend
+
 OpenAI-compatible HTTP API
 --------------------------
 

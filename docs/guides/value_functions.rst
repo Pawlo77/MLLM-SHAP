@@ -37,8 +37,8 @@ Pick by what the backend can return and what the answer looks like:
      - Entailment log-odds in both directions; catches negation
    * - U5
      - One decision, such as refusing or choosing an option
-     - ``contrastive``
-     - Log-odds of a target continuation against a foil
+     - ``contrastive``, ``label_margin``
+     - Log-odds of a target continuation against a foil, or against a label set
    * - U6
      - Speech transcription
      - ``semascore``
@@ -185,6 +185,9 @@ coalition prompt with one forward pass and no generation of coalition answers:
   (default 20) keeps that many candidates per position and buckets the rest.
 - ``contrastive``: :math:`v(S) = \log p(t \mid x_S) - \log p(f \mid x_S)` for the
   ``target`` and ``foil`` options, such as ``" I can't"`` against ``" Sure"``.
+- ``label_margin``: :math:`v(S) = \log p(t \mid x_S) - \log \sum_{l \ne t} p(l \mid x_S)`
+  for a ``target`` and the ``labels`` of a closed-answer task, such as ``" yes"`` and
+  ``" no"``; with two labels it equals ``contrastive``.
 
 .. code-block:: yaml
 
@@ -319,6 +322,13 @@ reuse its model:
 
    curve = await deletion_curve(wer_config, snapshot, output.result.values)
    print(curve.removed, curve.values, round(curve.area, 3))
+
+See :doc:`../notebooks/faithfulness_and_interactions` for runnable examples.
+:func:`~mllm_shap.removal_metrics` scores one ranking on one set of coalitions
+(:class:`~mllm_shap.RemovalMetrics`): deletion and insertion curves, comprehensiveness,
+sufficiency and a normalised ``aopc``, the win rate against size-matched random sets,
+and with ``threshold`` the smallest flip and restore sets of a closed answer. Pass the
+explanation's config as ``explained_with`` to flag a circular evaluation.
 
 Attribution normalizers
 -----------------------

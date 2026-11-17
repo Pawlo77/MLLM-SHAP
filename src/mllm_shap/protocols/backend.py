@@ -5,11 +5,15 @@
 """
 
 from collections.abc import Sequence
-from typing import Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 from ..domain.config import GenerationConfig
 from ..domain.conversation import ConversationSnapshot
 from ..domain.generation import ForcedScore
+from ..runtime.metrics import CostCounters
+
+if TYPE_CHECKING:
+    from ..runtime.archive import CoalitionRecord
 
 
 class GenerationResult(Protocol):
@@ -33,6 +37,32 @@ class GenerativeBackend(Protocol):
         generation: GenerationConfig,
     ) -> GenerationResult:
         """Generate model output for the given snapshot."""
+
+
+@runtime_checkable
+class ReportsCost(Protocol):
+    """Backend that counts its model work."""
+
+    @property
+    def cost_counters(self) -> CostCounters:
+        """Return the cumulative counters since the backend was created."""
+
+
+@runtime_checkable
+class ReplaySource(Protocol):
+    """Backend that answers coalitions from archived rows."""
+
+    @property
+    def has_fallback(self) -> bool:
+        """Return whether a live backend computes coalitions that are not archived."""
+
+    def archived_row(self, coalition_key: str) -> "CoalitionRecord | None":
+        """Return the archived row of a coalition key, if any."""
+
+    def archived_base(
+        self, snapshot_id: str
+    ) -> "tuple[str, CoalitionRecord | None] | None":
+        """Return the archived base text and grand-coalition row of a snapshot."""
 
 
 @runtime_checkable

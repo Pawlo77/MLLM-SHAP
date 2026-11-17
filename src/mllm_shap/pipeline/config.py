@@ -39,6 +39,7 @@ __all__ = [
     "HierarchicalConfig",
     "KvCacheConfig",
     "NeymanConfig",
+    "StopConfig",
     "explain_config_from_yaml",
     "explain_config_to_yaml",
 ]
@@ -85,6 +86,32 @@ class BackendConfig(BaseModel):
         return self
 
 
+class StopConfig(BaseModel):
+    """Early stopping of sampling estimators; the budget stays the upper bound."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    max_ci_width: float | None = Field(default=None, gt=0.0)
+    """Stop when every 95% interval is at most this wide (``mc`` only)."""
+
+    top_k_stable: int | None = Field(default=None, ge=1, strict=True)
+    """Stop when the ``k`` players of largest magnitude are the same set at two
+    checks in a row (``mc`` and ``permutation``)."""
+
+    check_every: int = Field(default=16, ge=1, strict=True)
+    """New coalitions between two checks."""
+
+    min_evaluations: int | None = Field(default=None, ge=2, strict=True)
+    """No check before this many coalitions; ``2 (n + 1)`` when unset."""
+
+    @model_validator(mode="after")
+    def _one_criterion(self) -> Self:
+        if self.max_ci_width is None and self.top_k_stable is None:
+            msg = "budget.stop needs max_ci_width or top_k_stable"
+            raise ConfigError(msg)
+        return self
+
+
 class BudgetConfig(BaseModel):
     """Coalition budget: a fraction of the ``2^n`` coalitions or an absolute count.
 
@@ -107,6 +134,9 @@ class BudgetConfig(BaseModel):
     per_player: float | None = Field(default=None, gt=0.0)
     """Coalition evaluations as a multiple of the player count, ``ceil(per_player * n)``
     for ``n`` players, treated like ``evaluations`` afterwards."""
+
+    stop: StopConfig | None = None
+    """Early stopping; only written when set."""
 
     def evaluations_for(self, num_players: int) -> int | None:
         """Return the absolute evaluation count for ``num_players``, if one is set."""
@@ -179,6 +209,10 @@ class HierarchicalConfig(BaseModel):
     """Coarse players are paragraphs of a message or whole messages."""
 
 
+_SEMIVALUES = (Estimand.BETA_SHAPLEY, Estimand.WEIGHTED_BANZHAF)
+_SEMIVALUE_ESTIMATORS = ("exact", "mc", "loo", "lime", "permutation")
+
+
 class ExplanationConfig(BaseModel):
     """Explanation algorithm and runtime controls."""
 
@@ -199,6 +233,10 @@ class ExplanationConfig(BaseModel):
     efficiency: Literal["none", "additive"] = "none"
     """``additive`` shifts every Shapley value equally so they sum to
     ``v(N) - v(empty)``, before the normalizer; only written when set."""
+
+    stderr: bool = False
+    """Report the standard error of every value (``exact`` and ``mc`` only, with
+    ``efficiency: none`` and the ``identity`` normalizer); only written when set."""
 
     players: str = "tokens"
     """Registered partition plugin that defines explainability players."""
@@ -252,6 +290,8 @@ class ExplanationConfig(BaseModel):
         dumped: dict[str, Any] = handler(self)
         if dumped.get("efficiency") == "none":
             del dumped["efficiency"]
+        if not dumped.get("stderr"):
+            dumped.pop("stderr", None)
         if dumped.get("hierarchical") is None:
             dumped.pop("hierarchical", None)
         return dumped
@@ -259,11 +299,37 @@ class ExplanationConfig(BaseModel):
     @model_validator(mode="after")
     def _check_estimator_settings(self) -> Self:
         if self.efficiency == "additive" and (
-            self.estimand is not Estimand.SHAPLEY or self.estimator == "loo"
+            self.estimand is not Estimand.SHAPLEY or self.estimator in ("loo", "lime")
         ):
             msg = (
                 "explanation.efficiency 'additive' needs the shapley estimand and "
-                "an estimator other than 'loo'"
+                "an estimator other than 'loo' or 'lime'"
+            )
+            raise ConfigError(msg)
+        if self.estimand in _SEMIVALUES and self.estimator not in _SEMIVALUE_ESTIMATORS:
+            msg = (
+                f"estimand {self.estimand.value!r} needs estimator 'mc' or 'exact'; "
+                f"got {self.estimator!r}"
+            )
+            raise ConfigError(msg)
+        if self.stderr and (
+            self.estimator not in ("exact", "mc")
+            or self.efficiency != "none"
+            or self.normalizer != "identity"
+        ):
+            msg = (
+                "explanation.stderr needs estimator 'exact' or 'mc', efficiency "
+                "'none' and the 'identity' normalizer"
+            )
+            raise ConfigError(msg)
+        stop = self.budget.stop
+        if stop is not None and (
+            self.estimator not in ("mc", "permutation")
+            or (stop.max_ci_width is not None and self.estimator != "mc")
+        ):
+            msg = (
+                "budget.stop needs estimator 'mc' (max_ci_width) or 'mc' and "
+                "'permutation' (top_k_stable)"
             )
             raise ConfigError(msg)
         if self.estimator == "exact" and self.budget.fraction != 1.0:

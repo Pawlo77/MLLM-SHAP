@@ -15,6 +15,7 @@ from ...domain.config import GenerationConfig
 from ...domain.conversation import ConversationSnapshot
 from ...domain.generation import ForcedScore, GenerationRecord
 from ...protocols.plugin import PluginOptions
+from ...runtime.metrics import CostCounters
 from ...value.generation_records import generation_record_from_text, stable_token_id
 from .._chat import message_chat_text
 
@@ -38,6 +39,7 @@ class MockBackend:
         self._model_id = (
             context.config.backend.model_id if context is not None else model_id
         )
+        self._cost = CostCounters()
 
     @property
     def model_id(self) -> str:
@@ -51,7 +53,21 @@ class MockBackend:
     ) -> GenerationRecord:
         """Return deterministic generation output for ``snapshot``."""
         text = _deterministic_text(snapshot, self._model_id, generation)
+        self._count(_prompt_words(snapshot), len(text.split()))
         return generation_record_from_text(text)
+
+    @property
+    def cost_counters(self) -> CostCounters:
+        """Return the cumulative model work; words stand for tokens, time is zero."""
+        return self._cost
+
+    def _count(self, prompt: int, generated: int, sequences: int = 1) -> None:
+        self._cost = CostCounters(
+            self._cost.forward_sequences + sequences,
+            self._cost.prompt_tokens + prompt,
+            self._cost.generated_tokens + generated,
+            self._cost.device_seconds,
+        )
 
     @property
     def forces_continuations(self) -> bool:
@@ -71,6 +87,9 @@ class MockBackend:
         different coalition prompts give different scores.
         """
         prompt = _prompt_digest(snapshot, self._model_id)
+        words = _prompt_words(snapshot)
+        for text in continuations:
+            self._count(words + len(text.split()), 0)
         return [_force(prompt, text, top_k) for text in continuations]
 
 
@@ -97,6 +116,14 @@ def _deterministic_text(
 
 MOCK_VOCAB = 8
 """Size of the mock backend's next-token vocabulary."""
+
+
+def _prompt_words(snapshot: ConversationSnapshot) -> int:
+    return sum(
+        len(message_chat_text(message).split())
+        for turn in snapshot.turns
+        for message in turn.messages
+    )
 
 
 def _prompt_digest(snapshot: ConversationSnapshot, model_id: str) -> bytes:

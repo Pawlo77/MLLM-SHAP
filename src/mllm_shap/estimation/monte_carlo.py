@@ -6,13 +6,14 @@
 """
 
 import math
-from collections.abc import Iterator
+from collections.abc import Iterator, Sequence
 from itertools import chain
 
 import numpy as np
 
 from ..domain.coalition import CoalitionMask
 from ..domain.players import PlayerSet
+from ..protocols.estimand import EstimandAggregator
 from ._shared import (
     _SnapshotEstimator,
     compute_mc_num_samples,
@@ -20,6 +21,7 @@ from ._shared import (
     present_to_mask_int,
     random_present,
 )
+from .estimands._weights import marginal_standard_errors
 
 
 class MonteCarloEstimator(_SnapshotEstimator):
@@ -91,3 +93,18 @@ class MonteCarloEstimator(_SnapshotEstimator):
                 yield CoalitionMask.from_sequence(present)
             if seen_by_size[size] == math.comb(num_players, size):
                 open_sizes.remove(size)
+
+    def standard_errors(
+        self,
+        masks: Sequence[CoalitionMask],
+        payoffs: Sequence[float],
+        aggregator: EstimandAggregator,
+    ) -> list[float]:
+        """Return the stratified standard error of each player's value.
+
+        Coalitions of one size are a simple random sample, so each size stratum is
+        a finite-population mean difference (``marginal_standard_errors``).
+        """
+        return marginal_standard_errors(
+            [mask.present for mask in masks], payoffs, aggregator.coalition_weight
+        )

@@ -9,12 +9,19 @@ from ..alignment.partitions import SgpaSegmentPartitioner
 from ..backends.api import ApiBackend
 from ..backends.lmstudio import LmStudioBackend
 from ..backends.mock import MockAudioBackend, MockBackend
+from ..backends.replay import ReplayBackend
 from ..backends.transformers import TransformersTextBackend
 from ..estimation.complementary import ComplementaryEstimator
-from ..estimation.estimands import BanzhafAggregator, ShapleyAggregator
+from ..estimation.estimands import (
+    BanzhafAggregator,
+    BetaShapleyAggregator,
+    ShapleyAggregator,
+    WeightedBanzhafAggregator,
+)
 from ..estimation.exact import ExactEstimator
 from ..estimation.kernel_banzhaf import KernelBanzhafEstimator
 from ..estimation.leverage import LeverageEstimator
+from ..estimation.lime import LimeEstimator
 from ..estimation.loo import LeaveOneOutEstimator
 from ..estimation.monte_carlo import MonteCarloEstimator
 from ..estimation.neyman import NeymanEstimator
@@ -24,7 +31,9 @@ from ..estimation.normalizers import (
     MinMaxNormalizer,
     PowerShiftNormalizer,
 )
+from ..estimation.permutation import PermutationEstimator
 from ..estimation.proxy import ProxyEstimator
+from ..masking.infill import InfillPolicy
 from ..masking.partitions import (
     MessagePartitioner,
     SentencePartitioner,
@@ -32,7 +41,7 @@ from ..masking.partitions import (
 )
 from ..masking.policies import DeletePolicy, NeutralPolicy, PadPolicy
 from ..value.bertscore import BertScoreValue
-from ..value.contrastive import ContrastiveValue
+from ..value.contrastive import ContrastiveValue, LabelMarginValue
 from ..value.embedding import CosineEmbeddingValue
 from ..value.judge import JudgeGradeValue
 from ..value.logprob import LogprobValue, SelfLogprobValue
@@ -56,11 +65,15 @@ BUILTIN_PLUGINS: dict[PluginGroup, dict[str, PluginFactory]] = {
         "leverage": LeverageEstimator,
         "kernel_banzhaf": KernelBanzhafEstimator,
         "proxy": ProxyEstimator,
+        "lime": LimeEstimator,
         "loo": LeaveOneOutEstimator,
+        "permutation": PermutationEstimator,
     },
     PluginGroup.ESTIMANDS: {
         "shapley": ShapleyAggregator,
         "banzhaf": BanzhafAggregator,
+        "beta_shapley": BetaShapleyAggregator,
+        "weighted_banzhaf": WeightedBanzhafAggregator,
     },
     PluginGroup.VALUE_FNS: {
         "tfidf_cosine": TfIdfCosineValue,
@@ -70,6 +83,7 @@ BUILTIN_PLUGINS: dict[PluginGroup, dict[str, PluginFactory]] = {
         "tf_logprob": TfLogprobValue,
         "tf_jsd": TfJsdValue,
         "contrastive": ContrastiveValue,
+        "label_margin": LabelMarginValue,
         "bertscore": BertScoreValue,
         "nli_logodds": NliLogOddsValue,
         "semascore": SemaScoreValue,
@@ -90,6 +104,7 @@ BUILTIN_PLUGINS: dict[PluginGroup, dict[str, PluginFactory]] = {
         "lmstudio": LmStudioBackend,
         "transformers": TransformersTextBackend,
         "api": ApiBackend,
+        "replay": ReplayBackend,
     },
     PluginGroup.PARTITIONS: {
         "tokens": TokenPartitioner,
@@ -101,6 +116,7 @@ BUILTIN_PLUGINS: dict[PluginGroup, dict[str, PluginFactory]] = {
         "delete": DeletePolicy,
         "pad": PadPolicy,
         "neutral": NeutralPolicy,
+        "infill": InfillPolicy,
     },
     PluginGroup.RENDERERS: {
         "token_text": TokenTextRenderer,

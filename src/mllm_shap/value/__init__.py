@@ -5,7 +5,7 @@
 """
 
 from .bertscore import BertScoreValue
-from .contrastive import ContrastiveValue
+from .contrastive import ContrastiveValue, LabelMarginValue
 from .embedding import CosineEmbeddingValue
 from .judge import JudgeGradeValue
 from .logprob import LogprobValue, SelfLogprobValue
@@ -21,6 +21,7 @@ __all__ = [
     "ContrastiveValue",
     "CosineEmbeddingValue",
     "JudgeGradeValue",
+    "LabelMarginValue",
     "LogprobValue",
     "NliLogOddsValue",
     "ReferenceWerValue",

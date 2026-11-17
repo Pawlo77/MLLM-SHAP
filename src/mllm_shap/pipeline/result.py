@@ -6,7 +6,7 @@
 """
 
 from dataclasses import asdict, dataclass
-from typing import TypedDict
+from typing import NotRequired, TypedDict
 
 from ..domain.estimands import Estimand, EstimandWire, estimand_to_wire
 from ..domain.players import PlayerSet
@@ -67,6 +67,9 @@ class ExplainRunPayload(TypedDict):
     perf: dict[str, float] | None
     """Wall-clock breakdown in milliseconds, when measured."""
 
+    stderr: NotRequired[list[float]]
+    """Standard error per value; present when ``explanation.stderr`` is set."""
+
 
 @dataclass(frozen=True, slots=True)
 class ExplainResult:
@@ -83,6 +86,10 @@ class ExplainResult:
 
     grand_value: float = 0.0
     """Payoff of the grand coalition v(N), scored against the base generation."""
+
+    stderr: tuple[float, ...] | None = None
+    """Standard error per value, when requested; ``value +- 1.96 * stderr`` is a 95%
+    interval."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -114,7 +121,7 @@ class ExplainRunOutput:
         known (``explain``); after ``reanalyze`` only the archived player ids
         are available and the span fields are ``None``.
         """
-        return {
+        payload: ExplainRunPayload = {
             "values": list(self.result.values),
             "labels": self._labels(),
             "base_value": self.result.base_value,
@@ -124,6 +131,9 @@ class ExplainRunOutput:
             "manifest": self.manifest.to_dict(),
             "perf": None if self.perf is None else asdict(self.perf),
         }
+        if self.result.stderr is not None:
+            payload["stderr"] = list(self.result.stderr)
+        return payload
 
     def _labels(self) -> list[PlayerLabelPayload]:
         if self.player_set is not None and self.player_set.spans:

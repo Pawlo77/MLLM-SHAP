@@ -105,6 +105,27 @@ open the ``.ipynb`` on GitHub or browse the full catalog in
      - ``[viz]``, ``[proxy]``
      - `GitHub <https://github.com/Pawlo77/MLLM-SHAP/blob/main/examples/estimator_comparison.ipynb>`__
 
+   * - :doc:`notebooks/estimators_semivalues_uncertainty`
+     - Beta Shapley and weighted Banzhaf, the ``permutation`` and ``lime``
+       estimators, ``explanation.stderr`` intervals checked for coverage,
+       ``budget.stop``, the config guards and ``mllm-shap plan`` budgets.
+     - none
+     - `GitHub <https://github.com/Pawlo77/MLLM-SHAP/blob/main/examples/estimators_semivalues_uncertainty.ipynb>`__
+
+   * - :doc:`notebooks/replay_and_cost`
+     - An archived exact run, any estimator, budget and seed replayed from it with
+       zero model calls, a missing coalition and a fallback backend, the cost
+       counters of ``perf`` and the ``batch_size`` option.
+     - none
+     - `GitHub <https://github.com/Pawlo77/MLLM-SHAP/blob/main/examples/replay_and_cost.ipynb>`__
+
+   * - :doc:`notebooks/faithfulness_and_interactions`
+     - :func:`~mllm_shap.removal_metrics` and the circularity warning, flip and
+       restore sizes, the ``label_margin`` value function and pairwise ``k-SII``
+       interactions from :func:`~mllm_shap.explain_interactions`.
+     - ``[interactions]``
+     - `GitHub <https://github.com/Pawlo77/MLLM-SHAP/blob/main/examples/faithfulness_and_interactions.ipynb>`__
+
    * - :doc:`notebooks/attribution_viz`
      - Real-model attributions of a prompt (words), a multi-speaker
        conversation (messages, Shapley and Banzhaf) and a spoken sentence (audio
@@ -158,6 +179,9 @@ open the ``.ipynb`` on GitHub or browse the full catalog in
    notebooks/runtime_core
    notebooks/exact_estimation
    notebooks/estimator_comparison
+   notebooks/estimators_semivalues_uncertainty
+   notebooks/replay_and_cost
+   notebooks/faithfulness_and_interactions
    notebooks/attribution_viz
    notebooks/text_explain_e2e
    notebooks/audio_alignment

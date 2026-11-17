@@ -21,6 +21,8 @@ Install only what your deployment needs:
    pip install "mllm-shap[api]"             # OpenAI-compatible HTTP backend
    pip install "mllm-shap[viz]"             # matplotlib token attribution charts
    pip install "mllm-shap[proxy]"           # scikit-learn: the ProxySHAP estimator
+   pip install "mllm-shap[infill]"          # masked language model of the infill policy
+   pip install "mllm-shap[interactions]"    # shapiq: exact pairwise interactions
    pip install "mllm-shap[audio]"           # audio decoding and alignment
    pip install "mllm-shap[semantic]"        # encoders of embedding_cosine, bertscore,
                                             # nli_logodds and semascore

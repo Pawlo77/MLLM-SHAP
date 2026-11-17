@@ -5,7 +5,7 @@ domain: estimation
 parent: "[[mllm-shap]]"
 tags: [architecture, estimation]
 created: 2026-10-07
-updated: 2026-10-18
+updated: 2026-11-16
 related-code:
   - "[[src/mllm_shap/estimation/__init__.py]]"
   - "[[src/mllm_shap/estimation/_shared.py]]"
@@ -21,6 +21,11 @@ related-code:
   - "[[src/mllm_shap/estimation/exact.py]]"
   - "[[src/mllm_shap/estimation/monte_carlo.py]]"
   - "[[src/mllm_shap/estimation/neyman.py]]"
+  - "[[src/mllm_shap/estimation/permutation.py]]"
+  - "[[src/mllm_shap/estimation/interactions.py]]"
+  - "[[src/mllm_shap/estimation/lime.py]]"
+  - "[[src/mllm_shap/estimation/planning.py]]"
+  - "[[src/mllm_shap/estimation/stopping.py]]"
   - "[[src/mllm_shap/estimation/normalizers.py]]"
 ---
 # estimation
@@ -39,6 +44,12 @@ related-code:
 - `LeverageEstimator` (`leverage`, Shapley): complementary pairs allocated uniformly over sizes, enumerating covered size classes; `leverage_values` solves the sum-constrained regression with weight `(n-1)/(s(n-s) count_s)`, so values are efficient at every budget.
 - `KernelBanzhafEstimator` (`kernel_banzhaf`, Banzhaf): distinct uniform complementary pairs; least squares of payoffs on presence minus one half plus an intercept.
 - `ProxyEstimator` (`proxy`, both estimands, extra `proxy`): leverage-sampled masks and boosted trees (100, depth 3, seed 0) with exact per-leaf values (`tree_values`). The aggregator's values of the residual are added when `n < 30` or masks `>= 16n`. `scikit-learn` is imported at construction.
+- `PermutationEstimator` (`permutation`, option `antithetic`, default true): the grand and empty coalitions, then unseen prefixes of random orderings and their reverses, up to the `mc` budget; any estimand.
+- `LimeEstimator` (`lime`, options `kernel_width` 25, `alpha` 1): distinct random subsets; `lime_values` is the kernel-weighted ridge of payoffs on presence. Ignores the estimand, like `loo`.
+- `standard_errors` (`mc`, `exact`; config `explanation.stderr`): `marginal_standard_errors` sums squared stratum variances with a finite-population correction, using pooled variance for one-observation sides. Undefined for `permutation` (correlated prefixes).
+- `plan_budget(n, value_range, target_error, confidence)`: Hoeffding orderings and evaluations, capped at `2^n`; the `plan` command.
+- `check_stop` (`budget.stop`): ends `mc`/`permutation` sampling on interval width or a stable top-`k` set; the orchestrator evaluates in chunks.
+- `pairwise_interactions` (extra `interactions`): `shapiq` order-2 index of a full table.
 - `LeaveOneOutEstimator` (`loo`): `N` and each `N - {i}`; ignores budget and estimand ([[Estimation decisions#2026-10-12 — Leave-one-out bypasses the estimand|decision]]).
 - Every estimator: `estimate_attributions(masks, payoffs, aggregator)`. `leverage` and `kernel_banzhaf` reject the other estimand; `complementary` and `neyman_cc` accept Shapley only.
 - `ShapleyAggregator`, `BanzhafAggregator`: a complete Shapley table goes through `aggregate_shapley_exact`. Other tables use `aggregate_from_marginals`: per player and size stratum `l` the mean payoff of sampled coalitions with `i` of size `l+1` minus the mean of those without `i` of size `l`, combined with stratum probabilities renormalised over strata having both means. A player with none gets 0 and one warning.
@@ -67,6 +78,7 @@ related-code:
 
 - [[tests/estimation/test_axioms.py]], [[tests/estimation/test_games.py]] (reference games in `_games.py`)
 - [[tests/estimation/test_exact.py]], [[tests/estimation/test_loo.py]], [[tests/estimation/test_monte_carlo.py]], [[tests/estimation/test_complementary.py]]
+- [[tests/estimation/test_permutation.py]], [[tests/estimation/test_lime.py]], [[tests/estimation/test_planning.py]], [[tests/estimation/test_stopping.py]]
 - [[tests/estimation/test_neyman.py]], [[tests/estimation/test_neyman_internals.py]]
 - [[tests/estimation/test_leverage.py]], [[tests/estimation/test_kernel_banzhaf.py]], [[tests/estimation/test_proxy.py]]
 - [[tests/estimation/test_shared.py]], [[tests/estimation/test_normalizers.py]]

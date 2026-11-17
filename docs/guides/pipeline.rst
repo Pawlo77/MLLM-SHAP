@@ -92,7 +92,9 @@ Run output
      - :class:`~mllm_shap.RunManifest` written to the archive
    * - ``perf``
      - :class:`~mllm_shap.runtime.metrics.PerfSummary` wall-clock split between
-       generation, scoring and aggregation
+       generation, scoring and aggregation, plus the model work of the run
+       (``forward_sequences``, ``prompt_tokens``, ``generated_tokens``,
+       ``device_seconds``) for backends that count it: ``mock`` and ``transformers``
 
 The scheduler counters answer "how many model calls did this cost":
 

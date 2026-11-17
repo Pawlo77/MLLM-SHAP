@@ -21,6 +21,7 @@ from pydantic import ValidationError
 from ._logging import configure_logging
 from .domain.conversation import ConversationSnapshot
 from .errors import BackendUnavailableError, ConfigError, MllmShapError
+from .estimation.planning import plan_budget
 from .pipeline.config import ExplainConfig, explain_config_from_yaml
 from .pipeline.result import ExplainRunOutput
 from .pipeline.runner import ExplainRunner
@@ -60,16 +61,18 @@ generation:
   compute_embeddings: false # set automatically for embedding value functions
 
 explanation:
-  estimand: shapley         # shapley | banzhaf
-  estimator: exact          # exact | mc | complementary | neyman_cc
-  value_fn: tfidf_cosine    # tfidf_cosine | embedding_cosine | logprob | ...
+  estimand: shapley         # shapley | banzhaf | beta_shapley | ...
+  estimator: exact          # exact | mc | permutation | lime | leverage | ...
+  value_fn: tfidf_cosine    # tfidf_cosine | tf_logprob | label_margin | ...
   normalizer: identity      # identity | abs_sum | power_shift | min_max
   players: tokens           # tokens | messages (one player per message)
-  absence_policy: delete    # delete | pad | neutral
+  absence_policy: delete    # delete | pad | neutral | infill
+  stderr: false             # standard error per value (mc and exact only)
   budget:
     fraction: 1.0           # share of the 2^n coalitions; exact needs 1.0
     # evaluations: 2000     # or an absolute count instead of fraction (not exact)
     # per_player: 4         # or ceil(4 n) coalitions for n players (not exact)
+    # stop: {max_ci_width: 0.2}  # end mc sampling early
   include_minimal_masks: false
   max_inflight: 2           # concurrent backend calls
   max_players: 24           # refuse runs planning more than 2^max_players coalitions
@@ -143,6 +146,21 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     reanalyze.set_defaults(handler=_reanalyze)
 
+    plan = commands.add_parser(
+        "plan", help="budget that meets a target error (Hoeffding bound)"
+    )
+    plan.add_argument("--players", type=int, required=True, help="number of players")
+    plan.add_argument(
+        "--range",
+        type=float,
+        required=True,
+        dest="value_range",
+        help="width of one player's marginal contributions, e.g. v(N) - v(empty)",
+    )
+    plan.add_argument("--target-error", type=float, required=True)
+    plan.add_argument("--confidence", type=float, default=0.95)
+    plan.set_defaults(handler=_plan)
+
     plugins = commands.add_parser("plugins", help="list registered plugins")
     plugins.set_defaults(handler=_plugins)
 
@@ -187,6 +205,20 @@ def _reanalyze(args: argparse.Namespace) -> int:
         msg = f"cannot read archive {args.archive}: {exc}"
         raise ConfigError(msg) from exc
     _write_result(output, args.out)
+    return EXIT_OK
+
+
+def _plan(args: argparse.Namespace) -> int:
+    try:
+        plan = plan_budget(
+            args.players, args.value_range, args.target_error, args.confidence
+        )
+    except ValueError as exc:
+        raise ConfigError(str(exc)) from exc
+    print(f"orderings: {plan.orderings}")
+    print(f"evaluations: {plan.evaluations} ({plan.per_player:.1f} per player)")
+    if plan.exact_is_cheaper:
+        print("exact enumeration is no more expensive: use estimator exact")
     return EXIT_OK
 
 

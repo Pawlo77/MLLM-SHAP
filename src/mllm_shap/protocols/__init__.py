@@ -14,7 +14,7 @@ from .backend import (
 )
 from .embedding import EmbeddingProvider
 from .estimand import EstimandAggregator
-from .estimator import EstimatorStrategy, TwoPhaseEstimator
+from .estimator import EstimatorStrategy, ProvidesStandardErrors, TwoPhaseEstimator
 from .masking import AbsencePolicy
 from .partition import PlayerPartitioner
 from .plugin import DeclaresPluginOptions, PluginOptions
@@ -40,6 +40,7 @@ __all__ = [
     "PlayerPartitioner",
     "PluginOptions",
     "PreparesScores",
+    "ProvidesStandardErrors",
     "RequiresEmbeddings",
     "RequiresLogprobs",
     "RequiresTeacherForcing",

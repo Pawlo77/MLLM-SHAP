@@ -53,7 +53,7 @@ def test_all_errors_are_exported_and_share_a_root() -> None:
         for value in vars(errors).values()
         if isinstance(value, type) and issubclass(value, Exception)
     ]
-    assert len(error_types) == 13
+    assert len(error_types) == 14
     for error_type in error_types:
         assert issubclass(error_type, errors.MllmShapError)
         assert getattr(mllm_shap, error_type.__name__) is error_type

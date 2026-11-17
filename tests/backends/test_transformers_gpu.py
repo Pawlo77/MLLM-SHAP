@@ -140,3 +140,148 @@ def test_logprobs_match_a_forward_pass_over_the_generated_tokens(
     assert len(record.logprobs) == len(new_ids) >= 1
     assert all(value <= 0.0 for value in record.logprobs)
     assert record.logprobs == pytest.approx(expected, abs=1e-4)
+
+
+def test_transformers_backend_counts_sequences_tokens_and_time(
+    transformers_backend_available: None,
+) -> None:
+    """Generation and forcing add to the cumulative cost counters."""
+    backend = _tiny_backend()
+    backend.set_kv_cache_enabled(False, 8)
+    snapshot = _three_token_snapshot()
+    assert backend.cost_counters.forward_sequences == 0
+
+    record = asyncio.run(backend.generate(snapshot, GenerationConfig(max_new_tokens=5)))
+    after_generation = backend.cost_counters
+    assert after_generation.forward_sequences == 1
+    assert after_generation.prompt_tokens > 0
+    assert 0 < after_generation.generated_tokens <= 5
+    assert after_generation.device_seconds > 0.0
+    assert record.text is not None
+
+    asyncio.run(backend.score_continuations(snapshot, ["one two", "three"]))
+    after_forcing = backend.cost_counters - after_generation
+    assert after_forcing.forward_sequences == 2
+    assert after_forcing.generated_tokens == 0
+    assert after_forcing.prompt_tokens > 2 * after_generation.prompt_tokens - 1
+    assert after_forcing.device_seconds > 0.0
+
+
+def _batched_backend(batch_size: int) -> TransformersTextBackend:
+    return TransformersTextBackend(
+        backend_context(
+            BackendConfig(
+                kind="transformers",
+                model_id=TINY_MODEL,
+                options={"dtype": "float32", "batch_size": batch_size},
+            )
+        )
+    )
+
+
+def _prompt_snapshots() -> list[ConversationSnapshot]:
+    return [
+        ConversationSnapshot.from_turns((
+            Turn(messages=(Message(role=Role.USER, text=prompt),)),
+        ))
+        for prompt in _coalition_prompts()[:12]
+    ]
+
+
+def test_batched_forced_scores_equal_the_one_prompt_scores(
+    transformers_backend_available: None,
+) -> None:
+    """Concurrent scoring in padded batches matches unbatched scoring to 1e-4."""
+    snapshots = _prompt_snapshots()
+    continuations = ["one two", "three four five"]
+    single = _batched_backend(1)
+
+    async def reference() -> list[list]:
+        return [
+            await single.score_continuations(s, continuations, 5) for s in snapshots
+        ]
+
+    async def batched(backend: TransformersTextBackend) -> list[list]:
+        return list(
+            await asyncio.gather(*[
+                backend.score_continuations(s, continuations, 5) for s in snapshots
+            ])
+        )
+
+    expected = asyncio.run(reference())
+    backend = _batched_backend(8)
+    got = asyncio.run(batched(backend))
+    for want_row, got_row in zip(expected, got, strict=True):
+        for want, have in zip(want_row, got_row, strict=True):
+            assert have.token_logprobs == pytest.approx(want.token_logprobs, abs=1e-4)
+            assert have.top_ids == want.top_ids
+    assert (
+        backend.cost_counters.forward_sequences
+        == single.cost_counters.forward_sequences
+    )
+    assert backend.batch_size == 8
+
+
+def test_a_batch_error_reaches_every_waiting_caller(
+    transformers_backend_available: None,
+) -> None:
+    """A failing forward pass raises in each queued call instead of hanging."""
+    backend = _batched_backend(4)
+    snapshots = _prompt_snapshots()[:3]
+
+    def boom(batch: list) -> list:
+        msg = "forward failed"
+        raise RuntimeError(msg)
+
+    async def run() -> list:
+        await backend._ensure_loaded()
+        backend._force_batch_sync = boom
+        return await asyncio.gather(
+            *[backend.score_continuations(s, ["one"]) for s in snapshots],
+            return_exceptions=True,
+        )
+
+    results = asyncio.run(run())
+    assert all(isinstance(r, RuntimeError) for r in results)
+
+
+def _all_coalition_snapshots(words: int) -> list[ConversationSnapshot]:
+    names = [f"word{i}" for i in range(words)]
+    snapshots = []
+    for mask in itertools.product([False, True], repeat=words):
+        text = " ".join(n for n, keep in zip(names, mask, strict=True) if keep) or "."
+        snapshots.append(
+            ConversationSnapshot.from_turns((
+                Turn(messages=(Message(role=Role.USER, text=text),)),
+            ))
+        )
+    return snapshots
+
+
+def test_batched_greedy_generation_equals_unbatched_on_every_coalition(
+    transformers_backend_available: None,
+) -> None:
+    """200+ coalitions of eight words give the same greedy text and logprobs."""
+    snapshots = _all_coalition_snapshots(8)
+    generation = GenerationConfig(max_new_tokens=6)
+    single = _batched_backend(1)
+    single.set_kv_cache_enabled(False, 8)
+    batched = _batched_backend(16)
+
+    async def reference() -> list[GenerationRecord]:
+        return [await single.generate(s, generation) for s in snapshots]
+
+    async def together() -> list[GenerationRecord]:
+        return list(
+            await asyncio.gather(*[batched.generate(s, generation) for s in snapshots])
+        )
+
+    expected = asyncio.run(reference())
+    got = asyncio.run(together())
+    assert len(got) == len(expected) == 256
+    assert [r.text for r in got] == [r.text for r in expected]
+    for want, have in zip(expected, got, strict=True):
+        assert have.logprobs is not None
+        assert want.logprobs is not None
+        assert have.logprobs == pytest.approx(want.logprobs, abs=1e-3)
+    assert batched.cost_counters.forward_sequences == 256

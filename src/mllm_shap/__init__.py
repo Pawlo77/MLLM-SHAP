@@ -11,6 +11,7 @@ from .alignment.partitions import SgpaSegmentPartitioner
 from .backends.api import ApiBackend
 from .backends.lmstudio import LmStudioBackend
 from .backends.mock import MockAudioBackend, MockBackend
+from .backends.replay import ReplayBackend
 from .backends.transformers import TransformersTextBackend
 from .domain import (
     AudioPart,
@@ -40,12 +41,19 @@ from .errors import (
     PluginLoadError,
     PluginNotFoundError,
     ReanalyzeMismatchError,
+    ReplayMissError,
 )
 from .estimation.complementary import ComplementaryEstimator
-from .estimation.estimands import BanzhafAggregator, ShapleyAggregator
+from .estimation.estimands import (
+    BanzhafAggregator,
+    BetaShapleyAggregator,
+    ShapleyAggregator,
+    WeightedBanzhafAggregator,
+)
 from .estimation.exact import ExactEstimator
 from .estimation.kernel_banzhaf import KernelBanzhafEstimator
 from .estimation.leverage import LeverageEstimator
+from .estimation.lime import LimeEstimator
 from .estimation.loo import LeaveOneOutEstimator
 from .estimation.monte_carlo import MonteCarloEstimator
 from .estimation.neyman import NeymanEstimator
@@ -55,9 +63,11 @@ from .estimation.normalizers import (
     MinMaxNormalizer,
     PowerShiftNormalizer,
 )
+from .estimation.permutation import PermutationEstimator
 from .estimation.proxy import ProxyEstimator
 from .masking import (
     DeletePolicy,
+    InfillPolicy,
     MessagePartitioner,
     NeutralPolicy,
     PadPolicy,
@@ -71,11 +81,16 @@ from .pipeline import (
     ExplainRunner,
     ExplainRunOutput,
     HierarchicalRunOutput,
+    PairwiseInteractions,
+    RemovalMetrics,
     RunManifest,
+    compute_removal_metrics,
     deletion_curve,
     explain_config_from_yaml,
     explain_config_to_yaml,
+    explain_interactions,
     parse_manifest,
+    removal_metrics,
 )
 from .plugins import PluginContext, PluginGroup, PluginRegistry, default_registry
 from .runtime import CoalitionProgress, InMemoryObservabilitySink, ObservabilitySink
@@ -84,6 +99,7 @@ from .value import (
     ContrastiveValue,
     CosineEmbeddingValue,
     JudgeGradeValue,
+    LabelMarginValue,
     LogprobValue,
     NliLogOddsValue,
     ReferenceWerValue,
@@ -130,6 +146,7 @@ __all__ = [
     "BackendUnavailableError",
     "BanzhafAggregator",
     "BertScoreValue",
+    "BetaShapleyAggregator",
     "CoalitionMask",
     "CoalitionProgress",
     "ComplementaryEstimator",
@@ -150,10 +167,13 @@ __all__ = [
     "HierarchicalRunOutput",
     "IdentityNormalizer",
     "InMemoryObservabilitySink",
+    "InfillPolicy",
     "JudgeGradeValue",
     "KernelBanzhafEstimator",
+    "LabelMarginValue",
     "LeaveOneOutEstimator",
     "LeverageEstimator",
+    "LimeEstimator",
     "LmStudioBackend",
     "LogprobValue",
     "LogprobsUnavailableError",
@@ -170,6 +190,8 @@ __all__ = [
     "NliLogOddsValue",
     "ObservabilitySink",
     "PadPolicy",
+    "PairwiseInteractions",
+    "PermutationEstimator",
     "PlayerSet",
     "PlayerSpan",
     "PluginConflictError",
@@ -182,6 +204,9 @@ __all__ = [
     "ProxyEstimator",
     "ReanalyzeMismatchError",
     "ReferenceWerValue",
+    "RemovalMetrics",
+    "ReplayBackend",
+    "ReplayMissError",
     "Role",
     "RunManifest",
     "SelfLogprobValue",
@@ -200,14 +225,18 @@ __all__ = [
     "TranscribedValue",
     "TransformersTextBackend",
     "Turn",
+    "WeightedBanzhafAggregator",
     "__version__",
+    "compute_removal_metrics",
     "configure_logging",
     "default_registry",
     "deletion_curve",
     "display_attribution_html",
     "explain_config_from_yaml",
     "explain_config_to_yaml",
+    "explain_interactions",
     "parse_manifest",
+    "removal_metrics",
     "render_attribution",
     "render_attribution_html",
 ]

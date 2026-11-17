@@ -73,7 +73,7 @@ are used either way. The result and the manifest carry the label:
 .. guide-result:: estimands_run_label
 
 Wire values for JSON manifests use :data:`~mllm_shap.domain.estimands.EstimandWire`
-(``"shapley"`` | ``"banzhaf"``).
+(``"shapley"`` | ``"banzhaf"`` | ``"beta_shapley"`` | ``"weighted_banzhaf"``).
 
 Partial samples
 ---------------
@@ -86,6 +86,25 @@ renormalized over the sizes that have both means. Both converge as coverage
 grows, but efficiency holds exactly only on the full table (and for ``leverage``). :ref:`theory-partial-samples` gives the formulas and
 :doc:`choosing_an_estimator` the practical consequences.
 
+Semivalues
+----------
+
+``beta_shapley`` and ``weighted_banzhaf`` change only the weight of each coalition size
+(:doc:`../theory/estimands`). Set them like any estimand, with their options under
+``plugin_options``; they run with ``mc``, ``exact``, ``permutation``, ``lime`` or ``loo``:
+
+.. code-block:: yaml
+
+   explanation:
+     estimand: beta_shapley
+     estimator: mc
+     plugin_options:
+       beta_shapley: {alpha: 4.0, beta: 1.0}     # alpha = beta = 1 is Shapley
+
+``weighted_banzhaf`` takes ``p`` (default 0.3; 0.5 is Banzhaf). Both read the same sampled
+coalitions as Shapley, so one archived run can be reanalyzed or replayed for another estimand
+only if the estimator matches; the notebook below compares them on a toy game.
+
 Notebook
 --------
 
@@ -97,4 +116,5 @@ Further reading
 
 - Theory: :doc:`../theory/shapley_values`, :doc:`../theory/estimands`
 - Cooperative games: :doc:`../theory/cooperative_games`
+- Notebooks: :doc:`../notebooks/estimators_semivalues_uncertainty`
 - API: :doc:`../api/estimation`

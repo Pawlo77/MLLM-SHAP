@@ -5,7 +5,7 @@ domain: backends
 parent: "[[mllm-shap]]"
 tags: [architecture, backends]
 created: 2026-10-07
-updated: 2026-10-19
+updated: 2026-11-16
 related-code:
   - "[[src/mllm_shap/backends/__init__.py]]"
   - "[[src/mllm_shap/backends/_chat.py]]"
@@ -20,6 +20,8 @@ related-code:
   - "[[src/mllm_shap/backends/mock/__init__.py]]"
   - "[[src/mllm_shap/backends/mock/audio.py]]"
   - "[[src/mllm_shap/backends/mock/backend.py]]"
+  - "[[src/mllm_shap/backends/replay/__init__.py]]"
+  - "[[src/mllm_shap/backends/replay/backend.py]]"
   - "[[src/mllm_shap/backends/transformers/__init__.py]]"
   - "[[src/mllm_shap/backends/transformers/_torch.py]]"
   - "[[src/mllm_shap/backends/transformers/audio.py]]"
@@ -32,26 +34,26 @@ related-code:
 
 ## Responsibility
 
-- Generate assistant text for a rendered snapshot, audio parts included where the model hears them, and return a `GenerationRecord`; optionally reuse prompt-prefix state and compute model embeddings.
+- Generate assistant text for a rendered snapshot, audio parts included where the model hears them, returning a `GenerationRecord`; optionally reuse prefix state and compute embeddings.
 
 ## Public surface
 
 - Backends read `context.config.backend`; `generate(snapshot, generation)`.
 - `MockBackend` (`mock`): deterministic text from a SHA-256 of the snapshot id, each message's `message_chat_text`, model id and generation parameters; at most 16 four-character tokens; used in continuous integration (CI). `score_continuations` draws an 8-token law per position from the prompt hash.
 - `MockAudioBackend` (`mock_audio`, subclass of `MockBackend`): echoes each message's words, then a token per voiced run of each `AudioPart` (amplitude above `SILENCE` 0.01, runs split by `MIN_GAP_S` 0.01 s) ([[Backends decisions#2026-10-11 — Audio mock backend answers one token per voiced run|decision]]). 16-bit WAV decodes with `wave`; other formats use `decode_audio` (`audio` extra).
+- `ReplayBackend` (`replay`): serves archived rows by coalition key; a miss raises `ReplayMissError` unless `fallback` computes it.
 - `ApiBackend` (`api`): OpenAI-compatible application programming interface (API) `/chat/completions` over `httpx`, with `Timeout(backend.timeout_s)` and `max_inflight` connections.
   - Retries `RETRYABLE_STATUS` (408, 429, 5xx gateway codes) and transport errors up to `backend.max_retries` with backoff, honouring `Retry-After` up to `timeout_s`. Non-JSON responses raise `BackendUnavailableError`.
   - `snapshot_to_api_messages`: a message with audio sends its text part, then one base64 WAV `input_audio` part per `AudioPart` (non-WAV re-encoded).
   - Sends `"logprobs": true`; `extract_logprobs` reads `choices[0].logprobs.content[*].logprob`, else `None`; an empty reply gets `()` (LM Studio sends `null`), which `self_logprob` scores 0. `returns_logprobs` is true (`SupportsLogprobs`).
   - Caches temperature-0 records (text and logprobs) in an LRU of `RESPONSE_CACHE_SIZE` (1024).
   - `backend.api_host` is required (`ConfigError` without it; no environment or localhost fallback).
-  - Key `MLLM_SHAP_API_KEY` for any host; `OPENAI_API_KEY` only for `api.openai.com`.
+  - Key: `MLLM_SHAP_API_KEY`, or `OPENAI_API_KEY` for `api.openai.com`.
 - `LmStudioBackend` (`lmstudio`): local LM Studio server through the `lmstudio` SDK.
   - `LmStudioOptions` (`hub_search`, `quantization`, `auto_download`, `serialize_generate`, `audio`) come from `backend.options`; unknown keys raise `ConfigError`.
-  - `audio: refuse` (default) raises `ValueError` on audio; `transcript` sends the text parts and warns once. The SDK (1.6.0b1 included) takes no audio.
+  - `audio: refuse` (default) raises `ValueError` on audio; `transcript` sends the text parts and warns once.
   - `match_downloaded_model_key` matches exactly, then by last-segment prefix, then by substring, and raises on ambiguity; `pick_search_result` raises unless a hub hit matches the name.
-  - Retries once, only on transient connection errors (`_is_transient`).
-  - Records carry no logprobs (the SDK exposes none).
+  - Retries once, only on transient connection errors (`_is_transient`). Records carry no logprobs.
 - `TransformersTextBackend` (`transformers`): Hugging Face model on CUDA (Compute Unified Device Architecture), MPS (Metal Performance Shaders) or CPU.
   - `TransformersOptions`: `dtype` (`auto` picks bfloat16 where supported, float16 on other accelerators, float32 on CPU), `revision` and `model_class`.
   - A config in `MODEL_FOR_CAUSAL_LM_MAPPING` loads as text; any other (or `model_class`) loads its class with `AutoProcessor` ([[Backends decisions#2026-10-11 — Audio input through the transformers processor|decision]]).

@@ -56,6 +56,10 @@ class ReanalyzeMismatchError(ValueError, MllmShapError):
     """Raised when reanalyze settings disagree with the archived run."""
 
 
+class ReplayMissError(LookupError, MllmShapError):
+    """Raised when the replay backend is asked for a coalition no archive holds."""
+
+
 class ArchiveIncompleteError(ValueError, MllmShapError):
     """Raised when reanalyze meets an archive of a run that did not finish."""
 

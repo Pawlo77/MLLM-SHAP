@@ -7,7 +7,7 @@
 from collections.abc import Mapping
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from ...errors import ConfigError
 
@@ -32,6 +32,14 @@ class TransformersOptions(BaseModel):
     """``transformers`` class to load with the checkpoint's processor, for example
     ``Gemma3nForConditionalGeneration``. ``None`` uses ``AutoModelForCausalLM`` when
     it knows the checkpoint, else the checkpoint's architecture."""
+
+    batch_size: int = Field(default=1, ge=1, strict=True)
+    """Teacher-forced sequences scored in one padded forward pass. Concurrent
+    ``score_continuations`` calls are collected up to this many sequences; ``1`` scores
+    each prompt on its own. The scheduler runs at least this many coalitions at once."""
+
+    batch_wait_ms: float = Field(default=5.0, ge=0.0)
+    """Longest wait for a batch to fill before a smaller one runs."""
 
     attn_implementation: str | None = None
     """Attention kernel passed to ``from_pretrained`` (``eager``, ``sdpa``, ...);

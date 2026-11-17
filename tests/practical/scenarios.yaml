@@ -71,6 +71,19 @@ scenarios:
     turns: *france
     overrides: {explanation: {estimator: proxy, budget: {evaluations: 16}}}
     expect: {top_k_signs: 3, max_l1: 0.35}
+  estimator.permutation:
+    # Not measured on a real model yet; the expectation reuses the mc thresholds.
+    tier: default
+    turns: *france
+    overrides: {explanation: {estimator: permutation, budget: {evaluations: 28}}}
+    expect: {top_k_signs: 3, max_l1: 0.5}
+  estimator.lime:
+    # Not measured on a real model yet; coefficients are shrunk, so only the top
+    # player and the signs of the top three are checked.
+    tier: default
+    turns: *france
+    overrides: {explanation: {estimator: lime, budget: {evaluations: 28}}}
+    expect: {top_k_signs: 3, max_l1: 10.0}
   estimator.kernel_banzhaf:
     tier: default
     turns: *france
@@ -86,6 +99,22 @@ scenarios:
     # Exact Banzhaf: France 0.227, "is" 0.200; mc at 28 kept France top in 45 of 100
     # seeds, in its top 3 in 100 and within L1 0.35 in 92.
     expect: {top_player: France, mc_top_k: 3, max_l1: 0.35}
+  # The semivalue scenarios below are not measured on a real model yet: the
+  # expectation is the weakest one that still checks the estimand end to end.
+  estimand.beta_shapley:
+    tier: default
+    turns: *france
+    overrides: {explanation: {estimand: beta_shapley}}
+    variants:
+      - {explanation: {estimator: mc, budget: {evaluations: 28}}}
+    expect: {mc_top_k: 3}
+  estimand.weighted_banzhaf:
+    tier: default
+    turns: *france
+    overrides: {explanation: {estimand: weighted_banzhaf}}
+    variants:
+      - {explanation: {estimator: mc, budget: {evaluations: 28}}}
+    expect: {mc_top_k: 3}
 
   value.tfidf_cosine:
     tier: default
@@ -127,6 +156,15 @@ scenarios:
       explanation:
         value_fn: contrastive
         plugin_options: {contrastive: {target: " Paris", foil: " London"}}
+    expect: {top_player: France}
+  value.label_margin:
+    tier: default
+    turns: *france
+    overrides:
+      explanation:
+        value_fn: label_margin
+        plugin_options:
+          label_margin: {target: " Paris", labels: [" Paris", " London", " Rome"]}
     expect: {top_player: France}
   value.bertscore:
     tier: default
@@ -197,6 +235,12 @@ scenarios:
     turns: *france
     overrides: {explanation: {absence_policy: neutral}}
     expect: {top_player: France, empty_text: "___ _______ __ ______ __"}
+  # Not measured on a real model yet; needs the infill extra and roberta-base.
+  masking.infill:
+    tier: default
+    turns: *france
+    overrides: {explanation: {absence_policy: infill}}
+    expect: {top_player: France, filled: true}
   partition.tokens:
     tier: default
     turns: *france

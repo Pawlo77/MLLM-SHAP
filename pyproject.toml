@@ -59,11 +59,15 @@ neyman_cc = "mllm_shap.estimation.neyman:NeymanEstimator"
 leverage = "mllm_shap.estimation.leverage:LeverageEstimator"
 proxy = "mllm_shap.estimation.proxy:ProxyEstimator"
 kernel_banzhaf = "mllm_shap.estimation.kernel_banzhaf:KernelBanzhafEstimator"
+lime = "mllm_shap.estimation.lime:LimeEstimator"
 loo = "mllm_shap.estimation.loo:LeaveOneOutEstimator"
+permutation = "mllm_shap.estimation.permutation:PermutationEstimator"
 
 [project.entry-points."mllm_shap.estimands"]
 shapley = "mllm_shap.estimation.estimands.shapley:ShapleyAggregator"
 banzhaf = "mllm_shap.estimation.estimands.banzhaf:BanzhafAggregator"
+beta_shapley = "mllm_shap.estimation.estimands.semivalue:BetaShapleyAggregator"
+weighted_banzhaf = "mllm_shap.estimation.estimands.semivalue:WeightedBanzhafAggregator"
 
 [project.entry-points."mllm_shap.partitions"]
 tokens = "mllm_shap.masking.partitions:TokenPartitioner"
@@ -75,6 +79,7 @@ sgpa_segments = "mllm_shap.alignment.partitions:SgpaSegmentPartitioner"
 delete = "mllm_shap.masking.policies:DeletePolicy"
 pad = "mllm_shap.masking.policies:PadPolicy"
 neutral = "mllm_shap.masking.policies:NeutralPolicy"
+infill = "mllm_shap.masking.infill:InfillPolicy"
 
 [project.entry-points."mllm_shap.value_fns"]
 tfidf_cosine = "mllm_shap.value.tfidf:TfIdfCosineValue"
@@ -84,6 +89,7 @@ logprob = "mllm_shap.value.logprob:LogprobValue"
 tf_logprob = "mllm_shap.value.teacher_forced:TfLogprobValue"
 tf_jsd = "mllm_shap.value.teacher_forced:TfJsdValue"
 contrastive = "mllm_shap.value.contrastive:ContrastiveValue"
+label_margin = "mllm_shap.value.contrastive:LabelMarginValue"
 bertscore = "mllm_shap.value.bertscore:BertScoreValue"
 nli_logodds = "mllm_shap.value.nli:NliLogOddsValue"
 semascore = "mllm_shap.value.semascore:SemaScoreValue"
@@ -104,6 +110,7 @@ mock_audio = "mllm_shap.backends.mock:MockAudioBackend"
 lmstudio = "mllm_shap.backends.lmstudio:LmStudioBackend"
 transformers = "mllm_shap.backends.transformers.text:TransformersTextBackend"
 api = "mllm_shap.backends.api:ApiBackend"
+replay = "mllm_shap.backends.replay:ReplayBackend"
 
 [project.entry-points."mllm_shap.renderers"]
 token_text = "mllm_shap.viz.token_text:TokenTextRenderer"
@@ -130,6 +137,15 @@ api = [
 audio = [
     "librosa>=0.11.0",
     "soundfile>=0.13.0",
+]
+# torch and transformers: the masked language model of the 'infill' absence policy.
+infill = [
+    "torch>=2.5.0",
+    "transformers>=4.56.0",
+]
+# shapiq: exact pairwise interaction indices of a full coalition table.
+interactions = [
+    "shapiq>=1.3.0",
 ]
 # scikit-learn: the tree proxy of the 'proxy' estimator.
 proxy = [
@@ -171,6 +187,7 @@ dev = [
   "pytest>=8.4.2",
   "pytest-benchmark>=5.3.0",
   "pytest-cov>=7.1.0",
+  "shapiq>=1.3.0",
   "ruff>=0.16.10",
   "furo>=2024.8.6",
   "myst-nb>=1.3.0",
@@ -247,7 +264,7 @@ module = ["logging518", "logging518.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = ["sklearn", "sklearn.*"]
+module = ["sklearn", "sklearn.*", "shapiq", "shapiq.*"]
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
