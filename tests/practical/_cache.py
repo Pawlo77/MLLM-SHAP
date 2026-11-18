@@ -9,14 +9,15 @@ import hashlib
 import json
 import sqlite3
 from collections import Counter
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from pathlib import Path
+from typing import cast
 
 from mllm_shap.backends._chat import snapshot_to_chat_messages
 from mllm_shap.domain.config import GenerationConfig
 from mllm_shap.domain.conversation import ConversationSnapshot
-from mllm_shap.domain.generation import GenerationRecord
-from mllm_shap.protocols.backend import GenerativeBackend
+from mllm_shap.domain.generation import ForcedScore, GenerationRecord
+from mllm_shap.protocols.backend import GenerativeBackend, SupportsTeacherForcing
 
 DEFAULT_PATH = Path.home() / ".cache" / "mllm-shap" / "practical" / "cache.sqlite"
 """Cache file shared by every practical run on this machine."""
@@ -84,6 +85,21 @@ class CachedBackend:
     def returns_logprobs(self) -> bool:
         """Records keep the logprobs the wrapped backend returned."""
         return True
+
+    @property
+    def forces_continuations(self) -> bool:
+        """Teacher forcing passes through to the wrapped backend, uncached."""
+        return bool(getattr(self._backend, "forces_continuations", False))
+
+    async def score_continuations(
+        self,
+        snapshot: ConversationSnapshot,
+        continuations: Sequence[str],
+        top_k: int = 0,
+    ) -> list[ForcedScore]:
+        """Score continuations with the wrapped backend; forward passes are cheap."""
+        backend = cast(SupportsTeacherForcing, self._backend)
+        return await backend.score_continuations(snapshot, continuations, top_k)
 
     async def generate(
         self, snapshot: ConversationSnapshot, generation: GenerationConfig
