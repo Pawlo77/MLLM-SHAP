@@ -56,6 +56,9 @@ no error, so a full table gives zero.
 On the seven reference games of the test suite, the intervals
 :math:`\hat\phi_i \pm 1.96\,\widehat{\mathrm{se}}_i` held the exact value in 93.3 to 95.0% of
 2,000 seeds at 25% budget. The same formula covered ``permutation`` only 60 to 82% of the time.
+A jackknife that leaves out one ordering and its reverse at a time covered 96 to 99% on the same
+games at 25% budget (87 to 92% at 10%). It needs to know which ordering produced each coalition,
+which the archive does not record, so ``permutation`` still reports no standard error.
 Sandwich estimators for ``leverage`` and ``kernel_banzhaf`` were miscalibrated. Those estimators
 report no standard error.
 
