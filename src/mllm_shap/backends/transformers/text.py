@@ -20,7 +20,7 @@ from ...domain.conversation import ConversationSnapshot
 from ...domain.generation import ForcedScore, GenerationRecord
 from ...errors import BackendUnavailableError
 from ...protocols.plugin import PluginOptions
-from ...runtime.kv_cache import CroppableCache, PrefixCacheManager
+from ...runtime.kv_cache import CroppableCache, PrefixCacheManager, crop_to
 from ...runtime.metrics import CostCounters
 from ...value.generation_records import generation_record_from_text
 from .._chat import snapshot_has_audio, snapshot_to_chat_messages
@@ -599,7 +599,7 @@ class TransformersTextBackend:
         if matched:
             past = copy.deepcopy(cached)
             if isinstance(past, CroppableCache):
-                past.crop(matched)
+                crop_to(past, matched)
             self._kv_cache_hits += 1
             self._kv_cache_reused_tokens += matched
         if matched < prefix_len:

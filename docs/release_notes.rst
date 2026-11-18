@@ -8,6 +8,14 @@ Changes in each published ``mllm-shap`` version. Newest first.
 Unreleased
 ----------
 
+Fixed
+~~~~~
+
+- The ``transformers`` prefix cache works with ``transformers`` 5. The backend cut a cached
+  prefix back with a positive ``crop`` value, which version 5 rejects, so greedy generation
+  with the cache failed. It now passes a negative value, which versions 4 and 5 both read as
+  tokens to drop.
+
 .. _release-0-9-0:
 
 0.9.0 (2026-11-17)

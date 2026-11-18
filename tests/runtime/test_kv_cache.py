@@ -3,6 +3,8 @@
 @see [[src/mllm_shap/runtime/kv_cache.py]]
 """
 
+import pytest
+
 from mllm_shap.domain.coalition import CoalitionMask
 from mllm_shap.domain.conversation import ConversationSnapshot, Message, Turn
 from mllm_shap.domain.enums import Role
@@ -11,6 +13,7 @@ from mllm_shap.runtime.kv_cache import (
     CroppableCache,
     PrefixCacheManager,
     build_snapshot_prefix_hash,
+    crop_to,
     group_jobs_for_prefix_cache,
 )
 from mllm_shap.runtime.scheduler import CoalitionJob
@@ -55,6 +58,9 @@ def test_longest_prefix_ignores_full_match() -> None:
 class _Croppable:
     def __init__(self) -> None:
         self.length: int | None = None
+
+    def get_seq_length(self) -> int:
+        return self.length or 0
 
     def crop(self, max_length: int) -> None:
         self.length = max_length
@@ -113,3 +119,36 @@ def test_group_jobs_for_prefix_cache_sorts_by_prefix_hash(
     grouped = group_jobs_for_prefix_cache(jobs, key=lambda job: job.prefix_hash)
 
     assert [job.prefix_hash for job in grouped] == ["alpha", "beta"]
+
+
+class _Cache:
+    """Cache that drops ``-n`` tokens for a negative ``crop(n)``, as HF caches do."""
+
+    def __init__(self, length: int) -> None:
+        self.length = length
+
+    def get_seq_length(self) -> int:
+        return self.length
+
+    def crop(self, max_length: int) -> None:
+        assert max_length < 0, "a positive crop value fails on transformers 5"
+        self.length += max_length
+
+
+@pytest.mark.parametrize(
+    ("length", "keep", "after"), [(10, 4, 4), (10, 10, 10), (3, 5, 3)]
+)
+def test_crop_to_keeps_the_first_tokens(length: int, keep: int, after: int) -> None:
+    cache = _Cache(length)
+    crop_to(cache, keep)
+    assert cache.length == after
+
+
+def test_crop_to_keeps_the_first_tokens_of_a_transformers_dynamic_cache() -> None:
+    torch = pytest.importorskip("torch")
+    cache_utils = pytest.importorskip("transformers.cache_utils")
+    cache = cache_utils.DynamicCache()
+    for layer in range(2):
+        cache.update(torch.zeros(1, 2, 9, 4), torch.zeros(1, 2, 9, 4), layer)
+    crop_to(cache, 5)
+    assert cache.get_seq_length() == 5
