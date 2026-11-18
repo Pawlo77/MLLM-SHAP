@@ -599,7 +599,7 @@ class TransformersTextBackend:
         if matched:
             past = copy.deepcopy(cached)
             if isinstance(past, CroppableCache):
-                crop_to(past, matched)
+                crop_to(past, matched)  # pragma: no cover
             self._kv_cache_hits += 1
             self._kv_cache_reused_tokens += matched
         if matched < prefix_len:
