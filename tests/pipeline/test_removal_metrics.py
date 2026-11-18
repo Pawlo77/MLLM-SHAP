@@ -5,6 +5,7 @@
 
 import asyncio
 import logging
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -15,6 +16,9 @@ from mllm_shap.pipeline.faithfulness import (
     removal_metrics,
     removal_plan,
 )
+from tests.backends.test_replay import _live as replay_live
+from tests.backends.test_replay import _replay as replay_config
+from tests.backends.test_replay import _snapshot as replay_snapshot
 from tests.estimation._games import Game, additive_game, reference_games
 from tests.pipeline.test_pipeline_axioms import _registry, _snapshot
 
@@ -143,3 +147,23 @@ def test_the_curve_areas_are_trapezoids_over_the_removed_fraction() -> None:
     assert metrics.deletion_values == (2.0, 1.0, 0.0)
     assert metrics.deletion_area == pytest.approx(1.0)
     assert metrics.insertion_area == pytest.approx(1.0)
+
+
+def test_replay_answers_the_removal_run_from_an_archive(tmp_path: Path) -> None:
+    attributions = [0.5, 0.2, 0.1, 0.0, -0.1, 0.3]
+    snapshot = replay_snapshot(len(attributions))
+    live = asyncio.run(
+        removal_metrics(
+            replay_live(tmp_path / "live"), snapshot, attributions, random_sets=5
+        )
+    )
+    # Without a fallback backend, one unarchived coalition would raise ReplayMissError.
+    replayed = asyncio.run(
+        removal_metrics(
+            replay_config(tmp_path / "again", tmp_path / "live"),
+            snapshot,
+            attributions,
+            random_sets=5,
+        )
+    )
+    assert replayed == live
