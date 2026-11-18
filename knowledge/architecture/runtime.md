@@ -5,7 +5,7 @@ domain: runtime
 parent: "[[mllm-shap]]"
 tags: [architecture, runtime]
 created: 2026-10-07
-updated: 2026-11-16
+updated: 2026-11-18
 related-code:
   - "[[src/mllm_shap/runtime/__init__.py]]"
   - "[[src/mllm_shap/runtime/archive.py]]"
@@ -32,7 +32,7 @@ related-code:
 - `HotResultStore(maxsize)`: LRU map from coalition key to `StoredGeneration` (text, logprobs, `forced`, `audio_path`; `put`, `get`, `logprobs`, `entry`); the orchestrator sizes it to `2^n`.
 - `RunArchive`: `open(root, manifest, flush_every, on_exists)` (raises `ArchiveExistsError` for a finished archive under `on_exists="error"`, always replaces an unfinished one), `load(root)` (opens the database read-only (`mode=ro`, no schema setup), so it writes nothing and works on read-only storage; `ArchiveNotFoundError`, a `FileNotFoundError`, without `manifest.json` or `archive.sqlite`; `ArchiveCorruptError` when the manifest is not a JSON object or the database cannot be read; `ManifestVersionError` on another schema), `write_manifest(manifest)`, `write_base_generation`, `append(draft)`, `mark_complete`, `is_complete`, `history_lazy()`. One SQLite file with WAL journaling, generation text, logprobs, teacher-forced scores (JSON, `NULL` without them) and audio path in the row, `ARCHIVE_SCHEMA_VERSION` (SQLite `user_version`) and `MANIFEST_SCHEMA_VERSION` 5, plus `manifest.json` and `base_generation.txt`.
 - `read_manifest_payload(path)`: the manifest's JSON object, or `ArchiveCorruptError`; `check_manifest_schema_version(payload)`.
-- `PrefixCacheManager(max_entries=8)`: `longest_prefix(token_ids)`, `store`, `reset`; LRU-bounded token-prefix states, croppable states (`CroppableCache`) matched on any shared leading tokens. `build_snapshot_prefix_hash(snapshot, player_set, mask)` hashes the presence of every player but the last ([[Prefix hash]]); `group_jobs_for_prefix_cache` sorts by it.
+- `PrefixCacheManager(max_entries=8)`: `longest_prefix(token_ids)`, `store`, `reset`; LRU-bounded token-prefix states, croppable states (`CroppableCache`) matched on any shared leading tokens. `build_snapshot_prefix_hash(snapshot, player_set, mask)` hashes the presence of every player but the last ([[Prefix hash]]); `group_jobs_for_prefix_cache` sorts by it. `crop_to(cache, keep)` cuts a croppable state back to `keep` tokens with a negative `crop` argument, which `transformers` 4 and 5 both read as tokens to drop (a positive one raises on 5).
 - `ObservabilitySink`, `NullObservabilitySink`, `InMemoryObservabilitySink`, `SpanRecord`; `CoalitionProgress`, `NullCoalitionProgress`; `PerfSummary` (with the run's `CostCounters` fields; backends implementing `ReportsCost` expose cumulative counters, the orchestrator reports the difference).
 
 ## Data flow

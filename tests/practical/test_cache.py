@@ -81,3 +81,22 @@ def test_values_round_trip(tmp_path: Path) -> None:
     cache.put("verdict", "k", {"margins": [1.5, -2.0]})
     assert cache.get("verdict", "k") == {"margins": [1.5, -2.0]}
     assert cache.get("verdict", "missing") is None
+
+
+def test_the_cache_wrapper_keeps_the_teacher_forcing_of_its_backend(
+    tmp_path: Path,
+) -> None:
+    from mllm_shap.backends.mock.backend import MockBackend
+    from mllm_shap.protocols.backend import SupportsTeacherForcing
+
+    wrapped = CachedBackend(
+        MockBackend(), PracticalCache(tmp_path / "cache.json"), {"model": "mock"}
+    )
+    assert isinstance(wrapped, SupportsTeacherForcing)
+    assert wrapped.forces_continuations
+    snapshot = ConversationSnapshot.from_turns((
+        Turn(messages=(Message(role=Role.USER, text="hello there"),)),
+    ))
+    scores = asyncio.run(wrapped.score_continuations(snapshot, ["hi"], 0))
+    assert len(scores) == 1
+    assert scores[0].token_logprobs

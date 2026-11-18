@@ -116,7 +116,7 @@ parent: "[[mllm-shap]]"
 | [[src/mllm_shap/runtime/__init__.py]] | Runtime archive, deduplication, caching, and scheduling. | runtime | [[knowledge/architecture/runtime]] | 52 | [[runtime]] |
 | [[src/mllm_shap/runtime/archive.py]] | SQLite-backed run archive for coalition evaluation history. | runtime | [[knowledge/architecture/runtime]] | 460 | [[runtime]] |
 | [[src/mllm_shap/runtime/dedup.py]] | Coalition deduplication keys and registry. | runtime | [[knowledge/architecture/runtime]] | 92 | [[runtime]] |
-| [[src/mllm_shap/runtime/kv_cache.py]] | Prefix-cache storage for shared prompt token prefixes. | runtime | [[knowledge/architecture/runtime]] | 128 | [[runtime]] |
+| [[src/mllm_shap/runtime/kv_cache.py]] | Prefix-cache storage for shared prompt token prefixes. | runtime | [[knowledge/architecture/runtime]] | 142 | [[runtime]] |
 | [[src/mllm_shap/runtime/metrics.py]] | Performance summaries for explain pipeline runs. | runtime | [[knowledge/architecture/runtime]] | 63 | [[runtime]] |
 | [[src/mllm_shap/runtime/progress.py]] | Optional synchronous progress callbacks for coalition execution. | runtime | [[knowledge/architecture/runtime]] | 35 | [[runtime]] |
 | [[src/mllm_shap/runtime/scheduler.py]] | Async coalition inference scheduling with deduplication. | runtime | [[knowledge/architecture/runtime]] | 256 | [[runtime]] |

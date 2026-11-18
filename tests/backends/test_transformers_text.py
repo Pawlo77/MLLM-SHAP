@@ -57,7 +57,11 @@ class _CacheStub:
     def __init__(self) -> None:
         self.tokens: list[int] = []
 
+    def get_seq_length(self) -> int:
+        return len(self.tokens)
+
     def crop(self, max_length: int) -> None:
+        assert max_length < 0, "a positive crop value fails on transformers 5"
         self.tokens = self.tokens[:max_length]
 
 

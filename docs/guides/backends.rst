@@ -203,7 +203,8 @@ prefix, so coalitions reuse a shared prefix in any order. In ``float32`` greedy 
 are the same with the cache on and off. In ``float16`` and ``bfloat16`` the cached
 prefix runs in separate forward passes that round differently, so a near-tied
 greedy token can flip and values can move slightly; the backend logs one warning,
-and ``dtype: float32`` gives identical results. Static and
+and ``dtype: float32`` gives identical results.
+The cache pays only where prefill is slow. On an A100 40 GB with ``Qwen2.5-3B-Instruct`` in ``float16``, an exact run over six messages took 1.5 times longer with the cache. Copying the state costs more than recomputing a short prefix, so leave it off there. Static and
 contextual embeddings of the output are computed only for value functions that
 need them (``embedding_cosine`` with ``encoder: model_states``).
 

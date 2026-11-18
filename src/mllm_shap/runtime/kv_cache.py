@@ -39,8 +39,22 @@ def build_snapshot_prefix_hash(
 class CroppableCache(Protocol):
     """KV state that can be cut back to its first tokens (HF ``DynamicCache``)."""
 
+    def get_seq_length(self) -> int:
+        """Return the number of cached tokens."""
+
     def crop(self, max_length: int) -> None:
-        """Keep the state of the first ``max_length`` tokens only."""
+        """Drop ``-max_length`` tokens from the end when negative."""
+
+
+def crop_to(cache: CroppableCache, keep: int) -> None:
+    """Cut ``cache`` back to its first ``keep`` tokens.
+
+    A negative ``crop`` argument drops that many tokens in ``transformers`` 4 and 5
+    alike; a positive one keeps that many in 4 and raises in 5, so it is never used.
+    """
+    extra = cache.get_seq_length() - keep
+    if extra > 0:
+        cache.crop(-extra)
 
 
 class PrefixCacheManager:
