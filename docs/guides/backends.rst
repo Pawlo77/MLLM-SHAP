@@ -210,11 +210,20 @@ need them (``embedding_cosine`` with ``encoder: model_states``).
 ``backend.options.batch_size`` (default 1) scores teacher-forced value functions and
 generates greedy answers (``temperature: 0``) in padded batches: concurrent calls are
 collected until that many are waiting, or ``batch_wait_ms`` (default 5) has passed, and
-run together. Batched generation skips the prefix cache and the model-state embeddings. Scores equal the one-prompt scores to about :math:`10^{-4}` in ``float32``, and all 256 coalitions of eight words gave the same greedy text on the tiny model. The
-scheduler runs at least ``batch_size`` coalitions at once. On the tiny CPU model 128
-prompts ran 2.7 times faster at 8 and 3.6 times faster at 32; throughput on a 3B model
-and a GPU has not been measured. The tiny random model below loads in seconds and is what
-the ``gpu``-marked tests use:
+run together. Batched generation skips the prefix cache and the model-state embeddings.
+The scheduler runs at least ``batch_size`` coalitions at once.
+
+Padding moves ``float32`` scores slightly. On ``Qwen2.5-3B-Instruct`` at batch 32, prompts of
+different lengths differ from one-prompt scores by up to :math:`4\times 10^{-4}`, for log
+probabilities as large as 22.7 (about :math:`2\times 10^{-5}` relative). Identical prompts
+differ by :math:`10^{-5}`, and a repeated one-prompt run not at all. All 256 coalitions of
+eight words gave the same greedy text on the tiny model.
+
+One A100 40 GB, ``Qwen2.5-3B-Instruct`` in ``bfloat16``. Scoring 128 prompts takes 7.2 s at
+``batch_size`` 1, 0.91 s at 8, 0.46 s at 32 (15.6 times faster) and 0.45 s at 64. Greedy answers
+of 48 tokens for 64 prompts take 26.1 s, 8.9 s, 4.1 s (6.3 times) and 2.0 s (13 times). On the
+tiny CPU model, 128 prompts ran 2.7 times faster at 8 and 3.6 times at 32. The tiny random
+model below loads in seconds and is what the ``gpu``-marked tests use:
 
 .. code-block:: yaml
 
