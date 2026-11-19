@@ -8,6 +8,11 @@ Changes in each published ``mllm-shap`` version. Newest first.
 Unreleased
 ----------
 
+.. _release-0-9-1:
+
+0.9.1 (2026-11-19)
+------------------
+
 Fixed
 ~~~~~
 
@@ -15,6 +20,13 @@ Fixed
   prefix back with a positive ``crop`` value, which version 5 rejects, so greedy generation
   with the cache failed. It now passes a negative value, which versions 4 and 5 both read as
   tokens to drop.
+- Audio generation joins the ``batch_size`` queue. Audio prompts used to bypass it and ran one
+  at a time, so ``batch_size: 32`` made ``Qwen2-Audio-7B`` slower than ``batch_size: 1``. They
+  now stack their features and pad their ids like text prompts: on one H100 PCIe 20 rows of
+  16 coalitions took 62 s at batch 32 against 593 s at batch 1.
+- ``Voxtral`` audio prompts use the format its mistral-common tokenizer accepts. That tokenizer
+  has no template string, so the backend did not send audio as structured parts, and it takes
+  each clip as ``base64`` WAV, not as an array.
 
 .. _release-0-9-0:
 

@@ -5,7 +5,7 @@ domain: backends
 parent: "[[mllm-shap]]"
 tags: [architecture, backends]
 created: 2026-10-07
-updated: 2026-11-18
+updated: 2026-11-19
 related-code:
   - "[[src/mllm_shap/backends/__init__.py]]"
   - "[[src/mllm_shap/backends/_chat.py]]"
@@ -34,15 +34,15 @@ related-code:
 
 ## Responsibility
 
-- Generate assistant text for a rendered snapshot, audio parts included where the model hears them, returning a `GenerationRecord`; optionally reuse prefix state and compute embeddings.
+- Generate assistant text for a rendered snapshot, audio parts included where the model hears them, returning a `GenerationRecord`; optional prefix reuse and embeddings.
 
 ## Public surface
 
 - Backends read `context.config.backend`; `generate(snapshot, generation)`.
-- `MockBackend` (`mock`): deterministic text from a SHA-256 of the snapshot id, each message's `message_chat_text`, model id and generation parameters; at most 16 four-character tokens; used in continuous integration (CI). `score_continuations` draws an 8-token law per position from the prompt hash.
+- `MockBackend` (`mock`): deterministic text from a SHA-256 of the snapshot id, each message's `message_chat_text`, model id and generation parameters; at most 16 four-character tokens; used in tests. `score_continuations` draws an 8-token law per position from the prompt hash.
 - `MockAudioBackend` (`mock_audio`, subclass of `MockBackend`): echoes each message's words, then a token per voiced run of each `AudioPart` (amplitude above `SILENCE` 0.01, runs split by `MIN_GAP_S` 0.01 s) ([[Backends decisions#2026-10-11 — Audio mock backend answers one token per voiced run|decision]]). 16-bit WAV decodes with `wave`; other formats use `decode_audio` (`audio` extra).
-- `ReplayBackend` (`replay`): serves archived rows by coalition key; a miss raises `ReplayMissError` unless `fallback` computes it.
-- `ApiBackend` (`api`): OpenAI-compatible application programming interface (API) `/chat/completions` over `httpx`, with `Timeout(backend.timeout_s)` and `max_inflight` connections.
+- `ReplayBackend` (`replay`): serves archived rows by coalition key; a miss raises `ReplayMissError` unless `fallback` serves it.
+- `ApiBackend` (`api`): OpenAI-compatible `/chat/completions` over `httpx`, with `Timeout(backend.timeout_s)` and `max_inflight` connections.
   - Retries `RETRYABLE_STATUS` (408, 429, 5xx gateway codes) and transport errors up to `backend.max_retries` with backoff, honouring `Retry-After` up to `timeout_s`. Non-JSON responses raise `BackendUnavailableError`.
   - `snapshot_to_api_messages`: a message with audio sends its text part, then one base64 WAV `input_audio` part per `AudioPart` (non-WAV re-encoded).
   - Sends `"logprobs": true`; `extract_logprobs` reads `choices[0].logprobs.content[*].logprob`, else `None`; an empty reply gets `()` (LM Studio sends `null`), which `self_logprob` scores 0. `returns_logprobs` is true (`SupportsLogprobs`).
@@ -57,9 +57,9 @@ related-code:
 - `TransformersTextBackend` (`transformers`): Hugging Face model on CUDA (Compute Unified Device Architecture), MPS (Metal Performance Shaders) or CPU.
   - `TransformersOptions`: `dtype` (`auto` picks bfloat16 where supported, float16 on other accelerators, float32 on CPU), `revision` and `model_class`.
   - A config in `MODEL_FOR_CAUSAL_LM_MAPPING` loads as text; any other (or `model_class`) loads its class with `AutoProcessor` ([[Backends decisions#2026-10-11 — Audio input through the transformers processor|decision]]).
-  - `audio.processor_inputs` resamples audio to the processor rate and drops empty parts. It sends structured parts when the chat template mentions audio, else one `audio_token` per part.
-  - Encoding, generation, decoding and forced scoring share one model lock.
-  - With the key-value (KV) cache enabled (`SupportsKvCache`), `_attach_prefix_cache` copies and crops the longest cached prefix and runs only the uncovered tokens.; `kv_cache_hits` and `kv_cache_reused_tokens` count the reuse.
+  - `audio.processor_inputs` resamples audio to the processor rate and drops empty parts. It sends structured parts when the chat template mentions audio (base64 WAV for mistral-common, as Voxtral), else one `audio_token` per part. Audio batches by `collate_inputs`.
+  - Encoding, generation, decoding and scoring share one model lock.
+  - With the key-value (KV) cache enabled (`SupportsKvCache`), `_attach_prefix_cache` copies and crops the longest cached prefix and runs the uncovered tokens; `kv_cache_hits` and `kv_cache_reused_tokens` count the reuse.
   - Embeddings need `generation.compute_embeddings`.
   - `generate` returns raw logits (`output_logits`); `_token_logprobs` takes their log-softmax at each generated token, end-of-sequence included. `returns_logprobs` is true. `score_continuations`: one forward pass over prompt plus continuation (text prompts; `ValueError` for audio); optional top-`k` next tokens.
 - `backends/_chat.py`: `snapshot_has_audio`, `chat_role`, `message_chat_text` (`"<speaker>: <text>"` unless the text is empty; [[Domain decisions#2026-10-08 — Speaker rendered into the message content|speaker rendering]]), `snapshot_to_chat_messages`.

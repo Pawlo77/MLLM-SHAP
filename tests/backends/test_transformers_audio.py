@@ -7,6 +7,7 @@ Only the generation test needs torch; the rest runs with the ``audio`` extra.
 """
 
 import asyncio
+import base64
 import math
 from types import SimpleNamespace
 from typing import Any
@@ -17,7 +18,7 @@ import pytest
 pytest.importorskip("soundfile")
 pytest.importorskip("librosa")
 
-from mllm_shap.alignment.io import encode_wav
+from mllm_shap.alignment.io import decode_audio, encode_wav
 from mllm_shap.backends.transformers import text as transformers_text
 from mllm_shap.backends.transformers.audio import processor_inputs
 from mllm_shap.domain.config import GenerationConfig
@@ -352,3 +353,94 @@ def test_loading_failure_raises_backend_unavailable(
     )
     with pytest.raises(BackendUnavailableError, match="org/missing"):
         asyncio.run(backend._ensure_loaded())
+
+
+class _MistralTokenizer(_Tokenizer):
+    """Stands in for the ``transformers`` mistral-common tokenizer of Voxtral."""
+
+
+_MistralTokenizer.__module__ = "transformers.tokenization_mistral_common"
+
+
+def test_mistral_common_processor_gets_audio_as_base64_wav() -> None:
+    """Its template is implicit and rejects a raw ``audio`` array."""
+    processor = _Processor()
+    processor.tokenizer = _MistralTokenizer()
+    processor_inputs(processor, _snapshot(_speech(0.5), speaker=None))
+    assert processor.calls == []
+    (conversation,) = processor.conversations
+    audio, text = conversation[1]["content"]
+    assert audio["type"] == "audio"
+    assert "audio" not in audio
+    waveform, rate = decode_audio(base64.b64decode(audio["base64"]))
+    assert (rate, len(waveform)) == (RATE, RATE // 2)
+    assert text == {"type": "text", "text": "What is said?"}
+
+
+def _row(ids: list[int], *, features: bool) -> dict[str, Any]:
+    torch = pytest.importorskip("torch")
+    row: dict[str, Any] = {
+        "input_ids": torch.tensor([ids]),
+        "attention_mask": torch.ones(1, len(ids), dtype=torch.long),
+    }
+    if features:
+        row["input_features"] = torch.full((1, 2, 3), float(ids[0]))
+    return row
+
+
+def test_collate_left_pads_ids_and_stacks_only_the_rows_that_have_features() -> None:
+    torch = pytest.importorskip("torch")
+    batch = transformers_text.collate_inputs(
+        torch, [_row([1, 2, 3], features=True), _row([4, 5], features=False)], pad_id=9
+    )
+    assert batch["input_ids"].tolist() == [[1, 2, 3], [9, 4, 5]]
+    assert batch["attention_mask"].tolist() == [[1, 1, 1], [0, 1, 1]]
+    assert batch["input_features"].shape == (1, 2, 3)
+    both = transformers_text.collate_inputs(
+        torch, [_row([1, 2], features=True), _row([7, 8, 9], features=True)], pad_id=0
+    )
+    assert both["input_features"][:, 0, 0].tolist() == [1.0, 7.0]
+
+
+def test_audio_requests_are_generated_in_one_batch() -> None:
+    torch = pytest.importorskip("torch")
+
+    def encode(count: int) -> dict[str, Any]:
+        ids = torch.tensor([[1, 2, 3 + count]], dtype=torch.long)
+        return {
+            "input_ids": ids,
+            "attention_mask": torch.ones_like(ids),
+            "input_features": torch.full((1, 2, 3), float(count)),
+        }
+
+    class _BatchModel:
+        dtype = torch.float32
+
+        def __init__(self) -> None:
+            self.generate_calls: list[dict[str, Any]] = []
+
+        def generate(self, **kwargs: Any) -> SimpleNamespace:
+            self.generate_calls.append(kwargs)
+            rows = kwargs["input_ids"].shape[0]
+            suffix = torch.tensor([[7, 8]] * rows)
+            sequences = torch.cat([kwargs["input_ids"], suffix], dim=1)
+            logits = tuple(torch.zeros(rows, 16) for _ in range(2))
+            return SimpleNamespace(sequences=sequences, logits=logits)
+
+    model = _BatchModel()
+    backend = _backend(_Processor(encode), model)
+    backend._device = torch.device("cpu")
+    backend._options = backend._options.model_copy(update={"batch_size": 2})
+
+    async def run() -> list[Any]:
+        config = GenerationConfig(max_new_tokens=2)
+        return await asyncio.gather(
+            backend.generate(_snapshot(_speech(0.25)), config),
+            backend.generate(_snapshot(_speech(0.5)), config),
+        )
+
+    first, second = asyncio.run(run())
+    assert (first.text, second.text) == ("7 8", "7 8")
+    (kwargs,) = model.generate_calls
+    assert kwargs["input_ids"].shape[0] == 2
+    assert kwargs["input_features"].shape == (2, 2, 3)
