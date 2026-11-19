@@ -1,12 +1,12 @@
 """Generate the agent tool configs from one source.
 
 ``.claude/settings.json``, ``.codex/hooks.json``, ``.codex/config.toml`` and
-``.cursor/hooks.json`` come from a shared base plus ``[tool.agent-kit.configs]``:
-``delivery`` (``ask`` or ``autopilot``: may Claude commit, push and merge unasked),
-``allow``, ``deny``, ``marketplaces``, ``plugins``, ``post-edit-hooks``,
-``codex-approval``. Never edit the outputs. Add a plugin to ``plugins`` (and
-``marketplaces``) there and run ``make configs``; ``claude plugin install --scope
-project`` is lost on the next run.
+``.cursor/hooks.json`` come from a shared base plus ``[tool.agent-kit.configs]``, for
+the tools of the answer ``agent_tools`` only (others are removed): ``delivery`` (``ask``
+or ``autopilot``: may Claude commit, push and merge unasked), ``allow``, ``deny``,
+``marketplaces``, ``plugins``, ``post-edit-hooks``, ``codex-approval``. Never edit the
+outputs. Add a plugin to ``plugins`` (and ``marketplaces``) there and run ``make
+configs``; ``claude plugin install --scope project`` is lost on the next run.
 
 Usage: ``uv run python scripts/sync_configs.py [--check]``; exits 1 if stale.
 """
@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from kit_config import agent_tools, answer
 from kit_config import load as load_config
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -39,7 +40,7 @@ PLUGINS = (
     "astral@astral-sh",
     "ponytail@ponytail",
 )
-"""Plugins every repository enables."""
+"""Plugins every repository enables (Ponytail only with the answer ``ponytail``)."""
 
 ENV = {"ENABLE_STOP_REVIEW": "0", "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet"}
 """Environment of every Claude Code session."""
@@ -164,6 +165,14 @@ CODEX_APPROVAL = (
 POST_EDIT_TIMEOUT = 10
 """Seconds an extra post-edit hook may run."""
 
+TOOL_OF = {
+    ".claude/settings.json": "claude",
+    ".codex/hooks.json": "codex",
+    ".codex/config.toml": "codex",
+    ".cursor/hooks.json": "cursor",
+}
+"""Every generated file and the tool it belongs to; unselected tools' are removed."""
+
 
 def _unique(items: list[str]) -> list[str]:
     return list(dict.fromkeys(items))
@@ -194,6 +203,10 @@ def claude_settings(root: Path = ROOT) -> dict[str, Any]:
     cfg = _table(root)
     autopilot = cfg.get("delivery", "ask") == "autopilot"
     marketplaces = {**MARKETPLACES, **cfg.get("marketplaces", {})}
+    plugins = list(PLUGINS)
+    if answer(root, "ponytail") == "false":
+        del marketplaces["ponytail"]
+        plugins.remove("ponytail@ponytail")
     post = [_command(_claude("format_after_edit.sh"), 30, "Formatting with Ruff")]
     post += [
         _command(_claude(n), POST_EDIT_TIMEOUT) for n in cfg.get("post-edit-hooks", [])
@@ -211,7 +224,7 @@ def claude_settings(root: Path = ROOT) -> dict[str, Any]:
             for name, repo in marketplaces.items()
         },
         "enabledPlugins": dict.fromkeys(
-            _unique([*PLUGINS, *cfg.get("plugins", [])]), True
+            _unique([*plugins, *cfg.get("plugins", [])]), True
         ),
         "env": ENV,
         "hooks": {
@@ -341,7 +354,7 @@ def codex_config(root: Path = ROOT) -> str:
         "always "
         "be asked\n"
         "# for explicitly, whatever the approval mode (AGENTS.md, "
-        ".cursor/rules/git-commits.mdc):\n"
+        ".agents/rules/git-commits.mdc):\n"
         f"{wrapped}\n"
         'approval_policy = "on-request"\n'
     )
@@ -366,12 +379,14 @@ def render(root: Path = ROOT) -> dict[str, str]:
     def dump(data: dict[str, Any]) -> str:
         return json.dumps(data, indent=2, ensure_ascii=False) + "\n"
 
-    return {
-        ".claude/settings.json": dump(claude_settings(root)),
-        ".codex/hooks.json": dump(codex_hooks(root)),
-        ".codex/config.toml": codex_config(root),
-        ".cursor/hooks.json": dump(cursor_hooks(root)),
+    makers = {
+        ".claude/settings.json": lambda: dump(claude_settings(root)),
+        ".codex/hooks.json": lambda: dump(codex_hooks(root)),
+        ".codex/config.toml": lambda: codex_config(root),
+        ".cursor/hooks.json": lambda: dump(cursor_hooks(root)),
     }
+    tools = agent_tools(root)
+    return {rel: make() for rel, make in makers.items() if TOOL_OF[rel] in tools}
 
 
 def _is_current(path: Path, content: str) -> bool:
@@ -394,7 +409,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--root", type=Path, default=ROOT, help=argparse.SUPPRESS)
     args = parser.parse_args(argv)
     stale = []
-    for rel, content in render(args.root).items():
+    outputs = render(args.root)
+    for rel, content in outputs.items():
         path = args.root / rel
         if _is_current(path, content):
             continue
@@ -404,6 +420,12 @@ def main(argv: list[str] | None = None) -> int:
             path.write_text(content, encoding="utf-8")
     for rel in stale:
         print(f"{'stale' if args.check else 'wrote'}: {rel}")
+    unused = [r for r in TOOL_OF if r not in outputs and (args.root / r).is_file()]
+    for rel in unused:
+        print(f"{'not selected' if args.check else 'removed'}: {rel}")
+        if not args.check:
+            (args.root / rel).unlink()
+    stale += unused
     if args.check and stale:
         print("run: uv run python scripts/sync_configs.py", file=sys.stderr)
     return 1 if args.check and stale else 0

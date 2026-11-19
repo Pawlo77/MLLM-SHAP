@@ -1,26 +1,32 @@
-"""Generate Claude Code rules (``.claude/rules/``) from ``.cursor/rules/*.mdc``.
+"""Generate the agent rules from the tool-neutral sources ``.agents/rules/*.mdc``.
 
-Each scoped rule becomes ``<name>.md`` with its globs as ``paths``; every
-``alwaysApply: true`` rule is merged into ``always.md``. Bodies are copied verbatim.
+For Claude Code (answer ``agent_tools``), each scoped rule becomes
+``.claude/rules/<name>.md`` with its globs as ``paths``, and every ``alwaysApply: true``
+rule is merged into ``always.md``. For Cursor, each source is copied to
+``.cursor/rules/<name>.mdc`` with a generated-file header. Bodies are copied verbatim;
+outputs of tools that are not selected are removed.
 
-Usage::
-
-    uv run python scripts/sync_rules.py           # write .claude/rules/
-    uv run python scripts/sync_rules.py --check   # exit 1 when outputs are stale
+Usage: ``uv run python scripts/sync_rules.py [--check]``; ``--check`` exits 1 if stale.
 """
 
 import argparse
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from kit_config import agent_tools
+
 ROOT = Path(__file__).resolve().parents[1]
 """Repository root."""
 
-SOURCE_DIR = ROOT / ".cursor" / "rules"
-"""Cursor rules, the single source."""
+SOURCE_DIR = Path(".agents") / "rules"
+"""Rule sources in Cursor's ``.mdc`` format, relative to the root."""
 
-TARGET_DIR = ROOT / ".claude" / "rules"
+CLAUDE_DIR = Path(".claude") / "rules"
 """Generated Claude Code rules."""
+
+CURSOR_DIR = Path(".cursor") / "rules"
+"""Generated Cursor rules."""
 
 ALWAYS_NAME = "always.md"
 """Output file that merges every always-apply rule."""
@@ -59,13 +65,12 @@ def globs_of(fields: dict[str, str]) -> list[str]:
 
 
 def render(sources: list[Path]) -> dict[str, str]:
-    """Return the generated files as ``{file name: content}``."""
+    """Return the generated Claude Code rules as ``{file name: content}``."""
     outputs: dict[str, str] = {}
     always: list[str] = []
     for path in sorted(sources):
         fields, body = split_frontmatter(path.read_text(encoding="utf-8"))
-        source = path.relative_to(ROOT).as_posix()
-        header = HEADER.format(source=source)
+        header = HEADER.format(source=(SOURCE_DIR / path.name).as_posix())
         if path.stem in PLUGIN_RULES:
             continue
         if fields.get("alwaysApply", "").lower() == "true":
@@ -82,43 +87,86 @@ def render(sources: list[Path]) -> dict[str, str]:
     return outputs
 
 
-def main(argv: list[str] | None = None) -> int:
-    """Write or check ``.claude/rules/``; return the process exit code."""
+def render_cursor(sources: list[Path]) -> dict[str, str]:
+    """Return the generated Cursor rules: each source with a header after its fields."""
+    outputs: dict[str, str] = {}
+    for path in sorted(sources):
+        text = path.read_text(encoding="utf-8")
+        header = HEADER.format(source=(SOURCE_DIR / path.name).as_posix())
+        head, sep, body = text.partition("\n---\n")
+        if text.startswith("---\n") and sep:
+            outputs[path.name] = f"{head}{sep}\n{header}\n{body}"
+        else:
+            outputs[path.name] = f"{header}\n\n{text}"
+    return outputs
+
+
+def targets(root: Path) -> list[tuple[Path, str, dict[str, str]]]:
+    """Return ``(directory, glob, outputs)`` per tool; unselected tools get none."""
+    sources = sorted((root / SOURCE_DIR).glob("*.mdc"))
+    tools = agent_tools(root)
+    claude = render(sources) if "claude" in tools else {}
+    cursor = render_cursor(sources) if "cursor" in tools else {}
+    return [(root / CLAUDE_DIR, "*.md", claude), (root / CURSOR_DIR, "*.mdc", cursor)]
+
+
+def replaceable(path: Path, root: Path) -> bool:
+    """Whether ``path`` may be overwritten: generated here, or a verbatim source copy.
+
+    Before ``.agents/rules/`` the template shipped the rules in ``.cursor/rules/``; an
+    unedited copy equals its source, an edited one or a project rule does not.
+    """
+    text = path.read_text(encoding="utf-8")
+    source = root / SOURCE_DIR / path.name
+    if source.is_file() and source.read_text(encoding="utf-8") == text:
+        return True
+    body = text.split("\n---\n", 1)[-1]
+    return "by scripts/sync_rules.py; do not edit." in body[:400]
+
+
+def main(argv: list[str] | None = None, root: Path = ROOT) -> int:
+    """Write or check the generated rules; return the process exit code."""
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument(
         "--check", action="store_true", help="exit 1 when outputs are stale"
     )
     args = parser.parse_args(argv)
-
-    outputs = render(list(SOURCE_DIR.glob("*.mdc")))
-    existing = (
-        {p.name for p in TARGET_DIR.glob("*.md")} if TARGET_DIR.is_dir() else set()
-    )
-    stale = sorted(
-        name
-        for name, content in outputs.items()
-        if not (TARGET_DIR / name).is_file()
-        or (TARGET_DIR / name).read_text(encoding="utf-8") != content
-    )
-    extra = sorted(existing - outputs.keys())
-
+    stale: list[tuple[Path, str]] = []
+    extra: list[Path] = []
+    legacy: list[Path] = []
+    for folder, pattern, outputs in targets(root):
+        existing = sorted(folder.glob(pattern)) if folder.is_dir() else []
+        # A hand-written Cursor rule predates .agents/rules/: report, never replace it.
+        mine = [p for p in existing if pattern == "*.mdc" and not replaceable(p, root)]
+        legacy += mine
+        stale += [
+            (folder / name, text)
+            for name, text in outputs.items()
+            if folder / name not in mine
+            and (
+                not (folder / name).is_file()
+                or (folder / name).read_text(encoding="utf-8") != text
+            )
+        ]
+        extra += [p for p in existing if p.name not in outputs and p not in mine]
+    for path in legacy:
+        rel = path.relative_to(root).as_posix()
+        print(f"hand-written: {rel}; merge it into {SOURCE_DIR.as_posix()}/, delete it")
     if args.check:
-        for name in stale:
-            print(f"stale: .claude/rules/{name}")
-        for name in extra:
-            print(f"not generated: .claude/rules/{name}")
-        if stale or extra:
+        for path, _ in stale:
+            print(f"stale: {path.relative_to(root).as_posix()}")
+        for path in extra:
+            print(f"not generated: {path.relative_to(root).as_posix()}")
+        if stale or extra or legacy:
             print("run: uv run python scripts/sync_rules.py", file=sys.stderr)
-            return 1
-        return 0
-
-    TARGET_DIR.mkdir(parents=True, exist_ok=True)
-    for name in stale:
-        (TARGET_DIR / name).write_text(outputs[name], encoding="utf-8")
-        print(f"wrote .claude/rules/{name}")
-    for name in extra:
-        (TARGET_DIR / name).unlink()
-        print(f"removed .claude/rules/{name}")
+        return 1 if stale or extra or legacy else 0
+    for path, text in stale:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+        print(f"wrote {path.relative_to(root).as_posix()}")
+    for path in extra:
+        path.unlink()
+        print(f"removed {path.relative_to(root).as_posix()}")
     return 0
 
 

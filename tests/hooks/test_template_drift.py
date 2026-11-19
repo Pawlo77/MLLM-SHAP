@@ -35,6 +35,16 @@ def test_parse_answers(drift: ModuleType) -> None:
     }
 
 
+def test_parse_answers_reads_a_block_list(drift: ModuleType) -> None:
+    text = "description: ''\nagent_tools:\n- claude\n- codex\nvault: false\n"
+    assert drift.parse_answers(text) == {
+        "description": "",
+        "agent_tools": "[claude, codex]",
+        "vault": "false",
+    }
+    assert drift.parse_answers("agent_tools: []\n") == {"agent_tools": "[]"}
+
+
 def _repo(tmp_path: Path, files: dict[str, str]) -> Path:
     root = tmp_path / "repo"
     for rel, text in {".copier-answers.yml": ANSWERS, **files}.items():

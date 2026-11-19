@@ -4,7 +4,7 @@ paths:
   - "src/mllm_shap/__init__.py"
 ---
 
-<!-- Generated from .cursor/rules/docs.mdc by scripts/sync_rules.py; do not edit. -->
+<!-- Generated from .agents/rules/docs.mdc by scripts/sync_rules.py; do not edit. -->
 
 # Sphinx documentation (`docs/`)
 

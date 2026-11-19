@@ -9,7 +9,7 @@ paths:
   - "src/mllm_shap/masking/**"
 ---
 
-<!-- Generated from .cursor/rules/plugins.mdc by scripts/sync_rules.py; do not edit. -->
+<!-- Generated from .agents/rules/plugins.mdc by scripts/sync_rules.py; do not edit. -->
 
 # Plugins
 

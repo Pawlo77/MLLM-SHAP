@@ -1,4 +1,4 @@
-"""Check the size budgets of rule ``brevity`` (``.cursor/rules/brevity.mdc``).
+"""Check the size budgets of rule ``brevity`` (``.agents/rules/brevity.mdc``).
 
 Usage::
 
@@ -47,16 +47,16 @@ BASE_BUDGETS = (
     Budget((".claude/rules/always.md",), words=700),
     Budget((".agents/skills/*/SKILL.md",), words=500, lines=100),
     Budget((".agents/skills/*.md",), words=400),
-    Budget((".cursor/rules/*.mdc",), words=400, lines=60),
+    Budget((".agents/rules/*.mdc",), words=400, lines=60),
     Budget((".claude/agents/*.md",), words=400, lines=40),
-    Budget((".cursor/commands/*.md",), lines=15),
+    Budget((".agents/commands/*.md",), lines=15),
     Budget(("README.md",), words=900, sentences=True),
     Budget(("CONTRIBUTING.md",), words=1500, sentences=True),
 )
 """Budgets of the rule that every repository shares; a project's come first."""
 
 SKIP_DIRS = {"node_modules", "__pycache__", "_build"}
-HIDDEN_KEPT = {".agents", ".claude", ".cursor"}
+HIDDEN_KEPT = {".agents", ".claude"}
 UNIT_START = re.compile(r"^\s*(?:[-*+]\s|\d+[.)]\s|#|\.\.\s|[=\-~^\"'`*+]{3,}\s*$)")
 SENTENCE_END = re.compile(r"(?<=[.!?])\s+")
 BULLET = re.compile(r"^(\s*)[-*]\s")
@@ -277,7 +277,7 @@ def vendored(root: Path) -> set[str]:
     prefixes: set[str] = set()
     for table, template in (
         (".agents/skills/VENDORED.md", ".agents/skills/{}/"),
-        (".agents/skills/VENDORED.md", ".cursor/rules/{}.mdc"),
+        (".agents/skills/VENDORED.md", ".agents/rules/{}.mdc"),
         (".claude/agents/VENDORED.md", ".claude/agents/{}.md"),
     ):
         path = root / table

@@ -1,4 +1,4 @@
-"""Claude Code rules generated from the Cursor rules.
+"""Claude Code and Cursor rules generated from the sources in ``.agents/rules/``.
 
 @see [[scripts/sync_rules.py]]
 """
@@ -64,7 +64,7 @@ def test_plugin_rule_has_no_claude_copy(
 
 
 def test_generated_rules_are_current() -> None:
-    """.claude/rules/ matches .cursor/rules/ (run scripts/sync_rules.py)."""
+    """The generated rules match .agents/rules/ (run scripts/sync_rules.py)."""
     import subprocess
     import sys
 
@@ -75,3 +75,47 @@ def test_generated_rules_are_current() -> None:
         check=False,
     )
     assert proc.returncode == 0, proc.stdout
+
+
+RULE = "---\ndescription: t\nglobs: src/**\nalwaysApply: false\n---\n\n# Types\n"
+
+
+def _project(tmp_path: Path, tools: str) -> Path:
+    (tmp_path / ".agents" / "rules").mkdir(parents=True)
+    (tmp_path / ".agents" / "rules" / "types.mdc").write_text(RULE, encoding="utf-8")
+    answers = f"_commit: v1\nagent_tools: {tools}\n"
+    (tmp_path / ".copier-answers.yml").write_text(answers, encoding="utf-8")
+    return tmp_path
+
+
+def test_rules_follow_the_selected_tools(sync_rules, tmp_path: Path) -> None:
+    """Claude only: no .cursor/; adding Cursor writes headed copies of the sources."""
+    root = _project(tmp_path, "[claude]")
+    assert sync_rules.main([], root) == 0
+    assert (root / ".claude" / "rules" / "types.md").is_file()
+    assert not (root / ".cursor").exists()
+    (root / ".copier-answers.yml").write_text("agent_tools:\n- cursor\n")
+    assert sync_rules.main([], root) == 0
+    assert not (root / ".claude" / "rules" / "types.md").exists()
+    text = (root / ".cursor" / "rules" / "types.mdc").read_text(encoding="utf-8")
+    assert text.startswith("---\ndescription: t\nglobs: src/**\n")
+    assert "Generated from .agents/rules/types.mdc" in text
+    assert text.endswith("# Types\n")
+    assert sync_rules.main(["--check"], root) == 0
+
+
+def test_hand_written_cursor_rule_is_kept_and_reported(
+    sync_rules, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """A rule from before .agents/rules/ is never overwritten; --check fails on it."""
+    root = _project(tmp_path, "[claude, cursor]")
+    legacy = root / ".cursor" / "rules" / "types.mdc"
+    legacy.parent.mkdir(parents=True)
+    legacy.write_text(RULE + "local edit\n", encoding="utf-8")
+    assert sync_rules.main([], root) == 0
+    assert legacy.read_text(encoding="utf-8").endswith("local edit\n")
+    assert sync_rules.main(["--check"], root) == 1
+    assert "hand-written: .cursor/rules/types.mdc" in capsys.readouterr().out
+    legacy.write_text(RULE, encoding="utf-8")  # an unedited copy of the source
+    assert sync_rules.main([], root) == 0
+    assert sync_rules.main(["--check"], root) == 0
