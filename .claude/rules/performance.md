@@ -7,7 +7,7 @@ paths:
   - "tests/benchmarks/**"
 ---
 
-<!-- Generated from .cursor/rules/performance.mdc by scripts/sync_rules.py; do not edit. -->
+<!-- Generated from .agents/rules/performance.mdc by scripts/sync_rules.py; do not edit. -->
 
 # Performance
 

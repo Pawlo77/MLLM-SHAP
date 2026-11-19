@@ -72,7 +72,9 @@ def test_every_tool_registers_the_shared_gates(
         "session_start.sh",
         "format_after_edit.sh",
     }
-    assert all((HOOKS / name).is_file() for name in named)
+    # The hook scripts ship with an agent tool only.
+    if (HOOKS / "gate_lib.sh").is_file():
+        assert all((HOOKS / name).is_file() for name in named)
 
 
 def test_codex_events_mirror_claude_events(configs: ModuleType, tmp_path: Path) -> None:
@@ -194,3 +196,36 @@ def test_check_ignores_json_key_order_but_not_content(
     del data["hooks"]
     path.write_text(json.dumps(data), encoding="utf-8")
     assert configs.main(["--check", "--root", str(root)]) == 1
+
+
+def test_only_the_selected_tools_get_configs(
+    configs: ModuleType, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Claude only by answer; files of a dropped tool are reported, then removed."""
+    root = _root(tmp_path)
+    assert configs.main(["--root", str(root)]) == 0  # no answers file: every tool
+    assert (root / ".cursor" / "hooks.json").is_file()
+    answers = "_commit: v1\nagent_tools:\n- claude\nowner: me\n"
+    (root / ".copier-answers.yml").write_text(answers, encoding="utf-8")
+    assert set(configs.render(root)) == {".claude/settings.json"}
+    capsys.readouterr()
+    assert configs.main(["--check", "--root", str(root)]) == 1
+    assert "not selected: .codex/config.toml" in capsys.readouterr().out
+    assert configs.main(["--root", str(root)]) == 0
+    assert not (root / ".cursor" / "hooks.json").exists()
+    assert not (root / ".codex" / "hooks.json").exists()
+    assert configs.main(["--check", "--root", str(root)]) == 0
+    (root / ".copier-answers.yml").write_text("agent_tools: []\n", encoding="utf-8")
+    assert configs.render(root) == {}
+
+
+def test_ponytail_plugin_follows_the_answer(
+    configs: ModuleType, tmp_path: Path
+) -> None:
+    """The Ponytail marketplace and plugin are dropped only when ``ponytail: false``."""
+    root = _root(tmp_path)
+    assert "ponytail@ponytail" in configs.claude_settings(root)["enabledPlugins"]
+    (root / ".copier-answers.yml").write_text("ponytail: false\n", encoding="utf-8")
+    settings = configs.claude_settings(root)
+    assert "ponytail@ponytail" not in settings["enabledPlugins"]
+    assert "ponytail" not in settings["extraKnownMarketplaces"]

@@ -1,9 +1,8 @@
 """Generate Codex subagents (``.codex/agents/*.toml``) from ``.claude/agents/*.md``.
 
-Usage::
+Usage: ``uv run python scripts/sync_agents.py [--check]``; ``--check`` exits 1 if stale.
 
-    uv run python scripts/sync_agents.py [--check]   # --check: exit 1 when stale
-
+Only for Codex (answer ``agent_tools``); otherwise the generated files are removed.
 The Markdown body becomes ``developer_instructions`` verbatim. The sandbox is read-only
 unless the frontmatter says ``codex-sandbox: workspace-write`` or the tools include an
 editing tool (then the session sandbox is inherited).
@@ -18,6 +17,9 @@ from pathlib import Path
 from typing import ClassVar
 
 import yaml
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from kit_config import agent_tools
 
 ROOT = Path(__file__).resolve().parents[1]
 """Repository root."""
@@ -190,7 +192,7 @@ def main(argv: list[str] | None = None, root: Path = ROOT) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--check", action="store_true", help="exit 1 when stale")
     args = parser.parse_args(argv)
-    outputs = build(root)
+    outputs = build(root) if "codex" in agent_tools(root) else {}
     orphans = [path for path in generated_files(root) if path not in outputs]
     stale = [
         path

@@ -105,24 +105,24 @@ repos:
         pass_filenames: false
 
       - id: rules-sync
-        name: Claude Code rules match Cursor rules
+        name: generated agent rules match .agents/rules
         entry: uv run python scripts/sync_rules.py --check
         language: system
-        files: ^(\.cursor/rules/.*\.mdc|\.claude/rules/.*\.md|scripts/sync_rules\.py)$
+        files: ^(\.(agents|cursor)/rules/.*\.mdc|\.claude/rules/.*\.md|scripts/sync_rules\.py|\.copier-answers\.yml)$
         pass_filenames: false
 
       - id: agents-sync
         name: Codex agents match Claude Code agents
         entry: uv run python scripts/sync_agents.py --check
         language: system
-        files: ^(\.claude/agents/.*\.md|\.codex/agents/.*\.toml|scripts/sync_agents\.py)$
+        files: ^(\.claude/agents/.*\.md|\.codex/agents/.*\.toml|scripts/sync_agents\.py|\.copier-answers\.yml)$
         pass_filenames: false
 
       - id: configs-sync
         name: agent tool configs match scripts/sync_configs.py
         entry: uv run python scripts/sync_configs.py --check
         language: system
-        files: ^(\.claude/settings\.json|\.codex/(hooks\.json|config\.toml)|\.cursor/hooks\.json|scripts/sync_configs\.py|pyproject\.toml)$
+        files: ^(\.claude/settings\.json|\.codex/(hooks\.json|config\.toml)|\.cursor/hooks\.json|scripts/sync_configs\.py|pyproject\.toml|\.copier-answers\.yml)$
         pass_filenames: false
 
       - id: skills-ref
