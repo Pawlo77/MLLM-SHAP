@@ -6,7 +6,7 @@ description: >-
 
 # Development
 
-Exit criterion: `make check` (`AGENTS.md`). Rules: `.cursor/rules/*.mdc` (always-apply rules
+Exit criterion: `make check` (`AGENTS.md`). Rules: `.agents/rules/*.mdc` (always-apply rules
 plus the ones whose globs match the files you touch). The conventions, extra steps and
 pitfalls of this repository: `local.md` in this folder, when it exists.
 

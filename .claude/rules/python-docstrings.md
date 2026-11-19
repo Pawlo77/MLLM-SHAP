@@ -3,7 +3,7 @@ paths:
   - "src/mllm_shap/**/*.py"
 ---
 
-<!-- Generated from .cursor/rules/python-docstrings.mdc by scripts/sync_rules.py; do not edit. -->
+<!-- Generated from .agents/rules/python-docstrings.mdc by scripts/sync_rules.py; do not edit. -->
 
 # Python docstrings (Google style)
 
