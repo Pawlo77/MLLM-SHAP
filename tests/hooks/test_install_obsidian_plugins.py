@@ -101,19 +101,27 @@ def test_repositories_merge_the_project_table(installer, tmp_path: Path) -> None
     }
 
 
-def test_seed_settings_replaces_only_missing_or_empty_files(
+def test_seed_settings_merges_the_examples_into_live_files(
     installer, vault: Path
 ) -> None:
-    """Obsidian's empty defaults are replaced by the examples; real content is kept."""
+    """Example keys win; Obsidian's own keys and local plugins stay; gaps fill."""
     for name, example in (
-        ("app", '{"a": 1}'),
+        ("app", '{"userIgnoreFilters": ["slurm/"], "a": 1}'),
         ("appearance", '{"b": 2}'),
+        ("community-plugins", '["dataview", "realclaudian"]'),
         ("hotkeys", "{}"),
     ):
         (vault / f"{name}.example.json").write_text(example)
-    (vault / "app.json").write_text("{}")
-    (vault / "appearance.json").write_text('{"mine": true}')
+    (vault / "app.json").write_text('{"userIgnoreFilters": ["report/"], "pdf": 1}')
+    (vault / "appearance.json").write_text('{"b": 2}')
+    (vault / "community-plugins.json").write_text('["mine", "dataview"]')
     seeded = installer.seed_settings(vault)
-    assert seeded == ["app.json", "hotkeys.json"]
-    assert json.loads((vault / "app.json").read_text()) == {"a": 1}
-    assert json.loads((vault / "appearance.json").read_text()) == {"mine": True}
+    assert seeded == ["app.json", "community-plugins.json", "hotkeys.json"]
+    assert json.loads((vault / "app.json").read_text()) == {
+        "userIgnoreFilters": ["slurm/"],
+        "a": 1,
+        "pdf": 1,
+    }
+    plugins = json.loads((vault / "community-plugins.json").read_text())
+    assert plugins == ["dataview", "realclaudian", "mine"]
+    assert installer.seed_settings(vault) == []
