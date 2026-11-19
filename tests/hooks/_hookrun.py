@@ -1,10 +1,12 @@
 """Helpers to run the shared agent hook scripts in tests."""
 
+import importlib.util
 import json
 import shutil
 import subprocess
 from collections.abc import Mapping
 from pathlib import Path
+from types import ModuleType
 
 ROOT = Path(__file__).resolve().parents[2]
 HOOKS = ROOT / "scripts" / "hooks"
@@ -13,6 +15,16 @@ CURSOR = {"cursor_version": "2.5", "conversation_id": "c1"}
 CLAUDE = {"session_id": "s1", "hook_event_name": "PreToolUse"}
 
 HAVE_TOOLS = shutil.which("bash") is not None and shutil.which("jq") is not None
+
+
+def load_script(name: str) -> ModuleType:
+    """Import ``scripts/<name>.py`` without installing it as a package."""
+    spec = importlib.util.spec_from_file_location(name, ROOT / "scripts" / f"{name}.py")
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def run_hook(

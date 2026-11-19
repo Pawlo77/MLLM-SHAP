@@ -209,10 +209,12 @@ def check_file(vault: Any, path: Path, text: str) -> list[Finding]:
 
 
 def code_files(root: Path) -> list[Path]:
-    """Return package and test Python files checked for links and tags."""
-    return sorted((root / PACKAGE).rglob("*.py")) + sorted(
-        (root / "tests").rglob("*.py")
-    )
+    """Return package and test Python files checked for links and tags.
+
+    ``tests/hooks/`` belongs to the template: its ``@see`` tags may name ``.agents/``.
+    """
+    tests = (p for p in (root / "tests").rglob("*.py") if "hooks" not in p.parts)
+    return sorted((root / PACKAGE).rglob("*.py")) + sorted(tests)
 
 
 def check_code(vault: Any, files: list[Path]) -> list[Finding]:

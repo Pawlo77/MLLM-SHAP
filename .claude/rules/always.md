@@ -1,4 +1,4 @@
-<!-- Generated from .cursor/rules/brevity-local.mdc by scripts/sync_rules.py; do not edit. -->
+<!-- Generated from .agents/rules/brevity-local.mdc by scripts/sync_rules.py; do not edit. -->
 
 # Brevity: this repository
 
@@ -6,7 +6,7 @@ Budgets (`scripts/check_brevity.py`): nested AGENTS.md ≤ 60 lines; docs page �
 
 Notebooks: markdown cell ≤ 150 words, code cell ≤ 40 lines, ≤ 900 markdown words per notebook; read a notebook with `jupyter nbconvert --to script --stdout`, never the raw file.
 
-<!-- Generated from .cursor/rules/brevity.mdc by scripts/sync_rules.py; do not edit. -->
+<!-- Generated from .agents/rules/brevity.mdc by scripts/sync_rules.py; do not edit. -->
 
 # Brevity
 
@@ -21,7 +21,7 @@ Every line is read again by people and agents. Write the fewest lines that keep 
 - A file at or over budget must not grow: cut or split before adding. Files already over budget when the rule came in are capped at that size (`existing` in `[tool.agent-kit.brevity]`).
 - Reports and PR bodies: findings first; no recap of the task or of code you only read.
 
-<!-- Generated from .cursor/rules/git-commits.mdc by scripts/sync_rules.py; do not edit. -->
+<!-- Generated from .agents/rules/git-commits.mdc by scripts/sync_rules.py; do not edit. -->
 
 # Git commits and pull requests
 
@@ -35,7 +35,7 @@ Every line is read again by people and agents. Write the fewest lines that keep 
 - PRs open ready for review, titled in commit style, with the body of `.github/pull_request_template.md`.
 - After `gh pr create`: `gh pr edit <n> --add-assignee Pawlo77 --add-label <label>`, with `bug` for `fix`, `documentation` for `docs` and `enhancement` otherwise.
 
-<!-- Generated from .cursor/rules/minimal-diff.mdc by scripts/sync_rules.py; do not edit. -->
+<!-- Generated from .agents/rules/minimal-diff.mdc by scripts/sync_rules.py; do not edit. -->
 
 # Minimal diff
 
@@ -47,7 +47,7 @@ Every line is read again by people and agents. Write the fewest lines that keep 
 - If two approaches work, pick the simpler one that matches the repository.
 - When porting from another repository, bring over only the slice the task needs.
 
-<!-- Generated from .cursor/rules/package-boundaries.mdc by scripts/sync_rules.py; do not edit. -->
+<!-- Generated from .agents/rules/package-boundaries.mdc by scripts/sync_rules.py; do not edit. -->
 
 # Package boundaries
 

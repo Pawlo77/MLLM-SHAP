@@ -1,0 +1,27 @@
+# Search protocol template: copy to <domain>.yaml, replace every value, then run
+# scripts/harvest.py on the copy. Keep this file as the reference format.
+name: example
+since: "2020-01-01"
+# OpenAlex keyword queries (15-20): one per method family and domain pair.
+openalex_queries:
+  - method family one domain one
+  - method family two domain one
+# arXiv field queries (about 12), newest first.
+arxiv_queries:
+  - 'abs:"method family one" AND abs:"domain one"'
+# Seeds for forward citations: arXiv ids or DOIs of central papers, with a comment each.
+seeds:
+  - "1706.03762"  # replace: a central paper of the area
+# A record is kept when it matches one regex of every group (method, then domain).
+include:
+  - ['method family one|method family two']
+  - ['domain one|domain two']
+exclude:
+  - known false-positive field
+# Outcome of the run; fill after screening and update after every re-run.
+outcome:
+  retrieved: 0
+  after_dedup_and_keyword_screen: 0
+  after_title_abstract_screen: 0
+  noted: ""
+  not_noted: []  # "reason: title (identifier or venue)"

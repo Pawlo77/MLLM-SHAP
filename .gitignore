@@ -119,8 +119,10 @@ mutants/
 runs/
 examples/runs/
 
-# Obsidian: AI plugins keep embeddings and settings that may hold keys
-.obsidian/plugins/realclaudian/
+# Obsidian: AI plugins keep embeddings and settings that may hold keys; Claudian's pinned
+# manifest stays committed (scripts/install_obsidian_plugins.py)
+.obsidian/plugins/realclaudian/*
+!.obsidian/plugins/realclaudian/manifest.json
 .obsidian/plugins/smart-connections/
 
 # Agent tooling: jit-context plugin logs and session markers (entries and their
@@ -133,3 +135,6 @@ docs/_static/notebook_figures/
 
 # Practical-test results (written by make practical)
 tests/practical/results/
+
+# Claudian (Obsidian plugin realclaudian): local sessions and state
+.claudian/

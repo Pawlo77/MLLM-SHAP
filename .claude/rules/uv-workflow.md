@@ -5,7 +5,7 @@ paths:
   - "Makefile"
 ---
 
-<!-- Generated from .cursor/rules/uv-workflow.mdc by scripts/sync_rules.py; do not edit. -->
+<!-- Generated from .agents/rules/uv-workflow.mdc by scripts/sync_rules.py; do not edit. -->
 
 # uv workflow
 

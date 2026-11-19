@@ -3,7 +3,7 @@ paths:
   - "tests/**/*.py"
 ---
 
-<!-- Generated from .cursor/rules/tests.mdc by scripts/sync_rules.py; do not edit. -->
+<!-- Generated from .agents/rules/tests.mdc by scripts/sync_rules.py; do not edit. -->
 
 # Tests
 
