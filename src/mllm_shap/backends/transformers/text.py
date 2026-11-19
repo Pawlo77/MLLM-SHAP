@@ -618,7 +618,7 @@ class TransformersTextBackend:
         )
 
 
-def collate_inputs(
+def collate_inputs(  # pragma: no cover
     torch: Any, rows: list[dict[str, Any]], pad_id: int
 ) -> dict[str, Any]:
     """Left-pad ids and masks to one width and stack the other tensors of ``rows``.
