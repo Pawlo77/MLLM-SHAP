@@ -5,12 +5,13 @@
 @tested-by [[tests/backends/test_transformers_audio.py]]
 """
 
+import base64
 from typing import Any
 
 import numpy as np
 from numpy.typing import NDArray
 
-from ...alignment.io import decode_audio
+from ...alignment.io import decode_audio, encode_wav
 from ...domain.conversation import AudioPart, ConversationSnapshot, Message
 from .._chat import chat_role, message_chat_text
 from .chat import render_prompt
@@ -20,8 +21,10 @@ def processor_inputs(processor: Any, snapshot: ConversationSnapshot) -> Any:
     """Encode ``snapshot`` with its audio for ``processor``.
 
     A processor whose chat template mentions audio gets structured audio and text
-    parts; otherwise each audio part becomes ``processor.audio_token`` in the
-    rendered prompt and the waveforms go to ``processor(text=..., audio=...)``.
+    parts (a mistral-common tokenizer, as in Voxtral, has an implicit template and
+    takes each clip as base64 WAV); otherwise each audio part becomes
+    ``processor.audio_token`` in the rendered prompt and the waveforms go to
+    ``processor(text=..., audio=...)``.
     Audio parts come before the message text, and an audio part left empty by
     masking is dropped.
     """
@@ -32,7 +35,10 @@ def processor_inputs(processor: Any, snapshot: ConversationSnapshot) -> Any:
     }
     if _template_has_audio(processor):
         conversation = [
-            {"role": chat_role(m.role), "content": _parts(m, audio[id(m)])}
+            {
+                "role": chat_role(m.role),
+                "content": _parts(m, audio[id(m)], rate, processor),
+            }
             for m in snapshot.messages()
         ]
         return processor.apply_chat_template(
@@ -57,8 +63,19 @@ def processor_inputs(processor: Any, snapshot: ConversationSnapshot) -> Any:
     )
 
 
-def _parts(message: Message, waveforms: list[NDArray[np.float32]]) -> list[Any]:
-    parts: list[Any] = [{"type": "audio", "audio": w} for w in waveforms]
+def _parts(
+    message: Message,
+    waveforms: list[NDArray[np.float32]],
+    rate: int,
+    processor: Any,
+) -> list[Any]:
+    if _is_mistral_common(processor):
+        parts: list[Any] = [
+            {"type": "audio", "base64": base64.b64encode(encode_wav(w, rate)).decode()}
+            for w in waveforms
+        ]
+    else:
+        parts = [{"type": "audio", "audio": w} for w in waveforms]
     text = message_chat_text(message)
     if text:
         parts.append({"type": "text", "text": text})
@@ -81,7 +98,13 @@ def _sampling_rate(processor: Any) -> int:
     return int(extractor.sampling_rate)
 
 
+def _is_mistral_common(processor: Any) -> bool:
+    return "mistral_common" in type(processor.tokenizer).__module__
+
+
 def _template_has_audio(processor: Any) -> bool:
+    if _is_mistral_common(processor):
+        return True
     templates = (
         getattr(processor, "chat_template", None),
         getattr(processor.tokenizer, "chat_template", None),

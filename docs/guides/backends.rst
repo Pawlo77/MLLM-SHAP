@@ -212,6 +212,9 @@ need them (``embedding_cosine`` with ``encoder: model_states``).
 generates greedy answers (``temperature: 0``) in padded batches: concurrent calls are
 collected until that many are waiting, or ``batch_wait_ms`` (default 5) has passed, and
 run together. Batched generation skips the prefix cache and the model-state embeddings.
+Audio prompts batch too: their features are stacked and the audio tokens sit in the padded
+ids. On one H100 PCIe, ``Qwen2-Audio-7B-Instruct`` answered 5.15 prompts per second at batch
+32 and 0.54 at batch 1 (9.5 times).
 The scheduler runs at least ``batch_size`` coalitions at once.
 
 Padding moves ``float32`` scores slightly. On ``Qwen2.5-3B-Instruct`` at batch 32, prompts of

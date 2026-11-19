@@ -152,7 +152,6 @@ class TransformersTextBackend:
             self._options.batch_size > 1
             and generation.temperature == 0.0
             and not generation.compute_embeddings
-            and not snapshot_has_audio(snapshot)
         ):
             return await self._enqueue_generate(snapshot, generation)
         return await asyncio.to_thread(
@@ -200,8 +199,10 @@ class TransformersTextBackend:
         """Generate every request greedily in left-padded batches.
 
         Requests with the same settings are sorted by prompt length and run
-        ``batch_size`` at a time; the prefix cache is not used. Each row stops at its
-        first end-of-sequence token, which is scored like in the one-prompt path.
+        ``batch_size`` at a time; the prefix cache is not used. Audio prompts batch
+        like text: their features are stacked and the audio tokens already sit in
+        ``input_ids``. Each row stops at its first end-of-sequence token, which is
+        scored like in the one-prompt path.
         """
         tokenizer = self._tokenizer
         model = self._model
@@ -211,16 +212,9 @@ class TransformersTextBackend:
         torch = import_torch()
         records: list[GenerationRecord | None] = [None] * len(batch)
         with self._model_lock, torch.no_grad():
-            prompts = [
-                [
-                    int(t)
-                    for t in self._encode(torch, model, tokenizer, r.snapshot)[
-                        "input_ids"
-                    ][0].tolist()
-                ]
-                for r in batch
-            ]
-            order = sorted(range(len(batch)), key=lambda i: len(prompts[i]))
+            rows = [self._encode(torch, model, tokenizer, r.snapshot) for r in batch]
+            lengths = [int(row["input_ids"].shape[1]) for row in rows]
+            order = sorted(range(len(batch)), key=lambda i: lengths[i])
             pad = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else 0
             eos = tokenizer.eos_token_id
             for start in range(0, len(order), self._options.batch_size):
@@ -233,25 +227,15 @@ class TransformersTextBackend:
                     ),
                 ):
                     group = list(members)
-                    width = max(len(prompts[i]) for i in group)
-                    device = model.device
-                    ids = torch.tensor(
-                        [[pad] * (width - len(prompts[i])) + prompts[i] for i in group],
-                        dtype=torch.long,
-                        device=device,
-                    )
-                    mask = torch.tensor(
-                        [
-                            [0] * (width - len(prompts[i])) + [1] * len(prompts[i])
-                            for i in group
-                        ],
-                        dtype=torch.long,
-                        device=device,
-                    )
+                    inputs = collate_inputs(torch, [rows[i] for i in group], pad)
+                    width = int(inputs["input_ids"].shape[1])
                     kwargs = _generate_kwargs(
-                        torch, tokenizer, ids, batch[group[0]].generation
+                        torch,
+                        tokenizer,
+                        inputs["input_ids"],
+                        batch[group[0]].generation,
                     )
-                    kwargs["attention_mask"] = mask
+                    kwargs.update(inputs)
                     clock = _device_clock(torch)
                     generated = model.generate(**kwargs)
                     elapsed = _device_clock(torch) - clock
@@ -277,7 +261,7 @@ class TransformersTextBackend:
                         )
                         produced += len(new_ids)
                     self._count(
-                        sum(len(prompts[i]) for i in group),
+                        sum(lengths[i] for i in group),
                         produced,
                         len(group),
                         elapsed,
@@ -632,6 +616,31 @@ class TransformersTextBackend:
             "kv_cache off; set backend.options.dtype: float32 for identical results",
             dtype.removeprefix("torch."),
         )
+
+
+def collate_inputs(
+    torch: Any, rows: list[dict[str, Any]], pad_id: int
+) -> dict[str, Any]:
+    """Left-pad ids and masks to one width and stack the other tensors of ``rows``.
+
+    A key such as ``input_features`` is stacked over the rows that carry it, in
+    row order, which is the order of their audio tokens.
+    """
+    width = max(int(row["input_ids"].shape[1]) for row in rows)
+    padded: dict[str, list[Any]] = {"input_ids": [], "attention_mask": []}
+    for row in rows:
+        gap = width - int(row["input_ids"].shape[1])
+        mask = row.get("attention_mask", torch.ones_like(row["input_ids"]))
+        padded["input_ids"].append(
+            torch.nn.functional.pad(row["input_ids"], (gap, 0), value=pad_id)
+        )
+        padded["attention_mask"].append(
+            torch.nn.functional.pad(mask, (gap, 0), value=0)
+        )
+    batch = {key: torch.cat(parts) for key, parts in padded.items()}
+    for key in sorted({k for row in rows for k in row} - set(batch)):
+        batch[key] = torch.cat([row[key] for row in rows if key in row])
+    return batch
 
 
 def _generate_kwargs(

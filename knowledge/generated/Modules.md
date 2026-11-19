@@ -37,11 +37,11 @@ parent: "[[mllm-shap]]"
 | [[src/mllm_shap/backends/replay/backend.py]] | Answer coalitions from run archives instead of a model. | backends | [[knowledge/architecture/backends]] | 155 | [[backends]] |
 | [[src/mllm_shap/backends/transformers/__init__.py]] | Hugging Face transformers text backend. | backends | [[knowledge/architecture/backends]] | 9 | [[backends]] |
 | [[src/mllm_shap/backends/transformers/_torch.py]] | Lazy import of the optional ``torch`` dependency. | backends | [[knowledge/architecture/backends]] | 21 | [[backends]] |
-| [[src/mllm_shap/backends/transformers/audio.py]] | Model inputs for audio language models through a Hugging Face processor. | backends | [[knowledge/architecture/backends]] | 89 | [[backends]] |
+| [[src/mllm_shap/backends/transformers/audio.py]] | Model inputs for audio language models through a Hugging Face processor. | backends | [[knowledge/architecture/backends]] | 112 | [[backends]] |
 | [[src/mllm_shap/backends/transformers/chat.py]] | Conversation snapshot helpers for Hugging Face chat templates. | backends | [[knowledge/architecture/backends]] | 26 | [[backends]] |
 | [[src/mllm_shap/backends/transformers/embeddings.py]] | Embedding helpers for the transformers text backend. | backends | [[knowledge/architecture/backends]] | 50 | [[backends]] |
 | [[src/mllm_shap/backends/transformers/options.py]] | Settings of the transformers backend read from ``BackendConfig.options``. | backends | [[knowledge/architecture/backends]] | 60 | [[backends]] |
-| [[src/mllm_shap/backends/transformers/text.py]] | Hugging Face language model backend for text and, with a processor, audio. | backends | [[knowledge/architecture/backends]] | 753 | [[backends]] |
+| [[src/mllm_shap/backends/transformers/text.py]] | Hugging Face language model backend for text and, with a processor, audio. | backends | [[knowledge/architecture/backends]] | 762 | [[backends]] |
 | [[src/mllm_shap/cli.py]] | Command-line interface: ``mllm-shap explain\|reanalyze\|plugins\|config``. | core | [[knowledge/architecture/core]] | 290 | [[core]] |
 | [[src/mllm_shap/domain/__init__.py]] | Domain types for cooperative-game explainability. | domain | [[knowledge/architecture/domain]] | 44 | [[domain]] |
 | [[src/mllm_shap/domain/coalition.py]] | Coalition masks over explainability players. | domain | [[knowledge/architecture/domain]] | 45 | [[domain]] |
