@@ -15,6 +15,7 @@ import sys
 import urllib.request
 from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from kit_config import load as load_config
@@ -52,22 +53,39 @@ def enabled_plugins(obsidian: Path = OBSIDIAN) -> list[str]:
     return list(json.loads(source.read_text()))
 
 
-def seed_settings(obsidian: Path = OBSIDIAN) -> list[str]:
-    """Copy each ``*.example.json`` over its live file when that is missing or empty.
+def merge(example: Any, live: Any) -> Any:
+    """Return ``live`` with the shared settings of ``example`` applied.
 
-    Obsidian writes ``{}`` or ``[]`` on first open, so a plain copy that keeps existing
-    files would leave the vault without the shared settings; real content is kept.
+    In a settings object every key of the example wins (hidden folders, enabled
+    snippets), keys Obsidian added stay; a plugin list keeps local additions after the
+    example's.
+    """
+    if isinstance(example, dict) and isinstance(live, dict):
+        return {**live, **example}
+    if isinstance(example, list) and isinstance(live, list):
+        return example + [item for item in live if item not in example]
+    return example
+
+
+def seed_settings(obsidian: Path = OBSIDIAN) -> list[str]:
+    """Merge each ``*.example.json`` into its live file; return the files that changed.
+
+    Runs on ``make install``, after ``copier update`` and at each agent session start,
+    so a fresh clone, a vault Obsidian opened first and a changed example all end up
+    with the shared settings. A live file Obsidian left unreadable is replaced.
     """
     seeded: list[str] = []
     for example in sorted(obsidian.rglob("*.example.json")):
         live = example.with_name(example.name.replace(".example.json", ".json"))
-        if live.is_file() and json.loads(live.read_text() or "null") not in (
-            None,
-            {},
-            [],
-        ):
+        wanted = json.loads(example.read_text())
+        try:
+            current = json.loads(live.read_text() or "null") if live.is_file() else None
+        except json.JSONDecodeError:
+            current = None
+        merged = wanted if current is None else merge(wanted, current)
+        if merged == current:
             continue
-        live.write_text(example.read_text())
+        live.write_text(json.dumps(merged, indent=2, ensure_ascii=False) + "\n")
         seeded.append(str(live.relative_to(obsidian)))
     return seeded
 
@@ -127,7 +145,7 @@ def main(argv: list[str] | None = None) -> int:
     """Install or check every enabled plugin; return the exit status."""
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--check", action="store_true", help="report, do not download")
-    parser.add_argument("--init", action="store_true", help="seed the settings only")
+    parser.add_argument("--init", action="store_true", help="merge the settings only")
     parser.add_argument("--force", action="store_true", help="re-download everything")
     args = parser.parse_args(argv)
     if args.init:

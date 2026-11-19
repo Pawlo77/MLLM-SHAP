@@ -1,5 +1,5 @@
 # Changes here will be overwritten by Copier; run `copier update` instead.
-_commit: v2.0.1
+_commit: v2.1.0
 _src_path: gh:Pawlo77/python-kit-template
 agent_tools:
 - claude
