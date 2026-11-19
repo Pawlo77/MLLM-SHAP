@@ -43,10 +43,10 @@ OWNED = (
     "knowledge/**",
     "plans/**",
     ".remember/**",
-    ".cursor/rules/plans.mdc",
+    ".agents/rules/plans.mdc",
     "research/**",
-    ".cursor/rules/research-boundaries.mdc",
-    ".cursor/rules/latex-papers.mdc",
+    ".agents/rules/research-boundaries.mdc",
+    ".agents/rules/latex-papers.mdc",
     ".agents/skills/paper-notes/reference.md",
     ".agents/skills/paper-notes/template.md",
     ".python-version",
@@ -64,12 +64,12 @@ OWNED = (
     ".github/workflows/test.yaml",
     ".github/workflows/deploy-docs.yaml",
     ".github/workflows/publish.yaml",
-    ".cursor/rules/benchmarks.mdc",
-    ".cursor/rules/examples.mdc",
-    ".cursor/rules/package-boundaries.mdc",
-    ".cursor/rules/experiment-boundaries.mdc",
-    ".cursor/rules/performance.mdc",
-    ".cursor/rules/python-quality.mdc",
+    ".agents/rules/benchmarks.mdc",
+    ".agents/rules/examples.mdc",
+    ".agents/rules/package-boundaries.mdc",
+    ".agents/rules/experiment-boundaries.mdc",
+    ".agents/rules/performance.mdc",
+    ".agents/rules/python-quality.mdc",
 )
 """Scaffold files the template writes once; they belong to the project afterwards.
 
@@ -80,13 +80,23 @@ Renderer = Callable[[dict[str, str], Path], None]
 
 
 def parse_answers(text: str) -> dict[str, str]:
-    """Return the flat ``key: value`` pairs of a Copier answers file."""
-    answers = {}
+    """Return the ``key: value`` pairs of a Copier answers file.
+
+    A block list (``agent_tools:`` followed by ``- item`` lines) becomes the flow list
+    ``[item, ...]``, which ``copier --data`` reads back as a list.
+    """
+    answers: dict[str, str] = {}
+    key = ""
     for line in text.splitlines():
+        if line.startswith("- ") and key:
+            items = answers[key].strip("[]")
+            answers[key] = f"[{items}{', ' if items else ''}{line[2:].strip()}]"
+            continue
         if line.startswith("#") or ":" not in line:
             continue
         key, _, value = line.partition(":")
-        answers[key.strip()] = value.strip().strip("'\"")
+        key, value = key.strip(), value.strip()
+        answers[key] = value.strip("'\"") if value else "[]"
     return answers
 
 

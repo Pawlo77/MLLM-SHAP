@@ -10,6 +10,7 @@ External commands go through an injectable :data:`Runner`. Stdlib only.
 """
 
 import argparse
+import importlib
 import re
 import shutil
 import subprocess  # nosec B404 - fixed argv lists, no shell
@@ -22,11 +23,12 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from kit_config import load as load_config
 
-try:
-    from install_obsidian_plugins import REPOSITORIES, pinned_version
-except ImportError:  # a repository without the Obsidian plugin installer
-    REPOSITORIES: dict[str, str] = {}  # type: ignore[no-redef]
-    pinned_version = None  # type: ignore[assignment]
+try:  # imported by name: the installer ships only with the vault
+    _installer = importlib.import_module("install_obsidian_plugins")
+except ImportError:
+    _installer = None
+REPOSITORIES: dict[str, str] = _installer.REPOSITORIES if _installer else {}
+pinned_version = _installer.pinned_version if _installer else None
 
 ROOT = Path(__file__).resolve().parents[1]
 """Repository root."""

@@ -1,6 +1,6 @@
 Applies to the files in the skill directories `ponytail`, `ponytail-review`, `ponytail-audit`,
 `ponytail-debt`, `ponytail-gain` and `ponytail-help` (SKILL.md each) and to
-`.cursor/rules/ponytail.mdc`, vendored from
+`.agents/rules/ponytail.mdc`, vendored from
 https://github.com/DietrichGebert/ponytail at commit 09c434ab73ca43761c5d8b0c5d341926c2fba710
 (skills/*/SKILL.md and .cursor/rules/ponytail.mdc, MIT-licensed at that commit).
 Hooks, status band, Node scripts, plugin manifests, translations and benchmarks are not vendored.
