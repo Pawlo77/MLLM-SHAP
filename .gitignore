@@ -135,3 +135,6 @@ docs/_static/notebook_figures/
 
 # Practical-test results (written by make practical)
 tests/practical/results/
+
+# Claudian (Obsidian plugin realclaudian): local sessions and state
+.claudian/
