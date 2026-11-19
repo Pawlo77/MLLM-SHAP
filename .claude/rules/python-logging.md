@@ -4,7 +4,7 @@ paths:
   - "pyproject.toml"
 ---
 
-<!-- Generated from .cursor/rules/python-logging.mdc by scripts/sync_rules.py; do not edit. -->
+<!-- Generated from .agents/rules/python-logging.mdc by scripts/sync_rules.py; do not edit. -->
 
 # Logging
 

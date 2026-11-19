@@ -1,7 +1,7 @@
 ---
 name: python-style
 description: >-
-  Use in Codex or when the .cursor/rules Python rules are not loaded, when writing or
+  Use in Codex or when the .agents/rules Python rules are not loaded, when writing or
   reviewing Python in this repository.
 ---
 

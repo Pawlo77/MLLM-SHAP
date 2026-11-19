@@ -139,6 +139,8 @@
       "Edit(.remember/**)",
       "Edit(plans/**)",
       "Bash(make vault-check*)",
+      "WebFetch(domain:api.openalex.org)",
+      "Edit(research/**)",
       "Bash(git commit*)",
       "Bash(git push origin *)",
       "Bash(git push -u origin *)",

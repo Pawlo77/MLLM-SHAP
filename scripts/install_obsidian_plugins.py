@@ -5,7 +5,8 @@ Usage:
 
 Downloads ``main.js`` and ``styles.css`` of the release pinned by each committed
 ``manifest.json`` (Obsidian disables a plugin whose ``main.js`` is missing). Plugin id
-to GitHub repository: ``dataview`` plus the ``[tool.agent-kit.obsidian-plugins]`` table.
+to GitHub repository: ``dataview`` and ``realclaudian`` (Claudian) plus the
+``[tool.agent-kit.obsidian-plugins]`` table.
 """
 
 import argparse
@@ -27,6 +28,7 @@ def repositories(root: Path = ROOT) -> dict[str, str]:
     extra = load_config(root).get("obsidian-plugins", {})
     return {
         "dataview": "blacksmithgu/obsidian-dataview",
+        "realclaudian": "YishenTu/claudian",
         **{str(key): str(value) for key, value in extra.items()},
     }
 
