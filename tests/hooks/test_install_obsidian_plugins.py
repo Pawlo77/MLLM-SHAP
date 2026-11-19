@@ -96,7 +96,8 @@ def test_repositories_merge_the_project_table(installer, tmp_path: Path) -> None
     assert found["dataview"] == "blacksmithgu/obsidian-dataview"
     assert found["templater-obsidian"] == "silentvoid13/Templater"
     assert installer.repositories(tmp_path / "missing") == {
-        "dataview": "blacksmithgu/obsidian-dataview"
+        "dataview": "blacksmithgu/obsidian-dataview",
+        "realclaudian": "YishenTu/claudian",
     }
 
 

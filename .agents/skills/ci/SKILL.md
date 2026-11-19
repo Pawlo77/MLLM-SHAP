@@ -45,7 +45,7 @@ jobs and their local commands: `local.md` in this folder, when it exists.
 
 ## Workflows and settings
 
-Workflow table and conventions: `.cursor/rules/ci.mdc` and `ci-workflows.mdc`. Repository
+Workflow table and conventions: `.agents/rules/ci.mdc` and `ci-workflows.mdc`. Repository
 settings and branch protection (applied by the maintainer): [reference.md](reference.md).
 
 Before pushing a workflow edit: `uvx zizmor --min-severity=medium .github/workflows`

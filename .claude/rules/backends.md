@@ -5,7 +5,7 @@ paths:
   - "config/**"
 ---
 
-<!-- Generated from .cursor/rules/backends.mdc by scripts/sync_rules.py; do not edit. -->
+<!-- Generated from .agents/rules/backends.mdc by scripts/sync_rules.py; do not edit. -->
 
 # Backends
 

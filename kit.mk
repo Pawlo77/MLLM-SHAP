@@ -87,13 +87,13 @@ vault-check: ## Vault consistency: notes, links, generated notes, brevity
 knowledge: ## Rebuild the generated notes from the code
 	@test ! -f scripts/build_knowledge.py || uv run python scripts/build_knowledge.py
 
-rules: ## Regenerate .claude/rules/ from .cursor/rules/
+rules: ## Regenerate the Claude Code and Cursor rules from .agents/rules/
 	uv run python scripts/sync_rules.py
 
-agents: ## Regenerate .codex/agents/*.toml from .claude/agents/*.md
+agents: ## Regenerate .codex/agents/*.toml from .claude/agents/*.md (Codex only)
 	uv run python scripts/sync_agents.py
 
-configs: ## Regenerate the agent tool configs (.claude, .codex, .cursor)
+configs: ## Regenerate the configs of the selected agent tools (.claude, .codex, .cursor)
 	uv run python scripts/sync_configs.py
 
 skills-check: ## Skill and subagent frontmatter follows the Agent Skills spec
