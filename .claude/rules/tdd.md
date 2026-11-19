@@ -3,7 +3,7 @@ paths:
   - "**/*.py"
 ---
 
-<!-- Generated from .cursor/rules/tdd.mdc by scripts/sync_rules.py; do not edit. -->
+<!-- Generated from .agents/rules/tdd.mdc by scripts/sync_rules.py; do not edit. -->
 
 # TDD
 

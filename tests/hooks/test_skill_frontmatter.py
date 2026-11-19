@@ -17,8 +17,10 @@ from pathlib import Path
 import pytest
 import yaml
 
-ROOT = Path(__file__).resolve().parents[2]
+from tests.hooks._hookrun import ROOT, load_script
+
 SKILLS = ROOT / ".agents" / "skills"
+COMMANDS = ROOT / ".agents" / "commands"
 AGENTS = ROOT / ".claude" / "agents"
 
 NAME_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
@@ -151,13 +153,21 @@ def test_trigger_evals_shape(path: Path) -> None:
 
 
 def test_canonical_skill_links() -> None:
-    """Claude Code and Cursor see the canonical skills through symlinks."""
-    for link in (ROOT / ".claude" / "skills", ROOT / ".cursor" / "skills"):
-        assert link.is_symlink()
-        assert link.resolve() == SKILLS.resolve()
-    commands = ROOT / ".claude" / "commands"
-    assert commands.is_symlink()
-    assert commands.resolve() == (ROOT / ".cursor" / "commands").resolve()
+    """Claude Code and Cursor, when selected, see the skills and commands by symlink.
+
+    Cursor links each command file: an older project has a real ``.cursor/commands``.
+    """
+    tools = load_script("kit_config").agent_tools(ROOT)
+    links = {
+        ROOT / ".claude" / "skills": SKILLS,
+        ROOT / ".claude" / "commands": COMMANDS,
+        ROOT / ".cursor" / "skills": SKILLS,
+        **{ROOT / ".cursor" / "commands" / p.name: p for p in COMMANDS.glob("*.md")},
+    }
+    for link, target in links.items():
+        selected = link.relative_to(ROOT).parts[0][1:] in tools
+        assert link.is_symlink() == selected, link
+        assert not selected or link.resolve() == target.resolve()
 
 
 @pytest.mark.parametrize("path", AGENT_FILES, ids=lambda p: p.stem)

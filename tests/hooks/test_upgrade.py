@@ -158,7 +158,10 @@ def test_check_lists_every_outdated_item(
     found = {
         (i.kind, i.name, i.old, i.new, i.protected) for i in upgrade.check(fake, repo)
     }
-    assert found == {
+    plugins = bool(upgrade.REPOSITORIES)  # the installer ships only with the vault
+    item = ("obsidian", "dataview", "0.5.68", "0.5.70", False)
+    obsidian = {item} if plugins else set()
+    assert found == obsidian | {
         ("python", "numpy", "2.5.1", "2.5.3", False),
         ("python", "pydantic", "2.13.4", "2.14.0", False),
         (
@@ -174,10 +177,9 @@ def test_check_lists_every_outdated_item(
         ("action", "actions/checkout", "v7.0.1", "v7.1.0", True),
         ("action", "astral-sh/setup-uv", "v10.2.0", "v10.3.0", True),
         ("uv", "uv", "0.12.23", "0.13.0", True),
-        ("obsidian", "dataview", "0.5.68", "0.5.70", False),
     }
     latest_calls = [c for c in fake.calls if c[2].endswith("/releases/latest")]
-    assert len(latest_calls) == len(LATEST)  # one lookup per repository
+    assert len(latest_calls) == len(LATEST) - (not plugins)  # one per repository
 
 
 def test_apply_upgrades_all_but_protected(
@@ -193,11 +195,13 @@ def test_apply_upgrades_all_but_protected(
     assert 'version: "0.12.23"' in workflow  # uv is protected by publish.yaml
     assert (repo / ".github/workflows/publish.yaml").read_text() == PUBLISH
     assert "rev: v2.4.3" in (repo / ".pre-commit-config.yaml").read_text()
+    plugins = bool(upgrade.REPOSITORIES)  # the installer ships only with the vault
     manifest = repo / ".obsidian/plugins/dataview/manifest.json"
-    assert json.loads(manifest.read_text())["version"] == "0.5.70"
+    version = json.loads(manifest.read_text())["version"]
+    assert version == ("0.5.70" if plugins else "0.5.68")
     assert sorted(changed) == [
         ".github/workflows/test.yaml",
-        ".obsidian/plugins/dataview/manifest.json",
+        *([".obsidian/plugins/dataview/manifest.json"] if plugins else []),
         ".pre-commit-config.yaml",
         "uv.lock",
     ]
@@ -206,7 +210,7 @@ def test_apply_upgrades_all_but_protected(
         ("uv", "pyproject.toml, .github/workflows"),
     }
     assert ["uv", "sync", "--all-groups", "--all-extras"] in fake.calls
-    assert [*upgrade.INSTALL_PLUGINS, "--force"] in fake.calls
+    assert ([*upgrade.INSTALL_PLUGINS, "--force"] in fake.calls) == plugins
 
 
 def test_apply_bumps_uv_together_without_a_publish_pin(

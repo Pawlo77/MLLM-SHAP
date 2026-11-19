@@ -5,7 +5,7 @@ paths:
   - "examples/**/*.ipynb"
 ---
 
-<!-- Generated from .cursor/rules/python-types.mdc by scripts/sync_rules.py; do not edit. -->
+<!-- Generated from .agents/rules/python-types.mdc by scripts/sync_rules.py; do not edit. -->
 
 # Python types
 
