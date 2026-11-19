@@ -3,7 +3,7 @@ paths:
   - ".github/**"
 ---
 
-<!-- Generated from .cursor/rules/ci-workflows.mdc by scripts/sync_rules.py; do not edit. -->
+<!-- Generated from .agents/rules/ci-workflows.mdc by scripts/sync_rules.py; do not edit. -->
 
 # CI workflows
 

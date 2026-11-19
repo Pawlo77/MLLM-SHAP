@@ -5,7 +5,7 @@ paths:
   - "src/mllm_shap/runtime/**"
 ---
 
-<!-- Generated from .cursor/rules/benchmarks.mdc by scripts/sync_rules.py; do not edit. -->
+<!-- Generated from .agents/rules/benchmarks.mdc by scripts/sync_rules.py; do not edit. -->
 
 # Benchmarks
 

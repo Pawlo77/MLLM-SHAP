@@ -60,6 +60,22 @@ memory() {
   return 0
 }
 
+# Merges the shared Obsidian settings (hidden folders, snippet, plugin list) into the live
+# files and starts the download of missing plugins in the background, so a fresh clone gets
+# a working vault even when nobody runs `make setup`.
+obsidian_setup() {
+  local log
+  [ -d .obsidian ] && [ -f scripts/install_obsidian_plugins.py ] && [ -d .venv ] || return 0
+  command -v uv >/dev/null 2>&1 || return 0
+  uv run --no-sync --quiet python scripts/install_obsidian_plugins.py --init >/dev/null 2>&1
+  uv run --no-sync --quiet python scripts/install_obsidian_plugins.py --check >/dev/null 2>&1 \
+    && return 0
+  log="${TMPDIR:-/tmp}/obsidian-plugins-$(basename "$ROOT").log"
+  nohup uv run --no-sync --quiet python scripts/install_obsidian_plugins.py >"$log" 2>&1 &
+  OBSIDIAN_DOWNLOADING=1
+  echo "- obsidian plugins: downloading in the background (log: $log); reload Obsidian after"
+}
+
 # Names what `make setup` would still do; filesystem only, so the hook stays fast.
 setup_gaps() {
   local gaps=() hook plugin live
@@ -72,9 +88,11 @@ setup_gaps() {
       [ "$(tr -d ' \n' <".obsidian/$live.json" 2>/dev/null | wc -c)" -gt 2 ] \
         || { gaps+=("obsidian settings"); break; }
     done
-    for plugin in $(jq -r '.[]' .obsidian/community-plugins.json 2>/dev/null); do
-      [ -f ".obsidian/plugins/$plugin/main.js" ] || { gaps+=("obsidian plugins"); break; }
-    done
+    if [ -z "${OBSIDIAN_DOWNLOADING:-}" ]; then  # obsidian_setup is fetching them
+      for plugin in $(jq -r '.[]' .obsidian/community-plugins.json 2>/dev/null); do
+        [ -f ".obsidian/plugins/$plugin/main.js" ] || { gaps+=("obsidian plugins"); break; }
+      done
+    fi
   fi
   (IFS=,; echo "${gaps[*]}" | sed 's/,/, /g')
 }
@@ -93,6 +111,7 @@ state() {
   echo "- recent commits:"
   git log --oneline -5 2>/dev/null | sed 's/^/    /'
   echo "- exit criterion: make check"
+  obsidian_setup
   gaps="$(setup_gaps)"
   if [ -n "$gaps" ]; then
     echo "- setup: incomplete ($gaps); run make setup before other work"

@@ -3,7 +3,7 @@ paths:
   - "plans/**"
 ---
 
-<!-- Generated from .cursor/rules/plans.mdc by scripts/sync_rules.py; do not edit. -->
+<!-- Generated from .agents/rules/plans.mdc by scripts/sync_rules.py; do not edit. -->
 
 # Plans
 
