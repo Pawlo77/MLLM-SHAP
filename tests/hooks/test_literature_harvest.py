@@ -8,6 +8,7 @@ No network: ``fetch`` and ``time.sleep`` are replaced.
 import csv
 import importlib.util
 import json
+import urllib.parse
 from pathlib import Path
 from types import ModuleType
 
@@ -63,11 +64,12 @@ def harvest(monkeypatch: pytest.MonkeyPatch) -> ModuleType:
     spec.loader.exec_module(module)
 
     def fake_fetch(url: str, tries: int = 5) -> bytes:
-        if "api.openalex.org/works/doi:" in url:
-            return b'{"id": "https://openalex.org/W9"}'
-        if "openalex" in url:
+        parts = urllib.parse.urlsplit(url)
+        if parts.hostname == "api.openalex.org":
+            if parts.path.startswith("/works/doi:"):
+                return b'{"id": "https://openalex.org/W9"}'
             return json.dumps({"results": [OPENALEX_WORK]}).encode()
-        if "arxiv.org" in url:
+        if parts.hostname == "export.arxiv.org":
             return ARXIV_FEED.encode()
         return json.dumps(S2).encode()
 
