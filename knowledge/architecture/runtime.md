@@ -5,7 +5,7 @@ domain: runtime
 parent: "[[mllm-shap]]"
 tags: [architecture, runtime]
 created: 2026-10-07
-updated: 2026-11-18
+updated: 2026-11-20
 related-code:
   - "[[src/mllm_shap/runtime/__init__.py]]"
   - "[[src/mllm_shap/runtime/archive.py]]"
@@ -28,7 +28,7 @@ related-code:
 - `InferenceScheduler(max_inflight, generation, store, dedup, archive, pending_limit, progress)`: `run(jobs, generate)` and `run_iter(jobs, generate, total=None)` consume a job iterator lazily inside one `asyncio.TaskGroup`; a semaphore of `pending_limit` slots (default `4 * max_inflight`), released by each task's done callback, bounds live tasks, and a second semaphore bounds concurrent `generate` calls to `max_inflight`. The first failure cancels the other tasks and is re-raised unwrapped (`_first_error` searches nested groups past cancellations); a failing job iterator propagates the same way. Progress reports one cumulative plan across calls.
 - `SchedulerMetrics`: `requested`, `executed`, `deduplicated`, `cache_hits`, `kv_cache_hits`, `kv_cache_reused_tokens`; the scheduler leaves the two key-value (KV) cache counters at 0 and the orchestrator fills them from the backend.
 - `CoalitionJob`: coalition key, snapshot id, rendered snapshot, absence policy, packed mask, model id, `prefix_hash`.
-- `build_coalition_key(...)`: SHA-256 over snapshot id, player ids, packed mask, absence policy, model id and generation parameters; `CoalitionDedupRegistry`; `dedup_enabled(config, generation)` (`auto` is on at any temperature).
+- `build_coalition_key(...)`: SHA-256 over snapshot id, player ids, packed mask, absence policy, model id and generation parameters; draw 0 keeps that key and later draws extend it; `CoalitionDedupRegistry`; `dedup_enabled(config, generation)` (`auto` is on at any temperature).
 - `HotResultStore(maxsize)`: LRU map from coalition key to `StoredGeneration` (text, logprobs, `forced`, `audio_path`; `put`, `get`, `logprobs`, `entry`); the orchestrator sizes it to `2^n`.
 - `RunArchive`: `open(root, manifest, flush_every, on_exists)` (raises `ArchiveExistsError` for a finished archive under `on_exists="error"`, always replaces an unfinished one), `load(root)` (opens the database read-only (`mode=ro`, no schema setup), so it writes nothing and works on read-only storage; `ArchiveNotFoundError`, a `FileNotFoundError`, without `manifest.json` or `archive.sqlite`; `ArchiveCorruptError` when the manifest is not a JSON object or the database cannot be read; `ManifestVersionError` on another schema), `write_manifest(manifest)`, `write_base_generation`, `append(draft)`, `mark_complete`, `is_complete`, `history_lazy()`. One SQLite file with WAL journaling, generation text, logprobs, teacher-forced scores (JSON, `NULL` without them) and audio path in the row, `ARCHIVE_SCHEMA_VERSION` (SQLite `user_version`) and `MANIFEST_SCHEMA_VERSION` 5, plus `manifest.json` and `base_generation.txt`.
 - `read_manifest_payload(path)`: the manifest's JSON object, or `ArchiveCorruptError`; `check_manifest_schema_version(payload)`.
