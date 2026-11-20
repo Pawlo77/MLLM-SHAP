@@ -8,6 +8,11 @@ Changes in each published ``mllm-shap`` version. Newest first.
 Unreleased
 ----------
 
+.. _release-0-10-0:
+
+0.10.0 (2026-11-20)
+-------------------
+
 Added
 ~~~~~
 
