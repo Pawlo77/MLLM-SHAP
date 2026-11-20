@@ -108,6 +108,13 @@ def test_setup_changes_run_everything(
     assert _tests(selector, repo, **{changed: "# x\n"}) is None
 
 
+def test_a_make_file_selects_only_the_tests_naming_it(
+    selector: ModuleType, repo: Path
+) -> None:
+    """CI runs pytest directly: a make file change runs only the tests naming it."""
+    assert _tests(selector, repo, **{"kit.mk": "x:\n", "Makefile": "y:\n"}) == []
+
+
 def test_deleted_python_file_runs_everything(selector: ModuleType, repo: Path) -> None:
     """A removed module cannot be traced, so the whole suite runs."""
     (repo / "src/pkg/b.py").unlink()

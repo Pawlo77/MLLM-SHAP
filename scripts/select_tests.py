@@ -1,14 +1,14 @@
-"""Run only the tests a branch can affect (the pre-push hook; CI runs them all).
+"""Run only the tests a branch can affect (the pre-push hook and CI).
 
 Usage: ``uv run python scripts/select_tests.py [--base REF] [--list] [-- PYTEST ARGS]``
 
 The changed files are the diff of ``HEAD`` against the merge base with ``--base``
 (default: the upstream branch, else ``origin/main``). A test is selected when its import
-closure reaches a changed Python file, or when it or one of its local modules names a
-changed file (path, name or dotted module in a string: ``python -m`` calls, data files).
-Docs, notes and agent settings select nothing. The whole suite runs for a change to the
-test setup, the build files, the dependencies (``pyproject.toml`` outside `UNRELATED`),
-a deleted Python file or no base; ``[tool.agent-kit.tests]`` ``full`` adds globs.
+closure reaches a changed Python file, or when it or a local module names a changed file
+(path, name or dotted module in a string: ``python -m``, data files, ``kit.mk``). Docs,
+notes and agent settings select nothing. The whole suite runs for the test setup, the
+lock file, the dependencies (``pyproject.toml`` outside `UNRELATED`), a deleted Python
+file or no base; ``[tool.agent-kit.tests]`` ``full`` adds globs.
 """
 
 import argparse
@@ -26,7 +26,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CODE_DIRS = ("src", "scripts", "tests")
 """Where imports resolve; ``src`` and ``scripts`` are import roots as well."""
 FULL = (
-    "uv.lock", "Makefile", "kit.mk", ".python-version",
+    "uv.lock", ".python-version",
     "conftest.py", "*/conftest.py", "pytest.ini", "tox.ini", "setup.cfg",
 )  # fmt: skip
 """Changes that can move any test (``pyproject.toml``: see `_moves_tests`)."""
