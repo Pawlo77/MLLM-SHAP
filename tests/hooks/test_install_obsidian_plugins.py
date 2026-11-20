@@ -64,6 +64,17 @@ def test_install_writes_main_js_and_styles(installer, vault: Path) -> None:
     assert installer.install("dataview", obsidian=vault, fetch=fetch) == []
 
 
+def test_patch_frees_a_dataview_worker_whose_read_failed(
+    installer, vault: Path
+) -> None:
+    main_js = vault / "plugins" / "dataview" / "main.js"
+    main_js.write_text("x;" + installer.PATCHES["dataview"][0] + "y;")
+    assert installer.patch("dataview", vault)
+    assert installer.PATCHES["dataview"][1] in main_js.read_text()
+    assert not installer.patch("dataview", vault)
+    assert not installer.patch("templater-obsidian", vault)
+
+
 def test_install_refuses_a_release_with_another_version(installer, vault: Path) -> None:
     def fetch(url: str) -> bytes:
         if url.endswith("manifest.json"):
