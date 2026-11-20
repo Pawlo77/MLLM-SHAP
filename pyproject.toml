@@ -74,6 +74,7 @@ tokens = "mllm_shap.masking.partitions:TokenPartitioner"
 sentences = "mllm_shap.masking.partitions:SentencePartitioner"
 messages = "mllm_shap.masking.partitions:MessagePartitioner"
 sgpa_segments = "mllm_shap.alignment.partitions:SgpaSegmentPartitioner"
+uniform_segments = "mllm_shap.alignment.partitions:UniformSegmentPartitioner"
 
 [project.entry-points."mllm_shap.absence_policies"]
 delete = "mllm_shap.masking.policies:DeletePolicy"

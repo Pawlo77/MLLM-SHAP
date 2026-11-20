@@ -46,6 +46,7 @@ A plugin registered only as an entry point resolves only through `PluginRegistry
 | mllm_shap.partitions | explanation.players | `sentences` | `SentencePartitioner` | [[src/mllm_shap/masking/partitions.py]] | entry point | Partition a snapshot into sentences, never crossing a blank line. |
 | mllm_shap.partitions | explanation.players | `sgpa_segments` | `SgpaSegmentPartitioner` | [[src/mllm_shap/alignment/partitions.py]] | entry point | Make each spellable word of every audio message's transcript a player. |
 | mllm_shap.partitions | explanation.players | `tokens` | `TokenPartitioner` | [[src/mllm_shap/masking/partitions.py]] | entry point | Partition a snapshot into whitespace-delimited text tokens. |
+| mllm_shap.partitions | explanation.players | `uniform_segments` | `UniformSegmentPartitioner` | [[src/mllm_shap/alignment/partitions.py]] | entry point | Cut every audio message into equal-duration segments, one player each. |
 | mllm_shap.renderers | render_attribution(renderer=...) | `token_bar` | `TokenBarRenderer` | [[src/mllm_shap/viz/token_bar.py]] | entry point | Render attributions as a SHAP-style horizontal bar chart. |
 | mllm_shap.renderers | render_attribution(renderer=...) | `token_text` | `TokenTextRenderer` | [[src/mllm_shap/viz/token_text.py]] | entry point | Render attributions as inline colored tokens. |
 | mllm_shap.value_fns | explanation.value_fn | `bertscore` | `BertScoreValue` | [[src/mllm_shap/value/bertscore.py]] | entry point | Score :math:`v(S) = F_1` of greedy token matching against :math:`y_N`. |

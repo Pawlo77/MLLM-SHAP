@@ -36,6 +36,7 @@ Concept: [[SGPA]]. Decisions: [[Alignment decisions]].
 
 - In: `AudioPart` from [[domain]] and a transcript string or token list.
 - Steps: decode and resample for the model; `log_probs`; CTC forced alignment of the spellable characters (separator between tokens); token spans from their characters; each edge moves to the minimum of `energy_weight` × RMS (root mean square energy) + `flux_weight` × spectral flux within its search window when that point is quiet.
+- `UniformSegmentPartitioner` (`uniform_segments`, options `UniformOptions`: `segments`, default the transcript's word count, and `frame_ms`, default 20): equal-duration segments of every audio message on whole frames. It is the matched-count control of `sgpa_segments`, needs no alignment model, and lists audio messages in `PlayerSet.hidden_text`.
 - Out: `AudioSegment`s in token order, at the source sample rate; `sgpa_segments` turns them into players for the [[pipeline]].
 
 ## Invariants

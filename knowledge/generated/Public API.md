@@ -101,6 +101,7 @@ parent: "[[mllm-shap]]"
 | `TranscribedValue` | [[src/mllm_shap/value/speech.py]] | Score spoken answers by transcribing them and applying a text value function. |
 | `TransformersTextBackend` | [[src/mllm_shap/backends/transformers/text.py]] | Generate text with a local Hugging Face language model. |
 | `Turn` | [[src/mllm_shap/domain/conversation.py]] | One conversational turn composed of ordered messages. |
+| `UniformSegmentPartitioner` | [[src/mllm_shap/alignment/partitions.py]] | Cut every audio message into equal-duration segments, one player each. |
 | `WeightedBanzhafAggregator` | [[src/mllm_shap/estimation/estimands/semivalue.py]] | Aggregate coalition samples with weighted Banzhaf weights. |
 | `__version__` | | Installed package version string. |
 | `compute_removal_metrics` | [[src/mllm_shap/pipeline/faithfulness.py]] | Return the removal metrics of a ranking from a coalition payoff function. |

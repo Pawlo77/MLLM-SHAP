@@ -374,6 +374,14 @@ scenarios:
             model_id: facebook/wav2vec2-base-960h
             revision: 22aad52d435eb6dbaf354bdad9b0da84ce7d6156
     expect: {audio: examples/voices_sp0307.wav}
+  partition.uniform_segments:
+    tier: fast
+    turns: *voices
+    # The same words as partition.sgpa_segments, cut into equal pieces; no alignment model.
+    overrides:
+      backend: {kind: mock, model_id: stub, options: null}
+      explanation: {players: uniform_segments}
+    expect: {audio: examples/voices_sp0307.wav}
   viz.render:
     tier: fast
     turns: *multi_user

@@ -45,8 +45,13 @@ def build_coalition_key(
     absence_policy: str,
     model_id: str,
     generation: GenerationConfig,
+    draw: int = 0,
 ) -> str:
-    """Build a stable SHA256 coalition key for deduplication."""
+    """Build a stable SHA256 coalition key for deduplication.
+
+    ``draw`` numbers the independent samples of one coalition; draw 0 keeps the key
+    of a single-draw run, so archives of earlier runs still replay.
+    """
     packed = MaskCodec.pack(mask_present)
     hasher = hashlib.sha256()
     hasher.update(snapshot_id.encode("utf-8"))
@@ -65,6 +70,8 @@ def build_coalition_key(
             generation.top_k,
         )
     )
+    if draw:
+        hasher.update(b"\x1d" + struct.pack("<i", draw))
     return hasher.hexdigest()
 
 

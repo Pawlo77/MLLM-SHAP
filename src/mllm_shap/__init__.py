@@ -7,7 +7,7 @@
 from importlib.metadata import PackageNotFoundError, version
 
 from ._logging import bootstrap_logging, configure_logging
-from .alignment.partitions import SgpaSegmentPartitioner
+from .alignment.partitions import SgpaSegmentPartitioner, UniformSegmentPartitioner
 from .backends.api import ApiBackend
 from .backends.lmstudio import LmStudioBackend
 from .backends.mock import MockAudioBackend, MockBackend
@@ -225,6 +225,7 @@ __all__ = [
     "TranscribedValue",
     "TransformersTextBackend",
     "Turn",
+    "UniformSegmentPartitioner",
     "WeightedBanzhafAggregator",
     "__version__",
     "compute_removal_metrics",

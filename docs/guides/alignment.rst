@@ -113,6 +113,16 @@ the model gets the masked transcript next to the masked audio. With
 audio alone, so the values reflect what the model hears, not what it reads.
 Backends that hear the masked audio: :doc:`audio_backends`.
 
+Equal-duration players
+----------------------
+
+``explanation.players: uniform_segments`` cuts each audio message into equal pieces
+instead of following words. It makes as many players as the transcript has words
+(``plugin_options: {uniform_segments: {segments: 8}}`` sets another count) and puts
+boundaries on whole ``frame_ms`` frames (20 ms by default). The transcript is never
+sent, so a run compares directly with ``sgpa_segments`` under ``transcript: align_only``:
+the same number of players, and only the boundaries differ. It needs no alignment model.
+
 Other CTC models
 ----------------
 

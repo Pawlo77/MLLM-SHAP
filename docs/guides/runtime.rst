@@ -156,6 +156,15 @@ once per run and every repeat shares its payoff:
 
 .. guide-result:: runtime_dedup
 
+Draws per coalition
+~~~~~~~~~~~~~~~~~~~
+
+``generation.num_samples: 4`` (with ``temperature`` above 0) draws every coalition four
+times. Each draw has its own key (draw 0 keeps the key of a single-draw run) and its own
+archive row; a coalition's value is the mean of its draws' values, so efficiency holds for
+the mean game. The spread between draws of one mask is read from the archive. Reanalysis
+of an archive with several draws per mask is not supported.
+
 Schedule async coalition jobs
 -----------------------------
 
