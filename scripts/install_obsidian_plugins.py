@@ -6,7 +6,7 @@ Usage:
 Downloads ``main.js`` and ``styles.css`` of the release pinned by each committed
 ``manifest.json`` (Obsidian disables a plugin whose ``main.js`` is missing). Plugin id
 to GitHub repository: ``dataview`` and ``realclaudian`` (Claudian) plus the
-``[tool.agent-kit.obsidian-plugins]`` table.
+``[tool.agent-kit.obsidian-plugins]`` table. ``PATCHES`` fixes known plugin bugs.
 """
 
 import argparse
@@ -37,6 +37,24 @@ def repositories(root: Path = ROOT) -> dict[str, str]:
 REPOSITORIES: dict[str, str] = repositories()
 ASSETS = ("main.js", "styles.css")
 Fetch = Callable[[str], bytes]
+_DATAVIEW_SEND = """\
+        this.vault.cachedRead(file).then(c => this.workers[workerId].postMessage({
+            path: file.path,
+            contents: c,
+            stat: file.stat,
+            metadata: this.metadataCache.getFileCache(file),
+        }))"""
+# Dataview 0.5.68 keeps an index worker busy forever when reading a note fails (a note
+# deleted mid-index, as by git checkout); after two such failures the index stops
+# updating until Obsidian restarts. The patch reports the failure and frees the worker.
+PATCHES: dict[str, tuple[str, str]] = {
+    "dataview": (
+        _DATAVIEW_SEND + ";\n",
+        _DATAVIEW_SEND
+        + ".catch(error => this.finish(file.path, { $error: `${error}` }, workerId))"
+        + ";\n",
+    ),
+}
 
 
 def _fetch(url: str) -> bytes:
@@ -141,15 +159,26 @@ def install(
     return written
 
 
+def patch(plugin: str, obsidian: Path = OBSIDIAN) -> bool:
+    """Apply the plugin's ``PATCHES`` entry to its main.js; return whether it did."""
+    main_js = obsidian / "plugins" / plugin / "main.js"
+    old, new = PATCHES.get(plugin, ("", ""))
+    if not old or not main_js.is_file() or old not in (text := main_js.read_text()):
+        return False
+    main_js.write_text(text.replace(old, new))
+    return True
+
+
 def main(argv: list[str] | None = None) -> int:
     """Install or check every enabled plugin; return the exit status."""
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--check", action="store_true", help="report, do not download")
-    parser.add_argument("--init", action="store_true", help="merge the settings only")
+    parser.add_argument("--init", action="store_true", help="settings and patches only")
     parser.add_argument("--force", action="store_true", help="re-download everything")
     args = parser.parse_args(argv)
     if args.init:
         print("seeded: " + (", ".join(seed_settings()) or "nothing"))
+        print("patched: " + (", ".join(filter(patch, enabled_plugins())) or "nothing"))
         return 0
     status = 0
     for plugin in enabled_plugins():
@@ -161,6 +190,7 @@ def main(argv: list[str] | None = None) -> int:
             status |= bool(lacking)
             continue
         written = install(plugin, force=args.force)
+        written += ["patch"] if patch(plugin) else []
         print(
             f"{plugin} {version}: {'wrote ' + ', '.join(written) if written else 'ok'}"
         )
