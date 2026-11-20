@@ -8,6 +8,18 @@ Changes in each published ``mllm-shap`` version. Newest first.
 Unreleased
 ----------
 
+Added
+~~~~~
+
+- ``generation.num_samples`` draws each coalition several times. The coalition's value
+  is the mean of its draws' values and every draw is archived under its own key (draw 0
+  keeps the key of a single-draw run, so earlier archives still replay). It needs
+  ``temperature`` above 0, because greedy draws repeat. The base answer is the grand
+  coalition's first draw.
+- ``explanation.players: uniform_segments`` cuts each audio message into equal-duration
+  segments on a ``frame_ms`` grid, by default as many as the transcript has words, so it is
+  the matched-count control of ``sgpa_segments``. The transcript is not sent.
+
 .. _release-0-9-1:
 
 0.9.1 (2026-11-19)

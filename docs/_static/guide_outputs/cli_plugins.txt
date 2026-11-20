@@ -3,6 +3,6 @@ mllm_shap.estimands: banzhaf, beta_shapley, shapley, weighted_banzhaf
 mllm_shap.value_fns: bertscore, contrastive, embedding_cosine, judge_grade, label_margin, logprob, nli_logodds, reference_wer, self_logprob, semascore, speech_bertscore, tf_jsd, tf_logprob, tfidf_cosine, transcribed
 mllm_shap.normalizers: abs_sum, identity, min_max, power_shift
 mllm_shap.backends: api, lmstudio, mock, mock_audio, replay, transformers
-mllm_shap.partitions: messages, sentences, sgpa_segments, tokens
+mllm_shap.partitions: messages, sentences, sgpa_segments, tokens, uniform_segments
 mllm_shap.absence_policies: delete, infill, neutral, pad
 mllm_shap.renderers: token_bar, token_text

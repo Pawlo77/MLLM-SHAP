@@ -5,7 +5,7 @@
 @tested-by [[tests/plugins/test_builtin.py]]
 """
 
-from ..alignment.partitions import SgpaSegmentPartitioner
+from ..alignment.partitions import SgpaSegmentPartitioner, UniformSegmentPartitioner
 from ..backends.api import ApiBackend
 from ..backends.lmstudio import LmStudioBackend
 from ..backends.mock import MockAudioBackend, MockBackend
@@ -111,6 +111,7 @@ BUILTIN_PLUGINS: dict[PluginGroup, dict[str, PluginFactory]] = {
         "sentences": SentencePartitioner,
         "messages": MessagePartitioner,
         "sgpa_segments": SgpaSegmentPartitioner,
+        "uniform_segments": UniformSegmentPartitioner,
     },
     PluginGroup.ABSENCE_POLICIES: {
         "delete": DeletePolicy,

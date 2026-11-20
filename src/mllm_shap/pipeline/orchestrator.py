@@ -221,7 +221,9 @@ class ExplainOrchestrator:
                 # Store is the scoring buffer for this run and must retain every
                 # coalition output, including phase-two masks of two-phase
                 # estimators (default LRU is 128).
-                store = HotResultStore(maxsize=1 << player_set.num_players)
+                store = HotResultStore(
+                    maxsize=(1 << player_set.num_players) * self._generation.num_samples
+                )
                 # The base generation is v(N): seed it so the grand job is a cache hit.
                 store.put(
                     self._coalition_key(mask_builder, player_set, grand_mask),
@@ -653,6 +655,7 @@ class ExplainOrchestrator:
         mask_builder: MaskBuilder,
         player_set: PlayerSet,
         mask: CoalitionMask,
+        draw: int = 0,
     ) -> str:
         return build_coalition_key(
             snapshot_id=self._context.snapshot.snapshot_id,
@@ -661,6 +664,7 @@ class ExplainOrchestrator:
             absence_policy=mask_builder.policy_name,
             model_id=self._backend.model_id,
             generation=self._context.config.generation,
+            draw=draw,
         )
 
     async def _generate_records(
@@ -674,18 +678,23 @@ class ExplainOrchestrator:
     ) -> tuple[list[GenerationRecord], SchedulerMetrics]:
         """Schedule ``masks`` and return their records in mask order.
 
+        With ``num_samples`` draws the list holds that many records per mask,
+        consecutive, and ``_score`` averages them.
+
         Jobs are rendered lazily while the scheduler consumes them. With the KV
         cache enabled they run grouped by prompt prefix; records are read back
         from ``store`` by coalition key, so they stay aligned with ``masks``.
         """
         telemetry = self._context.resolved_telemetry()
+        draws = self._generation.num_samples
         planned = [
             (
                 mask,
-                self._coalition_key(mask_builder, player_set, mask),
+                self._coalition_key(mask_builder, player_set, mask, draw),
                 build_snapshot_prefix_hash(self._context.snapshot, player_set, mask),
             )
             for mask in masks
+            for draw in range(draws)
         ]
         self._seed_replay(planned, store)
         scheduled = (
@@ -835,7 +844,14 @@ class ExplainOrchestrator:
         with self._context.resolved_telemetry().span("orchestrator.score"):
             if isinstance(value_fn, PreparesScores):
                 await value_fn.prepare(base_record, coalition_records)
-            return score_coalitions(value_fn, base_record, coalition_records)
+            scores = score_coalitions(value_fn, base_record, coalition_records)
+        draws = self._generation.num_samples
+        if draws == 1:
+            return scores
+        return [
+            sum(scores[start : start + draws]) / draws
+            for start in range(0, len(scores), draws)
+        ]
 
 
 def _as_record(generated: GenerationResult) -> GenerationRecord:

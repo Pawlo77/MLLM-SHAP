@@ -5,7 +5,7 @@ domain: pipeline
 parent: "[[mllm-shap]]"
 tags: [architecture, pipeline]
 created: 2026-10-07
-updated: 2026-11-16
+updated: 2026-11-20
 related-code:
   - "[[src/mllm_shap/pipeline/__init__.py]]"
   - "[[src/mllm_shap/pipeline/config.py]]"
@@ -48,7 +48,7 @@ Signatures: [[Public API]]; keys: [[Config keys]].
 3. The orchestrator resolves the plugins. A `RequiresLogprobs` value function on a backend without `SupportsLogprobs` raises `ConfigError` ([[Value decisions#2026-10-08 — Logprob value is the coalition's own mean token logprob|logprob value]]). A `RequiresTeacherForcing` one needs `SupportsTeacherForcing` (`ConfigError`) and skips coalition generation when `reads_candidate_text` is false. A `RequiresEmbeddings` one switches `generation.compute_embeddings` on.
 4. It generates the [[Base generation]] and writes it to the archive first.
 5. It samples masks with `budget_fraction(n, fraction, evaluations)` ([[estimation]]) and adds a missing empty or grand coalition; the base text is `v(N)`. A `SupportsKvCache` backend gets its prefix cache enabled, and the metrics count only this run's hits.
-6. It plans `(mask, coalition key, prefix hash)` per mask, sorted by prefix hash only with `kv_cache.enabled`; the [[runtime]] scheduler consumes lazily rendered jobs, and records come back by coalition key in mask order.
+6. It plans `(mask, coalition key, prefix hash)` per mask and draw (`num_samples`; `_score` averages), sorted by prefix hash with `kv_cache.enabled`; the [[runtime]] scheduler consumes lazily rendered jobs; records return by key in mask order.
 7. `score_coalitions` scores records built with `generation_record_from_text(text)` plus the backend's logprobs and `forced` scores, kept per coalition key in the store and archive, so the records equal what `reanalyze` builds. A `PreparesScores` value function is awaited first.
 8. A `TwoPhaseEstimator` gets `begin_allocation(masks, payoffs)`; phase-two masks run the same way and every coalition is rescored on the joint corpus.
 9. It records `embedding_source` (`"backend"` when a backend vector differs from the hash vector, else `"hash"` when embeddings are scored), marks the archive complete, aggregates with `estimator.estimate_attributions`, normalises and logs each stage at `INFO`.

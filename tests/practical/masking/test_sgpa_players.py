@@ -3,6 +3,7 @@
 @see [[src/mllm_shap/alignment/partitions.py]]
 """
 
+from itertools import pairwise
 from pathlib import Path
 from typing import Any
 
@@ -43,6 +44,30 @@ def test_every_word_is_an_audio_player_and_efficiency_holds(
 
     assert [span.text for span in spans] == message.text.split()
     assert all(span.samples is not None for span in spans)
+    assert sum(output.result.values) == pytest.approx(
+        output.result.grand_value - output.result.base_value
+    )
+
+
+@pytest.mark.parametrize("scenario", scenario_cases("partition.uniform_segments"))
+def test_equal_segments_match_the_word_count_and_cover_the_clip(
+    scenario: Scenario, practical_record: dict[str, Any]
+) -> None:
+    """The control makes as many players as words, contiguous over the whole clip."""
+    pytest.importorskip("librosa")
+    message = scenario.snapshot.messages()[0]
+    audio = AudioPart(ROOT / scenario.expect["audio"], sample_rate=16000)
+    spoken = Message(role=message.role, content=(TextPart(message.text), audio))
+    snapshot = ConversationSnapshot.from_turns((Turn(messages=(spoken,)),))
+    config = scenario.config(MODELS[scenario.tier])
+    output = ExplainRunner(config).explain_sync(snapshot)
+    assert output.player_set is not None
+    ranges = [span.samples for span in output.player_set.spans]
+    practical_record["numbers"] = {"segments": [list(r or ()) for r in ranges]}
+
+    assert len(ranges) == len(message.text.split())
+    assert ranges[0][0] == 0
+    assert all(a[1] == b[0] for a, b in pairwise(ranges))
     assert sum(output.result.values) == pytest.approx(
         output.result.grand_value - output.result.base_value
     )

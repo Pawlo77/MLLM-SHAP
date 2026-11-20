@@ -6,7 +6,7 @@
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class GenerationConfig(BaseModel):
@@ -29,6 +29,17 @@ class GenerationConfig(BaseModel):
     The pipeline turns it on when the value function declares
     ``needs_embeddings``; it costs extra forward passes per coalition.
     """
+
+    num_samples: int = Field(default=1, ge=1)
+    """Independent draws per coalition; the value of a coalition is the mean of
+    its draws' values, and every draw is archived under its own key."""
+
+    @model_validator(mode="after")
+    def _draws_need_sampling(self) -> "GenerationConfig":
+        if self.num_samples > 1 and self.temperature == 0.0:
+            msg = "num_samples above 1 needs temperature above 0: greedy draws repeat"
+            raise ValueError(msg)
+        return self
 
 
 class DedupConfig(BaseModel):

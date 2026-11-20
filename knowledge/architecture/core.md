@@ -5,7 +5,7 @@ domain: core
 parent: "[[mllm-shap]]"
 tags: [architecture, core]
 created: 2026-10-07
-updated: 2026-11-16
+updated: 2026-11-20
 related-code:
   - "[[src/mllm_shap/__init__.py]]"
   - "[[src/mllm_shap/_logging.py]]"
@@ -16,7 +16,7 @@ related-code:
 
 ## Responsibility
 
-- **Public surface**: `mllm_shap/__init__.py` re-exports what a user needs for a run; the full list is [[Public API]].
+- **Public surface**: `mllm_shap/__init__.py` re-exports what a user needs for a run; the full list is [[Public API]]; it now includes `UniformSegmentPartitioner`.
 - **Command line**: `cli.py` is the `mllm-shap` console script (`[project.scripts]`).
 - **Logging**: `_logging.py` keeps the package quiet on import and lets users opt in.
 - **Errors**: `errors.py` holds the typed error hierarchy.
