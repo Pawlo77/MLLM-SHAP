@@ -301,13 +301,12 @@ markers = [
 
 [tool.codespell]
 ignore-words-list = "nlp,shapley,shap,explainability,pyproject,toml,venv,prek,autosummary,intersphinx,napoleon,myst,pydata,sdist,wheel,readonly,kwargs,args,init,utils,backend,frontend,untracked,workflow,workflows,pytest,cov"
-skip = "research/*"
 
 [tool.agent-kit]
 # Settings of the shared agent tooling (python-kit-template); read by scripts/ and hooks.
 name = "mllm-shap"
 tree-dirs = "src tests"  # the stop gate hashes these folders
-vault-dirs = "knowledge research"  # Markdown scanned for secrets and personal data
+vault-dirs = "knowledge"  # Markdown scanned for secrets and personal data
 vault-check-args = "--quiet --strict-tags"  # session banner
 vault-ci-args = "--strict --strict-tags"  # Prek Checks workflow
 ci-sync-args = "--extra api --extra viz"  # extras the Prek Checks workflow installs
@@ -457,11 +456,11 @@ handlers = ["console"]
 propagate = false
 
 [tool.agent-kit.vault]
-notes = ["knowledge", "research"]
+notes = ["knowledge"]
 plans = ["plans"]
 memory = [".remember"]
 flat = ["plans", ".remember"]
-isolated = ["knowledge", "research"]  # every note needs an inbound link
+isolated = ["knowledge"]  # every note needs an inbound link
 
 [tool.agent-kit.vault.schema]
 dirs = ["knowledge"]
@@ -490,16 +489,6 @@ solution = ["Problem", "What was tried", "What worked", "Reusable rule"]
 package = "src/mllm_shap"
 generators = ["modules", "public-api"]
 parent = "[[mllm-shap]]"
-
-[[tool.agent-kit.brevity.budget]]
-patterns = ["research/*/*.md"]  # paper and folder notes, any depth (fnmatch * crosses /)
-words = 3500
-sentences = true
-
-[[tool.agent-kit.brevity.budget]]
-patterns = ["research/*.md"]  # the hub
-words = 600
-sentences = true
 
 [[tool.agent-kit.brevity.budget]]
 patterns = [".agents/skills/paper-notes/reference.md"]  # project half of paper-notes: placement, contracts, glossary
