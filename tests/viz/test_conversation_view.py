@@ -139,8 +139,9 @@ def test_audio_messages_get_a_waveform_strip_on_the_same_colour_scale() -> None:
     text_axis, audio_axis = figure.axes
     assert audio_axis.get_title(loc="left") == "user 2 (audio)"
     segments = [p for p in audio_axis.patches if p.get_label() == "segment"]
-    assert [p.get_facecolor() for p in segments] == pytest.approx([
-        token_background_rgba(v, 0.5) for v in values[3:]
-    ])
+    # pytest.approx 9.2 rejects nested sequences: compare the flattened channels
+    got = [c for p in segments for c in p.get_facecolor()]
+    want = [c for v in values[3:] for c in token_background_rgba(v, 0.5)]
+    assert got == pytest.approx(want)
     boxed = {t.get_text() for t in text_axis.texts if t.get_bbox_patch() is not None}
     assert boxed == {"What", "was", "said?", "ab", "c"}
