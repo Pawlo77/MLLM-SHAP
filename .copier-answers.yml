@@ -5,6 +5,7 @@ agent_tools:
 - claude
 author_email: pozorski.paul@gmail.com
 author_name: Paweł Pozorski
+dependabot: true
 description: Shapley-value explainability for conversational language models
 eden: false
 extra_workflows: true
