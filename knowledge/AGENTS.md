@@ -1,7 +1,7 @@
 # Knowledge agents
 
 The repository root is the Obsidian vault `mllm-shap` (map: `mllm-shap.md`); notes live in
-`knowledge/`, plus `plans/` and `.remember/*.md`. Write notes only through skill `notes`
+`knowledge/`, plus `.remember/*.md`. Write notes only through skill `notes`
 (procedures, templates); vault machinery: skill `obsidian`. `make vault-check` passes before hand-off.
 
 ## Where things live
