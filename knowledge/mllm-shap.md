@@ -69,7 +69,3 @@ Full citations: [[Papers]].
 ## Handbook
 
 [[Onboarding]] · [[How a run works]] · [[Debugging a wrong attribution]] · [[Roadmap]] · [[Python SHAP visualization reference]]
-
-## Literature
-
-[[Research]]: paper notes and search protocols (skills `paper-notes`, `literature-search`).
