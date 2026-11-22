@@ -457,9 +457,9 @@ propagate = false
 
 [tool.agent-kit.vault]
 notes = ["knowledge"]
-plans = []
+plans = ["plans"]
 memory = [".remember"]
-flat = [".remember"]
+flat = ["plans", ".remember"]
 isolated = ["knowledge"]  # every note needs an inbound link
 
 [tool.agent-kit.vault.schema]
