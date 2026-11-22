@@ -1,10 +1,11 @@
 # Changes here will be overwritten by Copier; run `copier update` instead.
-_commit: v3.0.0
+_commit: v4.0.0
 _src_path: gh:Pawlo77/python-kit-template
 agent_tools:
 - claude
 author_email: pozorski.paul@gmail.com
 author_name: Paweł Pozorski
+dependabot: false
 description: Shapley-value explainability for conversational language models
 eden: false
 extra_workflows: true
