@@ -17,7 +17,7 @@ this repository: `local.md` in this folder, when it exists.
   origin/main HEAD`), else `git merge origin/main` (never rebase), resolve, rerun checks.
 - `make upgrade-check`: report outdated items (skill `upgrade` applies them).
 - `make check` green, plus the pre-PR steps of `local.md`.
-- Commits per rule `git-commits` (granular, `type: summary`, no AI attribution).
+- Commits per rule `git-commits` (one logical change each, `type: summary`, no AI attribution).
 - `uv run python scripts/pr_policy.py --write-marker --session <key>` (key from the
   session-start banner); state the kind and why (rules: the docstring of
   `scripts/pr_policy.py`, settings `[tool.agent-kit.pr-policy]`). `scripts/hooks/merge_gate.sh`

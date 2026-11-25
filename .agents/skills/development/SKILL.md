@@ -15,6 +15,9 @@ pitfalls of this repository: `local.md` in this folder, when it exists.
 0. **Set up**: when session start says `setup: incomplete`, run `make setup` first and
    report its result.
 1. **Read**: task scope only; the existing `src/` and `tests/`; what `local.md` names.
+   Multi-file or unclear work gets a written plan first. A subagent with fresh context (not
+   the author) reviews the drafted plan against the code it touches before any task starts;
+   fix or answer each finding, then execute.
 2. **Red**: failing `tests/test_*.py` first (mirror `src/`); test behaviour, not trivia.
 3. **Green**: smallest typed implementation; reuse before new abstractions.
 4. **Refactor**: simplify while green; no unrelated cleanup.
