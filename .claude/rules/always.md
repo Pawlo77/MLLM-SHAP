@@ -26,7 +26,7 @@ Every line is read again by people and agents. Write the fewest lines that keep 
 # Git commits and pull requests
 
 - Commits, pushes and PRs happen inside skill `ship` (it classifies the branch and merges routine changes itself); outside it, never without the user's explicit permission.
-- One logical change per commit; when a change spans unrelated concerns, propose a numbered commit plan.
+- One logical change per commit, with its tests and docs: never one commit per file, step or tool run, and no WIP commits; a pull request usually has one to four. When a change spans unrelated concerns, propose a numbered commit plan.
 - Message: `type: summary` (`feat`, `fix`, `docs`, `test`, `refactor`, `chore`, `ci`, `build`, `perf`), imperative, no period, ≤ 72 characters; an optional body says what changed and why.
 - Before committing: the exit criteria in `AGENTS.md`, then `git status`, `git diff` and `git log -5`; stage only that commit's files.
 - No AI attribution (`Co-Authored-By: Claude`, `Generated with …`) anywhere; `scripts/strip_watermarks.py` and `pr-title.yaml` enforce it.
