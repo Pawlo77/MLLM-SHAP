@@ -23,6 +23,7 @@ from ..estimation.stopping import check_stop
 from ..masking.builder import MaskBuilder
 from ..masking.codec import MaskCodec
 from ..plugins.groups import PluginGroup
+from ..plugins.options import non_default_options
 from ..protocols.backend import (
     GenerationResult,
     GenerativeBackend,
@@ -163,7 +164,15 @@ class ExplainOrchestrator:
                     plugin_context,
                 ),
             )
-            mask_builder = MaskBuilder(absence_policy)
+            mask_builder = MaskBuilder(
+                absence_policy,
+                non_default_options(
+                    registry,
+                    explanation.plugin_options,
+                    PluginGroup.ABSENCE_POLICIES,
+                    explanation.absence_policy,
+                ),
+            )
 
             archive: RunArchive | None = None
             manifest = self._initial_manifest(value_fn)
@@ -665,6 +674,7 @@ class ExplainOrchestrator:
             model_id=self._backend.model_id,
             generation=self._context.config.generation,
             draw=draw,
+            policy_options=mask_builder.policy_options,
         )
 
     async def _generate_records(

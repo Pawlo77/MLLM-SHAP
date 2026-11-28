@@ -25,7 +25,9 @@ def _three_token_snapshot() -> ConversationSnapshot:
     return ConversationSnapshot.from_turns((turn,))
 
 
-def _e2e_config(archive_path: str = "") -> ExplainConfig:
+def _e2e_config(
+    archive_path: str = "", plugin_options: dict[str, object] | None = None
+) -> ExplainConfig:
     return ExplainConfig.model_validate({
         "backend": {"kind": "mock", "model_id": "stub"},
         "generation": {
@@ -43,6 +45,7 @@ def _e2e_config(archive_path: str = "") -> ExplainConfig:
             "max_inflight": 2,
             "seed": 0,
             "archive": {"path": archive_path, "flush_every": 1},
+            "plugin_options": plugin_options or {},
         },
     })
 
@@ -309,3 +312,17 @@ def test_reanalyze_rejects_unknown_plugin_option_keys(tmp_path: Path) -> None:
     payload["explanation"]["plugin_options"] = {"identity": {"scale": 2}}
     with pytest.raises(ConfigError, match=r"normalizers/identity.*'scale'"):
         ExplainRunner(ExplainConfig.model_validate(payload)).reanalyze(root)
+
+
+def test_policy_options_reach_the_archived_coalition_keys(tmp_path: Path) -> None:
+    """A non-default placeholder gets its own keys; the default one keeps them."""
+
+    def keys(name: str, options: dict[str, object] | None) -> set[str]:
+        config = _e2e_config(str(tmp_path / name), options)
+        ExplainRunner(config).explain_sync(_three_token_snapshot())
+        with RunArchive.load(tmp_path / name) as archive:
+            return {record.coalition_key for record in archive.history_lazy()}
+
+    default = keys("default", None)
+    assert keys("explicit", {"pad": {"placeholder": "[MASK]"}}) == default
+    assert keys("custom", {"pad": {"placeholder": "<x>"}}).isdisjoint(default)

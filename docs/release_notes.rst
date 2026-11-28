@@ -8,6 +8,14 @@ Changes in each published ``mllm-shap`` version. Newest first.
 Unreleased
 ----------
 
+Changed
+~~~~~~~
+
+- Coalition keys hash the absence policy's non-default options (``pad``'s
+  ``placeholder``, ``neutral``'s ``fill_char``), so runs that differ only in such an
+  option no longer share cached or archived values. Runs with default options keep
+  their keys; an archive written with a non-default option no longer replays.
+
 .. _release-0-10-0:
 
 0.10.0 (2026-11-20)

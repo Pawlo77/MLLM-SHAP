@@ -215,3 +215,20 @@ def test_registry_tracks_unique_keys() -> None:
     assert registry.observe("beta") is True
     assert registry.contains("alpha") is True
     assert len(registry) == 2
+
+
+def test_policy_options_extend_the_key_only_when_set() -> None:
+    """Empty options keep the old key; each option value gives its own key."""
+    args = {
+        "snapshot_id": "snap",
+        "player_ids": ("a", "b"),
+        "mask_present": (True, False),
+        "absence_policy": "pad",
+        "model_id": "mock",
+        "generation": GenerationConfig(),
+    }
+    default = build_coalition_key(**args)
+    assert build_coalition_key(**args, policy_options={}) == default
+    first = build_coalition_key(**args, policy_options={"placeholder": "<x>"})
+    second = build_coalition_key(**args, policy_options={"placeholder": "<y>"})
+    assert len({default, first, second}) == 3

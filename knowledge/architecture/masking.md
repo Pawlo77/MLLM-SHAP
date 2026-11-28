@@ -36,7 +36,7 @@ related-code:
 - `InfillPolicy` (`infill`, extra `infill`, options `model`, `revision`): one mask token per absent word, filled by a masked language model in one pass per message; fills are cached per masked text.
 - All three take a `PluginContext` first and read only `PlayerSet.spans`; a player set without spans raises. For spans with `samples` (audio players, [[alignment]]) `audio.render_audio` also edits the message's first `AudioPart`: `delete` cuts absent samples, `pad` and `neutral` replace them with silence of the same length ([[Masking decisions#2026-10-10 — Audio players are sample ranges on the player span|audio players]]). Then `audio.hide_text` drops the text parts of `PlayerSet.hidden_text` messages in every coalition ([[Masking decisions#2026-10-12 — Alignment-only transcripts are hidden by the policies|decision]]).
 - `tokens.py`: `token_spans(snapshot)`, `render_spans(snapshot, spans, replacements)` (replaces character ranges per message, `None` deletes, text outside every span is kept).
-- `MaskBuilder(policy)`: `view(snapshot, players, mask) -> MaskedSnapshot` (no copy), `render(masked) -> ConversationSnapshot`.
+- `MaskBuilder(policy, policy_options=None)`: `policy_options` (the non-default options coalition keys hash), `view(snapshot, players, mask) -> MaskedSnapshot` (no copy), `render(masked) -> ConversationSnapshot`.
 - `MaskCodec`: `pack` to little-endian bytes, `unpack`, `hash_mask` (64-bit `blake2b` over the packed bytes and bit count, stable across processes).
 - `MaskSpace`: projects a mask over explainable positions into a full mask; not used by the pipeline.
 
