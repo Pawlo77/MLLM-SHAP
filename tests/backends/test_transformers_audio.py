@@ -315,6 +315,42 @@ def test_audio_only_message_sends_no_text_part() -> None:
     assert [part["type"] for part in message["content"]] == ["audio"]
 
 
+def _interleaved() -> ConversationSnapshot:
+    """A text, audio, text, audio message; clips told apart by length."""
+    spoken = Message(
+        role=Role.USER,
+        content=(
+            TextPart("Look here."),
+            AudioPart(_speech(0.25), 8_000),
+            TextPart("And here."),
+            AudioPart(_speech(0.5), 8_000),
+        ),
+        speaker="ann",
+    )
+    return ConversationSnapshot.from_turns((Turn(messages=(spoken,)),))
+
+
+def test_golden_interleaved_inputs_with_audio_token() -> None:
+    """0.10.0 order: every clip first, then the text parts joined by a space."""
+    processor = _Processor()
+    processor_inputs(processor, _interleaved())
+    (call,) = processor.calls
+    assert call["text"] == "user: <|audio|><|audio|>ann: Look here. And here."
+    assert [len(w) for w in call["audio"]] == [RATE // 4, RATE // 2]
+
+
+def test_golden_interleaved_inputs_with_audio_chat_template() -> None:
+    """0.10.0 order through a chat template: clips first, then one text part."""
+    processor = _Processor()
+    processor.chat_template = "audio"
+    processor_inputs(processor, _interleaved())
+    ((message,),) = processor.conversations
+    first, second, text = message["content"]
+    assert [first["type"], second["type"]] == ["audio", "audio"]
+    assert [len(first["audio"]), len(second["audio"])] == [RATE // 4, RATE // 2]
+    assert text == {"type": "text", "text": "ann: Look here. And here."}
+
+
 class _TextTokenizer(_Tokenizer):
     def __init__(self, ids: list[int]) -> None:
         self.ids = ids
