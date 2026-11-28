@@ -72,6 +72,26 @@ def validate_plugin_options(
     return validated.model_dump(exclude_unset=True)
 
 
+def non_default_options(
+    registry: "PluginRegistry",
+    plugin_options: Mapping[str, Mapping[str, object]],
+    group: PluginGroup | str,
+    name: str,
+) -> dict[str, object]:
+    """Return the plugin's options that differ from its declared defaults.
+
+    Coalition keys hash these, so runs that differ only in an option never share
+    cached values, while a value equal to the default keeps the old keys. A plugin
+    without an options model returns every option it was given.
+    """
+    factory = registry.resolve_factory(group, name)
+    options = select_plugin_options(plugin_options, group, name)
+    if not isinstance(factory, DeclaresPluginOptions):
+        return dict(options)
+    validated = factory.options_model.model_validate(dict(options))
+    return validated.model_dump(mode="json", exclude_defaults=True)
+
+
 def run_plugins(config: "ExplainConfig") -> dict[str, str]:
     """Return the plugin name the run selects in each group, keyed by short group."""
     explanation = config.explanation

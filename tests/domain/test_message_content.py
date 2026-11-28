@@ -12,6 +12,7 @@ from mllm_shap.backends._chat import snapshot_has_audio
 from mllm_shap.domain.conversation import (
     AudioPart,
     ConversationSnapshot,
+    ImagePart,
     Message,
     TextPart,
     Turn,
@@ -82,17 +83,46 @@ def test_snapshot_has_audio_checks_part_types() -> None:
     )
 
 
-def test_with_audio_replaces_the_first_audio_part_only() -> None:
-    first, second = AudioPart(b"a", 8000), AudioPart(b"b", 8000)
-    new = AudioPart(b"n", 8000)
+def test_with_media_replaces_the_indexed_part_of_its_modality() -> None:
+    first, second, image = AudioPart(b"a", 8000), AudioPart(b"b", 8000), ImagePart(b"i")
     message = Message(
-        role=Role.USER, content=(TextPart("hi"), first, second), speaker="Ann"
+        role=Role.USER, content=(TextPart("hi"), first, image, second), speaker="Ann"
     )
-    replaced = message.with_audio(new)
-    assert replaced.content == (TextPart("hi"), new, second)
-    assert replaced.speaker == "Ann"
+    new, picture = AudioPart(b"n", 8000), ImagePart(b"p")
+    assert message.with_media(new).content == (TextPart("hi"), new, image, second)
+    assert message.with_media(new, 1).content == (TextPart("hi"), first, image, new)
+    assert message.with_media(picture).content == (
+        TextPart("hi"),
+        first,
+        picture,
+        second,
+    )
+    assert message.with_media(new).speaker == "Ann"
 
 
-def test_with_audio_refuses_a_message_without_audio() -> None:
-    with pytest.raises(ValueError, match="no audio"):
-        Message(role=Role.USER, text="hi").with_audio(AudioPart(b"n", 8000))
+def test_with_media_refuses_a_missing_part() -> None:
+    with pytest.raises(ValueError, match="no audio part 0"):
+        Message(role=Role.USER, text="hi").with_media(AudioPart(b"n", 8000))
+    with pytest.raises(ValueError, match="no image part 1"):
+        Message(role=Role.USER, content=(ImagePart(b"i"),)).with_media(
+            ImagePart(b"j"), 1
+        )
+
+
+def test_with_text_parts_keeps_each_text_part_in_place() -> None:
+    image = ImagePart(b"i")
+    message = Message(role=Role.USER, content=(TextPart("a b"), image, TextPart("c d")))
+    assert message.with_text_parts(("a", "d")).content == (
+        TextPart("a"),
+        image,
+        TextPart("d"),
+    )
+    with pytest.raises(ValueError, match="2 text parts"):
+        message.with_text_parts(("a",))
+
+
+def test_text_skips_empty_text_parts() -> None:
+    message = Message(
+        role=Role.USER, content=(TextPart("a"), TextPart(""), TextPart("c"))
+    )
+    assert message.text == "a c"

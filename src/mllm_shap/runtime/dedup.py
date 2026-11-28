@@ -6,7 +6,9 @@
 """
 
 import hashlib
+import json
 import struct
+from collections.abc import Mapping
 from dataclasses import dataclass
 
 from ..domain.config import DedupConfig, GenerationConfig
@@ -46,11 +48,13 @@ def build_coalition_key(
     model_id: str,
     generation: GenerationConfig,
     draw: int = 0,
+    policy_options: Mapping[str, object] | None = None,
 ) -> str:
     """Build a stable SHA256 coalition key for deduplication.
 
-    ``draw`` numbers the independent samples of one coalition; draw 0 keeps the key
-    of a single-draw run, so archives of earlier runs still replay.
+    ``draw`` numbers the independent samples of one coalition; ``policy_options``
+    are the absence policy's non-default options. Draw 0 and no options keep the
+    key of earlier runs, so their archives still replay.
     """
     packed = MaskCodec.pack(mask_present)
     hasher = hashlib.sha256()
@@ -70,6 +74,9 @@ def build_coalition_key(
             generation.top_k,
         )
     )
+    if policy_options:
+        options = json.dumps(policy_options, sort_keys=True, separators=(",", ":"))
+        hasher.update(b"\x1c" + options.encode("utf-8"))
     if draw:
         hasher.update(b"\x1d" + struct.pack("<i", draw))
     return hasher.hexdigest()

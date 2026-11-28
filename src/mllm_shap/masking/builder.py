@@ -5,6 +5,7 @@
 @tested-by [[tests/masking/test_builder.py]]
 """
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 
 from ..domain.coalition import CoalitionMask
@@ -48,14 +49,22 @@ class MaskedSnapshot:
 class MaskBuilder:
     """Build masked snapshot views without copying the base conversation."""
 
-    def __init__(self, policy: AbsencePolicy) -> None:
-        """Render coalitions with ``policy``."""
+    def __init__(
+        self, policy: AbsencePolicy, policy_options: Mapping[str, object] | None = None
+    ) -> None:
+        """Render coalitions with ``policy`` set up with ``policy_options``."""
         self._policy = policy
+        self._policy_options = dict(policy_options or {})
 
     @property
     def policy_name(self) -> str:
         """Return the configured absence-policy identifier."""
         return self._policy.name
+
+    @property
+    def policy_options(self) -> Mapping[str, object]:
+        """Return the policy's non-default options, which coalition keys hash."""
+        return self._policy_options
 
     def view(
         self,

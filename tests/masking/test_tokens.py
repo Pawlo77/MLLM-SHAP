@@ -5,7 +5,13 @@
 
 import pytest
 
-from mllm_shap.domain.conversation import ConversationSnapshot, Message, Turn
+from mllm_shap.domain.conversation import (
+    ConversationSnapshot,
+    ImagePart,
+    Message,
+    TextPart,
+    Turn,
+)
 from mllm_shap.domain.enums import Role
 from mllm_shap.domain.players import PlayerSpan
 from mllm_shap.masking.tokens import render_spans, token_spans
@@ -87,3 +93,35 @@ def test_render_spans_rejects_mismatched_input() -> None:
     stale = PlayerSpan(message_index=0, start=0, end=1, text="z")
     with pytest.raises(ValueError, match="do not match"):
         render_spans(snapshot, [stale], ["x"])
+
+
+def _one_message(*content: TextPart | ImagePart) -> ConversationSnapshot:
+    message = Message(role=Role.USER, content=content)
+    return ConversationSnapshot.from_turns((Turn(messages=(message,)),))
+
+
+def test_render_spans_keeps_text_parts_between_images() -> None:
+    one, two = ImagePart(b"one"), ImagePart(b"two")
+    snapshot = _one_message(TextPart("Look here."), one, TextPart("And here."), two)
+    spans = [span for _, span in token_spans(snapshot)]
+    rendered = render_spans(snapshot, spans, ["Look", None, "And", None])
+    assert rendered.messages()[0].content == (
+        TextPart("Look"),
+        one,
+        TextPart("And"),
+        two,
+    )
+
+
+def test_render_spans_merges_text_parts_a_span_crosses() -> None:
+    snapshot = _one_message(TextPart("a b"), TextPart("c"))
+    first = PlayerSpan(message_index=0, start=0, end=1, text="a")
+    crossing = PlayerSpan(message_index=0, start=2, end=5, text="b c")
+    rendered = render_spans(snapshot, [first, crossing], ["a", None])
+    assert rendered.messages()[0].content == (TextPart("a"),)
+
+
+def test_render_spans_skips_region_spans() -> None:
+    snapshot = _one_message(TextPart("look"), ImagePart(b"one"))
+    region = PlayerSpan(message_index=0, start=0, end=0, text="", region=(0, 0, 4, 4))
+    assert render_spans(snapshot, [region], [None]) == snapshot

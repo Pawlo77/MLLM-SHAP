@@ -14,7 +14,7 @@ from numpy.typing import NDArray
 
 from ...alignment.io import decode_audio
 from ...domain.config import GenerationConfig
-from ...domain.conversation import AudioPart, ConversationSnapshot, TextPart
+from ...domain.conversation import AudioPart, ConversationSnapshot
 from ...domain.generation import GenerationRecord
 from ...value.generation_records import generation_record_from_text
 from .._chat import message_chat_text
@@ -46,7 +46,7 @@ class MockAudioBackend(MockBackend):
         for message in snapshot.messages():
             words.extend(message_chat_text(message).split())
             for part in message.content:
-                if not isinstance(part, TextPart):
+                if isinstance(part, AudioPart):
                     words.extend(_run_tokens(*_waveform(part)))
         return generation_record_from_text(" ".join(words[: generation.max_new_tokens]))
 

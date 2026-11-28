@@ -12,6 +12,7 @@ import pytest
 from mllm_shap.domain.conversation import (
     AudioPart,
     ConversationSnapshot,
+    ImagePart,
     Message,
     TextPart,
     Turn,
@@ -102,7 +103,7 @@ def test_snapshot_json_omits_content_derived_id() -> None:
     assert ConversationSnapshot.from_json(snapshot.to_json()) == snapshot
 
 
-def _parts_snapshot(*content: TextPart | AudioPart) -> ConversationSnapshot:
+def _parts_snapshot(*content: TextPart | AudioPart | ImagePart) -> ConversationSnapshot:
     return ConversationSnapshot.from_turns((
         Turn(messages=(Message(role=Role.USER, content=content, speaker="ann"),)),
     ))
@@ -244,3 +245,46 @@ def test_snapshot_from_json_rejects_non_string_speaker() -> None:
         ConversationSnapshot.from_json(
             '{"turns": [{"messages": [{"role": "user", "text": "x", "speaker": 1}]}]}'
         )
+
+
+def test_snapshot_json_round_trips_image_parts(tmp_path: Path) -> None:
+    """Images go by path or base64 data, beside text and audio parts."""
+    picture = tmp_path / "picture.png"
+    picture.write_bytes(b"PNG-path")
+    snapshot = _parts_snapshot(
+        TextPart("what is shown?"),
+        ImagePart(picture),
+        ImagePart(b"PNG-bytes"),
+        AudioPart(b"RIFF-bytes", 8_000),
+    )
+    content = json.loads(snapshot.to_json())["turns"][0]["messages"][0]["content"]
+    assert content[1:3] == [
+        {"type": "image", "path": str(picture)},
+        {"type": "image", "data": base64.b64encode(b"PNG-bytes").decode("ascii")},
+    ]
+    assert ConversationSnapshot.from_json(snapshot.to_json()) == snapshot
+
+
+def test_snapshot_id_hashes_image_bytes() -> None:
+    """Two images with different bytes give different snapshot ids."""
+    first = _parts_snapshot(TextPart("look"), ImagePart(b"one"))
+    second = _parts_snapshot(TextPart("look"), ImagePart(b"two"))
+    assert first.snapshot_id != second.snapshot_id
+    assert (
+        first.snapshot_id
+        == _parts_snapshot(TextPart("look"), ImagePart(b"one")).snapshot_id
+    )
+
+
+@pytest.mark.parametrize(
+    "part",
+    [
+        {"type": "image"},
+        {"type": "image", "path": "a.png", "data": "AA=="},
+        {"type": "image", "data": "%%"},
+    ],
+)
+def test_snapshot_json_rejects_bad_image_parts(part: dict[str, object]) -> None:
+    text = json.dumps({"turns": [{"messages": [{"role": "user", "content": [part]}]}]})
+    with pytest.raises((TypeError, ValueError)):
+        ConversationSnapshot.from_json(text)

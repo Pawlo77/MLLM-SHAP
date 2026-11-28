@@ -8,6 +8,28 @@ Changes in each published ``mllm-shap`` version. Newest first.
 Unreleased
 ----------
 
+Added
+~~~~~
+
+- ``ImagePart`` holds an image by path or bytes; snapshot JSON reads and writes
+  ``{"type": "image", "path" or "data": ...}`` parts and the snapshot id hashes the image
+  bytes. Text and audio snapshot ids are unchanged.
+
+Changed
+~~~~~~~
+
+- Text spans are rendered inside their own text part, so media between text parts keep
+  their place; a span crossing two text parts still merges them. ``Message.text`` skips
+  empty text parts.
+- ``PlayerSpan`` gains ``region`` (pixel box of an image player) and ``part`` (which
+  audio or image part a media player sits in). ``Message.with_media(media, index)``
+  replaces ``Message.with_audio`` and ``Message.with_text_parts`` replaces text parts in
+  place.
+- Coalition keys hash the absence policy's non-default options (``pad``'s
+  ``placeholder``, ``neutral``'s ``fill_char``), so runs that differ only in such an
+  option no longer share cached or archived values. Runs with default options keep
+  their keys; an archive written with a non-default option no longer replays.
+
 .. _release-0-10-0:
 
 0.10.0 (2026-11-20)
