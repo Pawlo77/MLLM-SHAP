@@ -16,6 +16,7 @@ from mllm_shap.domain.config import GenerationConfig
 from mllm_shap.domain.conversation import (
     AudioPart,
     ConversationSnapshot,
+    ImagePart,
     Message,
     TextPart,
     Turn,
@@ -113,3 +114,11 @@ def test_non_16_bit_wav_goes_through_the_audio_extra() -> None:
         writer.setframerate(RATE)
         writer.writeframes((waveform * 127 + 128).astype(np.uint8).tobytes())
     assert len(_heard(_snapshot(buffer.getvalue()))) == 4
+
+
+def test_image_parts_are_not_heard() -> None:
+    message = Message(
+        role=Role.USER, content=(TextPart("say it"), ImagePart(b"not audio"))
+    )
+    snapshot = ConversationSnapshot.from_turns((Turn(messages=(message,)),))
+    assert _heard(snapshot) == ["say", "it"]

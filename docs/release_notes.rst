@@ -8,6 +8,13 @@ Changes in each published ``mllm-shap`` version. Newest first.
 Unreleased
 ----------
 
+Added
+~~~~~
+
+- ``ImagePart`` holds an image by path or bytes; snapshot JSON reads and writes
+  ``{"type": "image", "path" or "data": ...}`` parts and the snapshot id hashes the image
+  bytes. Text and audio snapshot ids are unchanged.
+
 Changed
 ~~~~~~~
 

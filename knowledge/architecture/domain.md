@@ -26,7 +26,7 @@ related-code:
 
 ## Public surface
 
-- `TextPart(text)`, `AudioPart(source, sample_rate)` (`source` is a path or bytes; `data()` reads it), `ContentPart` union ([[Message]]).
+- `TextPart(text)`, `AudioPart(source, sample_rate)` and `ImagePart(source)` (`source` is a path or bytes; `data()` reads it), `ContentPart` union ([[Message]]).
 - `Message(role, text=... | content=..., speaker=None)`: `content` is a tuple of parts; `text` joins the text parts with spaces; `with_text(text)` replaces the text parts and keeps audio and speaker; `with_audio(audio)` replaces the first audio part.
 - `Message.speaker` must be a non-empty single line ([[Domain decisions#2026-10-08 — Speaker rendered into the message content|speaker]]).
 - `Turn(messages)`; `ConversationSnapshot(turns, snapshot_id)` ([[Snapshot]]): `from_turns` derives `snapshot_id` (first 16 hex characters of a SHA-256 over every message; text-only messages hash role and text as before 0.1.18, other messages hash every part, audio by the SHA-256 of its bytes; a speaker is hashed only when set); `messages()` flattens the turns.

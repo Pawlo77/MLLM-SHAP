@@ -12,7 +12,7 @@ parent: "[[mllm-shap]]"
 
 | Module | Summary | Domain | See | Lines | Architecture note |
 |---|---|---|---|---|---|
-| [[src/mllm_shap/__init__.py]] | Shapley-value attributions for conversational language models. | core | [[knowledge/architecture/core]] | 250 | [[core]] |
+| [[src/mllm_shap/__init__.py]] | Shapley-value attributions for conversational language models. | core | [[knowledge/architecture/core]] | 252 | [[core]] |
 | [[src/mllm_shap/_logging.py]] | Central logging bootstrap for mllm_shap. | core | [[knowledge/architecture/core]] | 149 | [[core]] |
 | [[src/mllm_shap/alignment/__init__.py]] | Spectrogram-guided alignment of transcript tokens to speech (``audio`` extra). | alignment | [[knowledge/architecture/alignment]] | 18 | [[alignment]] |
 | [[src/mllm_shap/alignment/ctc.py]] | CTC forced alignment (Viterbi over the blank-extended target sequence). | alignment | [[knowledge/architecture/alignment]] | 82 | [[alignment]] |
@@ -43,10 +43,10 @@ parent: "[[mllm-shap]]"
 | [[src/mllm_shap/backends/transformers/options.py]] | Settings of the transformers backend read from ``BackendConfig.options``. | backends | [[knowledge/architecture/backends]] | 60 | [[backends]] |
 | [[src/mllm_shap/backends/transformers/text.py]] | Hugging Face language model backend for text and, with a processor, audio. | backends | [[knowledge/architecture/backends]] | 762 | [[backends]] |
 | [[src/mllm_shap/cli.py]] | Command-line interface: ``mllm-shap explain\|reanalyze\|plugins\|config``. | core | [[knowledge/architecture/core]] | 290 | [[core]] |
-| [[src/mllm_shap/domain/__init__.py]] | Domain types for cooperative-game explainability. | domain | [[knowledge/architecture/domain]] | 44 | [[domain]] |
+| [[src/mllm_shap/domain/__init__.py]] | Domain types for cooperative-game explainability. | domain | [[knowledge/architecture/domain]] | 46 | [[domain]] |
 | [[src/mllm_shap/domain/coalition.py]] | Coalition masks over explainability players. | domain | [[knowledge/architecture/domain]] | 45 | [[domain]] |
 | [[src/mllm_shap/domain/config.py]] | Generation and runtime settings shared by backends, runtime and pipeline. | domain | [[knowledge/architecture/domain]] | 63 | [[domain]] |
-| [[src/mllm_shap/domain/conversation.py]] | Immutable conversation snapshots without backend or IO. | domain | [[knowledge/architecture/domain]] | 401 | [[domain]] |
+| [[src/mllm_shap/domain/conversation.py]] | Immutable conversation snapshots without backend or IO. | domain | [[knowledge/architecture/domain]] | 434 | [[domain]] |
 | [[src/mllm_shap/domain/enums.py]] | Conversation and explanation enumerations for the text MVP. | domain | [[knowledge/architecture/domain]] | 36 | [[domain]] |
 | [[src/mllm_shap/domain/estimands.py]] | Estimand labels for attribution outputs and archive manifests. | domain | [[knowledge/architecture/domain]] | 44 | [[domain]] |
 | [[src/mllm_shap/domain/game.py]] | Cooperative-game domain types. | domain | [[knowledge/architecture/domain]] | 18 | [[domain]] |

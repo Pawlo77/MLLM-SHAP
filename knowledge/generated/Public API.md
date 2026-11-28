@@ -42,6 +42,7 @@ parent: "[[mllm-shap]]"
 | `GenerationRecord` | [[src/mllm_shap/domain/generation.py]] | Concrete generation output consumed by built-in value functions. |
 | `HierarchicalRunOutput` | [[src/mllm_shap/pipeline/result.py]] | Both games of a hierarchical run. |
 | `IdentityNormalizer` | [[src/mllm_shap/estimation/normalizers.py]] | Return attributions unchanged. |
+| `ImagePart` | [[src/mllm_shap/domain/conversation.py]] | Image content of a message, held in memory or referenced by path. |
 | `InMemoryObservabilitySink` | [[src/mllm_shap/runtime/telemetry.py]] | Collect span records in memory for tests and diagnostics. |
 | `InfillPolicy` | [[src/mllm_shap/masking/infill.py]] | Replace absent players with the fills of a masked language model. |
 | `JudgeGradeValue` | [[src/mllm_shap/value/judge.py]] | Score :math:`v(S) = \sum_g g\,p(g)` for a judge's grade distribution. |

@@ -41,7 +41,21 @@ class AudioPart:
         return self.source.read_bytes()
 
 
-ContentPart = TextPart | AudioPart
+@dataclass(frozen=True, slots=True)
+class ImagePart:
+    """Image content of a message, held in memory or referenced by path."""
+
+    source: Path | bytes
+    """Encoded image bytes, or the path of an image file."""
+
+    def data(self) -> bytes:
+        """Return the encoded image bytes, reading ``source`` when it is a path."""
+        if isinstance(self.source, bytes):
+            return self.source
+        return self.source.read_bytes()
+
+
+ContentPart = TextPart | AudioPart | ImagePart
 """One part of a message's content."""
 
 
@@ -147,16 +161,16 @@ class PartPayload(TypedDict):
     """JSON form of one content part."""
 
     type: str
-    """``"text"`` or ``"audio"``."""
+    """``"text"``, ``"audio"`` or ``"image"``."""
 
     text: NotRequired[str]
     """Text of a text part."""
 
     path: NotRequired[str]
-    """Audio file of an audio part, relative to the snapshot's ``base_dir``."""
+    """Audio or image file, relative to the snapshot's ``base_dir``."""
 
     data: NotRequired[str]
-    """Base64 audio bytes of an audio part, instead of ``path``."""
+    """Base64 audio or image bytes, instead of ``path``."""
 
     sample_rate: NotRequired[int]
     """Sample rate of an audio part in hertz."""
@@ -229,9 +243,10 @@ class ConversationSnapshot:
 
         A message may add ``"speaker"``, and gives either ``"text"`` or a
         ``"content"`` list of ``{"type": "text", "text": ...}`` and
-        ``{"type": "audio", "path" or "data": ..., "sample_rate": ...}`` parts;
-        relative audio paths resolve against ``base_dir`` (default: the working
-        directory) and ``"data"`` is base64. An optional top-level
+        ``{"type": "audio", "path" or "data": ..., "sample_rate": ...}`` and
+        ``{"type": "image", "path" or "data": ...}`` parts; relative paths
+        resolve against ``base_dir`` (default: the working directory) and
+        ``"data"`` is base64. An optional top-level
         ``"snapshot_id"`` sets the id; without it the id is derived from the
         content, as in :meth:`from_turns`.
 
@@ -286,6 +301,10 @@ def _message_to_payload(message: Message) -> MessagePayload:
 def _part_to_payload(part: ContentPart) -> PartPayload:
     if isinstance(part, TextPart):
         return {"type": "text", "text": part.text}
+    if isinstance(part, ImagePart):
+        if isinstance(part.source, Path):
+            return {"type": "image", "path": str(part.source)}
+        return {"type": "image", "data": base64.b64encode(part.source).decode("ascii")}
     if isinstance(part.source, Path):
         return {
             "type": "audio",
@@ -351,22 +370,31 @@ def _part_from_payload(part: object, turn_index: int, base_dir: Path) -> Content
             msg = f'turn {turn_index}: a text part needs a string "text"'
             raise TypeError(msg)
         return TextPart(fields["text"])
+    if kind == "image":
+        return ImagePart(_media_source(fields, "an image", turn_index, base_dir))
     if kind != "audio":
         msg = f"turn {turn_index}: unknown content part type {kind!r}"
         raise ValueError(msg)
-    rate, path, data = fields.get("sample_rate"), fields.get("path"), fields.get("data")
+    rate = fields.get("sample_rate")
     if not isinstance(rate, int) or isinstance(rate, bool):
         msg = f'turn {turn_index}: an audio part needs an integer "sample_rate"'
         raise TypeError(msg)
+    return AudioPart(_media_source(fields, "an audio", turn_index, base_dir), rate)
+
+
+def _media_source(
+    fields: dict[str, object], kind: str, turn_index: int, base_dir: Path
+) -> Path | bytes:
+    path, data = fields.get("path"), fields.get("data")
     if isinstance(path, str) and data is None:
-        return AudioPart(base_dir / path, rate)
+        return base_dir / path
     if isinstance(data, str) and path is None:
         try:
-            return AudioPart(base64.b64decode(data, validate=True), rate)
+            return base64.b64decode(data, validate=True)
         except binascii.Error as exc:
-            msg = f'turn {turn_index}: audio "data" is not valid base64'
+            msg = f'turn {turn_index}: {kind} part "data" is not valid base64'
             raise ValueError(msg) from exc
-    msg = f'turn {turn_index}: an audio part needs exactly one of "path" and "data"'
+    msg = f'turn {turn_index}: {kind} part needs exactly one of "path" and "data"'
     raise TypeError(msg)
 
 
@@ -395,6 +423,11 @@ def _message_payload(message: Message) -> dict[str, object]:
                     "type": "audio",
                     "sha256": digest,
                     "sample_rate": sample_rate,
+                })
+            case ImagePart():
+                parts.append({
+                    "type": "image",
+                    "sha256": hashlib.sha256(part.data()).hexdigest(),
                 })
             case _ as unreachable:
                 assert_never(unreachable)
