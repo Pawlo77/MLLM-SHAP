@@ -32,8 +32,16 @@ class PlayerSpan:
     to the text."""
 
     samples: tuple[int, int] | None = None
-    """Sample range ``[start, end)`` of an audio player in the message's first
-    :class:`~mllm_shap.AudioPart`; ``None`` for text-only players."""
+    """Sample range ``[start, end)`` of an audio player in the message's
+    :attr:`part`-th :class:`~mllm_shap.AudioPart`; ``None`` for other players."""
+
+    region: tuple[int, int, int, int] | None = None
+    """Pixel box ``(left, top, right, bottom)`` of an image player in the message's
+    :attr:`part`-th :class:`~mllm_shap.ImagePart`; ``None`` for other players."""
+
+    part: int = 0
+    """Index of the media part a :attr:`samples` or :attr:`region` player sits in,
+    counted among the message's parts of that modality."""
 
     @property
     def display_label(self) -> str:

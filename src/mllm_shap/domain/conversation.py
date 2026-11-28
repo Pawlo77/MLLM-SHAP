@@ -9,6 +9,7 @@ import base64
 import binascii
 import hashlib
 import json
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import NotRequired, Self, TypedDict, assert_never
@@ -102,9 +103,11 @@ class Message:
 
     @property
     def text(self) -> str:
-        """Return the text parts joined with single spaces."""
+        """Return the non-empty text parts joined with single spaces."""
         return " ".join(
-            part.text for part in self.content if isinstance(part, TextPart)
+            part.text
+            for part in self.content
+            if isinstance(part, TextPart) and part.text
         )
 
     def with_text(self, text: str) -> "Message":
@@ -126,20 +129,38 @@ class Message:
             parts.insert(0, TextPart(text))
         return Message(role=self.role, content=tuple(parts), speaker=self.speaker)
 
-    def with_audio(self, audio: AudioPart) -> "Message":
-        """Return a copy whose first audio part is replaced by ``audio``.
+    def with_text_parts(self, texts: Sequence[str]) -> "Message":
+        """Return a copy whose text parts hold ``texts``, in order and in place.
 
         Raises:
-            ValueError: If the message has no audio part.
+            ValueError: If ``texts`` and the message's text parts differ in count.
         """
-        index = next(
-            (i for i, part in enumerate(self.content) if isinstance(part, AudioPart)),
-            None,
-        )
-        if index is None:
-            msg = "message has no audio part to replace"
+        count = sum(isinstance(part, TextPart) for part in self.content)
+        if len(texts) != count:
+            msg = f"message has {count} text parts, got {len(texts)} texts"
             raise ValueError(msg)
-        parts = (*self.content[:index], audio, *self.content[index + 1 :])
+        replacements = iter(texts)
+        parts = tuple(
+            TextPart(next(replacements)) if isinstance(part, TextPart) else part
+            for part in self.content
+        )
+        return Message(role=self.role, content=parts, speaker=self.speaker)
+
+    def with_media(self, media: "AudioPart | ImagePart", index: int = 0) -> "Message":
+        """Return a copy whose ``index``-th part of ``media``'s type is ``media``.
+
+        Raises:
+            ValueError: If the message has no such part.
+        """
+        positions = [
+            i for i, part in enumerate(self.content) if type(part) is type(media)
+        ]
+        if index >= len(positions):
+            kind = "audio" if isinstance(media, AudioPart) else "image"
+            msg = f"message has no {kind} part {index} to replace"
+            raise ValueError(msg)
+        at = positions[index]
+        parts = (*self.content[:at], media, *self.content[at + 1 :])
         return Message(role=self.role, content=parts, speaker=self.speaker)
 
 

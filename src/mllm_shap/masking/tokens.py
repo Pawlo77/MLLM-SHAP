@@ -6,9 +6,11 @@
 """
 
 import re
+from bisect import bisect_right
 from collections.abc import Sequence
+from dataclasses import replace
 
-from ..domain.conversation import ConversationSnapshot, Message, Turn
+from ..domain.conversation import ConversationSnapshot, Message, TextPart, Turn
 from ..domain.players import PlayerSpan
 
 _TOKEN_RE = re.compile(r"\S+")
@@ -49,7 +51,10 @@ def render_spans(
 
     ``None`` deletes a span together with the whitespace that separated it from
     its neighbours, so deleting ``b`` from ``"a b c"`` gives ``"a c"``. Text no
-    span covers is kept as is.
+    span covers is kept as is. Each text part is rendered in place, so media
+    between text parts keep their position; a span that crosses two text parts
+    merges the message's text into one part. Image ``region`` spans carry no
+    text and are skipped.
 
     Raises:
         ValueError: If ``spans`` and ``replacements`` differ in length, or a span
@@ -60,7 +65,8 @@ def render_spans(
         raise ValueError(msg)
     by_message: dict[int, list[tuple[PlayerSpan, str | None]]] = {}
     for span, replacement in zip(spans, replacements, strict=True):
-        by_message.setdefault(span.message_index, []).append((span, replacement))
+        if span.region is None:
+            by_message.setdefault(span.message_index, []).append((span, replacement))
 
     rebuilt_turns: list[Turn] = []
     message_index = 0
@@ -71,10 +77,38 @@ def render_spans(
             if edits is None:
                 rebuilt.append(message)
             else:
-                rebuilt.append(message.with_text(_render_text(message.text, edits)))
+                rebuilt.append(_render_message(message, edits))
             message_index += 1
         rebuilt_turns.append(Turn(messages=tuple(rebuilt)))
     return ConversationSnapshot.from_turns(tuple(rebuilt_turns))
+
+
+def _render_message(
+    message: Message, edits: list[tuple[PlayerSpan, str | None]]
+) -> Message:
+    """Render each text part with the edits inside it, or merge when one crosses."""
+    texts = [p.text for p in message.content if isinstance(p, TextPart) and p.text]
+    starts, cursor = [], 0
+    for text in texts:
+        starts.append(cursor)
+        cursor += len(text) + 1  # Message.text joins non-empty parts with a space
+    per_part: list[list[tuple[PlayerSpan, str | None]]] = [[] for _ in texts]
+    for span, replacement in edits:
+        index = bisect_right(starts, span.start) - 1
+        if index < 0 or span.end > starts[index] + len(texts[index]):
+            return message.with_text(_render_text(message.text, edits))
+        shift = starts[index]
+        moved = replace(span, start=span.start - shift, end=span.end - shift)
+        per_part[index].append((moved, replacement))
+    rendered = iter(
+        _render_text(text, part_edits) if part_edits else text
+        for text, part_edits in zip(texts, per_part, strict=True)
+    )
+    return message.with_text_parts([
+        next(rendered) if p.text else ""
+        for p in message.content
+        if isinstance(p, TextPart)
+    ])
 
 
 def _render_text(text: str, edits: list[tuple[PlayerSpan, str | None]]) -> str:

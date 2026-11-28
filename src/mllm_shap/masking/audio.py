@@ -28,13 +28,17 @@ def render_audio(
 ) -> ConversationSnapshot:
     """Remove (``cut``) or silence the samples of absent players with ``samples``.
 
+    Each span edits the clip its :attr:`~mllm_shap.domain.players.PlayerSpan.part`
+    names.
+
     Silencing keeps the audio's length and timing; cutting joins what is left.
     Spans without ``samples`` and messages without absent audio are untouched.
     """
-    absent: dict[int, list[tuple[int, int]]] = {}
+    absent: dict[int, dict[int, list[tuple[int, int]]]] = {}
     for span, keep in zip(spans, present, strict=True):
         if span.samples is not None and not keep:
-            absent.setdefault(span.message_index, []).append(span.samples)
+            clips = absent.setdefault(span.message_index, {})
+            clips.setdefault(span.part, []).append(span.samples)
     if not absent:
         return snapshot
     turns: list[Turn] = []
@@ -72,11 +76,15 @@ def hide_text(
     return ConversationSnapshot.from_turns(tuple(turns))
 
 
-def _edit(message: Message, ranges: list[tuple[int, int]], cut: bool) -> Message:
-    part = next(p for p in message.content if isinstance(p, AudioPart))
-    waveform, rate = decode_audio(part.data())
-    keep = np.ones(len(waveform), dtype=bool)
-    for start, end in ranges:
-        keep[start:end] = False
-    edited = waveform[keep] if cut else np.where(keep, waveform, 0.0)
-    return message.with_audio(AudioPart(encode_wav(edited, rate), rate))
+def _edit(
+    message: Message, clips: dict[int, list[tuple[int, int]]], cut: bool
+) -> Message:
+    audio = [p for p in message.content if isinstance(p, AudioPart)]
+    for index, ranges in clips.items():
+        waveform, rate = decode_audio(audio[index].data())
+        keep = np.ones(len(waveform), dtype=bool)
+        for start, end in ranges:
+            keep[start:end] = False
+        edited = waveform[keep] if cut else np.where(keep, waveform, 0.0)
+        message = message.with_media(AudioPart(encode_wav(edited, rate), rate), index)
+    return message
